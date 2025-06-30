@@ -1,0 +1,244 @@
+<html><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B600%3B700&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B700%3B800" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --primary-color: #10B981;--secondary-text-color: #6B7280;--border-color: #E5E7EB;--background-color: #F9FAFB;--card-background-color: #FFFFFF;
+      --text-primary-color: #1F2937;--text-secondary-color: #4B5563;--accent-green-light: #ECFDF5;--accent-green-dark: #065F46;}
+    .active-tab {
+      border-bottom-color: var(--primary-color) !important;
+      color: var(--primary-color) !important;
+    }
+    .active-tab p {
+      color: var(--primary-color) !important;
+    }
+    .nav-item.active svg {
+      color: var(--primary-color) !important;
+    }
+    .nav-item.active p {
+      color: var(--primary-color) !important;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+      font-family: "Inter", "Plus Jakarta Sans", "Noto Sans", sans-serif;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[var(--background-color)]">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="flex-grow">
+<header class="sticky top-0 z-10 bg-[var(--background-color)] pt-4">
+<div class="flex items-center px-4 pb-3 justify-between">
+<div class="flex items-center gap-2">
+<img alt="User Avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0iHXxwgPP7fPjCmEcrKM9_hV9ayxKJJMQ4vEX_9ZwW38IHLjt3cc20g-6j58O3B9uj6B7uHA3Ktn2o1NnSLLvLL_u0BmZctztKxbShwI59j5_TiKgS6tDKQRES1a3NhyIL4EfgiSR8Rnrx_av-UBZW137GW8sKju8oafL_1btOCZKJ_Fb8HspygiTvAXDYZarUH6nQWlnl-G37oZaRbE4HY4mLWGIwRrpr-6z26SWvQ2AkTO1diFvpyHf8vsavsVNwtggiWBrWGg"/>
+<div>
+<p class="text-[var(--text-secondary-color)] text-xs">Bienvenido de nuevo,</p>
+<h1 class="text-[var(--text-primary-color)] text-lg font-semibold">Carlos Estévez</h1>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-white text-[var(--secondary-text-color)] shadow-sm hover:bg-gray-100 transition-colors">
+<div data-icon="MagnifyingGlass" data-size="24px" data-weight="bold">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+</svg>
+</div>
+</button>
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-[var(--primary-color)] text-white shadow-sm hover:bg-emerald-600 transition-colors">
+<div data-icon="Plus" data-size="24px" data-weight="bold">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
+</svg>
+</div>
+</button>
+</div>
+</div>
+<div class="px-4 py-6">
+<div class="bg-[var(--card-background-color)] rounded-xl shadow-lg p-6">
+<div class="flex justify-between items-start mb-4">
+<div>
+<h2 class="text-xl font-bold text-[var(--text-primary-color)]">Resumen de Actividad</h2>
+<p class="text-sm text-[var(--secondary-text-color)]">Últimos 30 días</p>
+</div>
+<div class="text-[var(--primary-color)]" data-icon="ChartLineUp" data-size="32px" data-weight="light">
+<svg fill="currentColor" height="32px" viewBox="0 0 256 256" width="32px" xmlns="http://www.w3.org/2000/svg">
+<path d="M240,56a8,8,0,0,1-8,8H200V87.45l-63.2,47.4a8,8,0,0,1-9.6,0L96,109.48l-58.34,43.75a8,8,0,0,1-11.32-11.32L88,85.65a8,8,0,0,1,9.6,0L128.8,111l53.6-40.2a8,8,0,0,1,9.6,0L240,104.55V64A8,8,0,0,1,240,56ZM224,208H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16Z"></path>
+</svg>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 text-center">
+<div>
+<p class="text-2xl font-bold text-[var(--primary-color)]">12</p>
+<p class="text-xs text-[var(--secondary-text-color)]">Pendientes</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-[var(--accent-green-dark)]">45</p>
+<p class="text-xs text-[var(--secondary-text-color)]">Firmados</p>
+</div>
+<div>
+<p class="text-2xl font-bold text-yellow-500">3</p>
+<p class="text-xs text-[var(--secondary-text-color)]">Alertas</p>
+</div>
+</div>
+<div class="mt-6 h-20">
+<div class="flex items-end h-full gap-1">
+<div class="bg-emerald-200 rounded-t-sm flex-1" style="height: 60%"></div>
+<div class="bg-emerald-300 rounded-t-sm flex-1" style="height: 80%"></div>
+<div class="bg-emerald-200 rounded-t-sm flex-1" style="height: 50%"></div>
+<div class="bg-emerald-400 rounded-t-sm flex-1" style="height: 90%"></div>
+<div class="bg-emerald-300 rounded-t-sm flex-1" style="height: 70%"></div>
+<div class="bg-emerald-200 rounded-t-sm flex-1" style="height: 40%"></div>
+<div class="bg-emerald-500 rounded-t-sm flex-1" style="height: 100%"></div>
+</div>
+</div>
+</div>
+</div>
+<nav class="pb-0">
+<div class="flex border-b border-[var(--border-color)] px-4 gap-4">
+<a class="flex flex-col items-center justify-center border-b-[3px] py-3 active-tab flex-1" href="#">
+<p class="text-sm font-semibold leading-normal">Pendientes</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[var(--secondary-text-color)] py-3 hover:border-b-gray-300 transition-colors flex-1" href="#">
+<p class="text-sm font-semibold leading-normal">Firmados</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-[var(--secondary-text-color)] py-3 hover:border-b-gray-300 transition-colors flex-1" href="#">
+<p class="text-sm font-semibold leading-normal">Notificaciones</p>
+</a>
+</div>
+</nav>
+</header>
+<main class="px-4 py-4 space-y-4">
+<div class="flex items-center gap-4 bg-[var(--card-background-color)] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+<div class="text-white flex items-center justify-center rounded-lg bg-[var(--primary-color)] shrink-0 size-12">
+<div data-icon="FileText" data-size="28px" data-weight="fill">
+<svg fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg">
+<path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm-88,120H72a8,8,0,0,1,0-16h56a8,8,0,0,1,0,16Zm48-32H72a8,8,0,0,1,0-16H176a8,8,0,0,1,0,16Zm0-32H72a8,8,0,0,1,0-16H176a8,8,0,0,1,0,16Z"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow overflow-hidden">
+<p class="text-[var(--text-primary-color)] text-base font-semibold leading-tight line-clamp-1">Contrato de arrendamiento</p>
+<p class="text-[var(--text-secondary-color)] text-sm font-normal leading-snug line-clamp-1">Pendiente de firma por: Juan Pérez</p>
+<div class="flex items-center mt-1">
+<div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+<div class="bg-[var(--primary-color)] h-1.5 rounded-full" style="width: 60%"></div>
+</div>
+<p class="text-xs text-gray-500 ml-2 whitespace-nowrap">60%</p>
+</div>
+<p class="text-xs text-gray-400 leading-tight mt-1">Vence: 20/12/2023</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-400 flex size-7 items-center justify-center" data-icon="CaretRight" data-size="24px" data-weight="bold">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-[var(--card-background-color)] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+<div class="text-white flex items-center justify-center rounded-lg bg-[var(--accent-green-light)] shrink-0 size-12">
+<div class="text-[var(--accent-green-dark)]" data-icon="CheckCircle" data-size="32px" data-weight="fill">
+<svg fill="currentColor" height="32px" viewBox="0 0 256 256" width="32px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm45.66,85.66-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35a8,8,0,0,1,11.32,11.32Z"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow overflow-hidden">
+<p class="text-[var(--text-primary-color)] text-base font-semibold leading-tight line-clamp-1">Acuerdo de confidencialidad</p>
+<p class="text-[var(--text-secondary-color)] text-sm font-normal leading-snug line-clamp-1">Completado por todas las partes</p>
+<div class="flex items-center mt-1">
+<div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+<div class="bg-[var(--accent-green-dark)] h-1.5 rounded-full" style="width: 100%"></div>
+</div>
+<p class="text-xs text-gray-500 ml-2 whitespace-nowrap">100%</p>
+</div>
+<p class="text-xs text-gray-400 leading-tight mt-1">Firmado: 15/11/2023</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-400 flex size-7 items-center justify-center" data-icon="CaretRight" data-size="24px" data-weight="bold">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-[var(--card-background-color)] p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer border-l-4 border-red-500">
+<div class="text-white flex items-center justify-center rounded-lg bg-red-100 shrink-0 size-12">
+<div class="text-red-500" data-icon="WarningCircle" data-size="32px" data-weight="fill">
+<svg fill="currentColor" height="32px" viewBox="0 0 256 256" width="32px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,24a104,104,0,1,0,104,104A104.11,104.11,0,0,0,128,24Zm-8,56a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm8,104a12,12,0,1,1,12-12A12,12,0,0,1,128,184Z"></path>
+</svg>
+</div>
+</div>
+<div class="flex-grow overflow-hidden">
+<p class="text-[var(--text-primary-color)] text-base font-semibold leading-tight line-clamp-1">Contrato de servicios</p>
+<p class="text-[var(--text-secondary-color)] text-sm font-normal leading-snug line-clamp-1">Requiere tu firma urgente</p>
+<div class="flex items-center mt-1">
+<div class="w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+<div class="bg-red-500 h-1.5 rounded-full" style="width: 20%"></div>
+</div>
+<p class="text-xs text-gray-500 ml-2 whitespace-nowrap">20%</p>
+</div>
+<p class="text-xs text-red-500 font-medium leading-tight mt-1">Urgente: Vence hoy</p>
+</div>
+<div class="shrink-0">
+<div class="text-gray-400 flex size-7 items-center justify-center" data-icon="CaretRight" data-size="24px" data-weight="bold">
+<svg fill="currentColor" height="24px" viewBox="0 0 256 256" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path>
+</svg>
+</div>
+</div>
+</div>
+</main>
+</div>
+<footer class="sticky bottom-0 z-10 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+<div class="flex border-t border-[var(--border-color)] px-2 pb-1 pt-2">
+<a class="nav-item flex flex-1 flex-col items-center justify-end gap-0.5 text-[var(--secondary-text-color)] py-1 hover:bg-gray-100 rounded-lg transition-colors" href="#">
+<div class="flex h-7 w-7 items-center justify-center" data-icon="House" data-size="28px" data-weight="regular">
+<svg fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg">
+<path d="M218.83,103.77l-80-75.48a1.14,1.14,0,0,1-.11-.11,16,16,0,0,0-21.53,0l-.11.11L37.17,103.77A16,16,0,0,0,32,115.55V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V160h32v48a16,16,0,0,0,16,16h48a16,16,0,0,0,16-16V115.55A16,16,0,0,0,218.83,103.77ZM208,208H160V160a16,16,0,0,0-16-16H112a16,16,0,0,0-16,16v48H48V115.55l.11-.1L128,40l79.9,75.43.11.1Z"></path>
+</svg>
+</div>
+<p class="text-xs font-medium leading-normal">Inicio</p>
+</a>
+<a class="nav-item active flex flex-1 flex-col items-center justify-end gap-0.5 py-1 rounded-lg transition-colors" href="#">
+<div class="flex h-7 w-7 items-center justify-center" data-icon="File" data-size="28px" data-weight="fill">
+<svg fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg">
+<path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM152,88V44l44,44Z"></path>
+</svg>
+</div>
+<p class="text-xs font-medium leading-normal">Documentos</p>
+</a>
+<a class="nav-item flex flex-1 flex-col items-center justify-end gap-0.5 text-[var(--secondary-text-color)] py-1 hover:bg-gray-100 rounded-lg transition-colors" href="#">
+<div class="flex h-7 w-7 items-center justify-center" data-icon="Users" data-size="28px" data-weight="regular">
+<svg fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg">
+<path d="M172,120a44,44,0,1,1-44-44A44.05,44.05,0,0,1,172,120Zm-44,28c-44.67,0-84.23,24.42-108.24,60.86a8,8,0,0,0,13.54,8.3A103.39,103.39,0,0,1,128,160a103.39,103.39,0,0,1,95.7,57.16a8,8,0,0,0,13.54-8.3C256.23,172.42,216.67,148,172,148ZM232,76a44,44,0,1,0-52,42.84,119.19,119.19,0,0,0,24,18.4A44,44,0,1,0,232,76ZM208,104a28,28,0,1,1-28-28A28,28,0,0,1,208,104ZM76,32a44,44,0,1,0,42.84,52A119.19,119.19,0,0,0,100.4,65.76,44,44,0,1,0,76,32ZM48,76a28,28,0,1,1,28-28A28,28,0,0,1,48,76Z"></path>
+</svg>
+</div>
+<p class="text-xs font-medium leading-normal">Contactos</p>
+</a>
+<a class="nav-item flex flex-1 flex-col items-center justify-end gap-0.5 text-[var(--secondary-text-color)] py-1 hover:bg-gray-100 rounded-lg transition-colors" href="#">
+<div class="flex h-7 w-7 items-center justify-center" data-icon="Gear" data-size="28px" data-weight="regular">
+<svg fill="currentColor" height="28px" viewBox="0 0 256 256" width="28px" xmlns="http://www.w3.org/2000/svg">
+<path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm88-29.84q.06-2.16,0-4.32l14.92-18.64a8,8,0,0,0,1.48-7.06,107.21,107.21,0,0,0-10.88-26.25,8,8,0,0,0-6-3.93l-23.72-2.64q-1.48-1.56-3-3L186,40.54a8,8,0,0,0-3.94-6,107.71,107.71,0,0,0-26.25-10.87,8,8,0,0,0-7.06,1.49L130.16,40Q128,40,125.84,40L107.2,25.11a8,8,0,0,0-7.06-1.48A107.6,107.6,0,0,0,73.89,34.51a8,8,0,0,0-3.93,6L67.32,64.27q-1.56,1.49-3,3L40.54,70a8,8,0,0,0-6,3.94,107.71,107.71,0,0,0-10.87,26.25,8,8,0,0,0,1.49,7.06L40,125.84Q40,128,40,130.16L25.11,148.8a8,8,0,0,0-1.48,7.06,107.21,107.21,0,0,0,10.88,26.25,8,8,0,0,0,6,3.93l23.72,2.64q1.49,1.56,3,3L70,215.46a8,8,0,0,0,3.94,6,107.71,107.71,0,0,0,26.25,10.87,8,8,0,0,0,7.06-1.49L125.84,216q2.16.06,4.32,0l18.64,14.92a8,8,0,0,0,7.06,1.48,107.21,107.21,0,0,0,26.25-10.88,8,8,0,0,0,3.93-6l2.64-23.72q1.56-1.48,3-3L215.46,186a8,8,0,0,0,6-3.94,107.71,107.71,0,0,0,10.87-26.25,8,8,0,0,0-1.49-7.06Zm-16.1-6.5a73.93,73.93,0,0,1,0,8.68,8,8,0,0,0,1.74,5.48l14.19,17.73a91.57,91.57,0,0,1-6.23,15L187,173.11a8,8,0,0,0-5.1,2.64,74.11,74.11,0,0,1-6.14,6.14,8,8,0,0,0-2.64,5.1l-2.51,22.58a91.32,91.32,0,0,1-15,6.23l-17.74-14.19a8,8,0,0,0-5-1.75h-.48a73.93,73.93,0,0,1-8.68,0,8,8,0,0,0-5.48,1.74L100.45,215.8a91.57,91.57,0,0,1-15-6.23L82.89,187a8,8,0,0,0-2.64-5.1,74.11,74.11,0,0,1-6.14-6.14,8,8,0,0,0-5.1-2.64L46.43,170.6a91.32,91.32,0,0,1-6.23-15l14.19-17.74a8,8,0,0,0,1.74-5.48,73.93,73.93,0,0,1,0-8.68,8,8,0,0,0-1.74-5.48L40.2,100.45a91.57,91.57,0,0,1,6.23-15L69,82.89a8,8,0,0,0,5.1-2.64,74.11,74.11,0,0,1,6.14-6.14A8,8,0,0,0,82.89,69L85.4,46.43a91.32,91.32,0,0,1,15-6.23l17.74,14.19a8,8,0,0,0,5.48,1.74,73.93,73.93,0,0,1,8.68,0,8,8,0,0,0,5.48-1.74L155.55,40.2a91.57,91.57,0,0,1,15,6.23L173.11,69a8,8,0,0,0,2.64,5.1,74.11,74.11,0,0,1,6.14,6.14,8,8,0,0,0,5.1,2.64l22.58,2.51a91.32,91.32,0,0,1,6.23,15l-14.19,17.74A8,8,0,0,0,199.87,123.66Z"></path>
+</svg>
+</div>
+<p class="text-xs font-medium leading-normal">Ajustes</p>
+</a>
+</div>
+<div class="h-safe-area-bottom bg-white"></div>
+</footer>
+</div>
+
+</body></html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validación de Documentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="validacion.css">
+</head>
+<body data-theme="dark">
+    <!-- Header -->
+    <header>
+        <a href="#" class="logo">
+            <i class="fas fa-signature"></i>
+            <span>SignForce</span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="#cerrarSesion">Cerrar Sesión</a>
+            <a href="#contact">Contacto</a>
+        </nav>
+
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+
+    <div class="container">
+        <h1>Validación de Documentos</h1>
+        
+        <div class="empresa-info" id="empresaInfo">
+            <!-- Información de la empresa se llenará con JS -->
+        </div>
+        <div class="form-container animate-form delay-1">
+            <div class="form-tabs">
+                <h3>Documentos Requeridos</h3>
+                <div class="documentos-list">
+                    <div class="documento-item">
+                        <span>Acta Constitutiva</span>
+                        <div>
+                            <span class="status status-pendiente" id="statusActa">Pendiente</span>
+                            <button class="btn btn-upload" onclick="subirDocumento('acta')">Subir</button>
+                        </div>
+                    </div>
+                    <div class="documento-item">
+                        <span>Poder Notarial</span>
+                        <div>
+                            <span class="status status-pendiente" id="statusPoder">Pendiente</span>
+                            <button class="btn btn-upload" onclick="subirDocumento('poder')">Subir</button>
+                        </div>
+                    </div>
+                    <div class="documento-item">
+                        <span>Identificación Oficial</span>
+                        <div>
+                            <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
+                            <button class="btn btn-upload" onclick="subirDocumento('identificacion')">Subir</button>
+                        </div>
+                    </div>
+                    <div class="documento-item">
+                        <span>Comprobante de Domicilio</span>
+                        <div>
+                            <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
+                            <button class="btn btn-upload" onclick="subirDocumento('domicilio')">Subir</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-completar" id="btnCompletar" disabled onclick="completarValidacion()">Completar Validación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const empresas = JSON.parse(sessionStorage.getItem('empresas')) || [];
+        const urlParams = new URLSearchParams(window.location.search);
+        const empresaId = urlParams.get('empresaId');
+        const empresa = empresas.find(e => e.id === empresaId);
+        if (!empresa) {
+            alert('Empresa no encontrada');
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('empresaInfo').innerHTML = `
+                <h3>${empresa.businessName}</h3>
+                <p><strong>RFC:</strong> ${empresa.businessRFC}</p>
+                <p><strong>Representante Legal:</strong> ${empresa.firstName} ${empresa.lastName}</p>
+                <p><strong>Email:</strong> ${empresa.email}</p>
+                <p><strong>Teléfono:</strong> ${empresa.phone}</p>
+            `;
+        });            
+        
+        // Estado de documentos
+        let documentos = {
+            acta: false,
+            poder: false,
+            identificacion: false,
+            domicilio: false
+        };
+        
+        function subirDocumento(tipo) {
+            // Simular subida de documento
+            // En un caso real sería un fetch a la API
+            /*
+            fetch('/api/documentos', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Manejar respuesta
+            });
+            */
+            
+            // Simulamos que el documento se subió correctamente
+            documentos[tipo] = true;
+            document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).className = 'status status-completo';
+            document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = 'Completo';
+            
+            // Verificar si todos los documentos están completos
+            const todosCompletos = Object.values(documentos).every(val => val);
+            document.getElementById('btnCompletar').disabled = !todosCompletos;
+        }
+        
+        function completarValidacion() {
+            // Simular envío para validación
+            // En un caso real sería un fetch a la API
+            /*
+            fetch('/api/validacion/completar', {
+                method: 'POST',
+                body: JSON.stringify({ empresaId: empresaId }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Manejar respuesta
+            });
+            */
+            
+            // Actualizar estado de la empresa
+            empresa.status = 'validacion_completada';
+            
+            // Simular creación de usuario ROOT
+            const usuarioRoot = {
+                id: `usr_${Date.now()}`,
+                empresaId: empresaId,
+                email: empresa.email,
+                phone: empresa.phone,
+                password: 'tempPassword' + Math.random().toString(36).substring(2, 8),
+                tipo: 'root',
+                nombre: `${empresa.firstName} ${empresa.lastName}`
+            };
+            // Obtener usuarios existentes desde sessionStorage o crear nuevo arreglo
+            let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
+            
+            usuarios.push(usuarioRoot);
+            sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
+            
+            // Mostrar mensaje de éxito con credenciales
+            alert(`Validación completada con éxito. Se ha creado el usuario ROOT para tu empresa.\n\nEmail: ${usuarioRoot.email}\nContraseña temporal: ${usuarioRoot.password}\n\nEstas credenciales han sido enviadas a tu correo electrónico.`);
+            
+            // Redirigir a login
+            window.location.href = 'login_register.html';
+        }
+    </script>
+</body>
+</html>

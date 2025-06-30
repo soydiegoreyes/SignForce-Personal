@@ -1,0 +1,378 @@
+/* Variables CSS para temas (consistentes con los anteriores) */
+:root {
+    /* Modo claro */
+    --bg-gradient-light: linear-gradient(180deg, #F0F1C5 0%, #EEEFE0 100%);
+    --text-color-light: #343d30;
+    --primary-light: #66785F;
+    --accent-light: #91AC8F;
+    --card-bg-light: rgba(203, 203, 203, 0.25);
+    --table-header-light: #e0e0e0;
+    --table-row-light: #f5f5f5;
+    --modal-bg-light: rgba(255, 255, 255, 0.95);
+
+    /* Modo oscuro */
+    --bg-gradient-dark: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    --text-color-dark: #FAFFCA;
+    --primary-dark: #BBD8A3;
+    --accent-dark: #9bb98f;
+    --card-bg-dark: #1a2c2540;
+    --table-header-dark: #2c3e50;
+    --table-row-dark: #34495e;
+    --modal-bg-dark: rgba(26, 44, 37, 0.95);
+
+    /* Valores iniciales */
+    --bg-gradient: var(--bg-gradient-dark);
+    --text-color: var(--text-color-dark);
+    --primary: var(--primary-dark);
+    --accent: var(--accent-dark);
+    --card-bg: var(--card-bg-dark);
+    --table-header: var(--table-header-dark);
+    --table-row: var(--table-row-dark);
+    --modal-bg: var(--modal-bg-dark);
+}
+
+[data-theme="light"] {
+    --bg-gradient: var(--bg-gradient-light);
+    --text-color: var(--text-color-light);
+    --primary: var(--primary-light);
+    --accent: var(--accent-light);
+    --card-bg: var(--card-bg-light);
+    --table-header: var(--table-header-light);
+    --table-row: var(--table-row-light);
+    --modal-bg: var(--modal-bg-light);
+}
+
+/* Estilos generales */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-color);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Header */
+.header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background-color: rgba(15, 15, 15, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-color);
+}
+
+.user-info svg {
+    color: var(--accent);
+    font-size: 1.5rem;
+}
+
+/* Contenedor principal */
+.container {
+    padding: 2rem 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tarjeta principal */
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.card h1 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+    text-align: center;
+}
+
+/* Acciones superiores */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-volver {
+    background: transparent;
+    color: var(--text-color);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-volver:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn-agregar {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-agregar:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Tabla de usuarios */
+#tablaUsuarios {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+#tablaUsuarios thead {
+    background: var(--table-header);
+}
+
+#tablaUsuarios th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+#tablaUsuarios tbody tr {
+    background: var(--table-row);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+#tablaUsuarios tbody tr:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#tablaUsuarios td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+#tablaUsuarios td:last-child {
+    white-space: nowrap;
+}
+
+/* Botones de acción en la tabla */
+.btn-accion {
+    padding: 0.5rem 0.8rem;
+    margin-right: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-editar {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-editar:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+.btn-eliminar {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-eliminar:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+}
+
+/* Modales */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.modal-content {
+    background: var(--modal-bg);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.modal h2 {
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+}
+
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.3s;
+}
+
+.close:hover {
+    color: var(--accent);
+    transform: scale(1.2);
+}
+
+/* Formularios en modales */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(155, 185, 143, 0.3);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    #tablaUsuarios {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .btn-volver, .btn-agregar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .modal-content {
+        padding: 1.5rem 1rem;
+        margin: 1rem;
+    }
+    
+    #tablaUsuarios th, 
+    #tablaUsuarios td {
+        padding: 0.8rem 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-accion {
+        margin-right: 0.3rem;
+        padding: 0.4rem 0.6rem;
+    }
+}

@@ -1,0 +1,105 @@
+<html><head>
+<meta charset="utf-8"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Plus+Jakarta+Sans%3Awght%40400%3B500%3B600%3B700%3B800&amp;family=Manrope%3Awght%40400%3B500%3B600%3B700%3B800" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<title>SignEasy - Iniciar Sesión</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --primary-green: #10B981;--secondary-green: #059669;--light-gray: #F9FAFB;--medium-gray: #E5E7EB;--dark-gray: #4B5563;--text-primary: #1F2937;--text-secondary: #6B7280;--white: #ffffff;
+    }
+    body {
+      font-family: "Manrope", "Plus Jakarta Sans", "Noto Sans", sans-serif;
+      background: linear-gradient(180deg, var(--light-gray) 0%, var(--medium-gray) 100%);
+    }
+    .form-input {
+      background-color: var(--white);
+      border: 1px solid var(--medium-gray);
+      transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      border-radius: 0.75rem;}
+    .form-input:focus {
+      border-color: var(--primary-green);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);outline: none;
+    }
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary-green), var(--secondary-green));
+      color: var(--white);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease-in-out;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(to right, var(--secondary-green), var(--primary-green));
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .text-link {
+      color: var(--primary-green);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .text-link:hover {
+      text-decoration: underline;
+      color: var(--secondary-green);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gradient-to-br from-slate-50 via-gray-100 to-emerald-50">
+<div class="relative flex size-full min-h-screen flex-col justify-center group/design-root overflow-x-hidden p-4 sm:p-6 md:p-8">
+<main class="flex-grow flex flex-col items-center justify-center">
+<div class="w-full max-w-md bg-white p-8 sm:p-10 md:p-12 rounded-2xl shadow-xl">
+<header class="text-center mb-10">
+<img alt="SignEasy Logo" class="h-12 w-auto mx-auto mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj0Uq4jTBHQf7l6O4f5ZK7_trMVjS9kmU7BQXnZvHPKoC77zpc5HVKiEEk--NoaoTekH5MVBuYdStCnkA7Z1iT6ZUG1c77pm-TUxOUCU9gJ-hiZKdGDSyO7BqD4j3AHinSUJISe8MUDh0vuoTgXmJ3XLGsk-Th-RLe7ajMs5mKAOZkN7QvwPNbUpyupmRjCWIOS6slssIUovgpWQgZlyo-_mgnKdAj9hx3ZSvY4f5F1UVBcmcyCXm4aJuZ-T4nQxLF_AJDswzQKGg"/>
+<h1 class="text-[var(--text-primary)] text-3xl sm:text-4xl font-bold tracking-tight">Bienvenido</h1>
+<p class="text-[var(--text-secondary)] text-base mt-2">Inicia sesión o crea una cuenta para continuar</p>
+</header>
+<form class="space-y-6">
+<div>
+<label class="sr-only" for="email">Email</label>
+<div class="relative">
+<span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-xl">mail_outline</span>
+<input autocomplete="email" class="form-input block w-full min-w-0 flex-1 resize-none overflow-hidden text-[var(--text-primary)] focus:outline-0 focus:ring-0 h-14 placeholder:text-[var(--text-secondary)] pl-12 pr-4 py-4 text-base font-normal leading-normal" id="email" name="email" placeholder="Correo electrónico" type="email" value=""/>
+</div>
+</div>
+<div>
+<label class="sr-only" for="password">Password</label>
+<div class="relative">
+<span class="material-icons-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-xl">lock_outline</span>
+<input autocomplete="current-password" class="form-input block w-full min-w-0 flex-1 resize-none overflow-hidden text-[var(--text-primary)] focus:outline-0 focus:ring-0 h-14 placeholder:text-[var(--text-secondary)] pl-12 pr-4 py-4 text-base font-normal leading-normal" id="password" name="password" placeholder="Contraseña" type="password" value=""/>
+</div>
+</div>
+<div class="text-right">
+<a class="text-link text-sm" href="#">¿Olvidaste tu contraseña?</a>
+</div>
+<button class="btn-primary flex w-full cursor-pointer items-center justify-center overflow-hidden h-14 px-5 text-base font-bold leading-normal tracking-[0.015em] transition-shadow duration-200" type="submit">
+<span class="truncate">Iniciar Sesión</span>
+</button>
+</form>
+<p class="text-[var(--text-secondary)] text-sm font-normal leading-normal text-center mt-8">
+          ¿No tienes una cuenta? <a class="text-link" href="#">Regístrate aquí</a>
+</p>
+</div>
+<footer class="w-full max-w-md text-center mt-12">
+<p class="text-[var(--text-secondary)] text-xs font-normal leading-normal">
+          Al continuar, aceptas nuestros <a class="text-link" href="#">Términos de Servicio</a> y <a class="text-link" href="#">Política de Privacidad</a>.
+        </p>
+<button class="text-[var(--primary-green)] text-sm font-semibold leading-normal tracking-[0.015em] flex items-center justify-center mx-auto mt-4 group">
+<span class="material-icons-outlined text-xl mr-1 group-hover:text-[var(--secondary-green)] transition-colors">help_outline</span>
+<span class="group-hover:text-[var(--secondary-green)] transition-colors">Ayuda y Soporte</span>
+</button>
+</footer>
+</main>
+</div>
+
+</body></html>

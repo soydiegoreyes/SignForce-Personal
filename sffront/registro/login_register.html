@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignForce - Iniciar Sesión</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="login_register.css">
+
+</head>
+<body data-theme="dark">
+    <!-- Header -->
+    <header>
+        <a href="./../index.html" class="logo">
+            <i class="fas fa-signature"></i>
+            <span>SignForce</span>
+        </a>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="login-container">
+        <!-- Columna izquierda - Texto descriptivo -->
+        <div class="content-left">
+            <div class="hero-text">
+                <h1 class="animate-text">Seguro, Rápido y 100% Legal</h1>
+                <p class="animate-text delay-1">Con SignForce gestiona tus documentos electrónicos con garantía de integridad y autenticidad conforme a la NOM151.</p>
+            </div>
+            
+            <div class="features" id="features">
+                <div class="feature-item animate-text delay-2">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <div>
+                        <h3>Seguridad garantizada</h3>
+                        <p>Todos tus documentos protegidos con cifrado de última generación.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item animate-text delay-3">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <div>
+                        <h3>Rápido y eficiente</h3>
+                        <p>Firma y envía documentos en segundos desde cualquier dispositivo.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item animate-text delay-4">
+                    <i class="fas fa-check-circle feature-icon"></i>
+                    <div>
+                        <h3>Cumplimiento normativo</h3>
+                        <p>Cumple con todos los requisitos legales para firmas electrónicas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna derecha - Formulario -->
+        <div class="content-right">
+            <div class="form-container animate-form delay-1">
+                <div class="form-tabs">
+                    <div class="tab active" data-tab="login">Iniciar Sesión</div>
+                    <div class="tab" data-tab="register">Registrarse</div>
+                </div>
+
+                <div class="form-content">
+                    <!-- Formulario de Login -->
+                    <form class="form active" id="loginForm">
+                        <div class="form-group">
+                            <label for="login-email">Correo electrónico</label>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="login-password" placeholder="········" required>
+                            <i class="fas fa-eye password-toggle" id="login-password-toggle"></i>
+                        </div>
+                        
+                        <button type="submit" class="btn">Iniciar Sesión</button>
+                        
+                        <div class="divider">o continúa con</div>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-btn">
+                                <i class="fab fa-google"></i> Google
+                            </button>
+                            <button type="button" class="social-btn">
+                                <i class="fab fa-microsoft"></i> Microsoft
+                            </button>
+                        </div>
+                        
+                        <div class="form-footer">
+                            <p>¿Olvidaste tu contraseña? <a href="#">Recupérala aquí</a></p>
+                        </div>
+                    </form>
+
+                    <!-- Formulario de Registro -->
+                    <form class="form" id="registerForm">
+                        <div class="form-group">
+                            <label>Nombre y Apellido</label>
+                            <div class="name-fields">
+                                <div class="form-group">
+                                    <input type="text" id="first-name" placeholder="Nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" id="last-name" placeholder="Apellidos" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="business-name">Razón Social</label>
+                            <i class="fas fa-building input-icon"></i>
+                            <input type="text" id="business-name" placeholder="Razón Social" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="business-rfc">RFC</label>
+                            <i class="fas fa-building input-icon"></i>
+                            <input type="text" id="business-rfc" placeholder="RFC" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="alias">Alias</label>
+                            <i class="fas fa-user-tag input-icon"></i>
+                            <input type="text" id="alias" placeholder="Alias (opcional)">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-email">Correo electrónico (será tu nombre de usuario)</label>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="register-email" placeholder="tucorreo@ejemplo.com" required>
+                            <small>Se necesitará correo electrónico para la verificación y recuperación de la cuenta</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-phone">Numero de teléfono (para contactarte)</label>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="phone" id="register-phone" placeholder="10 digitos" required>
+                            <small>Se necesitará tu teléfono para cualquier aclaración de la cuenta</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-password">Contraseña</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="register-password" placeholder="········" required minlength="8" maxlength="20">
+                            <small>Debe tener 8-20 caracteres, contener letras y números, sin espacios, caracteres especiales o emojis</small>
+                            <i class="fas fa-eye password-toggle" id="register-password-toggle"></i>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-confirm">Confirmar contraseña</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="register-confirm" placeholder="········" required>
+                        </div>
+                        
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">Acepto los términos y condiciones</label>
+                        </div>
+                        
+                        <div class="notice-box" id="notice-box"></div>
+                        
+                        <button type="submit" class="btn">Crear Cuenta</button>
+                        
+                        <div class="form-footer">
+                            <p>¿Ya tienes una cuenta? <a href="#" id="switchToLogin">Inicia sesión</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 SignForce. Todos los derechos reservados.</p>
+    </footer>
+    <script src="login_register.js"></script>
+</body>
+</html>
