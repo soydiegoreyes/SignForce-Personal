@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard_root.css">
+    <title>Dashboard ROOT</title>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Sistema de Gestión</div>
+        <div class="user-info">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
+            </svg>
+            <span id="nombreUsuario">Usuario ROOT</span>
+            <button onclick="logout()" style="margin-left: 20px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome">
+            <h1>Bienvenido, Usuario ROOT</h1>
+            <p>Desde aquí puedes gestionar los equipos de tu empresa.</p>
+        </div>
+        
+        <div class="actions">
+            <div class="action-card" onclick="window.location.href='./../administracion/crear-equipo.html'">
+                <h3>Crear Nuevo Equipo</h3>
+                <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
+                <a href="./../administracion/crear_equipo.html" class="btn btn-crear">Crear Equipo</a>
+            </div>
+            <div class="action-card" onclick="window.location.href='#'">
+                <h3>Ver Reportes</h3>
+                <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
+                <a href="#" class="btn">Ver Reportes</a>
+            </div>
+            <div class="action-card" onclick="window.location.href='#'">
+                <h3>Configuración de Empresa</h3>
+                <p>Actualiza la información general de tu empresa.</p>
+                <a href="#" class="btn">Configurar</a>
+            </div>
+        </div>
+        
+        <div class="equipos-list">
+            <h2>Tus Equipos</h2>
+            <div id="listaEquipos">
+                <!-- Los equipos se cargarán dinámicamente -->
+                <p>No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cargar información del usuario
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        
+        if (!currentUser || currentUser.tipo !== 'root') {
+            window.location.href = './../registro/login_register.html';
+        }
+        
+        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Usuario ROOT';
+        
+        // Cargar equipos de la empresa
+        function cargarEquipos() {
+            // Simular carga de equipos
+            // En un caso real sería un fetch a la API
+            /*
+            fetch(`/api/empresas/${currentUser.empresaId}/equipos`)
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar equipos
+            });
+            */
+            
+            // Usar datos en memoria
+            let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
+            
+            const equiposEmpresa = equipos.filter(e => e.empresaId === currentUser.empresaId);
+            
+            if (equiposEmpresa.length > 0) {
+                let html = '';
+                equiposEmpresa.forEach(equipo => {
+                    html += `
+                        <div class="equipo-item">
+                            <div>
+                                <h3>${equipo.nombre}</h3>
+                                <p>Usuario maestro: ${equipo.usuarioMaestroEmail}</p>
+                            </div>
+                            <div>
+                                <span>Miembros: ${equipo.miembros ? equipo.miembros.length : 0}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('listaEquipos').innerHTML = html;
+            }
+        }
+        
+        cargarEquipos();
+        
+        function logout() {
+            sessionStorage.removeItem('currentUser');
+            window.location.href = './../registro/login_register.html';
+        }
+    </script>
+</body>
+</html>
