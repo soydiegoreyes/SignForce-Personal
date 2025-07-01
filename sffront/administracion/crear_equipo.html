@@ -35,7 +35,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="responsable">Responsable Inicial (Usuario Maestro)</label>
+                    <label for="responsable">Responsable Inicial (Usuario Admin)</label>
                     <input type="text" id="responsable" required placeholder="Nombre del responsable">
                     <div class="error" id="errorResponsable"></div>
                 </div>
@@ -137,7 +137,7 @@
                     equipoId: nuevoEquipo.id,
                     email: document.getElementById('emailResponsable').value,
                     password: 'tempPass' + Math.random().toString(36).substring(2, 8),
-                    tipo: 'maestro_equipo',
+                    tipo: 'admin_equipo',
                     nombre: document.getElementById('responsable').value
                 };
                 
@@ -146,7 +146,7 @@
                 // Agregar usuario maestro como miembro del equipo
                 nuevoEquipo.miembros.push({
                     usuarioId: usuarioMaestro.id,
-                    rol: 'maestro',
+                    rol: 'admin',
                     fechaUnion: new Date().toISOString()
                 });
                 

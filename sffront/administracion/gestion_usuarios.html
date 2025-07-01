@@ -100,7 +100,7 @@
         // Cargar información del usuario
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
         
-        if (!currentUser || (currentUser.tipo !== 'maestro_equipo' && currentUser.tipo !== 'admin_equipo')) {
+        if (!currentUser || currentUser.tipo !== 'admin_equipo') {
             window.location.href = './../registro/login_register.html';
         }
         
@@ -137,17 +137,13 @@
                         if (miembro.rol === 'admin') {
                             badgeClass = 'badge-admin';
                             rolText = 'ADMIN';
-                        } else if (miembro.rol === 'maestro') {
-                            badgeClass = 'badge-maestro';
-                            rolText = 'MAESTRO';
-                        } else {
+                        } else if (miembro.rol === 'miembro') {
                             badgeClass = 'badge-miembro';
                             rolText = 'MIEMBRO';
                         }
                         
                         // Determinar si el usuario actual puede editar este miembro
-                        const puedeEditar = currentUser.tipo === 'maestro_equipo' || 
-                                          (currentUser.tipo === 'admin_equipo' && miembro.rol !== 'maestro');
+                        const puedeEditar = (miembro.rol === 'admin' && usuario.id !== currentUser.id);
                         
                         tr.innerHTML = `
                             <td>${usuario.nombre}</td>
@@ -157,9 +153,9 @@
                                 ${puedeEditar ? `
                                 <button class="action-btn btn-editar" onclick="editarUsuario('${usuario.id}')">Editar</button>
                                 <button class="action-btn btn-eliminar" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
-                                ${miembro.rol !== 'admin' && miembro.rol !== 'maestro' ? `
-                                <button class="action-btn btn-promover" onclick="promoverAAdmin('${usuario.id}')">Hacer Admin</button>
-                                ` : ''}
+                                ${miembro.rol !== 'admin' ? `
+                                    <button class="action-btn btn-promover" onclick="promoverAAdmin('${usuario.id}')">Hacer Admin</button>
+                                    ` : ''}
                                 ` : ''}
                             </td>
                         `;
@@ -376,12 +372,15 @@
                 // Actualizar en memoria
                 const equipo = equipos.find(e => e.id === currentUser.equipoId);
                 const miembro = equipo.miembros.find(m => m.usuarioId === usuarioId);
+                const usu= usuarios.find(u => u.id === usuarioId);
                 if (miembro) {
                     miembro.rol = 'admin';
+                    usu.tipo = 'admin_equipo'
                     alert('Usuario promovido a administrador');
                     cargarUsuarios();
                 }
                 sessionStorage.setItem('equipos', JSON.stringify(equipos));
+                sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
             }
         }
     </script>
