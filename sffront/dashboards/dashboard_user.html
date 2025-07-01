@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Administrador de Equipo</title>
+    <title>Dashboard Miembro de Equipo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_admin.css">
+    <link rel="stylesheet" href="dashboard_user.css">
 </head>
 <body>
     <div class="header">
-        <div class="logo">Sistema de Gestión</div>
+        <div class="logo">Dashboard de Usuario</div>
         <div class="user-info">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
             </svg>
-            <span id="nombreUsuario">Administrador de Equipo</span>
+            <span id="nombreUsuario">Usuario de Equipo</span>
             <button onclick="logout()" style="margin-left: 20px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
         </div>
     </div>
     
     <div class="container">
         <div class="welcome">
-            <h1 id="tituloBienvenida">Bienvenido, Administrador de Equipo</h1>
-            <p>Gestiona los miembros y actividades de tu equipo.</p>
+            <h1 id="tituloBienvenida">Bienvenido, Usuario de Equipo</h1>
+            <p>Gestiona tus actividades.</p>
         </div>
         
         <div class="equipo-info" id="infoEquipo">
@@ -30,20 +30,20 @@
         </div>
         
         <div class="actions">
-            <div class="action-card" onclick="window.location.href='./../administracion/gestion_usuarios.html'">
-                <h3>Gestionar Usuarios</h3>
-                <p>Agrega, edita o elimina usuarios de tu equipo y asigna roles administrativos.</p>
-                <a href="./../administracion/gestion_usuarios.html" class="btn btn-agregar">Gestionar Usuarios</a>
+            <div class="action-card" onclick="window.location.href='#'">
+                <h3>Gestionar Documentos</h3>
+                <p>Edita o agrega documentos para firmar.</p>
+                <a href="#" class="btn btn-agregar">Gestionar Documentos</a>
             </div>
             <div class="action-card" onclick="window.location.href='#'">
-                <h3>Configuración del Equipo</h3>
-                <p>Actualiza la información y configuración de tu equipo.</p>
+                <h3>Configuración de mi cuenta</h3>
+                <p>Actualiza la información y configuración de tu cuenta.</p>
                 <a href="#" class="btn btn-configurar">Configurar</a>
             </div>
             <div class="action-card" onclick="window.location.href='#'">
-                <h3>Documentos del Equipo</h3>
-                <p>Consulta documentos y estadísticas de tu equipo.</p>
-                <a href="#" class="btn">Ver Documentos</a>
+                <h3>Reportes del Equipo</h3>
+                <p>Consulta reportes y estadísticas de tu equipo.</p>
+                <a href="#" class="btn">Ver Reportes</a>
             </div>
         </div>
         
@@ -64,12 +64,11 @@
         // Cargar información de los usuarios
         let usuarios= JSON.parse(sessionStorage.getItem('usuarios')) || [];
 
-
-        if (!currentUser || currentUser.tipo !== 'admin_equipo') {
+        if (!currentUser || currentUser.tipo !== 'miembro_equipo') {
             window.location.href = './../registro/login_register.html';
         }
         
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
+        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Miembro de Equipo';
         
         // Cargar información del equipo y miembros
         function cargarEquipoYMiembros() {
@@ -92,7 +91,7 @@
                     <p><strong>Creado el:</strong> ${new Date(equipo.fechaCreacion).toLocaleDateString()}</p>
                 `;
                 
-                document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Administrador'} - ${equipo.nombre}`;
+                document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Usuario'} - ${equipo.nombre}`;
                 
                 // Cargar miembros del equipo
                 cargarMiembros(equipo);
@@ -112,7 +111,7 @@
             });
             */
             
-            if (equipo.miembros && equipo.miembros.length > 0 && usuarios.length > 0) {
+            if (equipo.miembros && equipo.miembros.length > 0) {
                 let html = '';
                 
                 equipo.miembros.forEach(miembroEquipo => {
