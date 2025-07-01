@@ -2,7 +2,7 @@
 :root {
     /* Modo claro */
     --bg-gradient-light: linear-gradient(180deg, #F0F1C5 0%, #EEEFE0 100%);
-    --text-color-light: #203a43;
+    --text-color-light: #343d30;
     --primary-light: #66785F;
     --accent-light: #91AC8F;
     --card-bg-light: rgba(203, 203, 203, 0.25);

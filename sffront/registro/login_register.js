@@ -85,8 +85,10 @@ loginForm.addEventListener('submit', (e) => {
 
             if (usuario.tipo === 'root') {
                 window.location.href = './../dashboards/dashboard_root.html';
-            } else if (usuario.tipo === 'maestro_equipo') {
+            } else if (usuario.tipo === 'admin_equipo') {
                 window.location.href = './../dashboards/dashboard_admin.html';
+            } else if (usuario.tipo === 'miembro_equipo') {
+                window.location.href = './../dashboards/dashboard_user.html';
             } else {
                 alert('Tipo de usuario no reconocido');
             }
