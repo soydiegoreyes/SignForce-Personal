@@ -1,5 +1,6 @@
 /* Fondo de gradiente abstracto */
-body {
+
+/*body {
   background: 
     radial-gradient(circle at 70% 30%, 
       rgba(155, 81, 224, 0.8) 0%, 
@@ -20,7 +21,73 @@ body {
   min-height: 100vh;
   font-family: Inter, "Noto Sans", sans-serif;
   background-attachment: fixed;
+}*/
+:root {
+  --color-background: #f2f4f6;
+  --color-card: #ffffff;
+  --color-text-primary: #1c1f23;
+  --color-text-secondary: #7c8a96;
+  --color-accent: #1984e5;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-blue-dark: #1e2c4b;
+  --color-blue-light: #93bde5;
+  --color-gold: #e5b019;
+  --color-red-wine: #74273a;
 }
+
+body {
+  background: 
+    radial-gradient(circle at 70% 30%, 
+      rgba(137, 232, 245, 0.308) 0%, 
+      rgba(141, 214, 233, 0.205) 30%, 
+      transparent 60%),
+    radial-gradient(circle at 20% 80%, 
+      rgba(237, 91, 250, 0.349) 0%, 
+      rgba(3, 5, 94, 0.233) 40%, 
+      transparent 70%),
+    radial-gradient(circle at center, 
+      rgba(246, 145, 255, 0.6) 0%, 
+      rgba(131, 56, 236, 0.3) 30%, 
+      transparent 60%),
+    linear-gradient(180deg, 
+      #01000a 0%, 
+      #24083fd5 50%, 
+      #080025 100%);
+  min-height: 100vh;
+  font-family: Inter, "Noto Sans", sans-serif;
+  background-attachment: fixed;
+}
+
+.card {
+  background-color: var(--color-card);
+  box-shadow: 0 4px 12px var(--color-shadow);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 1rem;
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.button-accent {
+  background-color: var(--color-accent);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.prompt-gallery img {
+  border-radius: 12px;
+  object-fit: cover;
+  width: 100%;
+  height: auto;
+}
+
+
 
 /* Barra superior mejorada - 25% más grande */
 .glass-header {
