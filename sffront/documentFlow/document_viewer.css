@@ -1,27 +1,4 @@
 /* Fondo de gradiente abstracto */
-
-/*body {
-  background: 
-    radial-gradient(circle at 70% 30%, 
-      rgba(155, 81, 224, 0.8) 0%, 
-      rgba(41, 10, 89, 0.5) 30%, 
-      transparent 60%),
-    radial-gradient(circle at 30% 70%, 
-      rgba(0, 119, 182, 0.7) 0%, 
-      rgba(3, 4, 94, 0.4) 40%, 
-      transparent 70%),
-    radial-gradient(circle at center, 
-      rgba(231, 29, 54, 0.6) 0%, 
-      rgba(131, 56, 236, 0.3) 30%, 
-      transparent 60%),
-    linear-gradient(135deg, 
-      #0f0c29 0%, 
-      #302b63 50%, 
-      #24243e 100%);
-  min-height: 100vh;
-  font-family: Inter, "Noto Sans", sans-serif;
-  background-attachment: fixed;
-}*/
 :root {
   --color-background: #f2f4f6;
   --color-card: #ffffff;
@@ -57,37 +34,6 @@ body {
   font-family: Inter, "Noto Sans", sans-serif;
   background-attachment: fixed;
 }
-
-.card {
-  background-color: var(--color-card);
-  box-shadow: 0 4px 12px var(--color-shadow);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin: 1rem;
-}
-
-.text-secondary {
-  color: var(--color-text-secondary);
-}
-
-.button-accent {
-  background-color: var(--color-accent);
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 12px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.prompt-gallery img {
-  border-radius: 12px;
-  object-fit: cover;
-  width: 100%;
-  height: auto;
-}
-
-
 
 /* Barra superior mejorada - 25% más grande */
 .glass-header {
@@ -167,7 +113,6 @@ body {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  padding: 5em;
 }
 
 .glass-card {
@@ -210,4 +155,28 @@ body {
 /* Efecto de brillo al pasar el mouse */
 .hover-glow:hover {
   box-shadow: 0 0 15px rgba(155, 81, 224, 0.5);
+}
+
+/* Tabla con estilo de vidrio */
+.glass-table {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-table th {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-table tr {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Botones con efecto hover */
+.glass-button {
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
