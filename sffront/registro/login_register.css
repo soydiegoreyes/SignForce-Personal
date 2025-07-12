@@ -2,17 +2,17 @@
 :root {
     /* Modo claro */
     --bg-gradient-light: linear-gradient(180deg, #F0F1C5 0%, #EEEFE0 100%);
-    --text-color-light: #343d30;
-    --primary-light: #66785F;
-    --accent-light: #91AC8F;
+    --text-color-light: #38303d;
+    --primary-light: #725f78;
+    --accent-light: #a38fac;
     --card-bg-light: rgba(203, 203, 203, 0.25);
 
     /* Modo oscuro */
-    --bg-gradient-dark: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-    --text-color-dark: #FAFFCA;
-    --primary-dark: #BBD8A3;
-    --accent-dark: #9bb98f;
-    --card-bg-dark: #1a2c2540;
+    --bg-gradient-dark: linear-gradient(180deg, #1a0f27 0%, #2c2043 50%, #522c64 100%);
+    --text-color-dark: #eecaff;
+    --primary-dark: #cda3d8;
+    --accent-dark: #b48fb9;
+    --card-bg-dark: #251a2c40;
 
     /* Valores iniciales */
     --bg-gradient: var(--bg-gradient-dark);
@@ -45,8 +45,26 @@ html {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--text-color);
-    background-image: var(--bg-gradient);
+    background: 
+        radial-gradient(circle at 70% 30%, 
+        rgba(187, 137, 245, 0.445) 0%, 
+        rgba(141, 214, 233, 0.205) 30%, 
+        transparent 60%),
+        radial-gradient(circle at 20% 80%, 
+        rgba(237, 91, 250, 0.349) 0%, 
+        rgba(3, 5, 94, 0.233) 40%, 
+        transparent 70%),
+        radial-gradient(circle at center, 
+        rgba(246, 145, 255, 0.6) 0%, 
+        rgba(131, 56, 236, 0.3) 30%, 
+        transparent 60%),
+        linear-gradient(180deg, 
+        #01000a 0%, 
+        #24083fd5 50%, 
+        #080025 100%);
+  
+  
+  
     background-attachment: fixed;
     line-height: 1.6;
     min-height: 100vh;
