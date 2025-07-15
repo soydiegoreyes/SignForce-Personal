@@ -1,0 +1,517 @@
+/* Variables CSS */
+:root {
+  --color-background: #000;
+  --color-card: rgba(255, 255, 255, 0.05);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-accent: #e57c19;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-blue-dark: #1e2c4b;
+  --color-blue-light: #93bde5;
+  --color-gold: #e5b019;
+  --color-red-wine: #74273a;
+}
+
+body {
+  background:
+    radial-gradient(circle at 20% 10%, 
+      rgba(128, 0, 105, 0.2) 0%, 
+      rgba(30, 0, 45, 0.1) 20%, 
+      transparent 90%),
+    radial-gradient(circle at center, 
+      rgba(255, 0, 98, 0.1) 0%, 
+      rgba(140, 0, 255, 0.1) 100%, 
+      transparent 90%),
+    radial-gradient(circle at 70% 30%, 
+      rgba(119, 0, 143, 0.1) 0%, 
+      rgba(0, 0, 0, 0.1) 30%, 
+      transparent 90%),
+    #000;
+  min-height: 100vh;
+  font-family: Inter, "Noto Sans", sans-serif;
+  background-attachment: fixed;
+  color: var(--color-text-primary);
+  background-image: url("./../images/feather2.png");
+}
+
+/* Barra superior mejorada - 25% más grande */
+.glass-header {
+  position: fixed;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 62.5px; /* 25% más grande que 50px */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 8px 32px 0 rgba(255, 255, 255, 0.1),
+    0 0 10px 1px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
+}
+
+/* Efecto liquid glass al pasar el mouse */
+.glass-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 0, 0, 0.1),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.glass-header:hover::before {
+  left: 100%;
+}
+
+/* Burbuja liquid glass */
+.liquid-bubble {
+  position: fixed;
+  width: 120px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: -1;
+  box-shadow: 0 0px 5px rgb(255, 255, 255, 0.8);
+}
+
+/* Efecto hover para los items del menú */
+.nav-item {
+  position: relative;
+  padding: 8px 16px;
+  transition: color 0.3s ease;
+}
+
+.nav-item:hover {
+  color: rgb(255, 255, 255) !important;
+}
+
+
+/* Glass Panel */
+.glass-panel {
+  background: rgba(1, 0, 28, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 16px;
+}
+
+/* Login Container */
+.login-container {
+ position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4rem 1.5rem; /* Equivalente a px-6 py-16 en Tailwind */
+  /* Efectos adicionales opcionales */
+  box-shadow: inset 0 0 150px rgba(76, 0, 41, 0.1);
+  background-attachment: fixed; /* Para efecto parallax */
+}
+
+.content-left {
+  width: 60%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: calc(100vh);
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.content-right {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5%;
+  height: calc(100vh);
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */  
+}
+
+/* Hero Text */
+.hero-text {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.hero-text h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 1.2rem;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.hero-text p {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Features */
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feature-item {
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.feature-icon {
+  color: var(--color-accent);
+  font-size: 1.4rem;
+  margin-top: 0.2rem;
+}
+
+.feature-item h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text-primary);
+}
+
+.feature-item p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+/* Form Container */
+.form-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.form-tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab {
+  flex: 1;
+  padding: 1rem;
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  position: relative;
+}
+
+.tab.active {
+  color: var(--color-text-primary);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-accent);
+}
+
+.form {
+  display: none;
+}
+
+.form.active {
+  display: block;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  padding-left: 40px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(229, 124, 25, 0.3);
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 40px;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 15px;
+  top: 40px;
+  cursor: pointer;
+  color: var(--color-accent);
+}
+
+.btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin: 1rem 0;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.divider {
+  text-align: center;
+  position: relative;
+  margin: 1.5rem 0;
+  color: var(--color-text-secondary);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.divider::before {
+  left: 0;
+}
+
+.divider::after {
+  right: 0;
+}
+
+.social-login {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-btn {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: var(--color-text-primary);
+}
+
+.social-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.form-footer a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-footer a:hover {
+  text-decoration: underline;
+}
+
+.name-fields {
+  display: flex;
+  gap: 1rem;
+}
+
+.name-fields .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.notice-box {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border-left: 3px solid var(--color-accent);
+}
+
+.notice-box p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.terms-checkbox {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: var(--color-text-secondary);
+}
+
+.terms-checkbox input {
+  width: auto;
+  margin-right: 0.5rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.delay-1 {
+  animation-delay: 0.2s;
+}
+
+.delay-2 {
+  animation-delay: 0.4s;
+}
+
+.delay-3 {
+  animation-delay: 0.6s;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+    padding-top: 120px;
+  }
+  
+  .content-left, .content-right {
+    width: 100%;
+    padding: 0;
+  }
+  
+  .content-left {
+    margin-bottom: 2rem;
+  }
+  
+  .form-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .glass-header {
+    width: 90%;
+  }
+  
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+  
+  .social-login {
+    flex-direction: column;
+  }
+
+  .name-fields {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-header {
+    padding: 0 15px;
+    height: 50px;
+  }
+  
+  .form-content {
+    padding: 1rem;
+  }
+}
