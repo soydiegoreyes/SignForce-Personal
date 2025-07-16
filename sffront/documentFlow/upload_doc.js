@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const reviewers = [];
-document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const reviewers = [];
+  document.getElementById('uploadBtn').addEventListener('click', async () => {
     const docType = document.getElementById('docType').value;
     const docDesc = document.getElementById('docDesc').value;
     const fileInput = document.getElementById('fileInput');
@@ -12,7 +12,6 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
 
     const file = fileInput.files[0];
     const base64 = await toBase64(file);
-
     
     const tbody = document.getElementById('reviewersTableBody');
     const rows = tbody.querySelectorAll('tr');
@@ -30,24 +29,36 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
                 user,
                 role,
                 due_date: dueDate,
-                team
+                team,
+                status: "Not Started" // Estado inicial por defecto
             });
         }
     });
 
-    const data = {
-      type: docType,
-      description: docDesc,
-      fileName: file.name,
-      fileSize: file.size,
-      fileMime: file.type,
-      fileBase64: base64.split(',')[1],
-      reviewers: reviewers
+    const documentData = {
+        type: docType,
+        description: docDesc,
+        fileName: file.name,
+        fileSize: file.size,
+        fileMime: file.type,
+        fileBase64: base64.split(',')[1],
+        reviewers: reviewers,
+        uploadDate: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }),
+        uploadedBy: "Alex" // Puedes cambiar esto por el usuario actual
     };
 
-    console.log("Upload Data:", data);
+    // Guardar en localStorage
+    localStorage.setItem('currentDocument', JSON.stringify(documentData));
+    
+    // Redirigir a document_viewer.html
+    window.location.href = 'document_viewer.html';
 });
 
+// Función para convertir archivo a base64
 function toBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();

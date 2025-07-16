@@ -54,7 +54,7 @@
     </header>
 
     <!-- Contenido principal con márgenes laterales de 100px -->
-    <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden pt-20 px-[100px]">
+    <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden pt-20 px-[10px]">
       <div class="layout-container flex h-full grow flex-col">
         <div class="gap-1 flex flex-1 justify-center py-5">
           <!-- Panel izquierdo -->
@@ -110,19 +110,6 @@
           
           <!-- Panel principal -->
           <div class="layout-content-container flex flex-col flex-1 glass-panel">
-            <!--
-            <div class="flex flex-wrap justify-between gap-3 p-4">
-              <div class="flex items-center gap-2">
-                <a class="text-secondary text-base font-medium leading-normal hover:text-white" href="#">Documentos</a>
-                <span class="text-secondary text-base font-medium leading-normal">/</span>
-                <span class="text-primary text-base font-medium leading-normal">Documento 1</span>
-              </div>
-            </div>
-            
-            <div class="flex flex-wrap justify-between gap-3 p-4">
-              
-            </div>
-            -->
             <div class="pb-3">
               <div class="flex border-b border-white/10 px-4 gap-8">
                 <a class="flex flex-col items-center justify-center border-b-[3px] border-b-white text-white pb-[13px] pt-4" href="#">
@@ -143,7 +130,6 @@
             </div>
             <!-- Contenedor en fila para preview + tabla -->
             <div class="flex flex-row w-full gap-4 px-4 pb-4">
-
               <!-- Columna izquierda: Preview PDF -->
               <div id="preview-container" class="flex justify-center items-center w-[60%] max-w-[60%] h-[100%] max-h-[600px] aspect-[210/297] bg-white/10 rounded-xl overflow-hidden border cursor-pointer">
                 <!-- Aquí se carga dinámicamente el PDF -->
@@ -151,7 +137,7 @@
               </div>
 
               <!-- Columna derecha: Tabla de reviewers -->
-              <div class="flex flex-col w-[40%] max-w-[40%]  h-[100%]">
+              <div class="flex flex-col w-[50%] max-w-[50%]  h-[100%]">
                 <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 pt-1">Approvals</h2>
 
                 <div class="overflow-hidden rounded-xl glass-card max-h-[600px] overflow-y-auto overflow-x-auto">
@@ -165,227 +151,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Marketing
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30">
-                            <span class="truncate">Approved</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 15, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Sarah, David
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Marketing
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30">
-                            <span class="truncate">Approved</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 15, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Sarah, David
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">Sales</td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Pending</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 18, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Emily, Michael
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Engineering
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Not Started</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 20, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Jessica, Chris
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Marketing
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30">
-                            <span class="truncate">Approved</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 15, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Sarah, David
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">Sales</td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Pending</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 18, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Emily, Michael
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Engineering
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Not Started</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 20, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Jessica, Chris
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Marketing
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30">
-                            <span class="truncate">Approved</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 15, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Sarah, David
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">Sales</td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Pending</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 18, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Emily, Michael
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Engineering
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Not Started</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 20, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Jessica, Chris
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Marketing
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30">
-                            <span class="truncate">Approved</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 15, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Sarah, David
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">Sales</td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Pending</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 18, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Emily, Michael
-                        </td>
-                      </tr>
-                      <tr class="border-t border-t-white/10">
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                          Engineering
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-240 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                          <button
-                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-8 px-4 bg-white/20 text-primary text-sm font-medium leading-normal w-full hover:bg-white/30"
-                          >
-                            <span class="truncate">Not Started</span>
-                          </button>
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-360 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          July 20, 2024
-                        </td>
-                        <td class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-480 h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                          Jessica, Chris
-                        </td>
-                      </tr>
+                      <!-- Aquí se insertan los firmantes dinamicamente -->
                     </tbody>
                   </table>
                 </div>
