@@ -182,3 +182,88 @@ body {
 .glass-button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+
+/* Estilos para el visor de PDF */
+#pdf-render-container {
+    background-color: #525659; /* Color de fondo similar a Adobe Reader */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#pdf-canvas {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    margin: 10px auto;
+}
+
+#marker-canvas {
+    z-index: 5;
+}
+
+/* Controles de paginación */
+#page-controls {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+#page-controls button {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#page-controls button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#page-info {
+    color: white;
+    font-size: 14px;
+}
+
+/* Estilos para las cajas de texto */
+.text-box {
+  position: absolute;
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  cursor: move;
+  resize: both;
+  overflow: auto;
+  user-select: none;
+  box-sizing: border-box;
+  min-width: 60px;
+  min-height: 30px;
+  max-width: 200px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.text-box:hover {
+  background: rgba(59, 130, 246, 0.9);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.text-box:focus {
+  outline: 2px dashed rgba(255, 255, 255, 0.7);
+  background: rgba(59, 130, 246, 0.9);
+}
+
+/* Limitador de tamaño para el contenedor de texto */
+#text-elements-container {
+  overflow: hidden;
+}

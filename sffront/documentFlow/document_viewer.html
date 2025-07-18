@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="document_viewer.css"/>
     <title>Stitch Design</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="document_viewer.js"></script>
     
@@ -131,9 +132,24 @@
             <!-- Contenedor en fila para preview + tabla -->
             <div class="flex flex-row w-full gap-4 px-4 pb-4">
               <!-- Columna izquierda: Preview PDF -->
-              <div id="preview-container" class="flex justify-center items-center w-[60%] max-w-[60%] h-[100%] max-h-[600px] aspect-[210/297] bg-white/10 rounded-xl overflow-hidden border cursor-pointer">
-                <!-- Aquí se carga dinámicamente el PDF -->
-                <p class="text-secondary text-sm">Previsualización</p>
+              <div id="preview-container" class="flex justify-center items-center w-[60%] max-w-[60%] h-[100%] max-h-[600px] aspect-[210/297] bg-white/10 rounded-xl overflow-hidden border cursor-pointer relative">
+                <!-- Canvas para PDF -->
+                <canvas id="pdf-canvas" class="w-full h-full"></canvas>
+                
+                <!-- Contenedor para elementos de texto (reemplaza marker-canvas) -->
+                <div id="text-elements-container" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
+                
+                <!-- Botones de navegación -->
+                <div id="pdf-controls" class="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+                  <button id="prev-page" class="glass-button px-3 py-1 rounded text-white bg-black/50 hover:bg-black/70">Anterior</button>
+                  <span id="page-info" class="text-white bg-black/50 px-3 py-1 rounded">Página 1 de 1</span>
+                  <button id="next-page" class="glass-button px-3 py-1 rounded text-white bg-black/50 hover:bg-black/70">Siguiente</button>
+                </div>
+                
+                <!-- Botón "Ver completo" -->
+                <div id="view-full" class="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded text-sm cursor-pointer hover:bg-black/80">
+                  Ver completo
+                </div>
               </div>
 
               <!-- Columna derecha: Tabla de reviewers -->
