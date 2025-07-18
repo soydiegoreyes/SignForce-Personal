@@ -1,10 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   const reviewers = [];
   document.getElementById('uploadBtn').addEventListener('click', async () => {
-    const docType = document.getElementById('docType').value;
-    const docDesc = document.getElementById('docDesc').value;
+    const docType = document.getElementById('docType');
+    const docDesc = document.getElementById('docDesc');
     const fileInput = document.getElementById('fileInput');
-
+    const user = document.getElementById('userSelect');
+    const team = document.getElementById('teamSelect');
     if (!fileInput.files.length) {
         console.error("No file selected");
         return;
@@ -33,11 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 status: "Not Started" // Estado inicial por defecto
             });
         }
-    });
 
+    });
+    
     const documentData = {
-        type: docType,
-        description: docDesc,
+        type: docType.value,
+        description: docDesc.value,
         fileName: file.name,
         fileSize: file.size,
         fileMime: file.type,
@@ -53,7 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Guardar en localStorage
     localStorage.setItem('currentDocument', JSON.stringify(documentData));
-    
+    // Resetear el input
+    tbody.innerHTML = '';
+    fileInput.value = '';
+    docType.value = '';
+    docDesc.value = '';
+    user.value = '';
+    team.value = '';
     // Redirigir a document_viewer.html
     window.location.href = 'document_viewer.html';
 });
@@ -68,36 +76,44 @@ function toBase64(file) {
     });
 }
 
-
-
+// Event listener para el input file
 document.getElementById('fileInput').addEventListener('change', function (event) {
   let fileURL = null;
   const previewContainer = document.getElementById('preview-container');
+  const dropMessage = document.getElementById('drop-message');
+  const fileInput = document.getElementById('fileInput');
 
   const file = event.target.files[0];
   if (file && file.type === 'application/pdf') {
-    document.getElementById('docName').value= file.name;
+    document.getElementById('docName').value = file.name;
     const reader = new FileReader();
+    
     reader.onload = function (e) {
       if (fileURL) URL.revokeObjectURL(fileURL);
       fileURL = URL.createObjectURL(file);
 
-      previewContainer.innerHTML = '';
+      // Ocultar mensaje de arrastrar
+      if (dropMessage) dropMessage.style.display = 'none';
 
-      // Wrapper relativo
+      // Limpiar solo el contenido del PDF, manteniendo el botón
+      const existingWrapper = previewContainer.querySelector('.pdf-wrapper');
+      if (existingWrapper) previewContainer.removeChild(existingWrapper);
+
+      // Wrapper relativo para el PDF
       const wrapper = document.createElement('div');
+      wrapper.className = 'pdf-wrapper';
       wrapper.style.position = 'relative';
       wrapper.style.width = '100%';
       wrapper.style.height = '100%';
 
-      // Iframe con eventos habilitados
+      // Iframe con el PDF
       const iframe = document.createElement('iframe');
-      iframe.src = `${fileURL}#page=1&zoom=25%`;
+      iframe.src = `${fileURL}#page=1&zoom=50%`;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
 
-      // Div flotante para click
+      // Div flotante para "Ver completo"
       const overlay = document.createElement('div');
       overlay.innerText = 'Ver completo';
       overlay.style.position = 'absolute';
@@ -117,7 +133,30 @@ document.getElementById('fileInput').addEventListener('change', function (event)
       wrapper.appendChild(overlay);
       previewContainer.appendChild(wrapper);
     };
+    
     reader.readAsArrayBuffer(file);
+  }
+});
+
+// Drag and drop opcional
+const previewContainer = document.getElementById('preview-container');
+previewContainer.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  previewContainer.classList.add('border-blue-400');
+});
+
+previewContainer.addEventListener('dragleave', () => {
+  previewContainer.classList.remove('border-blue-400');
+});
+
+previewContainer.addEventListener('drop', (e) => {
+  e.preventDefault();
+  previewContainer.classList.remove('border-blue-400');
+  
+  if (e.dataTransfer.files.length) {
+    document.getElementById('fileInput').files = e.dataTransfer.files;
+    const event = new Event('change');
+    document.getElementById('fileInput').dispatchEvent(event);
   }
 });
 
@@ -174,19 +213,20 @@ function renderTable() {
 }
 
 document.getElementById('addReviewerBtn').addEventListener('click', () => {
-  const user = document.getElementById('userSelect').value;
-  const team = document.getElementById('teamSelect').value;
+  const user = document.getElementById('userSelect');
+  const team = document.getElementById('teamSelect');
   const today = new Date().toISOString().split('T')[0];
 
   if (!user || !team) return alert("Select both user and team.");
 
   reviewers.push({
-    user: user,
+    user: user.value,
     role: 'Signer',
     due_date: today,
-    team: team
+    team: team.value
   });
 
   renderTable();
+  user.value = '';
 });
 });
