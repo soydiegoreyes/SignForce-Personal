@@ -6,10 +6,20 @@ let pdfDoc = null,
     scale = 1.0,
     pdfAspectRatio = 8.5 / 11; 
 
-// Arreglo de marcadores (ahora serán cajas de texto)
+// Arreglo de marcadores 
 let markers = [];
+
 // Elementos del DOM
-let pdfCanvas, textElementsContainer;
+let pdfCanvas, overlayCanvas, overlayCtx, pdfCtx;
+let isDragging = false;
+let isResizing = false;
+let currentDraggedReviewer = null;
+let selectedTextBox = null;
+let dragOffsetX = 0, dragOffsetY = 0;
+
+// Propiedades del PDF real (en puntos)
+let pdfRealWidth = 612; // Ancho estándar carta en puntos
+let pdfRealHeight = 792; // Alto estándar carta en puntos
 
 // Configura PDF.js worker al inicio
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
@@ -33,43 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Actualizar tabla de approvals
-        const tableBody = document.querySelector('.glass-card table tbody');
-        if (tableBody) {
-            tableBody.innerHTML = ''; // Limpiar datos de ejemplo
-            
-            documentData.reviewers.forEach(reviewer => {
-                const row = document.createElement('tr');
-                row.className = 'border-t border-t-white/10';
-                
-                const statusClass = {
-                    'Approved': 'bg-green-500/20 text-green-400',
-                    'Pending': 'bg-yellow-500/20 text-yellow-400',
-                    'Not Started': 'bg-white/20 text-primary'
-                }[reviewer.status] || 'bg-white/20 text-primary';
-                
-                row.innerHTML = `
-                    <td class="h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
-                        ${reviewer.team}
-                    </td>
-                    <td class="h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
-                        <button class="flex min-w-[84px] max-w-[480px] cursor-default items-center justify-center overflow-hidden rounded-lg h-8 px-4 ${statusClass} text-sm font-medium leading-normal w-full">
-                            <span class="truncate">${reviewer.status}</span>
-                        </button>
-                    </td>
-                    <td class="h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                        ${reviewer.due_date}
-                    </td>
-                    <td class="h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
-                        ${reviewer.user}
-                    </td>
-                `;
-                
-                tableBody.appendChild(row);
-            });
-        }
+        updateApprovalTable(documentData.reviewers);
         
         setupDraggables();
-        setupDropZone();
+        setupCanvasInteractions();
         loadExistingMarkers();
     }
 });
@@ -77,8 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function initPDFElements() {
     // Obtener elementos del DOM
     pdfCanvas = document.getElementById('pdf-canvas');
-    textElementsContainer = document.getElementById('text-elements-container');
+    overlayCanvas = document.getElementById('overlay-canvas');
+    
     pdfCtx = pdfCanvas.getContext('2d');
+    overlayCtx = overlayCanvas.getContext('2d');
     
     // Configurar eventos de los controles
     document.getElementById('prev-page').addEventListener('click', onPrevPage);
@@ -88,11 +67,49 @@ function initPDFElements() {
     // Redimensionar cuando cambia el tamaño de la ventana
     window.addEventListener('resize', function() {
         if (pdfDoc) {
-            resizeCanvas();
+            resizeCanvases();
             renderPage(pageNum);
         }
     });
 }
+
+function updateApprovalTable(reviewers) {
+    const tableBody = document.querySelector('.glass-card table tbody');
+    if (tableBody) {
+        tableBody.innerHTML = '';
+        
+        reviewers.forEach(reviewer => {
+            const row = document.createElement('tr');
+            row.className = 'border-t border-t-white/10';
+            
+            const statusClass = {
+                'Approved': 'bg-green-500/20 text-green-400',
+                'Pending': 'bg-yellow-500/20 text-yellow-400',
+                'Not Started': 'bg-white/20 text-primary'
+            }[reviewer.status] || 'bg-white/20 text-primary';
+            
+            row.innerHTML = `
+                <td class="h-[72px] px-4 py-2 w-[400px] text-primary text-sm font-normal leading-normal">
+                    ${reviewer.team}
+                </td>
+                <td class="h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal">
+                    <button class="flex min-w-[84px] max-w-[480px] cursor-default items-center justify-center overflow-hidden rounded-lg h-8 px-4 ${statusClass} text-sm font-medium leading-normal w-full">
+                        <span class="truncate">${reviewer.status}</span>
+                    </button>
+                </td>
+                <td class="h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
+                    ${reviewer.due_date}
+                </td>
+                <td class="h-[72px] px-4 py-2 w-[400px] text-secondary text-sm font-normal leading-normal">
+                    ${reviewer.user}
+                </td>
+            `;
+            
+            tableBody.appendChild(row);
+        });
+    }
+}
+
 function loadPDF(base64Data) {
     const byteCharacters = atob(base64Data);
     const byteArray = new Uint8Array(byteCharacters.length);
@@ -105,63 +122,81 @@ function loadPDF(base64Data) {
     loadingTask.promise.then(function(pdf) {
         pdfDoc = pdf;
         document.getElementById('page-info').textContent = `Página 1 de ${pdf.numPages}`;
-        resizeCanvas();
-        renderPage(1);
+        
+        // Obtener dimensiones reales del PDF
+        pdf.getPage(1).then(function(page) {
+            const viewport = page.getViewport({scale: 1.0});
+            pdfRealWidth = viewport.width;
+            pdfRealHeight = viewport.height;
+            pdfAspectRatio = pdfRealWidth / pdfRealHeight;
+            
+            resizeCanvases();
+            renderPage(1);
+        });
     }).catch(function(error) {
         console.error('Error al cargar PDF:', error);
     });
 }
 
-function resizeCanvas() {
+function resizeCanvases() {
     const container = document.getElementById('preview-container');
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
     
-    // Mantener relación de aspecto carta (8.5x11 pulgadas)
-    const aspectRatio = pdfAspectRatio;
-    const canvasWidth = width;
-    const canvasHeight = width/aspectRatio;
+    // Calcular tamaño manteniendo aspect ratio
+    let canvasWidth = containerWidth;
+    let canvasHeight = containerWidth / pdfAspectRatio;
     
-    // Si el alto calculado es mayor que el contenedor, ajustar
-    if (canvasHeight > height) {
-        const newHeight = height;
-        const newWidth = height * aspectRatio;
-        pdfCanvas.style.width = `${newWidth}px`;
-        pdfCanvas.style.height = `${newHeight}px`;
-    } else {
-        pdfCanvas.style.width = `${canvasWidth}px`;
-        pdfCanvas.style.height = `${canvasHeight}px`;
+    // Si el alto calculado es mayor que el contenedor, ajustar por altura
+    if (canvasHeight > containerHeight) {
+        canvasHeight = containerHeight;
+        canvasWidth = containerHeight * pdfAspectRatio;
     }
     
-    // Ajustar tamaño real del canvas
-    pdfCanvas.width = pdfCanvas.clientWidth;
-    pdfCanvas.height = pdfCanvas.clientHeight;
-    
-    // Ajustar el contenedor de elementos de texto para que coincida
-    textElementsContainer.style.width = `${pdfCanvas.clientWidth}px`;
-    textElementsContainer.style.height = `${pdfCanvas.clientHeight}px`;
+    // Aplicar tamaños a ambos canvas
+    [pdfCanvas, overlayCanvas].forEach(canvas => {
+        canvas.style.width = `${canvasWidth}px`;
+        canvas.style.height = `${canvasHeight}px`;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    });
 }
 
 function renderPage(num) {
     pageRendering = true;
     
     pdfDoc.getPage(num).then(function(page) {
-        const viewport = page.getViewport({scale: scale});
-        // Calcular y guardar el aspect ratio real
-        pdfAspectRatio = viewport.width / viewport.height;
-
-        // Ajustar el canvas al tamaño de la página
-        pdfCanvas.height = viewport.height;
-        pdfCanvas.width = viewport.width;
+        const container = document.getElementById('preview-container');
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
         
-        // Ajustar el contenedor de texto al mismo tamaño
-        textElementsContainer.style.height = `${viewport.height}px`;
-        textElementsContainer.style.width = `${viewport.width}px`;
+        // 1. Obtener viewport con scale=1 para conocer el aspect ratio original
+        const viewport = page.getViewport({scale: 1});
+        const pdfAspectRatio = viewport.width / viewport.height;
         
-        // Renderizar página PDF
+        // 2. Calcular la escala para ajustar al contenedor
+        const containerAspectRatio = containerWidth / containerHeight;
+        let scale;
+        
+        if (pdfAspectRatio > containerAspectRatio) {
+            // Ajustar por ancho
+            scale = containerWidth / viewport.width;
+        } else {
+            // Ajustar por alto
+            scale = containerHeight / viewport.height;
+        }
+        
+        // 3. Crear viewport con la escala calculada
+        const scaledViewport = page.getViewport({scale: scale});
+        
+        // 4. Ajustar el canvas al tamaño calculado
+        pdfCanvas.width = scaledViewport.width;
+        pdfCanvas.height = scaledViewport.height;
+        
+        // 5. Renderizar con el viewport escalado
         const renderContext = {
             canvasContext: pdfCtx,
-            viewport: viewport
+            viewport: scaledViewport
         };
         
         const renderTask = page.render(renderContext);
@@ -172,15 +207,12 @@ function renderPage(num) {
                 renderPage(pageNumPending);
                 pageNumPending = null;
             }
-            
-            // Redibujar marcadores (cajas de texto)
             redrawMarkers();
         });
     });
     
     document.getElementById('page-info').textContent = `Página ${num} de ${pdfDoc.numPages}`;
 }
-
 
 function onPrevPage() {
     if (pageNum <= 1) return;
@@ -223,55 +255,219 @@ function openFullPDF() {
     }
 }
 
-// Dibujar marcador en canvas
-function drawMarker(x, y, user) {
-  const size = 30;
-  
-  // Dibujar círculo
-  ctx.beginPath();
-  ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
-  ctx.fill();
-  
-  // Dibujar inicial
-  ctx.font = 'bold 14px Arial';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(user.charAt(0), x, y);
-}
-
-// Configurar zona de drop
-function setupDropZone() {
-    pdfCanvas.addEventListener('dragover', (e) => {
+// Configurar interacciones del canvas overlay
+function setupCanvasInteractions() {
+    // Drag and drop desde la tabla
+    overlayCanvas.addEventListener('dragover', (e) => {
         e.preventDefault();
-        pdfCanvas.style.cursor = 'copy';
+        overlayCanvas.style.cursor = 'copy';
     });
 
-    pdfCanvas.addEventListener('dragleave', () => {
-        pdfCanvas.style.cursor = 'default';
+    overlayCanvas.addEventListener('dragleave', () => {
+        overlayCanvas.style.cursor = 'default';
     });
 
-    pdfCanvas.addEventListener('drop', (e) => {
+    overlayCanvas.addEventListener('drop', (e) => {
         e.preventDefault();
-        pdfCanvas.style.cursor = 'default';
+        overlayCanvas.style.cursor = 'default';
         
         if (!currentDraggedReviewer) return;
         
-        // Calcular posición relativa al PDF
-        const rect = pdfCanvas.getBoundingClientRect();
+        const rect = overlayCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         
-        // Crear caja de texto
-        const textBox = createTextBox(currentDraggedReviewer.user, x, y);
-        textElementsContainer.appendChild(textBox);
+        // Crear nuevo marcador
+        const newMarker = {
+            user: currentDraggedReviewer.user,
+            x: x,
+            y: y,
+            width: 100,
+            height: 30,
+            page: pageNum
+        };
         
-        // Guardar marcador
-        updateMarkerPosition(textBox);
+        markers.push(newMarker);
+        redrawMarkers();
+        
+        // Enviar a API
+        //sendMarkerToAPI(newMarker);
         
         currentDraggedReviewer = null;
     });
+
+    // Interacciones con las cajas de texto
+    overlayCanvas.addEventListener('mousedown', handleMouseDown);
+    overlayCanvas.addEventListener('mousemove', handleMouseMove);
+    overlayCanvas.addEventListener('mouseup', handleMouseUp);
+    overlayCanvas.addEventListener('dblclick', handleDoubleClick);
+}
+
+function handleMouseDown(e) {
+    const rect = overlayCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const clickedMarker = getMarkerAtPosition(x, y);
+    
+    if (clickedMarker) {
+        selectedTextBox = clickedMarker;
+        
+        // Verificar si está en el área de redimensionamiento (esquina inferior derecha)
+        const isInResizeArea = x >= clickedMarker.x + clickedMarker.width - 10 && 
+                              y >= clickedMarker.y + clickedMarker.height - 10;
+        
+        if (isInResizeArea) {
+            isResizing = true;
+            overlayCanvas.style.cursor = 'nw-resize';
+        } else {
+            isDragging = true;
+            dragOffsetX = x - clickedMarker.x;
+            dragOffsetY = y - clickedMarker.y;
+            overlayCanvas.style.cursor = 'move';
+        }
+    }
+}
+
+function handleMouseMove(e) {
+    const rect = overlayCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    if (isDragging && selectedTextBox) {
+        selectedTextBox.x = Math.max(0, Math.min(x - dragOffsetX, overlayCanvas.width - selectedTextBox.width));
+        selectedTextBox.y = Math.max(0, Math.min(y - dragOffsetY, overlayCanvas.height - selectedTextBox.height));
+        redrawMarkers();
+    } else if (isResizing && selectedTextBox) {
+        selectedTextBox.width = Math.max(50, x - selectedTextBox.x);
+        selectedTextBox.height = Math.max(20, y - selectedTextBox.y);
+        redrawMarkers();
+    } else {
+        // Cambiar cursor según la posición
+        const marker = getMarkerAtPosition(x, y);
+        if (marker) {
+            const isInResizeArea = x >= marker.x + marker.width - 10 && 
+                                  y >= marker.y + marker.height - 10;
+            overlayCanvas.style.cursor = isInResizeArea ? 'nw-resize' : 'move';
+        } else {
+            overlayCanvas.style.cursor = 'default';
+        }
+    }
+}
+
+function handleMouseUp() {
+    if (isDragging || isResizing) {
+        // Enviar actualización a API
+        if (selectedTextBox) {
+            sendMarkerToAPI(selectedTextBox);
+        }
+    }
+    
+    isDragging = false;
+    isResizing = false;
+    selectedTextBox = null;
+    overlayCanvas.style.cursor = 'default';
+}
+
+function handleDoubleClick(e) {
+    const rect = overlayCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const clickedMarker = getMarkerAtPosition(x, y);
+    
+    if (clickedMarker) {
+        // Eliminar marcador
+        markers = markers.filter(m => m !== clickedMarker);
+        redrawMarkers();
+        
+        // Enviar eliminación a API
+        sendMarkerDeletion(clickedMarker);
+    }
+}
+
+function getMarkerAtPosition(x, y) {
+    // Buscar en orden inverso para obtener el marcador más arriba
+    for (let i = markers.length - 1; i >= 0; i--) {
+        const marker = markers[i];
+        if (marker.page === pageNum &&
+            x >= marker.x && x <= marker.x + marker.width &&
+            y >= marker.y && y <= marker.y + marker.height) {
+            return marker;
+        }
+    }
+    return null;
+}
+
+function redrawMarkers() {
+    // Limpiar canvas overlay
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+    
+    // Dibujar marcadores de la página actual
+    const currentPageMarkers = markers.filter(marker => marker.page === pageNum);
+    
+    currentPageMarkers.forEach(marker => {
+        drawTextBox(marker);
+    });
+}
+
+function drawTextBox(marker) {
+    const ctx = overlayCtx;
+    
+    // Dibujar fondo de la caja
+    ctx.fillStyle = 'rgba(60, 90, 0, 0.6)';
+    ctx.fillRect(marker.x, marker.y, marker.width, marker.height);
+    
+    // Dibujar borde
+    ctx.strokeStyle = 'rgba(145, 255, 0, 0.5)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(marker.x, marker.y, marker.width, marker.height);
+    
+    // Dibujar texto
+    ctx.fillStyle = 'white';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Truncar texto si es muy largo
+    let displayText = marker.user;
+    const maxWidth = marker.width - 10;
+    if (ctx.measureText(displayText).width > maxWidth) {
+        displayText = displayText.substring(0, Math.floor(displayText.length * maxWidth / ctx.measureText(displayText).width)) + '...';
+    }
+    
+    ctx.fillText(displayText, marker.x + marker.width / 2, marker.y + marker.height / 2);
+    
+    // Dibujar indicador de redimensionamiento
+    if (selectedTextBox === marker) {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(marker.x + marker.width - 8, marker.y + marker.height - 8, 8, 8);
+    }
+}
+
+// Funciones para convertir entre coordenadas del canvas y del PDF real
+function canvasToRealPDF(canvasX, canvasY, canvasWidth, canvasHeight) {
+    const scaleX = pdfRealWidth / overlayCanvas.width;
+    const scaleY = pdfRealHeight / overlayCanvas.height;
+    
+    return {
+        x: canvasX * scaleX,
+        y: canvasY * scaleY,
+        width: canvasWidth * scaleX,
+        height: canvasHeight * scaleY
+    };
+}
+
+function realPDFToCanvas(realX, realY, realWidth, realHeight) {
+    const scaleX = overlayCanvas.width / pdfRealWidth;
+    const scaleY = overlayCanvas.height / pdfRealHeight;
+    
+    return {
+        x: realX * scaleX,
+        y: realY * scaleY,
+        width: realWidth * scaleX,
+        height: realHeight * scaleY
+    };
 }
 
 // Hacer elementos arrastrables (filas de la tabla)
@@ -290,198 +486,74 @@ function setupDraggables() {
     });
 }
 
-
-
-// Función para redibujar marcadores al cambiar de página
-function redrawMarkers() {
-    // Limpiar contenedor
-    textElementsContainer.innerHTML = '';
-    
-    // Filtrar marcadores de la página actual
-    const currentPageMarkers = markers.filter(marker => marker.page === pageNum);
-    
-    // Crear cajas de texto para cada marcador
-    currentPageMarkers.forEach(marker => {
-        const rect = pdfCanvas.getBoundingClientRect();
-        const x = marker.x * rect.width;
-        const y = marker.y * rect.height;
-        
-        const textBox = createTextBox(marker.user, x, y);
-        textElementsContainer.appendChild(textBox);
-        
-        // Aplicar tamaño si existe
-        if (marker.width && marker.height) {
-            textBox.style.width = `${marker.width * rect.width}px`;
-            textBox.style.height = `${marker.height * rect.height}px`;
-        }
-    });
-}
-
 // Cargar marcadores existentes
 function loadExistingMarkers() {
     try {
-        // Simulación de marcadores existentes (en una aplicación real, esto vendría de una API)
+        // Simulación de marcadores existentes
         const existingMarkers = []; 
-        
-        // Limpiar contenedor
-        textElementsContainer.innerHTML = '';
-        
-        // Filtrar marcadores de la página actual
-        const currentPageMarkers = existingMarkers.filter(m => m.page === pageNum);
-        
-        // Crear cajas de texto para cada marcador
-        currentPageMarkers.forEach(marker => {
-            const rect = pdfCanvas.getBoundingClientRect();
-            const x = marker.x * rect.width;
-            const y = marker.y * rect.height;
-            
-            const textBox = createTextBox(marker.user, x, y);
-            textElementsContainer.appendChild(textBox);
-            
-            // Aplicar tamaño si existe
-            if (marker.width && marker.height) {
-                textBox.style.width = `${marker.width * rect.width}px`;
-                textBox.style.height = `${marker.height * rect.height}px`;
-            }
-        });
-        
-        // Agregar a la lista de marcadores
-        markers.push(...currentPageMarkers);
-        
+        markers.push(...existingMarkers);
+        redrawMarkers();
     } catch (error) {
         console.error('Error cargando marcadores:', error);
     }
 }
 
-
 // Enviar datos a API
-
-async function sendMarkerToAPI(markerData) {
-  console.log(JSON.stringify(markerData))
-  /*
-  try {
-    const response = await fetch('https://tu-api.com/markers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer tu-token'
-      },
-      body: JSON.stringify(markerData)
-    });
+async function sendMarkerToAPI(marker) {
+    // Convertir a coordenadas reales del PDF
+    const realCoords = canvasToRealPDF(marker.x, marker.y, marker.width, marker.height);
     
-    if (!response.ok) {
-      console.error('Error al enviar marcador:', await response.text());
-    }
-  } catch (error) {
-    console.error('Error de red:', error);
-  }*/
-}
-
-// Crear caja de texto para un revisor
-function createTextBox(user, x, y) {
-    const textBox = document.createElement('div');
-    textBox.className = 'text-box';
-    textBox.textContent = user;
-    textBox.dataset.user = user;
-    textBox.style.left = `${x}px`;
-    textBox.style.top = `${y}px`;
-    
-    makeDraggableResizable(textBox, textElementsContainer);
-    
-    return textBox;
-}
-
-// Hacer las cajas de texto arrastrables y redimensionables
-function makeDraggableResizable(element, container) {
-    let offsetX = 0, offsetY = 0, isDragging = false;
-
-    element.addEventListener("mousedown", (e) => {
-        // Ignorar si el clic fue en un área que permite redimensionar
-        const style = window.getComputedStyle(element);
-        const isResizing = style.resize !== "none" && (
-            e.offsetX > element.clientWidth - 16 && e.offsetY > element.clientHeight - 16
-        );
-        if (isResizing) return;
-
-        e.preventDefault();
-        isDragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-        element.style.zIndex = "10";
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-
-        const containerRect = container.getBoundingClientRect();
-        let newLeft = e.clientX - containerRect.left - offsetX;
-        let newTop = e.clientY - containerRect.top - offsetY;
-
-        newLeft = Math.max(0, Math.min(newLeft, container.clientWidth - element.offsetWidth));
-        newTop = Math.max(0, Math.min(newTop, container.clientHeight - element.offsetHeight));
-
-        element.style.left = newLeft + "px";
-        element.style.top = newTop + "px";
-        element.style.maxWidth = container.clientWidth + "px";
-        element.style.maxHeight = container.clientHeight + "px";
-        
-        updateMarkerPosition(element);
-    });
-
-    document.addEventListener("mouseup", () => {
-        if (isDragging) {
-            isDragging = false;
-            element.style.zIndex = "1";
-            updateMarkerPosition(element);
-        }
-    });
-
-    // Actualizar posición/tamaño también al terminar redimensionamiento manual
-    const resizeObserver = new ResizeObserver(() => updateMarkerPosition(element));
-    resizeObserver.observe(element);
-}
-
-function updateMarkerPosition(element) {
-    const container = textElementsContainer;
-    const user = element.dataset.user;
-    const rect = container.getBoundingClientRect();
-    
-    const x = element.offsetLeft / rect.width;
-    const y = element.offsetTop / rect.height;
-    
-    // Actualizar marcador existente o crear uno nuevo
-    const existingMarker = markers.find(m => m.user === user && m.page === pageNum);
-    if (existingMarker) {
-        existingMarker.x = x;
-        existingMarker.y = y;
-        existingMarker.width = element.offsetWidth / rect.width;
-        existingMarker.height = element.offsetHeight / rect.height;
-    } else {
-        markers.push({
-            user,
-            x,
-            y,
-            width: element.offsetWidth / rect.width,
-            height: element.offsetHeight / rect.height,
-            page: pageNum
-        });
-    }
-    
-    // Enviar a API
-    sendMarkerToAPI({
+    const markerData = {
         document: localStorage.getItem('currentDocumentFileName'),
-        reviewer: user,
-        position: { x, y, width: element.offsetWidth / rect.width, height: element.offsetHeight / rect.height },
-        page: pageNum
-    });
+        reviewer: marker.user,
+        position: {
+            x: realCoords.x,
+            y: realCoords.y,
+            width: realCoords.width,
+            height: realCoords.height
+        },
+        page: marker.page
+    };
+    
+    console.log('Enviando marcador a API:', JSON.stringify(markerData));
+    
+    /*
+    try {
+        const response = await fetch('https://tu-api.com/markers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer tu-token'
+            },
+            body: JSON.stringify(markerData)
+        });
+        
+        if (!response.ok) {
+            console.error('Error al enviar marcador:', await response.text());
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+    }
+    */
 }
 
-// Modificar queueRenderPage para redibujar marcadores
-function queueRenderPage(num) {
-    if (pageRendering) {
-        pageNumPending = num;
-    } else {
-        renderPage(num);
-        redrawMarkers();
+async function sendMarkerDeletion(marker) {
+    console.log('Eliminando marcador:', marker.user, 'página', marker.page);
+    
+    /*
+    try {
+        const response = await fetch(`https://tu-api.com/markers/${marker.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer tu-token'
+            }
+        });
+        
+        if (!response.ok) {
+            console.error('Error al eliminar marcador:', await response.text());
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
     }
+    */
 }
