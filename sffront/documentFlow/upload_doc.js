@@ -179,6 +179,7 @@ function renderTable() {
         <span class="editable-date" data-index="${idx}">${rev.due_date}</span>
       </td>
       <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">${rev.team}</td>
+      <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">${rev.comment}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -215,6 +216,7 @@ function renderTable() {
 document.getElementById('addReviewerBtn').addEventListener('click', () => {
   const user = document.getElementById('userSelect');
   const team = document.getElementById('teamSelect');
+  const comment = document.getElementById('userComment');
   const today = new Date().toISOString().split('T')[0];
 
   if (!user || !team) return alert("Select both user and team.");
@@ -222,11 +224,13 @@ document.getElementById('addReviewerBtn').addEventListener('click', () => {
   reviewers.push({
     user: user.value,
     role: 'Signer',
-    due_date: today,
-    team: team.value
+    due_date: today,    
+    team: team.value,
+    comment: comment.value
   });
 
   renderTable();
   user.value = '';
+  comment.value='';
 });
 });

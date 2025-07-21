@@ -8,6 +8,7 @@ let pdfDoc = null,
 
 // Arreglo de marcadores 
 let markers = [];
+let markerColors = ['#1D2891aa', '#861d7daa', '#5c7500aa', '#004a61aa', '#160064aa', '#611500aa'];
 
 // Elementos del DOM
 let pdfCanvas, overlayCanvas, overlayCtx, pdfCtx;
@@ -276,7 +277,7 @@ function setupCanvasInteractions() {
         const rect = overlayCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
+    
         // Crear nuevo marcador
         const newMarker = {
             user: currentDraggedReviewer.user,
@@ -284,7 +285,8 @@ function setupCanvasInteractions() {
             y: y,
             width: 100,
             height: 30,
-            page: pageNum
+            page: pageNum,
+            bgColor: markerColors[markers.length%markerColors.length]
         };
         
         markers.push(newMarker);
@@ -415,11 +417,11 @@ function drawTextBox(marker) {
     const ctx = overlayCtx;
     
     // Dibujar fondo de la caja
-    ctx.fillStyle = 'rgba(60, 90, 0, 0.6)';
+    ctx.fillStyle = marker.bgColor;
     ctx.fillRect(marker.x, marker.y, marker.width, marker.height);
     
     // Dibujar borde
-    ctx.strokeStyle = 'rgba(145, 255, 0, 0.5)';
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
     ctx.lineWidth = 2;
     ctx.strokeRect(marker.x, marker.y, marker.width, marker.height);
     

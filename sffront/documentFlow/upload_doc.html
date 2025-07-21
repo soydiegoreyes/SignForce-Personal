@@ -198,6 +198,9 @@
                       <th class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 px-4 py-3 text-left text-primary w-[400px] text-sm font-medium leading-normal">
                         Equipo
                       </th>
+                      <th class="table-546aeffa-2741-4029-a91d-d31ecf5644c0-column-120 px-4 py-3 text-left text-primary w-[400px] text-sm font-medium leading-normal">
+                        Comentario personal
+                      </th>
                     </tr>
                   </thead>
                   <tbody id="reviewersTableBody">
@@ -205,10 +208,7 @@
                   </tbody>
                 </table>
               </div>
-              <style>
-                @container(max-width:120px){.table-ca7acc49-5ab3-4587-9669-b61cbda82414-column-120{display: none;}}
-                @container(max-width:240px){.table-ca7acc49-5ab3-4587-9669-b61cbda82414-column-240{display: none;}}
-              </style>
+              
             </div>
             
             <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Añadir Firmante</h2>
@@ -241,6 +241,17 @@
                   <option value="Daniel">Daniel</option>
                   <option value="Joshua">José</option>
                 </select>
+              </label>
+            </div>
+
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-primary text-base font-medium leading-normal pb-2">Añade un comentario personalizado para el usuario </p>
+                <input
+                  id="userComment"
+                  placeholder="Añade una descripción"
+                  class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                />
               </label>
             </div>
             
