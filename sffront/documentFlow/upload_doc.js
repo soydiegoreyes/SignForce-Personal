@@ -179,7 +179,9 @@ function renderTable() {
         <span class="editable-date" data-index="${idx}">${rev.due_date}</span>
       </td>
       <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">${rev.team}</td>
-      <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">${rev.comment}</td>
+      <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">
+        <span class="editable-comment" data-index="${idx}">${rev.comment}</span>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -207,8 +209,41 @@ function renderTable() {
         renderTable();
       });
 
+      // También guardar al presionar Enter
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          input.blur();
+        }
+      });
+
       span.replaceWith(input);
       input.focus();
+    });
+  });
+
+  // Agrega listeners para editar comentarios
+  document.querySelectorAll('.editable-comment').forEach(span => {
+    span.addEventListener('click', () => {
+      const idx = span.dataset.index;
+      const textarea = document.createElement('textarea');
+      textarea.value = reviewers[idx].comment || '';
+      textarea.className = "bg-transparent text-sm text-secondary w-full h-20 p-2 resize-none";
+      
+      // Guardar al perder el foco
+      textarea.addEventListener('blur', () => {
+        reviewers[idx].comment = textarea.value;
+        renderTable();
+      });
+
+      // También guardar al presionar Ctrl+Enter
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.ctrlKey) {
+          textarea.blur();
+        }
+      });
+
+      span.replaceWith(textarea);
+      textarea.focus();
     });
   });
 }
