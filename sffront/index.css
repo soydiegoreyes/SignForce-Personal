@@ -12,35 +12,31 @@
 }
 
 body {
-  background:
-    radial-gradient(circle at 20% 10%, 
-      rgba(128, 0, 105, 0.2) 0%, 
-      rgba(30, 0, 45, 0.1) 20%, 
-      transparent 90%),
-    radial-gradient(circle at center, 
-      rgba(255, 0, 98, 0.1) 0%, 
-      rgba(140, 0, 255, 0.1) 100%, 
-      transparent 90%),
-    radial-gradient(circle at 70% 30%, 
-      rgba(119, 0, 143, 0.1) 0%, 
-      rgba(0, 0, 0, 0.1) 30%, 
-      transparent 90%),
-      #000;
-    /*linear-gradient(180deg, 
-      #01000a 0%, 
-      #050036d5 50%, 
-      #080025 100%);*/
+  background: linear-gradient(
+    180deg,
+    #2a2e35,
+    #7b8fa1,
+    #e4e9ec
+  );
   min-height: 100vh;
-  font-family: Inter, "Noto Sans", sans-serif;
   background-attachment: fixed;
 }
-
-.card {
-  background-color: var(--color-card);
-  box-shadow: 0 4px 12px var(--color-shadow);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin: 1rem;
+h1,h2,h3,h4 {
+  font-family: "Michroma", sans-serif;
+  font-size: 56px;
+}
+h1 {
+  background: -webkit-linear-gradient(#faf9f6, #dcd7ce, #aca69a);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.bg {
+  
+  background: 
+    radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20%  no-repeat,
+    radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50%  no-repeat,
+    radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80%  no-repeat;
 }
 
 .text-secondary {
@@ -195,11 +191,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-15px); }
-  100% { transform: translateY(0px); }
-}
 
 .fade-in {
   animation: fadeIn 0.8s ease forwards;
@@ -249,7 +240,7 @@ body {
   height: 100%;
   background: radial-gradient(
     circle at 70% 30%,
-    rgba(55, 0, 55, 0.3) 0%,
+    #787a84 0%,
     transparent 50%
   );
   z-index: 0;
@@ -270,6 +261,8 @@ body {
   z-index: 0;
 }
 
+
+/* tarjetas de caracteristicas */
 .feature-card {
   transition: all 0.3s ease;
 }
@@ -324,15 +317,110 @@ body.light-theme .testimonial-card {
   background: rgba(255, 255, 255, 0.3);
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
-}
-.animate-pulse-slow {
-  animation: pulseSlow 6s ease-in-out infinite;
-}
-@keyframes pulseSlow {
-  0%, 100% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.1); opacity: 0.5; }
+@layer demo, base;
+@layer demo{
+	.carousel {
+		--items: 4;
+		--carousel-duration: 40s;
+		@media (width > 600px) {
+			--carousel-duration: 30s;
+		}
+		--carousel-width: min(
+			80vw,
+			1200px
+		); /* note - it will "break" if it gets too wide and there aren't enough items */
+		--carousel-item-width: 280px;
+		--carousel-item-height: 450px;
+		--carousel-item-gap: 0px;
+
+		position: relative;
+    left: 0;
+		width: var(--carousel-width);
+		height: var(--carousel-item-height);
+		overflow: hidden;
+
+		/* hover pauses animation */
+		&:hover > .carousel-card {
+			animation-play-state: paused;
+		}
+	}
+	.carousel-card {
+		position: absolute;
+		top: 0;
+		left: calc(100% + var(--carousel-item-gap));
+		width: var(--carousel-item-width);
+		height: var(--carousel-item-height);
+		
+    /*display: grid;*/
+		grid-template-rows: 200px auto 1fr auto;
+		gap: 0.25rem;
+		border: 1px solid light-dark(rgba(0 0 0 / 0.25), rgba(255 255 255 / 0.15));
+		padding-block-end: 1rem;
+		border-radius: 20px;
+
+		/* animation */
+		will-change: transform;
+		animation-name: marquee;
+		animation-duration: var(--carousel-duration);
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+		animation-delay: calc(
+			var(--carousel-duration) / var(--items) * 1 * var(--i) * -1
+		);
+		&:nth-child(1) {--i: 0;}
+		&:nth-child(2) {--i: 1;}
+		&:nth-child(3) {--i: 2;}
+		&:nth-child(4) {--i: 3;}
+	}
+  
+	.carousel img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 20px;
+	}
+
+  .card-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 1.5rem;
+    background: rgba(48, 48, 48, 0.4);
+    backdrop-filter: blur(10px);
+    color: white;
+    text-align: center;
+  }
+
+  .card-overlay h3 {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .card-overlay p {
+    font-size: 0.9rem;
+  }
+
+  .carousel-prev, .carousel-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .carousel-prev svg, .carousel-next svg {
+    width: 20px;
+    height: 20px;
+  }
+
+	@keyframes marquee {
+		100% {
+			transform: translateX(calc((var(--items) * (var(--carousel-item-width) + var(--carousel-item-gap))) * -1));
+		}
+	}
 }
