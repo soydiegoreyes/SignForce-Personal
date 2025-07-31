@@ -129,43 +129,67 @@
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <!-- Checkbox para indicar si es el responsable legal -->
                         <div class="form-group">
-                            <label for="business-name">Razón Social</label>
-                            <i class="fas fa-building input-icon"></i>
-                            <input type="text" id="business-name" class="input-field" placeholder="       Razón Social" required>
+                            <label>
+                                <input type="checkbox" id="legal-responsible-checkbox" checked>
+                                La persona que registra es el responsable legal
+                            </label>
                         </div>
 
+
+                        <!-- Contenedor para los campos del responsable legal (inicialmente oculto) -->
+                        <div id="legal-responsible-container" style="display: none;">
+                            <div class="form-group">
+                                <label>Nombre y Apellido del Responsable Legal</label>
+                                <div class="name-fields">
+                                    <div class="form-group">
+                                        <input type="text" id="legal-first-name" class="input-field" placeholder="Nombre">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" id="legal-last-name" class="input-field" placeholder="Apellidos">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="form-group">
-                            <label for="business-rfc">RFC</label>
-                            <i class="fas fa-building input-icon"></i>
-                            <input type="text" id="business-rfc" class="input-field" placeholder="       RFC" required>
+                          <label for="business-name">Razón Social</label>
+                          <i class="fas fa-building input-icon"></i>
+                          <input type="text" id="business-name" class="input-field" placeholder="Razón Social" required>
                         </div>
 
                         <div class="form-group">
                             <label for="alias">Alias</label>
                             <i class="fas fa-user-tag input-icon"></i>
-                            <input type="text" id="alias" class="input-field" placeholder="       Alias (opcional)">
+                            <input type="text" id="business-alias" class="input-field" placeholder="Alias (opcional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="business-rfc">RFC</label>
+                            <i class="fas fa-city input-icon"></i>
+                            <input type="text" id="business-rfc" class="input-field" placeholder="RFC" required>
                         </div>
                         
                         <div class="form-group">
                             <label for="register-email">Correo electrónico (será tu nombre de usuario)</label>
                             <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="register-email" class="input-field" placeholder="       tucorreo@ejemplo.com" required>
+                            <input type="email" id="register-email" class="input-field" placeholder="tucorreo@ejemplo.com" required>
                             <small>Se necesitará correo electrónico para la verificación y recuperación de la cuenta</small>
                         </div>
 
                         <div class="form-group">
                             <label for="register-phone">Numero de teléfono (para contactarte)</label>
                             <i class="fas fa-envelope input-icon"></i>
-                            <input type="phone" id="register-phone" class="input-field" placeholder="       10 digitos" required>
+                            <input type="tel" id="register-phone" class="input-field" placeholder="10 digitos" required>
                             <small>Se necesitará tu teléfono para cualquier aclaración de la cuenta</small>
                         </div>
                         
                         <div class="form-group">
                             <label for="register-password">Contraseña</label>
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="register-password" class="input-field" placeholder="       ········" required minlength="8" maxlength="20">
+                            <input type="password" id="register-password" class="input-field" placeholder="········" required minlength="8" maxlength="20">
                             <small>Debe tener 8-20 caracteres, contener letras y números, sin espacios, caracteres especiales o emojis</small>
                             <i class="fas fa-eye password-toggle" id="register-password-toggle"></i>
                         </div>
@@ -173,7 +197,7 @@
                         <div class="form-group">
                             <label for="register-confirm">Confirmar contraseña</label>
                             <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="register-confirm" class="input-field" placeholder="       ········" required>
+                            <input type="password" id="register-confirm" class="input-field" placeholder="········" required>
                         </div>
                         
                         <div class="terms-checkbox">

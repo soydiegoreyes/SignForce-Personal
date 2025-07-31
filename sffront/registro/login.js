@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Efecto liquid glass para la burbuja del menú
-    const liquidBubble = document.getElementById('liquidBubble');
-    
+
     // Toggle de tema claro/oscuro
     const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('click', () => {
@@ -15,6 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             icon.classList.remove('fa-sun');
             icon.classList.add('fa-moon');
+        }
+    });
+
+    // Validacion representante legal
+    const checkbox = document.getElementById('legal-responsible-checkbox');
+    const legalContainer = document.getElementById('legal-responsible-container');
+    
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            legalContainer.style.display = 'none';
+            // Limpiar los campos cuando se ocultan (opcional)
+            document.getElementById('legal-first-name').value = document.getElementById('first-name').value;
+            document.getElementById('legal-last-name').value = document.getElementById('last-name').value;
+        } else {
+            legalContainer.style.display = 'block';
+            document.getElementById('legal-first-name').value = '';
+            document.getElementById('legal-last-name').value = '';
         }
     });
 
@@ -62,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
-    // Para Formulario de Login
+    // Para Formulario de Login !!! hay qye cambiarlo cuando sea la api
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
@@ -99,6 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    
+
     // Para Formulario de Registro
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -107,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstName = document.getElementById('first-name').value;
         const lastName = document.getElementById('last-name').value;
         const businessName = document.getElementById('business-name').value;
+        const businessAlias = document.getElementById('business-alias').value;
         const businessRFC = document.getElementById('business-rfc').value;
         const email = document.getElementById('register-email').value;
         const phone = document.getElementById('register-phone').value;
@@ -135,12 +153,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('notice-box').innerHTML = '<p><strong>El nombre de la empresa es requerido</strong></p>';
             return;
         }
-        const RFCRegex = /^[A-Z\d]{13,20}$/;
+
+        const AliasRegex = /^[A-Z\d]{5,20}$/;
+        if (!AliasRegex.test(businessAlias)) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Tu Alias debe contener solo letras y números, sin espacios o caracteres especiales y un máximos de 20 caracteres.</strong></p>';
+            return;
+        }
+
+        const RFCRegex = /^[A-Z\d]{12,20}$/;
         if (!RFCRegex.test(businessRFC)) {
             alert('Alguno de tus datos no es correcto.');
             document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
             return;
         }
+
         if (!validateEmail(email)) {
             alert('Alguno de tus datos no es correcto.');
             document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
@@ -157,7 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('notice-box').innerHTML = '<p><strong>Lee y acepta el Acuerdo de Términos y Condiciones</strong></p>';
             return;
         }
-        
+
+        // SIMULACION DE INSERSCION DE DATOS EN BASE INSTITUTIONS
         try {
             // Simula tabla de empresas o instituciones en DB
             let empresas = JSON.parse(sessionStorage.getItem('empresas')) || [];
@@ -168,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstName,
                 lastName,
                 businessName,
+                businessAlias,
                 businessRFC,
                 email,
                 phone,

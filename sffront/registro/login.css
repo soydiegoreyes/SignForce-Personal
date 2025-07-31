@@ -13,24 +13,17 @@
 }
 
 body {
-  background:
-    radial-gradient(circle at 20% 10%, 
-      rgba(128, 0, 105, 0.2) 0%, 
-      rgba(30, 0, 45, 0.1) 20%, 
-      transparent 90%),
-    radial-gradient(circle at center, 
-      rgba(255, 0, 98, 0.1) 0%, 
-      rgba(140, 0, 255, 0.1) 100%, 
-      transparent 90%),
-    radial-gradient(circle at 70% 30%, 
-      rgba(119, 0, 143, 0.1) 0%, 
-      rgba(0, 0, 0, 0.1) 30%, 
-      transparent 90%),
-    #000;
+  background: linear-gradient(
+    180deg,
+    #2a2e35,
+    #7b8fa1,
+    #e4e9ec
+  );
   min-height: 100vh;
   font-family: Inter, "Noto Sans", sans-serif;
-  background-image: url("./../images/feather2.png");
-  background-attachment: fixed;
+  /*background-image: url("./../images/feather2.png");
+  background-attachment: fixed;*/
+  
   color: var(--color-text-primary);
   background-repeat: no-repeat;
   background-size: auto;  
@@ -116,6 +109,9 @@ body {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
 
 .glass-card {
@@ -279,16 +275,26 @@ body {
   color: var(--color-text-primary);
 }
 
-.input-field {
+input.input-field[type="text"],
+input.input-field[type="tel"],
+input.input-field[type="email"],
+input.input-field[type="password"] {
+  appearance: none;
+  -webkit-appearance: none; /* Safari / Chrome */
+  -moz-appearance: none; /* Firefox */
   width: 100%;
   padding: 0.9rem 1rem;
-  padding-left: 40px;
-  border: none;
-  border-radius: 10px;
-  background: rgba(58, 0, 53, 0.288);
-  color: var(--color-text-primary);
+  border-radius: 10px; /* tu estilo original */
+  background: #1a1c2266;
+  padding-left: 40px !important;
   font-size: 1rem;
-  border: 1px solid rgba(200, 90, 255, 0.2);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(200, 90, 255, 0.5);
+}
+
+.input-field::placeholder {
+  color: var(--color-text-secondary) !important;
+  opacity: 0.7;
 }
 
 .input-field:focus {
@@ -300,15 +306,17 @@ body {
 .input-icon {
   position: absolute;
   left: 15px;
-  top: 40px;
+  top: 52px; /* Cambiado de top: 40px */
   color: var(--color-accent);
-  font-size: 1.1rem;
+  font-size: 1rem;
+  pointer-events: none; /* Evita que interfiera con los clicks */
 }
 
 .password-toggle {
   position: absolute;
   right: 15px;
-  top: 40px;
+  top: 50%; /* Cambiado de top: 40px */
+  transform: translateY(-50%); /* Centra verticalmente */
   cursor: pointer;
   color: var(--color-accent);
 }
@@ -381,6 +389,23 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
+/* Estilos específicos para el formulario de registro */
+#registerForm .input-field {
+  padding-left: 40px !important;
+}
+
+#registerForm .form-group {
+  margin-bottom: 1.5rem;
+}
+
+#registerForm .name-fields .form-group {
+  margin-bottom: 0;
+}
+
+#registerForm .terms-checkbox {
+  margin: 1.5rem 0;
+}
+
 .form-footer {
   text-align: center;
   margin-top: 1.5rem;
@@ -427,14 +452,14 @@ body {
 }
 
 .terms-checkbox {
-  display: flex;
+  display: block;
   align-items: center;
   margin: 1.5rem 0;
   color: var(--color-text-secondary);
 }
 
 .terms-checkbox input {
-  width: auto;
+  width: 1rem;
   margin-right: 0.5rem;
 }
 
@@ -465,6 +490,7 @@ body {
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
 }
 
+
 /* Responsive */
 @media (max-width: 1024px) {
   .login-container {
@@ -487,6 +513,7 @@ body {
   }
 }
 
+
 @media (max-width: 768px) {
   .glass-header {
     width: 90%;
@@ -503,6 +530,24 @@ body {
   .name-fields {
     flex-direction: column;
     gap: 0;
+  }
+
+    .input-icon, .password-toggle {
+    top: 45%; /* Ajuste fino para móviles */
+  }
+  
+  .input-field {
+    padding: 0.8rem 1rem;
+    padding-left: 38px !important;
+  }
+  
+  #registerForm .name-fields {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  #registerForm .name-fields .form-group {
+    margin-bottom: 1.5rem;
   }
 }
 
