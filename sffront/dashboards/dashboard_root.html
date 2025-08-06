@@ -3,107 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_root.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
     <title>Dashboard ROOT</title>
+    <link rel="stylesheet" href="dashboard_root.css"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="dashboard_root.js"></script>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">Sistema de Gestión</div>
-        <div class="user-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-            </svg>
-            <span id="nombreUsuario">Usuario ROOT</span>
-            <button onclick="logout()" style="margin-left: 20px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
+    <!-- Barra superior rediseñada -->
+    <header class="glass-header" id="mainHeader">
+      <div class="flex items-center gap-8 relative">
+        <div class="flex items-center gap-4 text-primary">
+          <div class="size-4">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+          </div>
+          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Gestión de Equipos</h2>
         </div>
-    </div>
-    
-    <div class="container">
-        <div class="welcome">
-            <h1>Bienvenido, Usuario ROOT</h1>
-            <p>Desde aquí puedes gestionar los equipos de tu empresa.</p>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <div class="flex items-center gap-4">
+          <span id="nombreUsuario" class="text-primary text-sm font-bold leading-normal">Usuario ROOT</span>
+          <button onclick="logout()" class="btn btn-logout text-sm font-bold leading-normal tracking-[0.015em]">
+            Cerrar Sesión
+          </button>
         </div>
-        
-        <div class="actions">
-            <div class="action-card" onclick="window.location.href='./../administracion/crear-equipo.html'">
-                <h3>Crear Nuevo Equipo</h3>
-                <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
-                <a href="./../administracion/crear_equipo.html" class="btn btn-crear">Crear Equipo</a>
-            </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Ver Reportes</h3>
-                <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
-                <a href="#" class="btn">Ver Reportes</a>
-            </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Configuración de Empresa</h3>
-                <p>Actualiza la información general de tu empresa.</p>
-                <a href="#" class="btn">Configurar</a>
-            </div>
-        </div>
-        
-        <div class="equipos-list">
-            <h2>Tus Equipos</h2>
-            <div id="listaEquipos">
-                <!-- Los equipos se cargarán dinámicamente -->
-                <p>No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>
-            </div>
-        </div>
-    </div>
+      </div>
+    </header>
 
-    <script>
-        // Cargar información del usuario
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+    <div class="main-container">
+      <div class="container">
+        <!-- Sección de bienvenida -->
+        <div class="glass-panel welcome">
+          <h1 class="text-primary tracking-light text-[32px] font-bold leading-tight mb-4">
+            Bienvenido, <span id="welcomeUserName">Usuario ROOT</span>
+          </h1>
+          <p class="text-secondary text-base font-normal leading-normal">
+            Desde aquí puedes gestionar los equipos de tu empresa.
+          </p>
+        </div>
         
-        if (!currentUser || currentUser.tipo !== 'root') {
-            window.location.href = './../registro/login_register.html';
-        }
+        <!-- Acciones -->
+        <div class="actions">
+          <div class="action-card glass-card" onclick="window.location.href='./../administracion/crear-equipo.html'">
+            <h3>Crear Nuevo Equipo</h3>
+            <p class="text-secondary">Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
+            <a href="./../administracion/crear_equipo.html" class="btn btn-crear">Crear Equipo</a>
+          </div>
+          <div class="action-card glass-card" onclick="window.location.href='#'">
+            <h3>Ver Reportes</h3>
+            <p class="text-secondary">Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
+            <a href="#" class="btn">Ver Reportes</a>
+          </div>
+          <div class="action-card glass-card" onclick="window.location.href='#'">
+            <h3>Configuración de Empresa</h3>
+            <p class="text-secondary">Actualiza la información general de tu empresa.</p>
+            <a href="#" class="btn">Configurar</a>
+          </div>
+        </div>
         
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Usuario ROOT';
-        
-        // Cargar equipos de la empresa
-        function cargarEquipos() {
-            // Simular carga de equipos
-            // En un caso real sería un fetch a la API
-            /*
-            fetch(`/api/empresas/${currentUser.empresaId}/equipos`)
-            .then(response => response.json())
-            .then(data => {
-                // Mostrar equipos
-            });
-            */
-            
-            // Usar datos en memoria
-            let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
-            
-            const equiposEmpresa = equipos.filter(e => e.empresaId === currentUser.empresaId);
-            
-            if (equiposEmpresa.length > 0) {
-                let html = '';
-                equiposEmpresa.forEach(equipo => {
-                    html += `
-                        <div class="equipo-item">
-                            <div>
-                                <h3>${equipo.nombre}</h3>
-                                <p>Usuario maestro: ${equipo.usuarioMaestroEmail}</p>
-                            </div>
-                            <div>
-                                <span>Miembros: ${equipo.miembros ? equipo.miembros.length : 0}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('listaEquipos').innerHTML = html;
-            }
-        }
-        
-        cargarEquipos();
-        
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = './../registro/login_register.html';
-        }
-    </script>
+        <!-- Lista de equipos -->
+        <div class="glass-panel equipos-list">
+          <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] mb-6">
+            Tus Equipos
+          </h2>
+          <div id="listaEquipos" class="text-secondary">
+            <!-- Los equipos se cargarán dinámicamente -->
+            <p>No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 </body>
 </html>
