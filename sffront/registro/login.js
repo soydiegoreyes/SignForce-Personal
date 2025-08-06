@@ -224,8 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 console.log(data);
-                // Redirigir a la I de validación
-                window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.id;
+                // Redirigir a página de validación
+                window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.data.id;
             })
             .catch(error => {
                 console.log("Error: ", error);
@@ -355,3 +355,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 });
+
