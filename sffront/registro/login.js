@@ -123,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Obtener valores del formulario
         const firstName = document.getElementById('first-name').value;
         const lastName = document.getElementById('last-name').value;
+        const legalName = document.getElementById('legal-first-name').value;
+        const legalLastName = document.getElementById('legal-last-name').value;
         const businessName = document.getElementById('business-name').value;
         const businessAlias = document.getElementById('business-alias').value;
         const businessRFC = document.getElementById('business-rfc').value;
@@ -133,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const terms = document.getElementById('terms').checked;
         
         // Validaciones
-        if (!firstName || !lastName) {
+        if (!legalName || !legalLastName) {
             alert('Por favor, añade un nombre del responsable del sistema');
             return;
         }
@@ -192,27 +194,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Crear nueva empresa para enviar a DB
             const nuevaEmpresa = {
-                id: Date.now().toString(),
+                createdAt: Date.now().toString(),
                 firstName,
                 lastName,
+                legalName,
+                legalLastName,
                 businessName,
                 businessAlias,
-                businessRFC,
-                email,
-                phone,
-                password,
-                termsAccepted: terms,
-                status: 'pendiente_validacion'
+                businessTaxNum: businessRFC,
+                businessEmail: email,
+                businessPhone: phone,
+                status: 'pending_validation'
             };
             
             // Agregar nueva empresa al arreglo
             empresas.push(nuevaEmpresa);
             console.log(nuevaEmpresa);
+            
             // Guardar el arreglo actualizado en sessionStorage
             sessionStorage.setItem('empresas', JSON.stringify(empresas));
+            let bodyJson = JSON.stringify(nuevaEmpresa);
+            console.log(bodyJson);
 
-            // Redirigir a la pantalla de validación
-            window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.id;
+            fetch("https://localhost:8001/signup",{
+                method:"POST",
+                headers:{"Content-Type": "application/json"},
+                body: bodyJson
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // Redirigir a la I de validación
+                window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.id;
+            })
+            .catch(error => {
+                console.log("Error: ", error);
+            });
             
             alert('Registro exitoso. ¡Bienvenido a SignForce!');
             
@@ -336,4 +353,5 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.fade-in').forEach(element => {
       observer.observe(element);
     });
+
 });
