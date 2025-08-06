@@ -101,7 +101,7 @@
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
         
         if (!currentUser || currentUser.tipo !== 'admin_equipo') {
-            window.location.href = './../registro/login_register.html';
+            window.location.href = './../registro/login.html';
         }
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
@@ -120,6 +120,8 @@
         function cargarUsuarios() {
             // Buscar equipo en memoria
             const equipo = equipos.find(e => e.id === currentUser.equipoId);
+            // Determinar si el usuario actual puede editar este miembro
+            const puedeEditar = (currentUser.tipo === 'admin_equipo');
             
             if (equipo && equipo.miembros) {
                 const tbody = document.querySelector('#tablaUsuarios tbody');
@@ -142,15 +144,12 @@
                             rolText = 'MIEMBRO';
                         }
                         
-                        // Determinar si el usuario actual puede editar este miembro
-                        const puedeEditar = (miembro.rol === 'admin' && usuario.id !== currentUser.id);
-                        
                         tr.innerHTML = `
                             <td>${usuario.nombre}</td>
                             <td>${usuario.email}</td>
                             <td><span class="badge ${badgeClass}">${rolText}</span></td>
                             <td>
-                                ${puedeEditar ? `
+                                ${usuario.id !== currentUser.id ? `
                                 <button class="action-btn btn-editar" onclick="editarUsuario('${usuario.id}')">Editar</button>
                                 <button class="action-btn btn-eliminar" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
                                 ${miembro.rol !== 'admin' ? `
