@@ -8,7 +8,7 @@ let pdfDoc = null,
 
 // Arreglo de marcadores 
 let markers = [];
-let markerColors = ['#1D2891aa', '#861d7daa', '#5c7500aa', '#004a61aa', '#160064aa', '#611500aa'];
+let markerColors = ['#003b65aa', '#861d7daa', '#5c7500aa', '#0086aeaa', '#160064aa', '#611500aa'];
 
 // Elementos del DOM
 let pdfCanvas, overlayCanvas, overlayCtx, pdfCtx;
@@ -284,7 +284,7 @@ function setupCanvasInteractions() {
             x: x,
             y: y,
             width: 100,
-            height: 30,
+            height: 50,
             page: pageNum,
             bgColor: markerColors[markers.length%markerColors.length]
         };
@@ -342,7 +342,7 @@ function handleMouseMove(e) {
         redrawMarkers();
     } else if (isResizing && selectedTextBox) {
         selectedTextBox.width = Math.max(50, x - selectedTextBox.x);
-        selectedTextBox.height = Math.max(20, y - selectedTextBox.y);
+        selectedTextBox.height = Math.max(25, y - selectedTextBox.y);
         redrawMarkers();
     } else {
         // Cambiar cursor según la posición
@@ -415,15 +415,20 @@ function redrawMarkers() {
 
 function drawTextBox(marker) {
     const ctx = overlayCtx;
-    
-    // Dibujar fondo de la caja
+    const radius = 5; // Ajusta este valor para cambiar el redondeo
+
+    // Dibujar fondo de la caja con bordes redondeados
     ctx.fillStyle = marker.bgColor;
-    ctx.fillRect(marker.x, marker.y, marker.width, marker.height);
-    
-    // Dibujar borde
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.beginPath();
+    ctx.roundRect(marker.x, marker.y, marker.width, marker.height, radius);
+    ctx.fill();
+
+    // Dibujar borde redondeado
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(marker.x, marker.y, marker.width, marker.height);
+    ctx.beginPath();
+    ctx.roundRect(marker.x, marker.y, marker.width, marker.height, radius);
+    ctx.stroke();
     
     // Dibujar texto
     ctx.fillStyle = 'white';
