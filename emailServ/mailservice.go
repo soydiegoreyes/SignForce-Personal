@@ -48,13 +48,12 @@ func (cl *EmailClient) Connect() bool {
 
 	if cl.SMTPsender == "" || cl.SMTPuser == "" || cl.SMTPpassword == "" || cl.SMTPServer == "" {
 		log.Println("Faltan variables de entorno necesarias")
-		return check
 	} else {
 		log.Printf("Conectando con %s", cl.SMTPServer)
 
 		// Configuración TLS
 		cl.tlsConfig = &tls.Config{
-			InsecureSkipVerify: false,
+			InsecureSkipVerify: true, // En producción deberías validar el certificado
 			ServerName:         cl.SMTPServer,
 		}
 
@@ -62,7 +61,6 @@ func (cl *EmailClient) Connect() bool {
 		conn, err := tls.Dial("tcp", cl.SMTPServer+":465", cl.tlsConfig)
 		if err != nil {
 			log.Println("Error al conectar al servidor SMTP:", err)
-			return check
 		} else {
 			cl.conn = conn
 		}
@@ -71,8 +69,6 @@ func (cl *EmailClient) Connect() bool {
 		client, err := smtp.NewClient(conn, cl.SMTPServer)
 		if err != nil {
 			log.Println("Error al crear cliente SMTP:", err)
-			conn.Close()
-			return check
 		} else {
 			cl.client = client
 		}
@@ -81,12 +77,12 @@ func (cl *EmailClient) Connect() bool {
 		auth := smtp.PlainAuth("", cl.SMTPuser, cl.SMTPpassword, cl.SMTPServer)
 		if err := cl.client.Auth(auth); err != nil {
 			log.Println("Error de autenticación:", err)
-			return check
 		}
 
-		log.Println("Conectado al servidor SMTP")
-		check = true
-
+		if err == nil {
+			log.Println("Conectado al servidor SMTP")
+			check = true
+		}
 	}
 
 	return check
@@ -101,12 +97,11 @@ func (cl *EmailClient) CloseAll() {
 	} else {
 		log.Println("cliente de email no existe.")
 	}
-	/*
-		if cl.conn != nil {
-			cl.conn.Close()
-		} else {
-			log.Println("conexion de email no existe.")
-		}*/
+	if cl.conn != nil {
+		cl.conn.Close()
+	} else {
+		log.Println("conexion de email no existe.")
+	}
 }
 
 // EmailSender envía un email con los datos proporcionados
