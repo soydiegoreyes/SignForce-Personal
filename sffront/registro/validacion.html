@@ -72,22 +72,35 @@
         </div>
     </div>
     <script>
-        const empresas = JSON.parse(sessionStorage.getItem('empresas')) || [];
+        const empresas = JSON.parse(sessionStorage.getItem('empresas')) || {};
         const urlParams = new URLSearchParams(window.location.search);
-        const empresaId = urlParams.get('empresaId');
-        const empresa = empresas.find(e => e.id === empresaId);
+        const instId = urlParams.get('instId');
+        
+        // OPCIÓN 1: Si usas el ID como clave del diccionario
+        const empresa = empresas[instId];
+        
+        // OPCIÓN 2: Si el ID está almacenado como propiedad dentro del objeto
+        // const empresa = Object.values(empresas).find(e => e.id == instId);
+        
         if (!empresa) {
             alert('Empresa no encontrada');
-        }
-        document.addEventListener('DOMContentLoaded', () => {
+            // Opcional: redirigir o mostrar mensaje de error
             document.getElementById('empresaInfo').innerHTML = `
-                <h3>${empresa.businessName}</h3>
-                <p><strong>RFC:</strong> ${empresa.businessRFC}</p>
-                <p><strong>Representante Legal:</strong> ${empresa.firstName} ${empresa.lastName}</p>
-                <p><strong>Email:</strong> ${empresa.email}</p>
-                <p><strong>Teléfono:</strong> ${empresa.phone}</p>
+                <div class="error">
+                    <h3>❌ Empresa no encontrada</h3>
+                    <p>No se pudo encontrar la empresa con ID: ${instId}</p>
+                </div>
             `;
-        });            
+        }
+        
+        // Solo ejecutar si la empresa existe
+        document.getElementById('empresaInfo').innerHTML = `
+            <h3>${empresa.businessName}</h3>
+            <p><strong>RFC:</strong> ${empresa.businessTaxNum}</p>
+            <p><strong>Representante Legal:</strong> ${empresa.firstName} ${empresa.lastName}</p>
+            <p><strong>Email:</strong> ${empresa.email}</p>
+            <p><strong>Teléfono:</strong> ${empresa.phone}</p>
+        `;
         
         // Estado de documentos
         let documentos = {
@@ -144,7 +157,7 @@
             // Simular creación de usuario ROOT
             const usuarioRoot = {
                 id: `usr_${Date.now()}`,
-                empresaId: empresaId,
+                empresaId: empresa.instId,
                 email: empresa.email,
                 phone: empresa.phone,
                 password: 'tempPassword' + Math.random().toString(36).substring(2, 8),
@@ -158,10 +171,10 @@
             sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
             
             // Mostrar mensaje de éxito con credenciales
-            alert(`Validación completada con éxito. Se ha creado el usuario ROOT para tu empresa.\n\nEmail: ${usuarioRoot.email}\nContraseña temporal: ${usuarioRoot.password}\n\nEstas credenciales han sido enviadas a tu correo electrónico.`);
+            console.log(`Validación completada con éxito. Se ha creado el usuario ROOT para tu empresa.\n\nEmail: ${usuarioRoot.email}\nContraseña temporal: ${usuarioRoot.password}\n\nEstas credenciales han sido enviadas a tu correo electrónico.`);
             
             // Redirigir a login
-            window.location.href = 'login_register.html';
+            window.location.href = 'login.html';
         }
     </script>
 </body>

@@ -1,16 +1,176 @@
 <html>
   <head>
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
-    <link rel="stylesheet" as="style" onload="this.rel='stylesheet'"
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900"
     />
-    <link rel="stylesheet" href="email_sign_request.css"/>
 
     <title>Stitch Design</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script src="email_sign_request.js"></script>
+    <style>
+      /* Fondo de gradiente abstracto */
+      body {
+        background: 
+          radial-gradient(circle at 70% 30%, 
+            rgba(155, 81, 224, 0.8) 0%, 
+            rgba(41, 10, 89, 0.5) 30%, 
+            transparent 60%),
+          radial-gradient(circle at 30% 70%, 
+            rgba(0, 119, 182, 0.7) 0%, 
+            rgba(3, 4, 94, 0.4) 40%, 
+            transparent 70%),
+          radial-gradient(circle at center, 
+            rgba(231, 29, 54, 0.6) 0%, 
+            rgba(131, 56, 236, 0.3) 30%, 
+            transparent 60%),
+          linear-gradient(135deg, 
+            #0f0c29 0%, 
+            #302b63 50%, 
+            #24243e 100%);
+        min-height: 100vh;
+        font-family: Inter, "Noto Sans", sans-serif;
+        background-attachment: fixed;
+      }
+      
+      /* Barra superior mejorada - 25% más grande */
+      .glass-header {
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%;
+        height: 62.5px; /* 25% más grande que 50px */
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 
+          0 8px 32px 0 rgba(31, 38, 135, 0.37),
+          0 0 10px 1px rgba(255, 255, 255, 0.1);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 25px;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+      }
+      
+      /* Efecto liquid glass al pasar el mouse */
+      .glass-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: 0.5s;
+      }
+      
+      .glass-header:hover::before {
+        left: 100%;
+      }
+      
+      /* Burbuja liquid glass */
+      .liquid-bubble {
+        position: absolute;
+        width: 120px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.25);
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: -1;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      /* Efecto hover para los items del menú */
+      .nav-item {
+        position: relative;
+        padding: 8px 16px;
+        transition: color 0.3s ease;
+      }
+      
+      .nav-item:hover {
+        color: white !important;
+      }
+      
+      .glass-panel {
+        background: rgba(15, 12, 41, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      .text-primary {
+        color: #ffffff;
+      }
+      
+      .text-secondary {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      .input-field {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+      
+      .input-field::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      
+      /* Efecto de brillo al pasar el mouse */
+      .hover-glow:hover {
+        box-shadow: 0 0 15px rgba(155, 81, 224, 0.5);
+      }
+      
+      /* Botones con efecto hover */
+      .glass-button {
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+      
+      .glass-button:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      
+      .reject-button {
+        background: rgba(231, 29, 54, 0.3);
+      }
+      
+      .reject-button:hover {
+        background: rgba(231, 29, 54, 0.4);
+      }
+      
+      .approve-button {
+        background: rgba(229, 117, 25, 0.6);
+      }
+      
+      .approve-button:hover {
+        background: rgba(229, 117, 25, 0.7);
+      }
+    </style>
   </head>
   <body>
     <!-- Barra superior rediseñada -->
@@ -99,5 +259,56 @@
         </div>
       </div>
     </div>
+
+    <script>
+      // Efecto liquid glass para la burbuja del menú
+      const liquidBubble = document.getElementById('liquidBubble');
+      const navItems = document.querySelectorAll('.nav-item');
+      
+      // Posiciones iniciales de los items del menú
+      const itemPositions = {};
+      
+      // Calcular posiciones de los items
+      function calculatePositions() {
+        navItems.forEach(item => {
+          const rect = item.getBoundingClientRect();
+          const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+          
+          itemPositions[item.dataset.item] = {
+            left: rect.left - headerRect.left,
+            width: rect.width
+          };
+        });
+        
+        // Posicionar burbuja en el item activo (home por defecto)
+        moveBubble('home');
+      }
+      
+      // Mover la burbuja al item seleccionado
+      function moveBubble(itemName) {
+        const item = itemPositions[itemName];
+        if (item) {
+          liquidBubble.style.left = `${item.left - 10}px`;
+          liquidBubble.style.width = `${item.width + 20}px`;
+        }
+      }
+      
+      // Event listeners para los items del menú
+      navItems.forEach(item => {
+        item.addEventListener('mouseenter', () => {
+          moveBubble(item.dataset.item);
+        });
+        
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          moveBubble(item.dataset.item);
+          // Aquí podrías añadir lógica para cambiar de vista
+        });
+      });
+      
+      // Calcular posiciones al cargar y al redimensionar
+      window.addEventListener('load', calculatePositions);
+      window.addEventListener('resize', calculatePositions);
+    </script>
   </body>
 </html>

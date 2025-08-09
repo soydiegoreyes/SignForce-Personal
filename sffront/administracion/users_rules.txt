@@ -1,0 +1,12 @@
+Un usuario entra a la plataforma donde hace un registro, una vez completado el registro y validando los documentos contratos etc.. 
+el usuario crea equipos y designa a responsables o administradores de cada equipo, 
+el responsable recibe notificación de su responsabilidad y puede entrar a la plataforma donde puede crear mas responsables pero el no se puede revocar a si mismo y los demás no lo pueden revocar, 
+salvo el usuario maestro quien creo el equipo y lo asignó al principio como responsable. 
+El usuario maestro puede crear mas usuarios maestros pero sin poder revocarse entre ellos solo a si mismos. 
+Los usuarios comunes no pueden revocarse entre ellos ni a nadie superior o inferior. 
+Los usuarios administradores son los mas privilegiados y pueden editar cosas administrativas de la plataforma así como de cualquier rol de usuario y roles maestros y comunes. 
+Los usuarios maestros por equipo tienen acceso a las funcionalidades de plataforma que permitan crear, subir, editar documentos y firmarlos y a su propia configuración de su equipo y de ellos mismos; 
+no tienen acceso a roles administrativos a nivel plataforma ni a perfiles personales solo a un dashboard general con la misma info de los usuarios condensada, 
+esto aplica de la misma forma a todos los usuarios comunes de los equipos solo pudiendo ver su info global de ellos mismos y del equipo sin poder ver a los de otros equipos o paneles personales. 
+Existe el usuario con privilegios especiales que son usuarios externos de la plataforma que tienen solo permiso para subir cierto tipo de documentos, acceder a ciertos dominios y ser validados de forma temporal en modo visor. 
+Todo usuario puede ser revocado o suspendido solo por un orden superior a menos que incumplan las reglas propias de su nivel como que los admins solo se pueden revocar entre ellos.

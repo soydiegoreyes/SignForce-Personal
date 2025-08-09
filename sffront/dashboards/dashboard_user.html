@@ -65,7 +65,7 @@
         let usuarios= JSON.parse(sessionStorage.getItem('usuarios')) || [];
 
         if (!currentUser || currentUser.tipo !== 'miembro_equipo') {
-            window.location.href = './../registro/login_register.html';
+            window.location.href = './../registro/login.html';
         }
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Miembro de Equipo';
@@ -146,7 +146,7 @@
         
         function logout() {
             sessionStorage.removeItem('currentUser');
-            window.location.href = './../registro/login_register.html';
+            window.location.href = './../registro/login.html';
         }
     </script>
 </body>

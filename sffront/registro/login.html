@@ -116,7 +116,7 @@
                         </div>
                     </form>
 
-                    <!-- Formulario de Registro -->
+                    <!-- Formulario de REGISTRO -->
                     <form class="form" id="registerForm">
                         <div class="form-group">
                             <label>Nombre y Apellido</label>
@@ -133,14 +133,14 @@
                         <!-- Checkbox para indicar si es el responsable legal -->
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" id="legal-responsible-checkbox" checked>
+                                <input type="checkbox" id="legal-responsible-checkbox">
                                 La persona que registra es el responsable legal
                             </label>
                         </div>
 
 
                         <!-- Contenedor para los campos del responsable legal (inicialmente oculto) -->
-                        <div id="legal-responsible-container" style="display: none;">
+                        <div id="legal-responsible-container">
                             <div class="form-group">
                                 <label>Nombre y Apellido del Responsable Legal</label>
                                 <div class="name-fields">
@@ -169,7 +169,19 @@
                         <div class="form-group">
                             <label for="business-rfc">RFC</label>
                             <i class="fas fa-city input-icon"></i>
-                            <input type="text" id="business-rfc" class="input-field" placeholder="RFC" required>
+                            <input type="text" id="business-taxnum" class="input-field" placeholder="RFC" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country">País</label>
+                            <i class="fas fa-moon input-icon"></i>
+                            <input type="text" id="country" class="input-field" placeholder="Pais" value="Mexico" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city">Ciudad</label>
+                            <i class="fas fa-moon input-icon"></i>
+                            <input type="text" id="city" class="input-field" placeholder="Ciudad" value="CDMX" required>
                         </div>
                         
                         <div class="form-group">
@@ -184,20 +196,6 @@
                             <i class="fas fa-envelope input-icon"></i>
                             <input type="tel" id="register-phone" class="input-field" placeholder="10 digitos" required>
                             <small>Se necesitará tu teléfono para cualquier aclaración de la cuenta</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="register-password">Contraseña</label>
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="register-password" class="input-field" placeholder="········" required minlength="8" maxlength="20">
-                            <small>Debe tener 8-20 caracteres, contener letras y números, sin espacios, caracteres especiales o emojis</small>
-                            <i class="fas fa-eye password-toggle" id="register-password-toggle"></i>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="register-confirm">Confirmar contraseña</label>
-                            <i class="fas fa-lock input-icon"></i>
-                            <input type="password" id="register-confirm" class="input-field" placeholder="········" required>
                         </div>
                         
                         <div class="terms-checkbox">

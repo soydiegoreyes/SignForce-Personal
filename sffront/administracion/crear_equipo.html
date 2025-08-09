@@ -59,7 +59,7 @@
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
 
         if (!currentUser || currentUser.tipo !== 'root') {
-            window.location.href = './../registro/login_register.html';
+            window.location.href = './../registro/login.html';
         }
         // Cargar información de los equipos
         let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];

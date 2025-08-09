@@ -1,270 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-    // Toggle de tema claro/oscuro
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        
-        // Cambiar icono
-        const icon = themeToggle.querySelector('i');
-        if (document.body.classList.contains('light-theme')) {
-            icon.classList.remove('fa-moon');
-            icon.classList.add('fa-sun');
-        } else {
-            icon.classList.remove('fa-sun');
-            icon.classList.add('fa-moon');
-        }
-    });
-
-    // Validacion representante legal
-    const checkbox = document.getElementById('legal-responsible-checkbox');
-    const legalContainer = document.getElementById('legal-responsible-container');
-    
-    checkbox.addEventListener('change', function() {
-        if (this.checked) {
-            legalContainer.style.display = 'none';
-            // Limpiar los campos cuando se ocultan (opcional)
-            document.getElementById('legal-first-name').value = document.getElementById('first-name').value;
-            document.getElementById('legal-last-name').value = document.getElementById('last-name').value;
-        } else {
-            legalContainer.style.display = 'block';
-            document.getElementById('legal-first-name').value = '';
-            document.getElementById('legal-last-name').value = '';
-        }
-    });
-
-    // Cambio entre formularios
-    const tabs = document.querySelectorAll('.tab');
-    const forms = document.querySelectorAll('.form');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.getAttribute('data-tab');
-            
-            // Actualizar tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            
-            // Actualizar formularios
-            forms.forEach(form => form.classList.remove('active'));
-            document.getElementById(`${tabName}Form`).classList.add('active');
-        });
-    });
-
-    // Cambio a login desde registro
-    document.getElementById('switchToLogin').addEventListener('click', (e) => {
-        e.preventDefault();
-        tabs.forEach(t => t.classList.remove('active'));
-        tabs[0].classList.add('active');
-        
-        forms.forEach(form => form.classList.remove('active'));
-        document.getElementById('loginForm').classList.add('active');
-    });
-
-    // Toggle para contraseñas
-    const passwordToggles = document.querySelectorAll('.password-toggle');
-    passwordToggles.forEach(toggle => {
-        toggle.addEventListener('click', () => {
-            const input = toggle.previousElementSibling;
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            toggle.classList.toggle('fa-eye');
-            toggle.classList.toggle('fa-eye-slash');
-        });
-    });
-
-    // Validación de formularios
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-
-    // Para Formulario de Login !!! hay qye cambiarlo cuando sea la api
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        
-        // Simula tabla usuarios en DB
-        let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
-        if (usuarios==[]) {
-            alert('No hay usuarios registrados');
-            return;
-        }
-        if (validateEmail(email) && password.length >= 8) {
-            const usuario = usuarios.find(u => u.email === email && u.password === password);
-                
-            if (usuario) {
-                // Simulamos que guardamos la sesión
-                sessionStorage.setItem('currentUser', JSON.stringify(usuario));
-                
-                // Redirigir según tipo de usuario
-                alert('Inicio de sesión exitoso. Redirigiendo...');
-
-                if (usuario.tipo === 'root') {
-                    window.location.href = './../dashboards/dashboard_root.html';
-                } else if (usuario.tipo === 'admin_equipo') {
-                    window.location.href = './../dashboards/dashboard_admin.html';
-                } else if (usuario.tipo === 'miembro_equipo') {
-                    window.location.href = './../dashboards/dashboard_user.html';
-                } else {
-                    alert('Tipo de usuario no reconocido');
-                }
-            } else {
-                alert('Credenciales incorrectas');
-            }
-        }
-    });
-
-    
-
-    // Para Formulario de Registro
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Obtener valores del formulario
-        const firstName = document.getElementById('first-name').value;
-        const lastName = document.getElementById('last-name').value;
-        const legalName = document.getElementById('legal-first-name').value;
-        const legalLastName = document.getElementById('legal-last-name').value;
-        const businessName = document.getElementById('business-name').value;
-        const businessAlias = document.getElementById('business-alias').value;
-        const businessRFC = document.getElementById('business-rfc').value;
-        const email = document.getElementById('register-email').value;
-        const phone = document.getElementById('register-phone').value;
-        const password = document.getElementById('register-password').value;
-        const confirm = document.getElementById('register-confirm').value;
-        const terms = document.getElementById('terms').checked;
-        
-        // Validaciones
-        if (!legalName || !legalLastName) {
-            alert('Por favor, añade un nombre del responsable del sistema');
-            return;
-        }
-        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
-        if (!passwordRegex.test(password)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>La contraseña debe tener 8-20 caracteres, contener letras y números, sin espacios o caracteres especiales.</strong></p>';
-            return;
-        }
-        if (password !== confirm) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>El password no coincide con la confirmación</strong></p>';
-            return;
-        }
-        if (!businessName) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>El nombre de la empresa es requerido</strong></p>';
-            return;
-        }
-
-        const AliasRegex = /^[A-Z\d]{5,20}$/;
-        if (!AliasRegex.test(businessAlias)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu Alias debe contener solo letras y números, sin espacios o caracteres especiales y un máximos de 20 caracteres.</strong></p>';
-            return;
-        }
-
-        const RFCRegex = /^[A-Z\d]{12,20}$/;
-        if (!RFCRegex.test(businessRFC)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
-            return;
-        }
-
-        if (!validateEmail(email)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
-            return;
-        }
-        const phoneRegex = /^\d{10}$/;
-        if (!phoneRegex.test(phone)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu telefono a 10 digitos sin espacios ni caracteres especiales</strong></p>';
-            return;
-        }
-        if (!terms) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Lee y acepta el Acuerdo de Términos y Condiciones</strong></p>';
-            return;
-        }
-
-        // SIMULACION DE INSERSCION DE DATOS EN BASE INSTITUTIONS
-        try {
-            // Simula tabla de empresas o instituciones en DB
-            let empresas = JSON.parse(sessionStorage.getItem('empresas')) || [];
-
-            // Crear nueva empresa para enviar a DB
-            const nuevaEmpresa = {
-                createdAt: Date.now().toString(),
-                firstName,
-                lastName,
-                legalName,
-                legalLastName,
-                businessName,
-                businessAlias,
-                businessTaxNum: businessRFC,
-                businessEmail: email,
-                businessPhone: phone,
-                status: 'pending_validation'
-            };
-            
-            // Agregar nueva empresa al arreglo
-            empresas.push(nuevaEmpresa);
-            console.log(nuevaEmpresa);
-            
-            // Guardar el arreglo actualizado en sessionStorage
-            sessionStorage.setItem('empresas', JSON.stringify(empresas));
-            let bodyJson = JSON.stringify(nuevaEmpresa);
-            console.log(bodyJson);
-
-            fetch("https://localhost:8001/signup",{
-                method:"POST",
-                headers:{"Content-Type": "application/json"},
-                body: bodyJson
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                // Redirigir a página de validación
-                window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.data.id;
-            })
-            .catch(error => {
-                console.log("Error: ", error);
-            });
-            
-            alert('Registro exitoso. ¡Bienvenido a SignForce!');
-            
-        } catch (error) {
-            console.error('Error:', error);
-            alert(`Error al registrar: ${error.message}`);
-        }
-    });
-
-    // Función de validación de email
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-
-    // Intersection Observer para animaciones al hacer scroll
-    const observerOptions = {
-        threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.fade-in').forEach(element => {
-        observer.observe(element);
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
     // Efecto liquid glass para la burbuja del menú
     const liquidBubble = document.getElementById('liquidBubble');
     const navItems = document.querySelectorAll('.nav-item');
@@ -336,23 +70,248 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+
+    // Validacion representante legal
+    const checkbox = document.getElementById('legal-responsible-checkbox');
+    const legalContainer = document.getElementById('legal-responsible-container');
+    
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            legalContainer.style.display = 'none';
+            // Limpiar los campos cuando se ocultan (opcional)
+            document.getElementById('legal-first-name').value = document.getElementById('first-name').value;
+            document.getElementById('legal-last-name').value = document.getElementById('last-name').value;
+        } else {
+            legalContainer.style.display = 'block';
+            document.getElementById('legal-first-name').value = '';
+            document.getElementById('legal-last-name').value = '';
+        }
+    });
+
+    // Cambio entre formularios
+    const tabs = document.querySelectorAll('.tab');
+    const forms = document.querySelectorAll('.form');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            
+            // Actualizar tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Actualizar formularios
+            forms.forEach(form => form.classList.remove('active'));
+            document.getElementById(`${tabName}Form`).classList.add('active');
+        });
+    });
+
+    // Cambio a login desde registro
+    document.getElementById('switchToLogin').addEventListener('click', (e) => {
+        e.preventDefault();
+        tabs.forEach(t => t.classList.remove('active'));
+        tabs[0].classList.add('active');
+        
+        forms.forEach(form => form.classList.remove('active'));
+        document.getElementById('loginForm').classList.add('active');
+    });
+
+    // Toggle para contraseñas
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const input = toggle.previousElementSibling;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            toggle.classList.toggle('fa-eye');
+            toggle.classList.toggle('fa-eye-slash');
+        });
+    });
+
+    // Validación de formularios
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    // Para Formulario de Login !!! hay qye cambiarlo cuando sea la api
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const login_password = document.getElementById('login-password').value;
+        
+        // Simula tabla usuarios en DB
+        let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
+        if (usuarios==[]) {
+            alert('No hay usuarios registrados');
+            return;
+        }
+        if (validateEmail(email) && login_password.length >= 8) {
+            const usuario = usuarios.find(u => u.email === email && u.password === login_password);
+                
+            if (usuario) {
+                // Simulamos que guardamos la sesión
+                sessionStorage.setItem('currentUser', JSON.stringify(usuario));
+                
+                // Redirigir según tipo de usuario
+                alert('Inicio de sesión exitoso. Redirigiendo...');
+
+                if (usuario.tipo === 'root') {
+                    window.location.href = './../dashboards/dashboard_root.html';
+                } else if (usuario.tipo === 'admin_equipo') {
+                    window.location.href = './../dashboards/dashboard_admin.html';
+                } else if (usuario.tipo === 'miembro_equipo') {
+                    window.location.href = './../dashboards/dashboard_user.html';
+                } else {
+                    alert('Tipo de usuario no reconocido');
+                }
+            } else {
+                alert('Credenciales incorrectas');
+            }
+        }
+    });
+
+    
+
+    // Para Formulario de Registro
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Obtener valores del formulario
+        const firstName = document.getElementById('first-name').value;
+        const lastName = document.getElementById('last-name').value;
+        const legalName = document.getElementById('legal-first-name').value;
+        const legalLastName = document.getElementById('legal-last-name').value;
+        const businessName = document.getElementById('business-name').value;
+        const businessAlias = document.getElementById('business-alias').value;
+        const businessTaxNum = document.getElementById('business-taxnum').value;
+        const email = document.getElementById('register-email').value;
+        const phone = document.getElementById('register-phone').value;
+        const country = document.getElementById('country').value;
+        const city = document.getElementById('city').value;
+        const terms = document.getElementById('terms').checked;
+        
+        // Validaciones
+        if (!legalName || !legalLastName) {
+            alert('Por favor, añade un nombre del responsable del sistema');
+            return;
+        }
+        if (!businessName) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>El nombre de la empresa es requerido</strong></p>';
+            return;
+        }
+
+        const AliasRegex = /^[A-Z\d]{5,20}$/;
+        if (!AliasRegex.test(businessAlias)) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Tu Alias debe contener solo letras y números, sin espacios o caracteres especiales y un máximos de 20 caracteres.</strong></p>';
+            return;
+        }
+
+        const TaxNumRegex = /^[A-Z\d]{12,20}$/;
+        if (!TaxNumRegex.test(businessTaxNum)) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
+            return;
+        }
+
+        if (!validateEmail(email)) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
+            return;
+        }
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phone)) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Tu telefono a 10 digitos sin espacios ni caracteres especiales</strong></p>';
+            return;
+        }
+        if (!terms) {
+            alert('Alguno de tus datos no es correcto.');
+            document.getElementById('notice-box').innerHTML = '<p><strong>Lee y acepta el Acuerdo de Términos y Condiciones</strong></p>';
+            return;
+        }
+
+        // SIMULACION DE INSERSCION DE DATOS EN BASE INSTITUTIONS
+        try {
+            // Simula tabla de empresas o instituciones en DB
+            let empresas = JSON.parse(sessionStorage.getItem('empresas')) || {};
+
+            // Crear nueva empresa para enviar a DB
+            const nuevaEmpresa = {
+                firstName,
+                lastName,
+                legalName,
+                legalLastName,
+                businessName,
+                businessAlias,
+                businessTaxNum,
+                email,
+                phone,
+                country,
+                city
+            };
+
+            const nuevaEmpresaJson = JSON.stringify(nuevaEmpresa);
+            console.log(nuevaEmpresaJson);
+            
+            try {
+                const response = await fetch('http://localhost:8001/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: nuevaEmpresaJson
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                // Parsear la respuesta JSON
+                const data = await response.json();
+                console.log('Respuesta del servidor:', data);
+
+                // Agregar nueva empresa al arreglo local
+                empresas[data.instId] = nuevaEmpresa;
+                sessionStorage.setItem('empresas', JSON.stringify(empresas));
+
+                // Redirigir usando el ID del servidor
+                window.location.href = 'validacion.html?instId=' + data.instId;
+                
+                alert('Registro exitoso. ¡Bienvenido a SignForce!');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error al registrar: ${error.message}`);
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error al registrar: ${error.message}`);
+        }
+    });
+
+    // Función de validación de email
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
     // Intersection Observer para animaciones al hacer scroll
     const observerOptions = {
-      threshold: 0.1
+        threshold: 0.1
     };
 
     const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-in');
-          observer.unobserve(entry.target);
-        }
-      });
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
     }, observerOptions);
 
     document.querySelectorAll('.fade-in').forEach(element => {
-      observer.observe(element);
+        observer.observe(element);
     });
-
 });
-
