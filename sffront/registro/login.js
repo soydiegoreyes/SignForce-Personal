@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(nuevaEmpresaJson);
             
             try {
-                const response = await fetch('http://localhost:8001/register', {
+                const response = await fetch('http://localhost:8000/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
