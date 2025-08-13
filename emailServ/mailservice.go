@@ -105,7 +105,7 @@ func (cl *EmailClient) CloseAll() {
 }
 
 // EmailSender envía un email con los datos proporcionados
-func (cl *EmailClient) EmailSender(nameApp string, data EmailData) bool {
+func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 	log.Println("Intento de envío de email")
 	if len(data.Dest) == 0 || data.Body == "" || data.IdUser == "" {
 		log.Println("Datos insuficientes para envio de email")
@@ -184,7 +184,7 @@ func (cl *EmailClient) EmailSender(nameApp string, data EmailData) bool {
 
 	// insertar registro en base de datos
 	attributes := []string{"idUserSender_fk", "reason", "subjectEmail", "bodyEmail", "idAppSource_fk"}
-	values := []interface{}{data.IdUser, data.Subject, cl.SMTPsender, message.String(), nameApp}
+	values := []interface{}{data.IdUser, data.Subject, cl.SMTPsender, message.String(), idApp}
 
 	row, err := db.DB_con.InsertEmailAttributes(attributes, values)
 	if err != nil {
@@ -248,7 +248,7 @@ func mailServ(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	success := Eclient.EmailSender(appValues[token]["nameApp"], data)
+	success := Eclient.EmailSender(token, data)
 	if !success {
 		http.Error(w, "Error al enviar el email", http.StatusInternalServerError)
 		return
