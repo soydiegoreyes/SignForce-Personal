@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	//"sfmiddle/configs"
 	"sfmiddle/db"
@@ -86,7 +89,7 @@ func main() {
 
 	// Registrar rutas
 	mux.HandleFunc("/register", registerInst)
-
+	mux.HandleFunc("/validation", validationInst)
 	// Aplicar middleware CORS
 	handler := corsMiddleware(mux)
 
@@ -108,6 +111,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	var registerReq models.RegisterRequest
+	registerResp := models.RegisterResponse{Check: false, InstId: "", Error: ""}
 	var err error
 
 	err = json.NewDecoder(request.Body).Decode(&registerReq)
@@ -123,22 +127,108 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// se comprueba que el TAXNUMBER de la empresa no existe en caso de que si, retorna error
-	data, err := db.DB_con.GenericSelect("institutions", "idInstitution", "taxNumInst", []string{registerReq.TaxNumInst}, []string{"statusInst_fk", "activeInst", "typeContractInst", "legalSignupName", "legalSignupLastname"})
+	var whereMap = map[string][]string{
+		"taxNumInst": {registerReq.TaxNumInst},
+	}
+
+	data, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "activeInst", "typeContractInst", "legalSignupName", "legalSignupLastname"}, whereMap)
 	if err != nil {
-		json.NewEncoder(respWriter).Encode(models.RegisterResponse{Check: false, InstId: "", Error: "Critical: error al obtener datos de institucion"})
+		registerResp.Error = "Critical: error al obtener datos de institucion"
+		json.NewEncoder(respWriter).Encode(registerResp)
 		return
+
 	} else {
 		// en caso de no haber ningun registro con el mismo TAXNUMBER  se procede al registro
 		if len(data) == 0 || status[data["idInstitution"]["statusInst_fk"]] {
 			lastId, err := objects.RegisterInst(&registerReq)
 			if err != nil {
-				json.NewEncoder(respWriter).Encode(models.RegisterResponse{Check: false, InstId: "", Error: fmt.Sprintf("%s", err)})
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
 
-			json.NewEncoder(respWriter).Encode(models.RegisterResponse{Check: true, InstId: lastId, Error: ""})
+			registerResp.InstId = lastId
+
+			whereMap = map[string][]string{
+				"nameApp": {"emailServ"},
+			}
+
+			data, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
+			if err != nil {
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+
+			binDoc, err := os.ReadFile("./templates/welcome_register.html")
+			if err != nil {
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+			}
+
+			body := string(binDoc)
+			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
+			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", "http://192.168.1.68:8000/validation")
+
+			payload := models.EmailRequest{
+				IdUser:   "1",
+				Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", registerReq.TaxNumInst),
+				Body:     body,
+				Dest:     []string{registerReq.ContactEmailInst},
+				MimeType: "html",
+			}
+
+			jsonPayload, err := json.Marshal(payload)
+			if err != nil {
+				fmt.Println("Error al convertir a JSON:", err)
+				return
+			}
+			var host, port string
+			for _, v := range data {
+				host = v["domainApp"]
+				port = v["portApp"]
+				break
+			}
+
+			req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
+			if err != nil {
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("token", "3") // cambiar por bearer
+			// Ejecutar petición
+			client := &http.Client{}
+			resp, err := client.Do(req)
+			if err != nil {
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+
+			fmt.Println("Código de respuesta:", resp.Status)
+			if strings.Contains(resp.Status, "200 OK") {
+				registerResp.Check = true
+			}
+			resp.Body.Close()
+
 		} else {
-			json.NewEncoder(respWriter).Encode(models.RegisterResponse{Check: false, InstId: "", Error: "Ya tiene un registro para su numero de empresa. Revisar estatus de su registro."})
+			registerResp.Error = "Ya tiene un registro para su numero de empresa. Revisar estatus de su registro."
+			json.NewEncoder(respWriter).Encode(registerResp)
+			return
 		}
 	}
+
+	json.NewEncoder(respWriter).Encode(registerResp)
+}
+
+func validationInst(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/validacion.html")
+
 }

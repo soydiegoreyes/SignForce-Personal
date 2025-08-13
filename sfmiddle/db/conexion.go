@@ -52,51 +52,62 @@ func (cnx *ConexionDB) Desconectar() {
 	}
 }
 
+func GenericSelect(tableName string, attributes []string, whereMap map[string][]string) {
+
+}
+
 // ================================ SELECTS ================================================
 // Obtener atributos de una tabla genérica basada en el id principal de la tabla
-func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, wColName string, wVals []string, attributes []string) (map[string]map[string]string, error) {
+func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
 
-	// construir la lista de los atributos para la consulta SQL
 	ats := strings.Join(attributes, ",")
 
-	// construir la lista de ids para la cláusula IN
-	whereV := ""
-	for i, id := range wVals {
-		whereV += "'" + id + "'"
-		if i != len(wVals)-1 {
-			whereV += ","
+	var wheres string
+	if logic, exists := whereMap["LOGIC"]; !exists {
+		// si no existe lógica significa que no puede haber and, or y not y debe haber solo una columna de atributos, se t
+		for k, v := range whereMap {
+			wheres += fmt.Sprintf("%s IN ('%s') AND ", k, strings.Join(v, "','"))
+
+		}
+		wheres = wheres[:len(wheres)-5]
+	} else {
+		wheres = logic[0]
+		for k, v := range whereMap {
+			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
+			} else {
+				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
+			}
 		}
 	}
 
-	// SELECT userId, attr1, attr2 FROM tabla1 WHERE whereCol IN (1,2,3,4,5)
-	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s IN (%s);", idColName, ats, tableName, wColName, whereV)
+	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s;", idColName, ats, tableName, wheres)
 	fmt.Println(query)
+
 	rows, err := cnx.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("error al ejecutar la consulta: %s  -> %v", query, err)
 	}
 	defer rows.Close()
 
-	// Preparar slice para almacenar los valores escaneados
+	// preparar slice para scan
 	cols := append([]string{idColName}, attributes...)
 	values := make([]interface{}, len(cols))
 	for i := range values {
 		values[i] = new(string)
 	}
+
 	for rows.Next() {
-		err := rows.Scan(values...)
-		if err != nil {
+		if err := rows.Scan(values...); err != nil {
 			return nil, fmt.Errorf("error al escanear fila: %v", err)
 		}
 
-		colID := *(values[0].(*string)) // cast a string
+		colID := *(values[0].(*string))
 		colData := make(map[string]string)
-
 		for i, attr := range attributes {
-			colData[attr] = *(values[i+1].(*string)) // +1 porque el primer valor es colID usado para key value
+			colData[attr] = *(values[i+1].(*string))
 		}
-
 		result[colID] = colData
 	}
 
@@ -286,7 +297,7 @@ func (cnx *ConexionDB) GenericInsert(tableName string, columns []string, values 
 	} else {
 		// Obtener información útil del resultado
 		if lastID, err := result.LastInsertId(); err == nil {
-			log.Printf("Registro insertado con ID: %d", lastID)
+			fmt.Printf("Registro insertado con ID: %d", lastID)
 			return fmt.Sprintf("%v", lastID), nil
 		} else {
 			return "", nil

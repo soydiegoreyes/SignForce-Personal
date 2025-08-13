@@ -26,6 +26,14 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type EmailRequest struct {
+	IdUser   string   `json:"iduser"`
+	Subject  string   `json:"subject"`
+	Body     string   `json:"body"`
+	Dest     []string `json:"dest"`
+	MimeType string   `json:"mimetype"`
+}
+
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register
 type RegisterResponse struct {
