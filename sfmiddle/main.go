@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
 	"time"
 
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	//"sfmiddle/configs"
@@ -64,10 +66,14 @@ func init() {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Configurar headers CORS
-		w.Header().Set("Access-Control-Allow-Origin", "*") // En producción cambia por tu dominio específico
+		origin := r.Header.Get("Origin")
+		if origin == "http://localhost:8000" || origin == "http://127.0.0.1:8000" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Vary", "Origin")
 
 		// Manejar preflight request (OPTIONS)
 		if r.Method == "OPTIONS" {
@@ -87,9 +93,29 @@ func main() {
 	// Crear un nuevo ServeMux
 	mux := http.NewServeMux()
 
-	// Registrar rutas
+	// Registrar rutas API
 	mux.HandleFunc("/register", registerInst)
+	mux.HandleFunc("/login", login)
 	mux.HandleFunc("/validation", validationInst)
+
+	// Servir archivos estáticos desde el directorio registro CORREGIDO ("registro")
+	mux.Handle("/registro/", http.StripPrefix("/registro/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Determinar el Content-Type basado en la extensión del archivo
+			switch filepath.Ext(r.URL.Path) {
+			case ".css":
+				w.Header().Set("Content-Type", "text/css")
+			case ".js":
+				w.Header().Set("Content-Type", "application/javascript")
+			case ".html":
+				w.Header().Set("Content-Type", "text/html")
+			default:
+				w.Header().Set("Content-Type", "text/plain")
+			}
+
+			http.FileServer(http.Dir("./../sffront/registro")).ServeHTTP(w, r)
+		})))
+
 	// Aplicar middleware CORS
 	handler := corsMiddleware(mux)
 
@@ -140,14 +166,26 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	} else {
 		// en caso de no haber ningun registro con el mismo TAXNUMBER  se procede al registro
 		if len(data) == 0 || status[data["idInstitution"]["statusInst_fk"]] {
+
+			// se registra la institucion
 			lastId, err := objects.RegisterInst(&registerReq)
 			if err != nil {
 				registerResp.Error = fmt.Sprintf("%s", err)
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
-
 			registerResp.InstId = lastId
+			fmt.Println("inst: ", lastId)
+
+			// se registra el usuario root
+			userId, err := objects.RegisterUser(&registerReq, lastId)
+			if err != nil {
+				fmt.Println(err)
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+			fmt.Println("Usuario registrado ", userId)
 
 			whereMap = map[string][]string{
 				"nameApp": {"emailServ"},
@@ -169,7 +207,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 			body := string(binDoc)
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", "http://192.168.1.68:8000/validation")
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", "http://192.168.1.68:8000/login")
 
 			payload := models.EmailRequest{
 				IdUser:   "1",
@@ -224,11 +262,21 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(registerResp)
 }
 
+// login de usuario
+func login(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/login.html")
+}
+
+// subir documentos para validacion
 func validationInst(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/registro/validacion.html")
+	http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
 
 }

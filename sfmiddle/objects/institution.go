@@ -8,25 +8,6 @@ import (
 	"sfmiddle/models"
 )
 
-// Class User
-type Institution struct {
-	Uid                  string
-	LegalName            string
-	Alias                string
-	TaxNum               string
-	Email                string
-	Phone                string
-	Country              int
-	City                 int
-	Active               bool
-	Status               int
-	ContractType         int
-	RegisteredByName     string
-	RegisteredByLastname string
-	LegalSignupName      string
-	LegalSignupLastname  string
-}
-
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
 // NewUser crea una nueva instancia de User
 func RegisterInst(registerReq *models.RegisterRequest) (string, error) {
