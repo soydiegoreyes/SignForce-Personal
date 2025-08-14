@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    //===================================== LIQUID BUBBLE =========================================
+
     // Efecto liquid glass para la burbuja del menú
     const liquidBubble = document.getElementById('liquidBubble');
     const navItems = document.querySelectorAll('.nav-item');
@@ -69,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         icon.classList.add('fa-moon');
       }
     });
+    //==================================================================================================
 
 
     // Validacion representante legal
@@ -131,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Validación de formularios
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
+    const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     // Para Formulario de Login !!! hay qye cambiarlo cuando sea la api
     loginForm.addEventListener('submit', (e) => {
@@ -144,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('No hay usuarios registrados');
             return;
         }
-        if (validateEmail(email) && login_password.length >= 8) {
+        if (EmailRegex.test(email) && login_password.length >= 8) {
             const usuario = usuarios.find(u => u.email === email && u.password === login_password);
                 
             if (usuario) {
@@ -213,8 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
             return;
         }
-
-        if (!validateEmail(email)) {
+        
+        
+        if (!EmailRegex.test(email)) {
             alert('Alguno de tus datos no es correcto.');
             document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
             return;
@@ -236,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Simula tabla de empresas o instituciones en DB
             let empresas = JSON.parse(sessionStorage.getItem('empresas')) || {};
 
-            // Crear nueva empresa para enviar a DB
+            // Datos iniciales para nueva empresa para enviar a DB
             const nuevaEmpresa = {
                 firstName,
                 lastName,
@@ -252,33 +257,35 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const nuevaEmpresaJson = JSON.stringify(nuevaEmpresa);
-            console.log(nuevaEmpresaJson);
             
             try {
-                const response = await fetch('http://localhost:8000/register', {
+                // manda los datos a la api para crear un nuevo cliente que empezara el proceso
+                const response = await fetch('http://192.168.1.68:8000/register', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
+                    credentials: 'include', // Importante para cookies/CORS
                     body: nuevaEmpresaJson
                 });
 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                    throw new Error('Error en la respuesta ' + response.statusText);
                 }
 
+                
                 // Parsear la respuesta JSON
                 const data = await response.json();
-                console.log('Respuesta del servidor:', data);
-
+                console.log(data);
                 // Agregar nueva empresa al arreglo local
                 empresas[data.instId] = nuevaEmpresa;
                 sessionStorage.setItem('empresas', JSON.stringify(empresas));
 
                 // Redirigir usando el ID del servidor
-                window.location.href = 'validacion.html?instId=' + data.instId;
+                window.location.href = '/login';
                 
-                alert('Registro exitoso. ¡Bienvenido a SignForce!');
+                alert('¡Bienvenido a SignForce! Revisa tu bandeja de entrada.');
 
             } catch (error) {
                 console.error('Error:', error);
@@ -291,11 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Función de validación de email
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
+    
 
     // Intersection Observer para animaciones al hacer scroll
     const observerOptions = {
