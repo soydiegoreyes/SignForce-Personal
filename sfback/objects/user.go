@@ -28,9 +28,11 @@ type User struct {
 
 // NewUser crea una nueva instancia de User
 func NewUser(idUser string, password string) (*User, error) {
-	attributes := []string{"nameUser", "lastNameUser", "pobUidUser", "taxNumUser", "emailUser", "activeUser", "idKeysUser_fk"}
-	log.Println(attributes)
-	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{idUser}, attributes)
+	var attributes = []string{"nameUser", "lastNameUser", "pobUidUser", "taxNumUser", "emailUser", "activeUser", "idKeysUser_fk"}
+	var wheres = map[string][]string{
+		"idUser": {idUser},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attributes, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener datos del usuario %v. error: %v", idUser, err)
 	}
@@ -38,8 +40,11 @@ func NewUser(idUser string, password string) (*User, error) {
 
 	// Se obtienen las rutas de llave y certificado
 	idKeyUser := userData[idUser]["idKeysUser_fk"]
-	keysUserAttr := []string{"keyFilePath", "certFilePath"}
-	keysUser, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{idKeyUser}, keysUserAttr)
+	var keysUserAttr = []string{"keyFilePath", "certFilePath"}
+	wheres = map[string][]string{
+		"idUserKeys": {idKeyUser},
+	}
+	keysUser, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", keysUserAttr, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener datos del usuario %v. error: %v", idUser, err)
 	}
