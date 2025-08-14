@@ -113,8 +113,11 @@ func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 	}
 
 	// se obtiene el nombre y correo del usuario emisor y se valida que sea un usuario activo
-	userAttributes := []string{"nameUser", "lastNameUser", "emailUser", "activeUser"}
-	userValues, err := db.DB_con.GenericSelect("users", "idUser", []string{data.IdUser}, userAttributes)
+	var userAttributes = []string{"nameUser", "lastNameUser", "emailUser", "activeUser"}
+	var wheres = map[string][]string{
+		"idUser": []string{data.IdUser},
+	}
+	userValues, err := db.DB_con.GenericSelect("users", "idUser", userAttributes, wheres)
 	if err != nil {
 		fmt.Println("error: no se pudo obtener datos del usuario ", data.IdUser)
 		return false
@@ -237,7 +240,10 @@ func mailServ(w http.ResponseWriter, r *http.Request) {
 	}
 	// se obtiene el nombre de la app y si esta activa
 	appAttributes := []string{"isActive", "domainApp", "portApp", "currPathApp", "nameApp"}
-	appValues, err := db.DB_con.GenericSelect("microapps", "idapp", []string{token}, appAttributes)
+	var wheres = map[string][]string{
+		"idapp": []string{token},
+	}
+	appValues, err := db.DB_con.GenericSelect("microapps", "idapp", appAttributes, wheres)
 	if err != nil {
 		fmt.Println("error: no se pudo autenticar la app", token)
 		return
