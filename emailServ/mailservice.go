@@ -104,7 +104,6 @@ func (cl *EmailClient) CloseAll() {
 	}
 }
 
-// EmailSender envía un email con los datos proporcionados
 func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 	log.Println("Intento de envío de email")
 	if len(data.Dest) == 0 || data.Body == "" || data.IdUser == "" {
@@ -112,26 +111,42 @@ func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 		return false
 	}
 
+	// Verificar si la conexión SMTP sigue viva
+	if cl.client == nil {
+		log.Println("Cliente SMTP no inicializado, conectando...")
+		if !cl.Connect() {
+			return false
+		}
+	} else {
+		if err := cl.client.Noop(); err != nil {
+			log.Println("Conexión SMTP caducada, reconectando...")
+			cl.CloseAll()
+			if !cl.Connect() {
+				return false
+			}
+		}
+	}
+
 	// se obtiene el nombre y correo del usuario emisor y se valida que sea un usuario activo
 	var userAttributes = []string{"nameUser", "lastNameUser", "emailUser", "activeUser"}
 	var wheres = map[string][]string{
-		"idUser": []string{data.IdUser},
+		"idUser": {data.IdUser},
 	}
 	userValues, err := db.DB_con.GenericSelect("users", "idUser", userAttributes, wheres)
 	if err != nil {
 		fmt.Println("error: no se pudo obtener datos del usuario ", data.IdUser)
 		return false
 	}
-	//fmt.Println(userValues)
 	if userValues[data.IdUser]["activeUser"] != "1" {
 		fmt.Println("error: Usuario inactivo: ", data.IdUser)
 		return false
 	}
+
 	// se construye el complemento del cuerpo indicando quien envía ese correo
-	data.Body = fmt.Sprintf("Correo enviado de %s %s\n\n%s\n", userValues[data.IdUser]["nameUser"], userValues[data.IdUser]["lastNameUser"], data.Body)
+	data.Body = fmt.Sprintf("Correo enviado de %s %s\n\n%s\n",
+		userValues[data.IdUser]["nameUser"], userValues[data.IdUser]["lastNameUser"], data.Body)
 
 	recipients := data.Dest
-	// Obtener credenciales de variables de entorno
 
 	// Configurar los headers del email
 	headers := make(map[string]string)
@@ -172,13 +187,11 @@ func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 		log.Println("Error al preparar el cuerpo del email:", err)
 		return false
 	}
-
 	_, err = w.Write([]byte(message.String()))
 	if err != nil {
 		log.Println("Error al escribir el cuerpo del email:", err)
 		return false
 	}
-
 	err = w.Close()
 	if err != nil {
 		log.Println("Error al cerrar el escritor del cuerpo del email:", err)
