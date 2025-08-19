@@ -8,11 +8,18 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"math/rand"
 	"os"
 	"os/exec"
 	"sfmiddle/configs"
 	"strings"
 )
+
+var symbols = [70]string{
+	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "Ñ", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+	"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "ñ", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+	"!", "#", "$", "%", "&", ".", "/", "(", ")", "-", "_", ";", ",", "*", "+", ":",
+}
 
 // GetHash calcula el hash de datos en memoria o de un archivo
 func GetHash(input interface{}, config configs.HashConfig) (string, error) {
@@ -127,4 +134,21 @@ func ConvertKeyToPem(rutaKey, password string) (string, error) {
 		}
 	}
 	return rutaPem, err
+}
+
+func PassGenerator(long int) string {
+	var pass string
+	arr := symbols
+
+	// Shuffle: le decimos cómo intercambiar elementos
+	rand.Shuffle(len(arr), func(i, j int) {
+		arr[i], arr[j] = arr[j], arr[i]
+	})
+	for i := range long {
+		pass += arr[i]
+	}
+
+	fmt.Println("Pass generado:", pass)
+
+	return pass
 }

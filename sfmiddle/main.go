@@ -14,9 +14,11 @@ import (
 	"strings"
 
 	//"sfmiddle/configs"
+	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
 	"sfmiddle/objects"
+	"sfmiddle/utilities"
 
 	//"sfmiddle/utilities"
 
@@ -94,9 +96,33 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Registrar rutas API
+	mux.HandleFunc("/", home)
 	mux.HandleFunc("/register", registerInst)
 	mux.HandleFunc("/login", login)
 	mux.HandleFunc("/validation", validationInst)
+
+	mux.Handle("/home/", http.StripPrefix("/home/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Determinar el Content-Type basado en la extensión del archivo
+			switch filepath.Ext(r.URL.Path) {
+			case ".css":
+				w.Header().Set("Content-Type", "text/css")
+			case ".js":
+				w.Header().Set("Content-Type", "application/javascript")
+			case ".html":
+				w.Header().Set("Content-Type", "text/html")
+			case ".png":
+				w.Header().Set("Content-Type", "image/png")
+			case ".jpg", ".jpeg":
+				w.Header().Set("Content-Type", "image/jpeg")
+			case ".ico":
+				w.Header().Set("Content-Type", "image/x-icon")
+			default:
+				w.Header().Set("Content-Type", "text/plain")
+			}
+
+			http.FileServer(http.Dir("./../sffront")).ServeHTTP(w, r)
+		})))
 
 	// Servir archivos estáticos desde el directorio registro CORREGIDO ("registro")
 	mux.Handle("/registro/", http.StripPrefix("/registro/",
@@ -109,6 +135,12 @@ func main() {
 				w.Header().Set("Content-Type", "application/javascript")
 			case ".html":
 				w.Header().Set("Content-Type", "text/html")
+			case ".png":
+				w.Header().Set("Content-Type", "image/png")
+			case ".jpg", ".jpeg":
+				w.Header().Set("Content-Type", "image/jpeg")
+			case ".ico":
+				w.Header().Set("Content-Type", "image/x-icon")
 			default:
 				w.Header().Set("Content-Type", "text/plain")
 			}
@@ -128,6 +160,14 @@ func main() {
 }
 
 // ====================================== Handlers ======================================== //
+// landing page
+func home(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != "GET" {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/index.html")
+}
 
 // Handler HTTP para loguear a un usuario por un ID de usuario y un arreglo de atributos a adquirir
 func registerInst(respWriter http.ResponseWriter, request *http.Request) {
@@ -174,11 +214,21 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
+
 			registerResp.InstId = lastId
 			fmt.Println("inst: ", lastId)
 
+			// se genera un password temporal y se hashea
+			tempPass := utilities.PassGenerator(12)
+			passHash, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
+			if err != nil {
+				registerResp.Error = "Error: No se pudo generar el password temporal"
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+
 			// se registra el usuario root
-			userId, err := objects.RegisterUser(&registerReq, lastId)
+			userId, err := objects.RegisterUser(&registerReq, lastId, passHash)
 			if err != nil {
 				fmt.Println(err)
 				registerResp.Error = fmt.Sprintf("%s", err)
@@ -206,6 +256,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 
 			body := string(binDoc)
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
+			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
 			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", "http://192.168.1.68:8000/login")
 
