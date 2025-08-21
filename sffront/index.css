@@ -1,10 +1,10 @@
 :root {
-  --color-background: #f2f4f6;
-  --color-card: #ffffff;
-  --color-text-primary: #180038;
-  --color-text-secondary: #7c8a96;
-  --color-accent: #e57c19;
-  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-background: #000;
+  --color-card: rgba(255, 255, 255, 0.05);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-accent: rgb(255, 255, 255, 0.5);
+  --color-shadow: rgba(0, 0, 0, 0.3);
   --color-blue-dark: #1e2c4b;
   --color-blue-light: #93bde5;
   --color-gold: #e5b019;
@@ -32,7 +32,6 @@ h1 {
   -webkit-text-fill-color: transparent;
 }
 .bg {
-  
   background: 
     radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20%  no-repeat,
     radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50%  no-repeat,

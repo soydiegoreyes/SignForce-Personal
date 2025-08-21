@@ -29,6 +29,13 @@ body {
   background-size: auto;  
 }
 
+.bg {  
+  background: 
+    radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20%  no-repeat,
+    radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50%  no-repeat,
+    radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80%  no-repeat;
+}
+
 /* Barra superior mejorada - 25% más grande */
 .glass-header {
   position: fixed;
@@ -116,10 +123,7 @@ body {
 
 .glass-card {
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(200, 90, 255, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Login Container */
