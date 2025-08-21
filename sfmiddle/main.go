@@ -98,7 +98,8 @@ func main() {
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/register", registerInst)
-	mux.HandleFunc("/login", login)
+	mux.HandleFunc("/login", loginPage)
+	mux.HandleFunc("/loginUser", login)
 	mux.HandleFunc("/validation", validationInst)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
@@ -235,6 +236,17 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
+			updates := map[string]map[string]interface{}{
+				lastId: {
+					"rootUser_fk": userId,
+				},
+			}
+			err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
+			if err != nil {
+				registerResp.Error = fmt.Sprintf("%s", err)
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
 			fmt.Println("Usuario registrado ", userId)
 
 			whereMap = map[string][]string{
@@ -258,10 +270,10 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
 			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", "http://192.168.1.68:8000/login")
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 			payload := models.EmailRequest{
-				IdUser:   "1",
+				IdUser:   userId,
 				Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", registerReq.TaxNumInst),
 				Body:     body,
 				Dest:     []string{registerReq.ContactEmailInst},
@@ -313,8 +325,8 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(registerResp)
 }
 
-// login de usuario
-func login(respWriter http.ResponseWriter, request *http.Request) {
+// pagina de login
+func loginPage(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "GET" {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
@@ -329,5 +341,82 @@ func validationInst(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
+
+}
+
+func login(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var err error
+	var loginReq models.LoginRequest
+	loginResp := models.LoginResponse{Token: "", Error: ""}
+
+	err = json.NewDecoder(request.Body).Decode(&loginReq)
+	if err != nil {
+		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+		return
+	}
+	// se obtienen los datos de validacion del usuario
+	var attrs = []string{"emailUser", "appPassHash", "activeUser", "authStatusUser", "idTeam_fk", "idInstitution_fk"}
+	dataUser, err := db.DB_con.GenericSelect("users", "idUser", attrs, map[string][]string{"emailUser": {loginReq.Account}})
+	if err != nil {
+		loginResp.Error = fmt.Sprintf("%s", err)
+		json.NewEncoder(respWriter).Encode(loginResp)
+		return
+	}
+	if len(dataUser) == 0 {
+		loginResp.Error = fmt.Sprintf("Error: Usuario %s no existe", loginReq.Account)
+		json.NewEncoder(respWriter).Encode(loginResp)
+		return
+	}
+	if len(dataUser) > 1 {
+		loginResp.Error = fmt.Sprintf("Error: Usuario %s tiene mas de un registro", loginReq.Account)
+		json.NewEncoder(respWriter).Encode(loginResp)
+		return
+	}
+
+	// se valida el hash del password y se saca el id del usuario
+	var idUser string
+	for idU, v := range dataUser {
+		idUser = idU
+		nh, err := utilities.GetHash([]byte(loginReq.Password), configs.HashConf)
+		if err != nil {
+			loginResp.Error = "Error: No se pudo verificar el password"
+			json.NewEncoder(respWriter).Encode(loginResp)
+			return
+		}
+		if !(v["appPassHash"] == nh && v["activeUsere"] == "1") {
+			loginResp.Error = "Error: Usuario no autorizado. Verificar Password o verifique el estado de su cuenta."
+			json.NewEncoder(respWriter).Encode(loginResp)
+			return
+		}
+		break
+	}
+
+	// se obtienen los datos de la institucion a la que pertenece el usuario
+	attrs = []string{"statusInst_fk", "activeInst", "contactEmailInst"}
+	dataInst, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, map[string][]string{"idInstitution": {dataUser[idUser]["idInstitution_fk"]}})
+	if err != nil {
+		loginResp.Error = "Critical: error al obtener datos de institucion"
+		json.NewEncoder(respWriter).Encode(loginResp)
+		return
+	}
+
+	var redirectUrl = ""
+	if dataInst[dataUser[idUser]["idInstitution_fk"]]["activeInst"] == "1" {
+		switch dataInst[dataUser[idUser]["idInstitution_fk"]]["statusInst_fk"] {
+		case "0":
+			redirectUrl = "/validation"
+		default:
+			redirectUrl = "/loginUser"
+		}
+	}
+
+	loginResp.Token = redirectUrl
+	json.NewEncoder(respWriter).Encode(loginResp)
+	//b := []string{"streetAddress", "addressLine", "postalCode", "neighborhood", "locality", "stateCodeInst_fk", "countryCodeInst_fk", "formattedAddress", "typeContractInst", "paymentDataInst_fk", "logoUrlInst", "rootUser_fk"}
 
 }

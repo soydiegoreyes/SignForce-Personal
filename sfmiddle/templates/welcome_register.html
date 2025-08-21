@@ -5,65 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido a Signforce</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
+       body {
+            background: #F3E2D4;
+            min-height: 100vh;
+            font-family: Inter, "Helvetica", sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0px;
+            color: #eaeaea;
         }
+
         .container {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-        .header {
+            background: rgb(24, 1, 48);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.6),
+                0 0 20px rgba(200, 90, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             text-align: center;
+        }
+
+        .header {
             margin-bottom: 25px;
         }
+
         .logo {
-            max-width: 150px;
-            margin-bottom: 20px;
+            max-width: 120px;
+            margin-bottom: 15px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            line-height: 1;
+            padding: 0;
+            letter-spacing: 0.5px;
+            word-spacing: 1px;
+            line-height: 1.8;
         }
         h1 {
-            color: #2c3e50;
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: 600;
+            background:  #35004366;
         }
+
         p {
             margin-bottom: 20px;
-            font-size: 16px;
-            color: #555;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #dcdcdc;
         }
+
         .cta-button {
             display: inline-block;
-            background-color: #4285f4;
+            background: #410041;
             color: white !important;
             text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-weight: 600;
             margin: 20px 0;
             text-align: center;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
         }
+
         .cta-button:hover {
-            background-color: #3367d6;
+            transform: translateY(-3px);
+            background: #660066;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
-        .footer {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #999;
-            text-align: center;
-        }
+
         .divider {
             height: 1px;
-            background-color: #eee;
-            margin: 25px 0;
+            background: linear-gradient(90deg, transparent, #afafaf, transparent);
+            margin: 30px 0;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: #999;
         }
     </style>
 </head>
@@ -76,22 +102,23 @@
             <h1>¡Bienvenido a Signforce!</h1>
         </div>
 
-        <h4>Este es tu nombre de usuario que podrás cambiar al completar tu registro: <strong>{TEMPORAL_USERNAME}</strong></h4>
+        <h4>Este es tu nombre de usuario que podrás acceder a la plataforma: <strong>{TEMPORAL_USERNAME}</strong></h4>
         <h4>Tu contraseña es: <strong>{TEMPORAL_PASS}</strong> ¡La puedes cambiar cuando quieras!</h4>
-        
+        <div class="divider"></div>
         <p>Nos emociona formar un nuevo vinculo contigo y tus colaboradores. En Signforce podrás firmar tus documentos facilmente y con toda la seguridad y certeza legal.</p>
         
-        <p><strong>Para comenzar nuestro viaje, entra a la siguiente liga donde te llevaremos paso a paso por el proceo de registro:</strong></p>
+        <p><strong>Comienza nuestro viaje entrando a la ligadonde <br>iremos paso a paso por el proceso de registro:</strong></p>
         
         <div style="text-align: center;">
             <a href="{URL_COMPLETAR_REGISTRO}" class="cta-button">¡Inicia sesión y completa tu registro!</a>
         </div>
         
-        <p>¡Tomate tu tiempo! tienes hasta la fecha {EXPIRATION_TIME}. Si este email te resulta desconocido, ignoralo.</p>
+        <p>¡Tomate tu tiempo! tienes hasta la fecha <strong>{EXPIRATION_TIME}</strong></p>
+        <p>Si este email te resulta desconocido, ignoralo.</p>
         
         <div class="divider"></div>
         
-        <p>Si tienes alguna pregunta, no dudes en responder a este correo o contactarnos en preguntas@signforce.com</p>
+        <p>Si tienes alguna pregunta, no dudes en contactarnos en preguntas@signforce.com</p>
         
         <p>¡Nos vemos pronto!</p>
         
@@ -101,8 +128,8 @@
             <p>© 2025 SIGNFORCE S.A. DE C.V. Todos los derechos reservados.</p>
             <p>CDMX, México</p>
             <p>
-                <a href="https://www.signforce.com/privacy" style="color: #4285f4; text-decoration: none;">Política de Privacidad</a> | 
-                <a href="https://www.signforce.com/terms" style="color: #4285f4; text-decoration: none;">Términos de Servicio</a>
+                <a href="https://www.signforce.com/privacy" style="color: #fae5ff; text-decoration: none;">Política de Privacidad</a> | 
+                <a href="https://www.signforce.com/terms" style="color: #fae5ff; text-decoration: none;">Términos de Servicio</a>
             </p>
         </div>
     </div>
