@@ -133,44 +133,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Validación de formularios
     const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
     const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // Para Formulario de Login !!! hay qye cambiarlo cuando sea la api
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const email = document.getElementById('login-email').value;
         const login_password = document.getElementById('login-password').value;
-        
-        // Simula tabla usuarios en DB
-        let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
-        if (usuarios==[]) {
-            alert('No hay usuarios registrados');
-            return;
-        }
-        if (EmailRegex.test(email) && login_password.length >= 8) {
-            const usuario = usuarios.find(u => u.email === email && u.password === login_password);
-                
-            if (usuario) {
-                // Simulamos que guardamos la sesión
-                sessionStorage.setItem('currentUser', JSON.stringify(usuario));
-                
-                // Redirigir según tipo de usuario
-                alert('Inicio de sesión exitoso. Redirigiendo...');
 
-                if (usuario.tipo === 'root') {
-                    window.location.href = './../dashboards/dashboard_root.html';
-                } else if (usuario.tipo === 'admin_equipo') {
-                    window.location.href = './../dashboards/dashboard_admin.html';
-                } else if (usuario.tipo === 'miembro_equipo') {
-                    window.location.href = './../dashboards/dashboard_user.html';
+        if (EmailRegex.test(email) && login_password.length >= 8) {
+            const loginRequest = {
+                account: email,
+                password: login_password
+            };
+
+            try {
+                const response = await fetch("http://192.168.1.70:8000/loginUser", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    credentials: "include", // Importante para las cookies
+                    body: JSON.stringify(loginRequest)
+                });
+
+                console.log("Status:", response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        alert(`Error: ${data.error}`);
+                        return;
+                    }
+
+                    // Si login exitoso, hacer redirect usando JavaScript
+                    if (data.redirectTo) {
+                        console.log(`Redirecting to: ${data.redirectTo}`);
+                        // Redirect usando window.location
+                        window.location.href = `${data.redirectTo}`;
+                        // O si prefieres usar el dominio actual:
+                        // window.location.href = data.redirectTo;
+                    }
                 } else {
-                    alert('Tipo de usuario no reconocido');
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error || 'Error desconocido'}`);
                 }
-            } else {
-                alert('Credenciales incorrectas');
+                
+            } catch (error) {
+                console.error("Error en login:", error);
+                alert(`Error al intentar iniciar sesión: ${error.message}`);
             }
+        } else {
+            alert("Email inválido o password muy corto (mínimo 8 caracteres).");
         }
+
     });
 
     
@@ -260,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // manda los datos a la api para crear un nuevo cliente que empezara el proceso
-                const response = await fetch('http://192.168.1.68:8000/register', {
+                const response = await fetch('http://192.168.1.70:8000/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
