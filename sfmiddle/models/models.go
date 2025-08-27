@@ -44,8 +44,9 @@ type RegisterResponse struct {
 
 // LoginResponse estructura para la respuesta del login
 type LoginResponse struct {
-	Token string `json:"token"`
-	Error string `json:"error"`
+	//Token      string `json:"token"`
+	Error      string `json:"error"`
+	RedirectTo string `json:"redirectTo"`
 }
 
 // UserResponse devuelve datos del usuario (sin sensibles)

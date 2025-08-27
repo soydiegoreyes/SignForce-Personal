@@ -10,6 +10,8 @@ import (
 	"sfmiddle/utilities"
 )
 
+type User struct{}
+
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
 // NewUser crea una nueva instancia de User
 func RegisterUser(registerReq *models.RegisterRequest, idInst string, passHash string) (string, error) {
@@ -27,7 +29,6 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, passHash s
 		"activeUser",
 		"roleAppUser_fk",
 		"appPassHash",
-		"isSignerUser",
 		"idTeam_fk",
 		"idInstitution_fk",
 	}
@@ -42,9 +43,24 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, passHash s
 		"1",
 		passHash,
 		"0",
-		"0",
 		idInst,
 	}
+	idUser, err := db.DB_con.GenericInsert("users", columns, values)
+	if err != nil {
+		fmt.Println("Error: al insertar datos", err)
+		return "", err
+	}
 
-	return db.DB_con.GenericInsert("users", columns, values)
+	dataRole, err := db.DB_con.GenericSelect("userroles", "idUser", []string{"idRole"}, map[string][]string{"idUser": {idUser}, "idRole": {"1"}})
+	if err != nil {
+		return "", err
+	}
+	if len(dataRole) != 0 {
+		return "", fmt.Errorf("colision de usuario y rol. El usuario ya existe")
+	}
+	_, err = db.DB_con.GenericInsert("userroles", []string{"idUser", "idRole", "grantedBy"}, []interface{}{idUser, 1, idUser})
+	if err != nil {
+		return "", fmt.Errorf("no se pudo asignar el rol al usuario")
+	}
+	return idUser, nil
 }

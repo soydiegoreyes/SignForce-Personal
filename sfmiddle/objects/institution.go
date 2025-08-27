@@ -34,8 +34,8 @@ func RegisterInst(registerReq *models.RegisterRequest) (string, error) {
 		registerReq.LegalSignupLastname,
 		registerReq.RegisterSignupName,
 		registerReq.RegisterSignupLastname,
-		1,
-		0,
+		2, // PENDIENTE_REGISTRO
+		0, // A1 esta activa
 	}
 
 	return db.DB_con.GenericInsert("institutions", columns, values)

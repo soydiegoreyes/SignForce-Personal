@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	//"sfmiddle/configs"
+	"sfmiddle/auth"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
@@ -100,7 +100,7 @@ func main() {
 	mux.HandleFunc("/register", registerInst)
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/loginUser", login)
-	mux.HandleFunc("/validation", validationInst)
+	mux.HandleFunc("/validation", validationPage)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -160,19 +160,21 @@ func main() {
 	}
 }
 
-// ====================================== Handlers ======================================== //
+// =========================================================================================
+// ====================================== Handlers ========================================
 // landing page
 func home(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "GET" {
+	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/index.html")
 }
 
+// =======================================================================
 // Handler HTTP para loguear a un usuario por un ID de usuario y un arreglo de atributos a adquirir
 func registerInst(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "POST" {
+	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
@@ -186,7 +188,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
-
+	// depende del estatus de la institucion se le permite hacer un registro (DB: statusinstitution)
 	var status = map[string]bool{
 		"2": true, "3": true, "4": true, "5": false, "6": true,
 		"7": true, "8": true, "9": true, "10": false, "11": false,
@@ -299,7 +301,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("token", "3") // cambiar por bearer
+			req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
 			// Ejecutar petición
 			client := &http.Client{}
 			resp, err := client.Do(req)
@@ -325,48 +327,71 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(registerResp)
 }
 
+// =======================================================================
 // pagina de login
 func loginPage(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "GET" {
+	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/registro/login.html")
 }
 
+// =======================================================================
 // subir documentos para validacion
-func validationInst(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "GET" {
+func validationPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
+	fmt.Println("entrando a validacion")
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		fmt.Println("No cookie")
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println("cookie: ", cookie.Value)
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Aquí deberías validar el JWT
+	fmt.Printf("Bienvenido al dashboard 🎉 Tu usuario es: %s", claims["uid"])
+	//respWriter.Header().Set("Authorization", "Bearer "+cookie.Value)
 	http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
 
 }
 
+// =======================================================================
 func login(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "POST" {
+	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var err error
 	var loginReq models.LoginRequest
-	loginResp := models.LoginResponse{Token: "", Error: ""}
+	loginResp := models.LoginResponse{RedirectTo: "noAuthPage", Error: ""} //se inicializa vacio para manejo mas sencillo
 
 	err = json.NewDecoder(request.Body).Decode(&loginReq)
 	if err != nil {
-		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+		http.Error(respWriter, "Error: JSON no valido.", http.StatusBadRequest)
 		return
 	}
+
 	// se obtienen los datos de validacion del usuario
-	var attrs = []string{"emailUser", "appPassHash", "activeUser", "authStatusUser", "idTeam_fk", "idInstitution_fk"}
+	var attrs = []string{"emailUser", "appPassHash", "activeUser", "idTeam_fk", "roleAppUser_fk", "idInstitution_fk"}
 	dataUser, err := db.DB_con.GenericSelect("users", "idUser", attrs, map[string][]string{"emailUser": {loginReq.Account}})
 	if err != nil {
 		loginResp.Error = fmt.Sprintf("%s", err)
 		json.NewEncoder(respWriter).Encode(loginResp)
 		return
 	}
+
+	// no existe el usuario por lo que no puede hacer login
 	if len(dataUser) == 0 {
 		loginResp.Error = fmt.Sprintf("Error: Usuario %s no existe", loginReq.Account)
 		json.NewEncoder(respWriter).Encode(loginResp)
@@ -388,35 +413,88 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			json.NewEncoder(respWriter).Encode(loginResp)
 			return
 		}
-		if !(v["appPassHash"] == nh && v["activeUsere"] == "1") {
+		if !(v["appPassHash"] == nh && v["activeUser"] == "1") {
 			loginResp.Error = "Error: Usuario no autorizado. Verificar Password o verifique el estado de su cuenta."
 			json.NewEncoder(respWriter).Encode(loginResp)
 			return
 		}
+		fmt.Println("hash valido y usuario activo")
 		break
 	}
+	// se asigna el id de la institucion
+	idInst := dataUser[idUser]["idInstitution_fk"]
+	fmt.Printf("idInst: %s\n", idInst)
 
 	// se obtienen los datos de la institucion a la que pertenece el usuario
 	attrs = []string{"statusInst_fk", "activeInst", "contactEmailInst"}
-	dataInst, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, map[string][]string{"idInstitution": {dataUser[idUser]["idInstitution_fk"]}})
+	dataInst, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, map[string][]string{"idInstitution": {idInst}})
 	if err != nil {
-		loginResp.Error = "Critical: error al obtener datos de institucion"
+		loginResp.Error = fmt.Sprintf("Critical: error al obtener datos de institucion %s", err)
 		json.NewEncoder(respWriter).Encode(loginResp)
 		return
 	}
+	fmt.Println(dataInst)
 
-	var redirectUrl = ""
-	if dataInst[dataUser[idUser]["idInstitution_fk"]]["activeInst"] == "1" {
-		switch dataInst[dataUser[idUser]["idInstitution_fk"]]["statusInst_fk"] {
-		case "0":
-			redirectUrl = "/validation"
-		default:
-			redirectUrl = "/loginUser"
-		}
+	// Generar JWT
+	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
+	if err != nil {
+		http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
+		return
 	}
+	fmt.Println(token)
+	var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true, "6": true}
+	var statusContr = map[string]bool{"7": true, "8": true}
+	var satusActive = map[string]bool{"9": true}
+	var satusInactive = map[string]bool{"10": true, "11": true, "12": true, "13": true}
 
-	loginResp.Token = redirectUrl
+	var location string
+	// Si el usuario esta activo
+	if dataUser[idUser]["activeUser"] == "1" {
+		// se valida si la institucion esta activa
+		if dataInst[idInst]["activeInst"] == "0" {
+			// si no esta activa entonces hay que ver que estatus tiene
+			if statusVal[dataInst[idInst]["statusInst_fk"]] {
+				// se encuentra en etapa de validacion por lo que se redirige a /validacion
+				location = "/validation"
+			} else if statusContr[dataInst[idInst]["statusInst_fk"]] {
+				location = "/ContractPage"
+			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
+				location = "/noAuthPage"
+			} else {
+				location = "/noAuthPage"
+			}
+		} else {
+			if satusActive[dataInst[idInst]["statusInst_fk"]] {
+				location = "/dashboard"
+			} else {
+				location = "/noAuthPage"
+			}
+		}
+	} else {
+		location = "/noAuthPage"
+	}
+	fmt.Println(location)
+
+	// Setear cookie con el token
+	http.SetCookie(respWriter, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // poner en true en producción con HTTPS
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Now().Add(1 * time.Hour),
+	})
+
+	// EN LUGAR DE HACER REDIRECT, RETORNAMOS LA INFO AL FRONTEND
+	//loginResp.Token = token
+	loginResp.RedirectTo = location
+
+	// Configurar headers CORS si es necesario
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("Access-Control-Allow-Credentials", "true")
+
 	json.NewEncoder(respWriter).Encode(loginResp)
-	//b := []string{"streetAddress", "addressLine", "postalCode", "neighborhood", "locality", "stateCodeInst_fk", "countryCodeInst_fk", "formattedAddress", "typeContractInst", "paymentDataInst_fk", "logoUrlInst", "rootUser_fk"}
-
 }
+
+//=========================================================================
