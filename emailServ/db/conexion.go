@@ -61,6 +61,190 @@ func (cnx *ConexionDB) Desconectar() {
 	}
 }
 
+// ================================ SELECTS ================================================
+// Obtener atributos de una tabla genérica basada en el id principal de la tabla
+func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
+	result := make(map[string]map[string]string)
+
+	ats := strings.Join(attributes, ",")
+
+	var wheres string
+	if logic, exists := whereMap["LOGIC"]; !exists {
+		// si no existe lógica significa que no puede haber and, or y not y debe haber solo una columna de atributos, se t
+		for k, v := range whereMap {
+			wheres += fmt.Sprintf("%s IN ('%s') AND ", k, strings.Join(v, "','"))
+
+		}
+		wheres = wheres[:len(wheres)-5]
+	} else {
+		wheres = logic[0]
+		for k, v := range whereMap {
+			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
+			} else {
+				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
+			}
+		}
+	}
+
+	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s;", idColName, ats, tableName, wheres)
+	fmt.Println(query)
+
+	rows, err := cnx.DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error al ejecutar la consulta: %s  -> %v", query, err)
+	}
+	defer rows.Close()
+
+	// preparar slice para scan
+	cols := append([]string{idColName}, attributes...)
+	values := make([]interface{}, len(cols))
+	for i := range values {
+		values[i] = new(sql.NullString) // usar NullString
+	}
+
+	for rows.Next() {
+		if err := rows.Scan(values...); err != nil {
+			return nil, fmt.Errorf("error al escanear fila: %v", err)
+		}
+
+		colIDns := values[0].(*sql.NullString)
+		colID := ""
+		if colIDns.Valid {
+			colID = colIDns.String
+		}
+
+		colData := make(map[string]string)
+		for i, attr := range attributes {
+			ns := values[i+1].(*sql.NullString)
+			if ns.Valid {
+				colData[attr] = ns.String
+			} else {
+				colData[attr] = "" // NULL → string vacío
+			}
+		}
+		result[colID] = colData
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error al iterar filas: %v", err)
+	}
+
+	return result, nil
+}
+
+// Realiza un JOIN entre dos tablas y devuelve los resultados
+func (cnx *ConexionDB) GenericJoinSelect(
+	mainTable string, // Tabla principal (ej: "users")
+	joinTable string, // Tabla a unir (ej: "profiles")
+	joinCondition string, // Condición de JOIN (ej: "users.id = profiles.user_id")
+	idColName string, // Columna de ID para filtrar (ej: "users.id")
+	wVals []string, // IDs a buscar (ej: ["1", "2"])
+	mainAttributes []string, // Atributos de la tabla principal (ej: ["name", "email"])
+	joinAttributes []string, // Atributos de la tabla secundaria (ej: ["bio", "avatar"])
+) (map[string]map[string]string, error) {
+	result := make(map[string]map[string]string)
+
+	// Construir la lista de atributos para el SELECT
+	mainAttrs := ""
+	if len(mainAttributes) > 0 {
+		mainAttrs = mainTable + "." + strings.Join(mainAttributes, ", "+mainTable+".")
+	}
+
+	joinAttrs := ""
+	if len(joinAttributes) > 0 {
+		joinAttrs = joinTable + "." + strings.Join(joinAttributes, ", "+joinTable+".")
+	}
+
+	// Combinar atributos de ambas tablas
+	allAttrs := []string{}
+	if mainAttrs != "" {
+		allAttrs = append(allAttrs, mainAttrs)
+	}
+	if joinAttrs != "" {
+		allAttrs = append(allAttrs, joinAttrs)
+	}
+	selectClause := strings.Join(allAttrs, ", ")
+
+	// Construir la lista de IDs para el IN
+	wherePlaceholders := make([]string, len(wVals))
+	for i, whereV := range wVals {
+		wherePlaceholders[i] = "'" + whereV + "'"
+	}
+	whereList := strings.Join(wherePlaceholders, ", ")
+
+	// Construir la consulta SQL
+	query := fmt.Sprintf(
+		"SELECT %s, %s.%s FROM %s JOIN %s ON %s WHERE %s.%s IN (%s);",
+		selectClause,
+		mainTable,
+		idColName,
+		mainTable,
+		joinTable,
+		joinCondition,
+		mainTable,
+		idColName,
+		whereList,
+	)
+
+	rows, err := cnx.DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error al ejecutar la consulta: %s -> %v", query, err)
+	}
+	defer rows.Close()
+
+	// Obtener nombres de columnas
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("error al obtener columnas: %v", err)
+	}
+
+	// Preparar valores para Scan
+	values := make([]interface{}, len(columns))
+	for i := range values {
+		values[i] = new(sql.NullString) // usar NullString
+	}
+
+	for rows.Next() {
+		err := rows.Scan(values...)
+		if err != nil {
+			return nil, fmt.Errorf("error al escanear fila: %v", err)
+		}
+
+		// Obtener el ID principal (asumimos que es la última columna)
+		idNS := values[len(values)-1].(*sql.NullString)
+		id := ""
+		if idNS.Valid {
+			id = idNS.String
+		}
+
+		rowData := make(map[string]string)
+
+		// Mapear cada columna a su valor
+		for i, colName := range columns {
+			if colName == idColName {
+				continue // Saltar la columna de ID (ya lo tenemos)
+			}
+			ns := values[i].(*sql.NullString)
+			if ns.Valid {
+				rowData[colName] = ns.String
+			} else {
+				rowData[colName] = "" // representar NULL como string vacío
+			}
+		}
+
+		result[id] = rowData
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error al iterar filas: %v", err)
+	}
+
+	return result, nil
+}
+
+// =========================================================================================
+
 // Obtener atributos de usuario
 func (cnx *ConexionDB) GetEmailAttributes(whereAttr string, whEqAttr string, attributes []string) (map[string]string, error) {
 	data := make(map[string]string)
@@ -159,66 +343,6 @@ func (cnx *ConexionDB) InsertEmailAttributes(attributes []string, values []inter
 	}
 
 	return id, nil
-}
-
-func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
-	result := make(map[string]map[string]string)
-
-	ats := strings.Join(attributes, ",")
-
-	var wheres string
-	if logic, exists := whereMap["LOGIC"]; !exists {
-		// si no existe lógica significa que no puede haber and, or y not y debe haber solo una columna de atributos, se t
-		for k, v := range whereMap {
-			wheres += fmt.Sprintf("%s IN ('%s') AND ", k, strings.Join(v, "','"))
-
-		}
-		wheres = wheres[:len(wheres)-5]
-	} else {
-		wheres = logic[0]
-		for k, v := range whereMap {
-			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
-			} else {
-				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
-			}
-		}
-	}
-
-	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s;", idColName, ats, tableName, wheres)
-	fmt.Println(query)
-
-	rows, err := cnx.DB.Query(query)
-	if err != nil {
-		return nil, fmt.Errorf("error al ejecutar la consulta: %s  -> %v", query, err)
-	}
-	defer rows.Close()
-
-	// preparar slice para scan
-	cols := append([]string{idColName}, attributes...)
-	values := make([]interface{}, len(cols))
-	for i := range values {
-		values[i] = new(string)
-	}
-
-	for rows.Next() {
-		if err := rows.Scan(values...); err != nil {
-			return nil, fmt.Errorf("error al escanear fila: %v", err)
-		}
-
-		colID := *(values[0].(*string))
-		colData := make(map[string]string)
-		for i, attr := range attributes {
-			colData[attr] = *(values[i+1].(*string))
-		}
-		result[colID] = colData
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error al iterar filas: %v", err)
-	}
-
-	return result, nil
 }
 
 // Obtener atributos de usuario
