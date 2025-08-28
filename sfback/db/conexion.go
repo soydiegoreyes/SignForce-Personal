@@ -91,7 +91,7 @@ func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attribu
 	cols := append([]string{idColName}, attributes...)
 	values := make([]interface{}, len(cols))
 	for i := range values {
-		values[i] = new(string)
+		values[i] = new(sql.NullString) // usar NullString
 	}
 
 	for rows.Next() {
@@ -99,10 +99,20 @@ func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attribu
 			return nil, fmt.Errorf("error al escanear fila: %v", err)
 		}
 
-		colID := *(values[0].(*string))
+		colIDns := values[0].(*sql.NullString)
+		colID := ""
+		if colIDns.Valid {
+			colID = colIDns.String
+		}
+
 		colData := make(map[string]string)
 		for i, attr := range attributes {
-			colData[attr] = *(values[i+1].(*string))
+			ns := values[i+1].(*sql.NullString)
+			if ns.Valid {
+				colData[attr] = ns.String
+			} else {
+				colData[attr] = "" // NULL → string vacío
+			}
 		}
 		result[colID] = colData
 	}
@@ -183,7 +193,7 @@ func (cnx *ConexionDB) GenericJoinSelect(
 	// Preparar valores para Scan
 	values := make([]interface{}, len(columns))
 	for i := range values {
-		values[i] = new(string)
+		values[i] = new(sql.NullString) // usar NullString
 	}
 
 	for rows.Next() {
@@ -192,16 +202,26 @@ func (cnx *ConexionDB) GenericJoinSelect(
 			return nil, fmt.Errorf("error al escanear fila: %v", err)
 		}
 
-		// Obtener el ID principal (asumimos que es el último valor)
-		id := *(values[len(values)-1].(*string))
+		// Obtener el ID principal (asumimos que es la última columna)
+		idNS := values[len(values)-1].(*sql.NullString)
+		id := ""
+		if idNS.Valid {
+			id = idNS.String
+		}
+
 		rowData := make(map[string]string)
 
 		// Mapear cada columna a su valor
 		for i, colName := range columns {
 			if colName == idColName {
-				continue // Saltar la columna de ID (ya la tenemos)
+				continue // Saltar la columna de ID (ya lo tenemos)
 			}
-			rowData[colName] = *(values[i].(*string))
+			ns := values[i].(*sql.NullString)
+			if ns.Valid {
+				rowData[colName] = ns.String
+			} else {
+				rowData[colName] = "" // representar NULL como string vacío
+			}
 		}
 
 		result[id] = rowData
