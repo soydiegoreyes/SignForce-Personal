@@ -55,3 +55,20 @@ type UserResponse struct {
 	Email  string `json:"email"`
 	Active bool   `json:"active"`
 }
+
+type ValidationResponse struct {
+	LegalName           string `json:"legalName"`
+	AliasName           string `json:"aliasName"`
+	TaxNum              string `json:"taxNum"`
+	LegalSignupName     string `json:"legalSignupName"`
+	LegalSignupLastname string `json:"legalSignupLastname"`
+	StreetAddress       string `json:"streetAddr"`
+	AddressLine         string `json:"lineAddr"`
+	PostalCode          string `json:"postalCode"`
+	Neighborhood        string `json:"neighborhood"`
+	Locality            string `json:"locality"`
+	ActaConstitutiva    string `json:"docActa"`
+	PoderRepresentante  string `json:"docPoder"`
+	IdentidadOficial    string `json:"docIdentidad"`
+	PruebaResidencia    string `json:"docResidencia"`
+}

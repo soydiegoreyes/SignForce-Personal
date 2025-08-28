@@ -27,10 +27,10 @@ func GenerateJWT(idUser, idTeam, roleApp, idInst, authStatusInst string) (string
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uid":      idUser,
+		"iid":      idInst,
 		"authInst": authStatusInst,
 		"team":     idTeam,
 		"role":     roleApp,
-		"iid":      idInst,
 		"exp":      expirationUnix,
 	})
 

@@ -101,6 +101,7 @@ func main() {
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/loginUser", login)
 	mux.HandleFunc("/validation", validationPage)
+	mux.HandleFunc("/getvaldata", getValidationData)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -359,10 +360,126 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Aquí deberías validar el JWT
-	fmt.Printf("Bienvenido al dashboard 🎉 Tu usuario es: %s", claims["uid"])
+	fmt.Printf("Bienvenido al dashboard 🎉 Tu usuario es: %s\n", claims["uid"])
 	//respWriter.Header().Set("Authorization", "Bearer "+cookie.Value)
 	http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
 
+}
+
+// =======================================================================
+// Endpoint para obtener datos de validación
+func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	fmt.Println("validationData")
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Obtener datos de la base de datos usando el user ID
+	idUser := claims["uid"].(string)
+	idInst := claims["iid"].(string)
+	valResp := &models.ValidationResponse{}
+
+	// obtener datos faltantes de la institucion
+	var attrs = []string{"legalNameInst", "aliasNameInst", "taxNumInst", "legalSignupName", "legalSignupLastname", "streetAddress", "addressLine", "postalCode", "neighborhood", "locality"}
+
+	// Condiciones WHERE
+	wheres := map[string][]string{
+		"idInstitution": {idInst},
+		"rootUser_fk":   {idUser},
+	}
+	validationData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(respWriter, "Error obteniendo datos", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(validationData)
+	valData := map[string]*string{
+		"legalNameInst":       &valResp.LegalName,
+		"aliasNameInst":       &valResp.AliasName,
+		"taxNumInst":          &valResp.TaxNum,
+		"legalSignupName":     &valResp.LegalSignupName,
+		"legalSignupLastname": &valResp.LegalSignupLastname,
+		"streetAddress":       &valResp.StreetAddress,
+		"addressLine":         &valResp.AddressLine,
+		"postalCode":          &valResp.PostalCode,
+		"neighborhood":        &valResp.Neighborhood,
+		"locality":            &valResp.Locality,
+	}
+	for k, v := range validationData[idInst] {
+		// Verificamos si esa clase está en nuestro mapa de punteros
+		if ptr, exists := valData[k]; exists && ptr != nil {
+			*ptr = v
+		} else {
+			fmt.Println("Existe: ", exists)
+		}
+	}
+
+	// Mapeamos el nombre de la clase del documento al puntero del campo correspondiente
+	documentClasses := map[string]*string{
+		"ActaConstitutiva":   &valResp.ActaConstitutiva,
+		"PoderRepresentante": &valResp.PoderRepresentante,
+		"IdentidadOficial":   &valResp.IdentidadOficial,
+		"PruebaResidencia":   &valResp.PruebaResidencia,
+	}
+
+	// Campos que queremos obtener de la tabla
+	attrs = []string{"documentType", "documentName", "documentClass", "documentPath", "expirationDate"}
+
+	// Condiciones WHERE
+	wheres = map[string][]string{
+		"idInsttitution_fk": {idInst},
+		"idUser_fk":         {idUser},
+	}
+
+	// Ejecutamos la consulta genérica
+	validationDocs, err := db.DB_con.GenericSelect("kyc", "documentHash", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error obteniendo datos", http.StatusInternalServerError)
+		return
+	}
+	fmt.Println(validationDocs)
+	// Recorremos cada registro (key = hash, value = fila)
+	for _, row := range validationDocs {
+		// Obtenemos la clase del documento
+		if docClass, ok := row["documentClass"]; !ok {
+			// Si no existe la columna, simplemente pasamos al siguiente registro
+			continue
+		} else {
+			// Verificamos si esa clase está en nuestro mapa de punteros
+			if ptr, exists := documentClasses[docClass]; exists && ptr != nil {
+				// Concatenamos los valores que necesitamos.
+				// Nos aseguramos de que cada clave exista antes de usarla.
+				path := row["documentPath"]
+				name := row["documentName"]
+				typ := row["documentType"]
+
+				concatenated := fmt.Sprintf("%s%s.%s", path, name, typ)
+
+				// Guardamos el resultado en el campo correspondiente de valResp
+				*ptr = concatenated
+			}
+		}
+	}
+
+	// Configurar headers de seguridad
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	fmt.Println(valResp)
+	json.NewEncoder(respWriter).Encode(valResp)
 }
 
 // =======================================================================
@@ -433,7 +550,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(respWriter).Encode(loginResp)
 		return
 	}
-	fmt.Println(dataInst)
+	//fmt.Println(dataInst)
 
 	// Generar JWT
 	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
@@ -441,7 +558,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(token)
+	//fmt.Println(token)
 	var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true, "6": true}
 	var statusContr = map[string]bool{"7": true, "8": true}
 	var satusActive = map[string]bool{"9": true}
@@ -473,7 +590,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	} else {
 		location = "/noAuthPage"
 	}
-	fmt.Println(location)
+	//fmt.Println(location)
 
 	// Setear cookie con el token
 	http.SetCookie(respWriter, &http.Cookie{
