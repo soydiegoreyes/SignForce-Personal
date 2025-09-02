@@ -328,6 +328,19 @@
             cursor: not-allowed;
             box-shadow: none;
         }
+        .btn-guardar {
+            background: var(--color-blue-light);
+            color: var(--color-background);
+            box-shadow: 0 4px 15px rgba(147, 189, 229, 0.3);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-guardar:hover {
+            background: var(--color-blue-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(147, 189, 229, 0.4);
+        }
 
         .actions {
             display: flex;
@@ -516,9 +529,7 @@
     <div class="main-content">
         <div class="container">
             <h1 class="fade-in">Validación de Documentos</h1>
-            
             <div id="messageContainer"></div>
-            
             <div class="empresa-info glass-card fade-in delay-1" id="empresaInfo">
                 <!-- Información de la empresa se llenará con JS -->
             </div>
@@ -533,7 +544,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusActa">Pendiente</span>
                                 <div class="file-input-container">
-                                    <button class="btn btn-upload" id="btnActa">Subir</button>
+                                    <label for="fileActa" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -544,7 +555,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusPoder">Pendiente</span>
                                 <div class="file-input-container">
-                                    <button class="btn btn-upload" id="btnPoder">Subir</button>
+                                    <label for="filePoder" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -555,7 +566,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
                                 <div class="file-input-container">
-                                    <button class="btn btn-upload" id="btnIdentificacion">Subir</button>
+                                    <label for="fileIdentificacion" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -566,7 +577,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
                                 <div class="file-input-container">
-                                    <button class="btn btn-upload" id="btnDomicilio">Subir</button>
+                                    <label for="fileDomicilio" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -728,39 +739,79 @@
             
             // Actualizar información de la empresa
             const inputline = '<div class="form-group"><input type="text" id="{0}" class="input-field" placeholder="{1}"></div>';
+            
             document.getElementById('empresaInfo').innerHTML = `
-                <h3>${data.legalName || 'Nombre no disponible'}</h3>
+                <h3>${data.legalName?data.legalName:'Nombre no disponible'}</h3>
                 <p><strong>Alias:</strong> ${data.aliasName?data.aliasName:'No especificado'}</p>
                 <p><strong>RFC:</strong> ${data.taxNum?data.taxNum:'No especificado'}</p>
-                <p><strong>Nombre de representante Legal:</strong> ${data.legalSignupName?data.legalSignupName:inputline.format("legal-signup-name", "Nombre Repr. Legal")}</p>
-                <p><strong>Apellido de representante Legal:</strong> ${data.legalSignupLastname?data.legalSignupLastname:inputline.format("legal-signup-last", "Apellido Repr. Legal")}</p>
+                <p><strong>Nombre de representante Legal:</strong> ${data.legalSignupName?data.legalSignupName:'No especificado'}</p>
+                <p><strong>Apellido de representante Legal:</strong> ${data.legalSignupLastname?data.legalSignupLastname:'No especificado'}</p>
                 <p><strong>Dirección:</strong> ${data.streetAddress?data.streetAddress:inputline.format("street-address", "Calle y Número")}</p>
                 <p><strong>Código Postal:</strong> ${data.postalCode?data.postalCode:inputline.format("postal-code", "Código postal")}</p>
                 <p><strong>Colonia:</strong> ${data.neighborhood?data.neighborhood:inputline.format("neighborhood", "Colonia")}</p>
                 <p><strong>Localidad:</strong> ${data.locality?data.locality:inputline.format("locality", "Delegacion o municipio")}</p>
+                <div class="actions" style="margin-bottom: 1rem;">
+                    <button class="btn btn-guardar" id="btnGuardarInfo">Guardar Información</button>
+                </div>
             `;
             
-            // Actualizar estado de los documentos
             for (const [key, value] of Object.entries(documentTypes)) {
                 if (data[value]) {
                     // Documento ya existe, bloquear la subida
                     documentos[key].subido = true;
                     documentos[key].nombre = data[value];
-                    
+
+                    // Construir IDs dinámicos
+                    const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+
                     // Actualizar UI
-                    document.getElementById(`status${key.charAt(0).toUpperCase() + key.slice(1)}`).className = 'status status-completo';
-                    document.getElementById(`status${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = 'Completo';
-                    document.getElementById(`btn${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = 'Documento subido';
-                    document.getElementById(`btn${key.charAt(0).toUpperCase() + key.slice(1)}`).disabled = true;
-                    document.getElementById(`file${key.charAt(0).toUpperCase() + key.slice(1)}`).disabled = true;
-                    
+                    const statusEl = document.getElementById(`status${capitalized}`);
+                    statusEl.className = 'status status-completo';
+                    statusEl.textContent = 'Completo';
+
+                    // Cambiar el label (que simula el botón)
+                    const labelEl = document.querySelector(`label[for="file${capitalized}"]`);
+                    if (labelEl) {
+                        labelEl.textContent = 'Documento subido';
+                        labelEl.classList.add('disabled-label'); // clase para estilos grises
+                    }
+
+                    // Deshabilitar el input file real
+                    document.getElementById(`file${capitalized}`).disabled = true;
+
                     // Mostrar información del archivo
-                    document.getElementById(`info${key.charAt(0).toUpperCase() + key.slice(1)}`).textContent = `Archivo: ${data[value]}`;
+                    document.getElementById(`info${capitalized}`).textContent = `Archivo: ${data[value]}`;
                 }
             }
             
             // Verificar si todos los documentos están completos
             verificarCompletitud();
+        }
+
+        // Agregar esta función para recopilar datos de los inputs
+        function recopilarDatosTexto() {
+            const datos = {};
+            
+            // Obtener valores de todos los inputs de texto
+            const inputs = document.querySelectorAll('#empresaInfo input');
+            inputs.forEach(input => {
+                switch(input.id) {
+                    case 'street-address':
+                        datos.streetAddress = input.value;
+                        break;
+                    case 'postal-code':
+                        datos.postalCode = input.value;
+                        break;
+                    case 'neighborhood':
+                        datos.neighborhood = input.value;
+                        break;
+                    case 'locality':
+                        datos.locality = input.value;
+                        break;
+                }
+            });
+            
+            return datos;
         }
 
         //===================================== UPLOAD DOCS =========================================
@@ -771,19 +822,37 @@
                     subirDocumento(key, event.target.files[0]);
                 });
             }
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'btnGuardarInfo') {
+                    guardarInformacionTexto();
+                }
+            });
         }
 
         // Función para subir un documento
         async function subirDocumento(tipo, archivo) {
+            console.log(tipo);
+            console.log(archivo);
             if (!archivo) return;
             
             try {
                 mostrarMensaje(`Subiendo ${tipo}...`, 'info');
                 
-                // Crear FormData para enviar el archivo
                 const formData = new FormData();
                 formData.append('documentType', documentTypes[tipo]);
-                formData.append('document', archivo);
+                formData.append('document', archivo); // Este es el key que busca Go
+                
+                // Debug: ver qué se está enviando
+                console.log('DocumentType value:', documentTypes[tipo]);
+                console.log('Archivo name:', archivo.name);
+                
+                // También enviar datos de texto si existen
+                const datosTexto = recopilarDatosTexto();
+                for (const key in datosTexto) {
+                    if (datosTexto[key]) {
+                        formData.append(key, datosTexto[key]);
+                    }
+                }
                 
                 const response = await fetch('/updatevaldata', {
                     method: 'POST',
@@ -792,10 +861,13 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
                 }
                 
                 const result = await response.json();
+                console.log('Resultado:', result);
+                mostrarMensaje('Documento subido exitosamente', 'success');
                 
                 // Actualizar estado del documento
                 documentos[tipo].subido = true;
@@ -820,6 +892,32 @@
                 
                 // Limpiar el input de archivo
                 document.getElementById(`file${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value = '';
+            }
+        }
+
+        // Función para guardar solo información de texto
+        async function guardarInformacionTexto() {
+            try {
+                mostrarMensaje('Guardando información...', 'info');
+                
+                const datos = recopilarDatosTexto();
+                const response = await fetch('/updatevaldata', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                mostrarMensaje('Información guardada correctamente', 'success');
+            } catch (error) {
+                console.error('Error al guardar información:', error);
+                mostrarMensaje('Error al guardar información: ' + error.message, 'error');
             }
         }
 
