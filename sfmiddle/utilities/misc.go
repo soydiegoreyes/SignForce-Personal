@@ -3,7 +3,12 @@ package utilities
 import (
 	"encoding/base64"
 	"fmt"
+	"io"
 	"log"
+	"mime/multipart"
+	"os"
+	"path"
+	"time"
 
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
@@ -52,4 +57,33 @@ func Latin1ToUTF8(input []byte) string {
 		return string(input)
 	}
 	return string(utf8Str)
+}
+
+// Función para guardar archivos en el sistema
+func GuardarArchivo(file multipart.File, filename, idInst, idUser string) (string, error) {
+	// Crear directorio si no existe
+	uploadDir := fmt.Sprintf("./%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+	err := os.MkdirAll(uploadDir, 0755)
+	if err != nil {
+		return "", err
+	}
+
+	// Generar nombre único para el archivo
+	uniqueName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
+	filePath := path.Join(uploadDir, uniqueName)
+
+	// Crear el archivo
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
+
+	// Copiar el contenido
+	_, err = io.Copy(dst, file)
+	if err != nil {
+		return "", err
+	}
+
+	return filePath, nil
 }

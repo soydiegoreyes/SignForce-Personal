@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 
 	"time"
 
 	"log"
 	"net/http"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -102,6 +104,10 @@ func main() {
 	mux.HandleFunc("/loginUser", login)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/getvaldata", getValidationData)
+	mux.HandleFunc("/updatevaldata", updateValidationData)
+	mux.HandleFunc("/uploadDocs", uploadDoc)
+	mux.HandleFunc("/completevalidation", completeValidation)
+	mux.HandleFunc("/waitapprove", waitApprove)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -161,7 +167,6 @@ func main() {
 	}
 }
 
-// =========================================================================================
 // ====================================== Handlers ========================================
 // landing page
 func home(respWriter http.ResponseWriter, request *http.Request) {
@@ -191,9 +196,9 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	// depende del estatus de la institucion se le permite hacer un registro (DB: statusinstitution)
 	var status = map[string]bool{
-		"2": true, "3": true, "4": true, "5": false, "6": true,
-		"7": true, "8": true, "9": true, "10": false, "11": false,
-		"12": true, "13": false,
+		"2": true, "3": true, "4": false, "5": true,
+		"6": true, "7": true, "8": true, "9": false, "10": false,
+		"11": true, "12": false,
 	}
 
 	// se comprueba que el TAXNUMBER de la empresa no existe en caso de que si, retorna error
@@ -220,7 +225,6 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 
 			registerResp.InstId = lastId
-			fmt.Println("inst: ", lastId)
 
 			// se genera un password temporal y se hashea
 			tempPass := utilities.PassGenerator(12)
@@ -250,7 +254,7 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
-			fmt.Println("Usuario registrado ", userId)
+			fmt.Println("Usuario registrado ", userId, " Inst: ", lastId)
 
 			whereMap = map[string][]string{
 				"nameApp": {"emailServ"},
@@ -312,7 +316,6 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			fmt.Println("Código de respuesta:", resp.Status)
 			if strings.Contains(resp.Status, "200 OK") {
 				registerResp.Check = true
 			}
@@ -345,24 +348,47 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	fmt.Println("entrando a validacion")
+
 	cookie, err := request.Cookie("token")
 	if err != nil {
-		fmt.Println("No cookie")
+		fmt.Println("validation page: No cookie")
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println("cookie: ", cookie.Value)
+
 	claims, err := auth.ValidateJWT(cookie.Value)
 	if err != nil {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
-	// Aquí deberías validar el JWT
-	fmt.Printf("Bienvenido al dashboard 🎉 Tu usuario es: %s\n", claims["uid"])
-	//respWriter.Header().Set("Authorization", "Bearer "+cookie.Value)
-	http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
+	// Claims de JWT para validar
+	/*"uid":      idUser,
+	"iid":      idInst,
+	"authInst": authStatusInst,
+	"team":     idTeam,
+	"role":     roleApp,*/
+
+	idUser := claims["uid"].(string)
+	idInst := claims["iid"].(string)
+	wheres := map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+	}
+	data, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "roleAppUser_fk", "idTeam_fk", "idInstitution_fk"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos del usuario.", http.StatusInternalServerError)
+		return
+	}
+	if len(data) > 0 {
+		if data[idUser]["activeUser"] == "1" && data[idUser]["roleAppUser_fk"] == "1" && data[idUser]["idTeam_fk"] == "0" {
+			//respWriter.Header().Set("Authorization", "Bearer "+cookie.Value)
+			http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
+		}
+	} else {
+		http.Error(respWriter, "Datos de usuario no encontrados", http.StatusUnauthorized)
+		return
+	}
 
 }
 
@@ -373,7 +399,7 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	fmt.Println("validationData")
+
 	// Validar JWT
 	cookie, err := request.Cookie("token")
 	if err != nil {
@@ -402,8 +428,7 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	validationData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
 	if err != nil {
-		fmt.Println(err)
-		http.Error(respWriter, "Error obteniendo datos", http.StatusInternalServerError)
+		http.Error(respWriter, fmt.Sprintf("Error obteniendo datos: %s", err), http.StatusInternalServerError)
 		return
 	}
 	fmt.Println(validationData)
@@ -414,10 +439,10 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 		"legalSignupName":     &valResp.LegalSignupName,
 		"legalSignupLastname": &valResp.LegalSignupLastname,
 		"streetAddress":       &valResp.StreetAddress,
-		"addressLine":         &valResp.AddressLine,
-		"postalCode":          &valResp.PostalCode,
-		"neighborhood":        &valResp.Neighborhood,
-		"locality":            &valResp.Locality,
+		//"addressLine":         &valResp.AddressLine,
+		"postalCode":   &valResp.PostalCode,
+		"neighborhood": &valResp.Neighborhood,
+		"locality":     &valResp.Locality,
 	}
 	for k, v := range validationData[idInst] {
 		// Verificamos si esa clase está en nuestro mapa de punteros
@@ -478,8 +503,174 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	// Configurar headers de seguridad
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-	fmt.Println(valResp)
+
 	json.NewEncoder(respWriter).Encode(valResp)
+}
+
+// =======================================================================
+// Endpoint para actualizar datos de validación
+func updateValidationData(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Obtener user ID e institution ID
+	idUser := claims["uid"].(string)
+	idInst := claims["iid"].(string)
+	valReq := models.ValidationRequest{}
+
+	// Determinar el tipo de contenido
+	contentType := request.Header.Get("Content-Type")
+
+	// Si es multipart (contiene documentos)
+	if strings.Contains(contentType, "multipart/form-data") {
+		// Parsear el form multipart
+		err := request.ParseMultipartForm(100 << 20) // 100 MB máximo
+		if err != nil {
+			http.Error(respWriter, "Error procesando formulario", http.StatusBadRequest)
+			return
+		}
+
+		// Procesar campos de texto
+		if request.MultipartForm.Value != nil {
+			if val, exists := request.MultipartForm.Value["streetAddress"]; exists && len(val) > 0 {
+				valReq.StreetAddress = val[0]
+			}
+			if val, exists := request.MultipartForm.Value["postalCode"]; exists && len(val) > 0 {
+				valReq.PostalCode = val[0]
+			}
+			if val, exists := request.MultipartForm.Value["neighborhood"]; exists && len(val) > 0 {
+				valReq.Neighborhood = val[0]
+			}
+			if val, exists := request.MultipartForm.Value["locality"]; exists && len(val) > 0 {
+				valReq.Locality = val[0]
+			}
+		}
+
+		// Procesar archivo (si existe)
+		if request.MultipartForm.File != nil {
+
+			// Obtener el tipo de documento
+			var docType string
+			if docTypeVal, exists := request.MultipartForm.Value["documentType"]; exists && len(docTypeVal) > 0 {
+				docType = docTypeVal[0]
+			}
+
+			// Buscar el archivo en el campo "document"
+			if files, exists := request.MultipartForm.File["document"]; exists && len(files) > 0 {
+				file, err := files[0].Open()
+				if err != nil {
+					http.Error(respWriter, "Error abriendo archivo", http.StatusBadRequest)
+					return
+				}
+				defer file.Close()
+
+				// Guardar el archivo y obtener la ruta
+				filePath, err := utilities.GuardarArchivo(file, files[0].Filename, idInst, idUser)
+				if err != nil {
+					fmt.Println("Error guardando archivo:", err)
+					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
+					return
+				}
+
+				// Asignar la ruta al campo correspondiente según el tipo de documento
+				switch docType {
+				case "docActa":
+					valReq.ActaConstitutiva = filePath
+				case "docPoder":
+					valReq.PoderRepresentante = filePath
+				case "docIdentidad":
+					valReq.IdentidadOficial = filePath
+				case "docResidencia":
+					valReq.PruebaResidencia = filePath
+				default:
+					fmt.Printf("Tipo de documento desconocido: %s\n", docType)
+				}
+			}
+		}
+	} else {
+		// Es JSON, solo datos de texto
+		err = json.NewDecoder(request.Body).Decode(&valReq)
+		if err != nil {
+			http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+			return
+		}
+	}
+
+	// Actualizar datos en la base de datos
+	err = db.DB_con.UpdateValData(idInst, idUser, &valReq)
+	if err != nil {
+		fmt.Printf("Error actualizando datos en DB: %v\n", err)
+		http.Error(respWriter, "Error actualizando datos", http.StatusInternalServerError)
+		return
+	}
+
+	// Respuesta exitosa
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	response := map[string]string{"message": "Datos actualizados correctamente"}
+	json.NewEncoder(respWriter).Encode(response)
+}
+
+func completeValidation(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Obtener user ID e institution ID
+	idInst := claims["iid"].(string)
+	updates := map[string]map[string]interface{}{
+		idInst: {
+			"statusInst_fk": "3",
+		},
+	}
+	err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
+	if err != nil {
+		http.Error(respWriter, "No se actualizó el estatus", http.StatusInternalServerError)
+		return
+	}
+
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("Access-Control-Allow-Credentials", "true")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+
+	json.NewEncoder(respWriter).Encode(map[string]string{"status": "OK"})
+
+}
+
+func waitApprove(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/waitapprove.html")
 }
 
 // =======================================================================
@@ -540,7 +731,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	// se asigna el id de la institucion
 	idInst := dataUser[idUser]["idInstitution_fk"]
-	fmt.Printf("idInst: %s\n", idInst)
 
 	// se obtienen los datos de la institucion a la que pertenece el usuario
 	attrs = []string{"statusInst_fk", "activeInst", "contactEmailInst"}
@@ -550,7 +740,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(respWriter).Encode(loginResp)
 		return
 	}
-	//fmt.Println(dataInst)
 
 	// Generar JWT
 	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
@@ -558,21 +747,23 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
 		return
 	}
-	//fmt.Println(token)
-	var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true, "6": true}
-	var statusContr = map[string]bool{"7": true, "8": true}
-	var satusActive = map[string]bool{"9": true}
-	var satusInactive = map[string]bool{"10": true, "11": true, "12": true, "13": true}
+
+	//var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true}
+	var statusContr = map[string]bool{"6": true, "7": true}
+	var satusActive = map[string]bool{"8": true}
+	var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
 
 	var location string
 	// Si el usuario esta activo
 	if dataUser[idUser]["activeUser"] == "1" {
-		// se valida si la institucion esta activa
+		// se valida si la institucion no esta activa aun
 		if dataInst[idInst]["activeInst"] == "0" {
 			// si no esta activa entonces hay que ver que estatus tiene
-			if statusVal[dataInst[idInst]["statusInst_fk"]] {
+			if dataInst[idInst]["statusInst_fk"] == "2" {
 				// se encuentra en etapa de validacion por lo que se redirige a /validacion
 				location = "/validation"
+			} else if dataInst[idInst]["statusInst_fk"] == "3" {
+				location = "/waitapprove"
 			} else if statusContr[dataInst[idInst]["statusInst_fk"]] {
 				location = "/ContractPage"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
@@ -614,4 +805,68 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(loginResp)
 }
 
-//=========================================================================
+// =========================================================================
+func uploadDoc(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	contentType := request.Header.Get("Content-Type")
+
+	if strings.Contains(contentType, "multipart/form-data") {
+		reader, err := request.MultipartReader()
+		if err != nil {
+			http.Error(respWriter, "Error al leer multipart", http.StatusBadRequest)
+			return
+		}
+
+		for {
+			part, err := reader.NextPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				http.Error(respWriter, "Error al procesar archivo", http.StatusBadRequest)
+				return
+			}
+
+			if part.FormName() == "documents" {
+				// Procesar archivo sin cargarlo completamente en memoria
+				dst, err := os.Create("uploads/" + part.FileName())
+				if err != nil {
+					part.Close()
+					continue
+				}
+
+				_, err = io.Copy(dst, part)
+				dst.Close()
+				part.Close()
+
+				if err != nil {
+					fmt.Printf("Error guardando archivo: %v\n", err)
+				} else {
+					fmt.Printf("Archivo guardado: %s\n", part.FileName())
+				}
+			}
+		}
+	}
+
+	// Obtener user ID e institution ID
+	idUser := claims["uid"].(string)
+	idInst := claims["iid"].(string)
+	fmt.Printf("Usuario: %s de cliente %s subio documentos\n", idUser, idInst)
+
+}

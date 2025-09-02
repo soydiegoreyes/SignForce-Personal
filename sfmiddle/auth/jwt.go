@@ -21,10 +21,6 @@ func GenerateJWT(idUser, idTeam, roleApp, idInst, authStatusInst string) (string
 	now := time.Now()
 	expirationUnix := now.Add(time.Minute * time.Duration(jwt_exp)).Unix()
 
-	fmt.Printf("=== TOKEN GENERATION ===\n")
-
-	fmt.Printf("Duration added: %v\n", jwt_exp)
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uid":      idUser,
 		"iid":      idInst,

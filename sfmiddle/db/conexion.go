@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sfmiddle/configs"
+	"sfmiddle/models"
+	"sfmiddle/utilities"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -277,6 +280,72 @@ func (cnx *ConexionDB) GenericBatchUpdate(tableName string, whereColumn string, 
 		}
 
 		fmt.Println("Valores actualizados.")
+	}
+
+	return nil
+}
+
+func (cnx *ConexionDB) UpdateValData(idInst string, idUser string, valReq *models.ValidationRequest) error {
+
+	instFields := map[string]string{
+		"streetAddress": valReq.StreetAddress,
+		"postalCode":    valReq.PostalCode,
+		"neighborhood":  valReq.Neighborhood,
+		"locality":      valReq.Locality,
+		//"lineAddr":valReq.AddressLine,
+	}
+	kycFields := map[string]string{
+		"ActaConstitutiva":   valReq.ActaConstitutiva,
+		"PoderRepresentante": valReq.PoderRepresentante,
+		"IdentidadOficial":   valReq.IdentidadOficial,
+		"PruebaResidencia":   valReq.PruebaResidencia,
+	}
+
+	// se llenan los campos de institutions
+	var query, updt string
+	for k, v := range instFields {
+		if v == "" {
+			continue
+		}
+		updt += k + " = '" + v + "',"
+	}
+	if len(updt) > 0 {
+		updt = updt[:len(updt)-1]
+		query = fmt.Sprintf("UPDATE institutions SET %s WHERE idInstitution = '%s';", updt, idInst)
+
+		// Ejecutar la consulta
+		if _, err := cnx.DB.Exec(query); err != nil {
+			return fmt.Errorf("error actualizando %s: %w", query, err)
+		}
+		fmt.Println("Valores actualizados.")
+	}
+
+	// se llenan los campos de kyc idInsttitution_fk, idUser_fk, documentHash, documentType, documentName, documentClass, documentPath, expirationDate
+	for k, v := range kycFields {
+		if v == "" {
+			continue
+		}
+
+		// se sacan los datos para cada columna
+		ls := strings.LastIndex(v, "/")
+		ld := strings.LastIndex(v, ".")
+
+		path := v[:ls+1]
+		name := v[ls+1 : ld]
+
+		ext := v[ld+1:]
+		hash, err := utilities.GetHash(v, configs.HashConf)
+		if err != nil {
+			return fmt.Errorf("error al obtener hash del documento: %w", err)
+		}
+
+		cols := []string{"idInsttitution_fk", "idUser_fk", "documentHash", "documentType", "documentName", "documentClass", "documentPath"}
+		idx, err := cnx.GenericInsert("kyc", cols, []interface{}{idInst, idUser, hash, ext, name, k, path})
+		if err != nil {
+			return fmt.Errorf("error al insertar valores de documento: %w", err)
+		}
+		fmt.Println("Valores actualizados en indice: ", idx)
+
 	}
 
 	return nil

@@ -1,5 +1,7 @@
 package models
 
+import "mime/multipart"
+
 // ==================== REQUESTS ======================//
 type RegisterRequest struct {
 	RegisterSignupName     string `json:"firstName"`
@@ -34,6 +36,22 @@ type EmailRequest struct {
 	MimeType string   `json:"mimetype"`
 }
 
+type ValidationRequest struct {
+	StreetAddress      string `json:"streetAddress,omitempty"`
+	PostalCode         string `json:"postalCode,omitempty"`
+	Neighborhood       string `json:"neighborhood,omitempty"`
+	Locality           string `json:"locality,omitempty"`
+	ActaConstitutiva   string `json:"docActa,omitempty"`
+	PoderRepresentante string `json:"docPoder,omitempty"`
+	IdentidadOficial   string `json:"docIdentidad,omitempty"`
+	PruebaResidencia   string `json:"docResidencia,omitempty"`
+	// Campos para manejar archivos (no se serializan a JSON)
+	ActaFile       multipart.File `json:"-"`
+	PoderFile      multipart.File `json:"-"`
+	IdentidadFile  multipart.File `json:"-"`
+	ResidenciaFile multipart.File `json:"-"`
+}
+
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register
 type RegisterResponse struct {
@@ -62,13 +80,13 @@ type ValidationResponse struct {
 	TaxNum              string `json:"taxNum"`
 	LegalSignupName     string `json:"legalSignupName"`
 	LegalSignupLastname string `json:"legalSignupLastname"`
-	StreetAddress       string `json:"streetAddr"`
-	AddressLine         string `json:"lineAddr"`
-	PostalCode          string `json:"postalCode"`
-	Neighborhood        string `json:"neighborhood"`
-	Locality            string `json:"locality"`
-	ActaConstitutiva    string `json:"docActa"`
-	PoderRepresentante  string `json:"docPoder"`
-	IdentidadOficial    string `json:"docIdentidad"`
-	PruebaResidencia    string `json:"docResidencia"`
+	StreetAddress       string `json:"streetAddress"`
+	//AddressLine         string `json:"lineAddr"`
+	PostalCode         string `json:"postalCode"`
+	Neighborhood       string `json:"neighborhood"`
+	Locality           string `json:"locality"`
+	ActaConstitutiva   string `json:"docActa"`
+	PoderRepresentante string `json:"docPoder"`
+	IdentidadOficial   string `json:"docIdentidad"`
+	PruebaResidencia   string `json:"docResidencia"`
 }
