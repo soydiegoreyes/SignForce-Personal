@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Documentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap" rel="stylesheet">
+    <style>
+        /* Variables del sistema de colores del index.css */
+        :root {
+            --color-background: #000;
+            --color-card: rgba(255, 255, 255, 0.05);
+            --color-text-primary: #ffffff;
+            --color-text-secondary: rgba(255, 255, 255, 0.7);
+            --color-accent: rgb(255, 255, 255, 0.5);
+            --color-shadow: rgba(0, 0, 0, 0.3);
+            --color-blue-dark: #1e2c4b;
+            --color-blue-light: #93bde5;
+            --color-gold: #e5b019;
+            --color-red-wine: #74273a;
+            
+            --primary-color: #c643ee;
+            --secondary-color: #7b37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+        }
+
+        [data-theme="light"] {
+            --color-background: #f8fafc;
+            --color-card: rgba(255, 255, 255, 0.8);
+            --color-text-primary: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-accent: rgba(0, 0, 0, 0.1);
+            --color-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(
+                180deg,
+                #2a2e35,
+                #7b8fa1,
+                #e4e9ec
+            );
+            min-height: 100vh;
+            background-attachment: fixed;
+            color: var(--color-text-primary);
+            transition: all 0.3s ease;
+        }
+
+        body.light-theme {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+            body.light-theme .glass-panel,
+            body.light-theme .glass-card,
+            body.light-theme .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            color: #1e293b;
+        }
+            body.light-theme .text-primary { color: #1e293b; }
+            body.light-theme .text-secondary { color: #64748b; }
+
+            .main-content { margin-top: 120px; }
+            .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Barra superior mejorada - 25% más grande */
+        .glass-header {
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%;
+        height: 62.5px; /* 25% más grande que 50px */
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 
+            0 8px 32px 0 rgba(255, 255, 255, 0.1),
+            0 0 10px 1px rgba(200, 90, 255, 0.4);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 25px;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+        }
+
+        /* Efecto liquid glass al pasar el mouse */
+        .glass-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(0, 0, 0, 0.1),
+            transparent
+        );
+        transition: 0.5s;
+        }
+
+        .glass-header:hover::before {
+        left: 100%;
+        }
+
+        /* Burbuja liquid glass */
+        .liquid-bubble {
+        position: fixed;
+        width: 120px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: -1;
+        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+        }
+        
+        /* Efecto hover para los items del menú */
+        .nav-item {
+        position: relative;
+        padding: 8px 16px;
+        transition: color 0.3s ease;
+        }
+
+        .nav-item:hover {
+        color: rgb(255, 255, 255) !important;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: var(--color-text-primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.625rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--color-text-primary);
+            padding: 0.5rem 0.625rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Contenido principal con margen para el header fijo */
+        .main-content {
+            margin-top: 120px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: "Michroma", sans-serif;
+            font-size: 2.5rem;
+            background: -webkit-linear-gradient(#faf9f6, #dcd7ce, #aca69a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(1, 0, 28, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .form-container h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .btn-upload {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(198, 67, 238, 0.3);
+        }
+
+        .btn-upload:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(198, 67, 238, 0.4);
+        }
+
+        .btn-submit {
+            background: var(--success-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: rgba(156, 163, 175, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .error {
+            color: #ef4444;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            color: #baffff;
+            padding: 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Animaciones del index.css */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.2s;
+        }
+
+        /* Estilos para el área de drag & drop */
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: rgba(198, 67, 238, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(198, 67, 238, 0.3);
+        }
+
+        .drop-zone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .drop-zone-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+        }
+
+        .drop-zone-text {
+            color: var(--color-text-secondary);
+        }
+
+        .drop-zone-text strong {
+            color: var(--color-text-primary);
+        }
+
+        .file-input-container {
+            margin-top: 1rem;
+        }
+
+        /* Estilos para la lista de archivos */
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(200, 90, 255, 0.3);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .file-icon {
+            color: var(--primary-color);
+        }
+
+        .file-details {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 300px;
+        }
+
+        .file-size {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-remove {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--success-color);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Selector de tipo de documento */
+        .doc-type-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .doc-type-selector label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 10px;
+            background: #1a1c2266;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            border: 1px solid rgba(200, 90, 255, 0.5);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .select-field:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(229, 124, 25, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-header {
+                width: 90%;
+            }
+            .main-content {
+                margin-top: 150px;
+            }
+            
+            .nav-item {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .file-name {
+                max-width: 180px;
+            }
+        }
+        @media (max-width: 480px) {
+            .glass-header {
+                padding: 0 15px;
+                height: 50px;
+            }
+            
+            .file-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .file-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Barra superior rediseñada -->
+    <header class="glass-header" id="mainHeader">
+      <div class="flex items-center gap-8 relative">
+        <!-- Burbuja liquid glass -->
+        <div class="liquid-bubble" id="liquidBubble"></div>
+        
+        <div class="flex items-center gap-4 text-primary">
+          <div class="size-4">
+            
+          </div>
+          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+        </div>
+        <div class="flex items-center gap-9">
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+        </div>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <a href="./../registro/login.html" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
+          Iniciar Sesión
+        </a>
+        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-content">
+        <div class="container">
+            <h1 class="fade-in">Subir Documentos</h1>
+            <div id="messageContainer"></div>
+            
+            <div class="form-container glass-panel fade-in delay-1">
+                <h3>Selecciona y arrastra tus documentos</h3>
+                
+                <div class="doc-type-selector">
+                    <label for="documentType">Tipo de documento:</label>
+                    <select id="documentType" class="select-field" required>
+                        <option value="">Selecciona un tipo</option>
+                        <option value="generic">Documento Genérico</option>
+                        <option value="template">Plantilla de contrato</option>
+                    </select>
+                </div>
+                
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-zone-content">
+                        <i class="fas fa-cloud-upload-alt drop-zone-icon"></i>
+                        <div class="drop-zone-text">
+                            <p><strong>Haz clic para seleccionar</strong> o arrastra tus archivos aquí</p>
+                            <p>Formatos aceptados: PDF, DOC, DOCX, JPG, JPEG, PNG</p>
+                        </div>
+                        <div class="file-input-container">
+                            <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                            <label for="fileInput" class="btn btn-upload">Seleccionar archivos</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="files-list" id="filesList">
+                    <!-- Los archivos se mostrarán aquí -->
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-submit" id="btnSubmit" disabled>Subir documentos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            // Configurar animaciones del liquid bubble
+            configurarLiquidBubble();
+            
+            // Configurar el toggle del tema
+            document.getElementById('themeToggle').addEventListener('click', toggleTema);
+            
+            // Configurar la zona de drag & drop
+            configurarDragAndDrop();
+            
+            // Configurar el botón de envío
+            document.getElementById('btnSubmit').addEventListener('click', subirArchivos);
+        });
+
+        //===================================== LIQUID BUBBLE =========================================
+        function configurarLiquidBubble() {
+            // Efecto liquid glass para la burbuja del menú
+            const liquidBubble = document.getElementById('liquidBubble');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            // Posiciones iniciales de los items del menú
+            const itemPositions = {};
+            
+            // Calcular posiciones de los items
+            function calculatePositions() {
+                navItems.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                    
+                    itemPositions[item.dataset.item] = {
+                        left: rect.left - headerRect.left,
+                        width: rect.width
+                    };
+                });
+                
+                // Posicionar burbuja en el item activo (home por defecto)
+                moveBubble('home');
+            }
+            
+            // Mover la burbuja al item seleccionado
+            function moveBubble(itemName) {
+                const item = itemPositions[itemName];
+                if (item) {
+                    liquidBubble.style.left = `${item.left - 10}px`;
+                    liquidBubble.style.width = `${item.width + 20}px`;
+                }
+            }
+            
+            // Event listeners para los items del menú
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    moveBubble(item.dataset.item);
+                });
+                
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    moveBubble(item.dataset.item);
+                    // Scroll suave al hacer clic en los enlaces
+                    const targetId = item.getAttribute('href');
+                    if (targetId && targetId !== '#') {
+                        document.querySelector(targetId).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Calcular posiciones al cargar y al redimensionar
+            window.addEventListener('load', calculatePositions);
+            window.addEventListener('resize', calculatePositions);
+        }
+
+        //===================================== TOGGLE THEME =========================================
+        function toggleTema() {
+            const body = document.body;
+            const themeToggleIcon = document.querySelector('.theme-toggle i');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                body.classList.add('light-theme');
+                themeToggleIcon.className = 'fas fa-sun';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                body.classList.remove('light-theme');
+                themeToggleIcon.className = 'fas fa-moon';
+            }
+        }
+
+        //===================================== DRAG & DROP =========================================
+        function configurarDragAndDrop() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const filesList = document.getElementById('filesList');
+            
+            // Al hacer clic en la zona de drop, activar el input de archivo
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Prevenir comportamientos por defecto para drag events
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Efectos visuales al arrastrar archivos
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropZone.classList.add('dragover');
+            }
+            
+            function unhighlight() {
+                dropZone.classList.remove('dragover');
+            }
+            
+            // Manejar archivos soltados
+            dropZone.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            // Manejar archivos seleccionados mediante el input
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+        }
+        
+        // Archivos seleccionados para subir
+        let archivosParaSubir = [];
+        
+        function handleFiles(files) {
+            if (files.length === 0) return;
+            
+            // Verificar que se haya seleccionado un tipo de documento
+            const documentType = document.getElementById('documentType').value;
+            if (!documentType) {
+                mostrarMensaje('Por favor, selecciona un tipo de documento primero', 'error');
+                return;
+            }
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar si el archivo ya está en la lista
+                if (archivosParaSubir.some(f => f.name === file.name && f.size === file.size)) {
+                    continue;
+                }
+                
+                // Añadir a la lista
+                archivosParaSubir.push(file);
+                
+                // Mostrar en la interfaz
+                mostrarArchivoEnLista(file);
+            }
+            
+            // Habilitar el botón de subir si hay archivos
+            document.getElementById('btnSubmit').disabled = archivosParaSubir.length === 0;
+        }
+        
+        function mostrarArchivoEnLista(file) {
+            const filesList = document.getElementById('filesList');
+            const fileId = 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.id = fileId;
+            
+            // Formatear tamaño del archivo
+            const fileSize = formatFileSize(file.size);
+            
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <i class="fas fa-file file-icon"></i>
+                    <div class="file-details">
+                        <div class="file-name" title="${file.name}">${file.name}</div>
+                        <div class="file-size">${fileSize}</div>
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-${fileId}"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="btn btn-remove" onclick="eliminarArchivo('${fileId}', '${file.name}', ${file.size})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            filesList.appendChild(fileItem);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function eliminarArchivo(fileId, fileName, fileSize) {
+            // Eliminar de la lista visual
+            const fileElement = document.getElementById(fileId);
+            if (fileElement) {
+                fileElement.remove();
+            }
+            
+            // Eliminar del array de archivos
+            archivosParaSubir = archivosParaSubir.filter(file => 
+                !(file.name === fileName && file.size === fileSize)
+            );
+            
+            // Deshabilitar el botón si no hay archivos
+            document.getElementById('btnSubmit').disabled = archivosParaSubir.length === 0;
+        }
+        
+        //===================================== UPLOAD FILES =========================================
+        async function subirArchivos() {
+            const documentType = document.getElementById('documentType').value;
+            if (!documentType) {
+                mostrarMensaje('Por favor, selecciona un tipo de documento', 'error');
+                return;
+            }
+            
+            if (archivosParaSubir.length === 0) {
+                mostrarMensaje('No hay archivos para subir', 'error');
+                return;
+            }
+            
+            try {
+                mostrarMensaje('Subiendo archivos...', 'info');
+                document.getElementById('btnSubmit').disabled = true;
+                
+                const formData = new FormData();
+                
+                // Añadir el tipo de documento
+                formData.append('documentType', documentType);
+                
+                // Añadir todos los archivos (usando el mismo campo 'document' que espera tu backend)
+                for (let i = 0; i < archivosParaSubir.length; i++) {
+                    formData.append('document', archivosParaSubir[i]);
+                }
+                
+                // Realizar la petición
+                const response = await fetch('/uploadDocs', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarMensaje(result.message, 'success');
+                    
+                    // Limpiar la lista de archivos
+                    archivosParaSubir = [];
+                    document.getElementById('filesList').innerHTML = '';
+                    document.getElementById('btnSubmit').disabled = true;
+                    
+                    // Opcional: redirigir después de un tiempo
+                    setTimeout(() => {
+                        // window.location.href = '/otra-pagina'; // Descomenta si necesitas redirigir
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || 'Error al subir archivos');
+                }
+            } catch (error) {
+                console.error('Error al subir archivos:', error);
+                mostrarMensaje('Error al subir archivos: ' + error.message, 'error');
+                document.getElementById('btnSubmit').disabled = false;
+            }
+        }
+        
+        //===================================== SHOW MESSAGES =========================================
+        function mostrarMensaje(mensaje, tipo) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
