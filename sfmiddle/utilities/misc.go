@@ -8,6 +8,7 @@ import (
 	"mime/multipart"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	"golang.org/x/text/encoding/charmap"
@@ -60,16 +61,30 @@ func Latin1ToUTF8(input []byte) string {
 }
 
 // Función para guardar archivos en el sistema
-func GuardarArchivo(file multipart.File, filename, idInst, idUser string) (string, error) {
+func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser string, hasUniqueName bool) (string, error) {
 	// Crear directorio si no existe
-	uploadDir := fmt.Sprintf("./%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+	var uploadDir string
+	if savepath == "" {
+		uploadDir = fmt.Sprintf("./%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+	} else {
+		savepath, _ = strings.CutSuffix(savepath, "/")
+		uploadDir = fmt.Sprintf("%s/", savepath)
+	}
+
 	err := os.MkdirAll(uploadDir, 0755)
 	if err != nil {
 		return "", err
 	}
 
+	var uniqueName string
 	// Generar nombre único para el archivo
-	uniqueName := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
+	if hasUniqueName {
+		uniqueName = fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
+	} else {
+		uniqueName = filename
+
+	}
+
 	filePath := path.Join(uploadDir, uniqueName)
 
 	// Crear el archivo

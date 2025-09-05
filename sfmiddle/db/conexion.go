@@ -382,7 +382,7 @@ func (cnx *ConexionDB) GenericInsert(tableName string, columns []string, values 
 	} else {
 		// Obtener información útil del resultado
 		if lastID, err := result.LastInsertId(); err == nil {
-			fmt.Printf("Registro insertado con ID: %d", lastID)
+			fmt.Printf("Registro insertado con ID: %d\n", lastID)
 			return fmt.Sprintf("%v", lastID), nil
 		} else {
 			return "", nil

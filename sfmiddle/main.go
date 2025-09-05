@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
+	"mime/multipart"
 
 	"time"
 
@@ -13,6 +13,7 @@ import (
 
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"sfmiddle/auth"
@@ -99,15 +100,17 @@ func main() {
 
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
+	mux.HandleFunc("/uploadDocs", uploadDocs) // funcion para subir cualquier tipo de documento
+	mux.HandleFunc("/upload", upload)         // funcion para subir cualquier tipo de documento
 	mux.HandleFunc("/register", registerInst)
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/loginUser", login)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/getvaldata", getValidationData)
 	mux.HandleFunc("/updatevaldata", updateValidationData)
-	mux.HandleFunc("/uploadDocs", uploadDoc)
 	mux.HandleFunc("/completevalidation", completeValidation)
 	mux.HandleFunc("/waitapprove", waitApprove)
+	mux.HandleFunc("/contracts", contracts)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -175,6 +178,15 @@ func home(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/index.html")
+}
+
+// pagina de login
+func upload(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/upload_zone.html")
 }
 
 // =======================================================================
@@ -431,7 +443,7 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, fmt.Sprintf("Error obteniendo datos: %s", err), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(validationData)
+
 	valData := map[string]*string{
 		"legalNameInst":       &valResp.LegalName,
 		"aliasNameInst":       &valResp.AliasName,
@@ -476,7 +488,7 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error obteniendo datos", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(validationDocs)
+
 	// Recorremos cada registro (key = hash, value = fila)
 	for _, row := range validationDocs {
 		// Obtenemos la clase del documento
@@ -580,7 +592,7 @@ func updateValidationData(respWriter http.ResponseWriter, request *http.Request)
 				defer file.Close()
 
 				// Guardar el archivo y obtener la ruta
-				filePath, err := utilities.GuardarArchivo(file, files[0].Filename, idInst, idUser)
+				filePath, err := utilities.GuardarArchivo(file, "", files[0].Filename, idInst, idUser, false)
 				if err != nil {
 					fmt.Println("Error guardando archivo:", err)
 					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
@@ -626,6 +638,7 @@ func updateValidationData(respWriter http.ResponseWriter, request *http.Request)
 	json.NewEncoder(respWriter).Encode(response)
 }
 
+// =======================================================================
 func completeValidation(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -672,6 +685,189 @@ func waitApprove(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	http.ServeFile(respWriter, request, "./../sffront/registro/waitapprove.html")
 }
+
+func contracts(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/contracts.html")
+}
+
+// Funcion gneérica para subir archivos de cualquier clase
+func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Extraer datos del JWT
+	idUser, ok := claims["uid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	idInst, ok := claims["iid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	idTeam, ok := claims["team"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	//docs := models.Docs{}
+
+	// Validar Content-Type
+	contentType := request.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "multipart/form-data") {
+		http.Error(respWriter, "Tipo de contenido inesperado", http.StatusBadRequest)
+		return
+
+	}
+
+	// Parsear el form multipart
+	var maxmem int
+	maxmem, err = strconv.Atoi(os.Getenv("MAX_UPLOAD_MEM"))
+	if err != nil {
+		maxmem = 500
+	}
+	maxmem = maxmem << 20
+
+	err = request.ParseMultipartForm(int64(maxmem)) // 500 MB máxim
+	if err != nil {
+		http.Error(respWriter, "Error procesando formulario", http.StatusBadRequest)
+		return
+	}
+	// Limpiar recursos del multipart form al finalizar
+	defer func() {
+		if request.MultipartForm != nil {
+			request.MultipartForm.RemoveAll()
+		}
+	}()
+
+	var processedFiles []models.FileMetadata
+	if request.MultipartForm.File != nil {
+		var docType string
+
+		if docTypeVal, exists := request.MultipartForm.Value["documentType"]; exists && len(docTypeVal) > 0 {
+			docType = docTypeVal[0]
+		}
+
+		// Buscar el archivo en el campo "document"
+		if files, exists := request.MultipartForm.File["document"]; exists && len(files) > 0 {
+			for i, fileHeader := range files {
+				// nuevo archivo
+				var file multipart.File
+
+				if fileHeader.Size > int64(maxmem) {
+					http.Error(respWriter, "Memoria insuficiente para procesar archivos", http.StatusNotAcceptable)
+				}
+
+				docData := models.FileMetadata{
+					Id:      i,
+					DocType: docType,
+					Name:    fileHeader.Filename,
+					Ext:     strings.ToLower(fileHeader.Filename[strings.LastIndex(fileHeader.Filename, ".")+1:]),
+					Size:    fileHeader.Size,
+					Hash:    "",
+					Path:    "",
+					Ok:      false,
+				}
+				if !configs.AllowedExtensions[docData.Ext] {
+					fmt.Println("Extension no aceptada")
+					processedFiles = append(processedFiles, docData)
+					continue
+				}
+
+				switch docType {
+				case "generic":
+					docData.Path = fmt.Sprintf("%s/%s/%s/%s", os.Getenv("GENERIC_DOC_PATH"), idInst, idTeam, idUser)
+				case "template":
+					docData.Path = fmt.Sprintf("%s/%s/%s/templates", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
+				default:
+					docData.Path = fmt.Sprintf("%s/%s/%s/%s", os.Getenv("TEMP_BASE_PATH"), idInst, idTeam, idUser)
+				}
+
+				file, err = fileHeader.Open()
+				if err != nil {
+					http.Error(respWriter, fmt.Sprintf("error abriendo archivo %s: %v", fileHeader.Filename, err), http.StatusBadRequest)
+					return
+				}
+				defer file.Close()
+
+				var filePath string
+				// Guardar el archivo y obtener la ruta /ruta_general/idInst/idTeam/idUser/midoc.pdf
+				filePath, err = utilities.GuardarArchivo(
+					file, // archivo completo
+					docData.Path,
+					docData.Name,
+					idInst,
+					idUser,
+					false,
+				)
+				if err != nil {
+					fmt.Println("Error guardando archivo:", err)
+					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
+					return
+				}
+
+				docData.Hash, err = utilities.GetHash(filePath, configs.HashConf)
+				if err != nil {
+					fmt.Println("Error obteniendo hash de archivo:", err)
+					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
+					return
+				}
+
+				// Actualizar datos en la base de datos
+				cols := []string{"hashDoc", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "nameDoc", "pathDoc", "extDoc"}
+				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext}
+				_, err := db.DB_con.GenericInsert("documents", cols, vals)
+				if err != nil {
+					fmt.Printf("Error actualizando datos en DB: %v\n", err)
+					http.Error(respWriter, "Error actualizando datos", http.StatusInternalServerError)
+					return
+				}
+				processedFiles = append(processedFiles, docData)
+			}
+		}
+	}
+
+	if len(processedFiles) == 0 {
+		http.Error(respWriter, "Error procesando archivos", http.StatusUnprocessableEntity)
+		return
+	}
+
+	response := models.UploadResponse{
+		Success:     true,
+		Message:     fmt.Sprintf("Se subieron %d archivo(s) exitosamente", len(processedFiles)),
+		DocumentIDs: []string{"1", "2", "3"},
+	}
+	// Respuesta exitosa
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(respWriter).Encode(&response)
+
+}
+
+// unificar el json de respuestas para que mande estatus y lista de documentos
+// asegurar que multipart puede recibir uno o muchos archivos subidos de un mismo formulario y sugerir mejoras para subir archivos de distinta ubicacion
 
 // =======================================================================
 func login(respWriter http.ResponseWriter, request *http.Request) {
@@ -749,7 +945,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	//var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true}
-	var statusContr = map[string]bool{"6": true, "7": true}
+	//var statusContr = map[string]bool{"6": true, "7": true}
 	var satusActive = map[string]bool{"8": true}
 	var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
 
@@ -764,21 +960,21 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 				location = "/validation"
 			} else if dataInst[idInst]["statusInst_fk"] == "3" {
 				location = "/waitapprove"
-			} else if statusContr[dataInst[idInst]["statusInst_fk"]] {
+			} else if dataInst[idInst]["statusInst_fk"] == "5" {
 				location = "/ContractPage"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {
 				location = "/noAuthPage"
 			}
-		} else {
+		} else { // la institucion ya está activa (en un estatus ACTIVO)
 			if satusActive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/dashboard"
-			} else {
+			} else { // La institucion estaba activa pero fue dada de baja, suspendida o revocada
 				location = "/noAuthPage"
 			}
 		}
-	} else {
+	} else { // el usuario no esta activo y no tiene pemiso de entrar
 		location = "/noAuthPage"
 	}
 	//fmt.Println(location)
@@ -803,70 +999,4 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	json.NewEncoder(respWriter).Encode(loginResp)
-}
-
-// =========================================================================
-func uploadDoc(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-	// Validar JWT
-	cookie, err := request.Cookie("token")
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	claims, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	contentType := request.Header.Get("Content-Type")
-
-	if strings.Contains(contentType, "multipart/form-data") {
-		reader, err := request.MultipartReader()
-		if err != nil {
-			http.Error(respWriter, "Error al leer multipart", http.StatusBadRequest)
-			return
-		}
-
-		for {
-			part, err := reader.NextPart()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				http.Error(respWriter, "Error al procesar archivo", http.StatusBadRequest)
-				return
-			}
-
-			if part.FormName() == "documents" {
-				// Procesar archivo sin cargarlo completamente en memoria
-				dst, err := os.Create("uploads/" + part.FileName())
-				if err != nil {
-					part.Close()
-					continue
-				}
-
-				_, err = io.Copy(dst, part)
-				dst.Close()
-				part.Close()
-
-				if err != nil {
-					fmt.Printf("Error guardando archivo: %v\n", err)
-				} else {
-					fmt.Printf("Archivo guardado: %s\n", part.FileName())
-				}
-			}
-		}
-	}
-
-	// Obtener user ID e institution ID
-	idUser := claims["uid"].(string)
-	idInst := claims["iid"].(string)
-	fmt.Printf("Usuario: %s de cliente %s subio documentos\n", idUser, idInst)
-
 }

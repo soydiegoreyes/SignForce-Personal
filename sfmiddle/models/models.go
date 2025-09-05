@@ -90,3 +90,11 @@ type ValidationResponse struct {
 	IdentidadOficial   string `json:"docIdentidad"`
 	PruebaResidencia   string `json:"docResidencia"`
 }
+
+// Estructura para la respuesta -> MODELS
+type UploadResponse struct {
+	Success     bool     `json:"success"`
+	Message     string   `json:"message"`
+	DocumentIDs []string `json:"document_ids,omitempty"`
+	Errors      []string `json:"errors,omitempty"`
+}

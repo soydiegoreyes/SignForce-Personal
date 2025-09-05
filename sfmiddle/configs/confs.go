@@ -12,3 +12,8 @@ var HashConf = HashConfig{
 	Encoding:  "b64",
 	ChunkSize: 1024 * 1024 * 20, // 20MB chunks
 }
+
+var AllowedExtensions = map[string]bool{
+	"pdf": true, "doc": true, "docx": true, "txt": true, "jpg": true, "jpeg": true,
+	"png": true, "gif": true, "zip": true, "rar": false, "xlsx": true, "xls": true,
+	"pptx": false, "ppt": false, "pem": true, "key": true, "cer": true, "crt": true}
