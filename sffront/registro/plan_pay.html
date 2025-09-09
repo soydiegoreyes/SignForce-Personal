@@ -884,7 +884,13 @@
             let input = e.target.value.replace(/\D/g, '').substring(0, 4);
             
             if (input.length > 2) {
-                e.target.value = input.substring(0, 2) + '/' + input.substring(2, 4);
+                let month = input.substring(0, 2);
+                let year = input.substring(2, 4);
+                let m = parseInt(month);
+                if (m > 12 || m < 1){
+                    month = "12";
+                }
+                e.target.value = month + '/' + year;
             } else {
                 e.target.value = input;
             }
