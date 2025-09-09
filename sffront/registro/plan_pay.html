@@ -883,12 +883,19 @@
         function formatExpiryDate(e) {
             let input = e.target.value.replace(/\D/g, '').substring(0, 4);
             
-            if (input.length > 2) {
+            if (input.length === 4) {
                 let month = input.substring(0, 2);
                 let year = input.substring(2, 4);
+                let now = new Date();
                 let m = parseInt(month);
+                let y = 2000 + parseInt(year); // en 2100 se debe validar
+                if (now.getFullYear() > y){
+                    year = "99";
+                    mostrarMensaje("El año de expiración no es válido", "error");
+                }
                 if (m > 12 || m < 1){
                     month = "12";
+                    mostrarMensaje("El mes de expiración no es válido", "error");
                 }
                 e.target.value = month + '/' + year;
             } else {
