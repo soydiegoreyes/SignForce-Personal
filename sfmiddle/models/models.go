@@ -51,7 +51,9 @@ type ValidationRequest struct {
 	IdentidadFile  multipart.File `json:"-"`
 	ResidenciaFile multipart.File `json:"-"`
 }
-
+type PaymentReq struct {
+	Plan string `json:"plan"`
+}
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register
 type RegisterResponse struct {
@@ -97,4 +99,11 @@ type UploadResponse struct {
 	Message     string   `json:"message"`
 	DocumentIDs []string `json:"document_ids,omitempty"`
 	Errors      []string `json:"errors,omitempty"`
+}
+
+type PaymentResp struct{
+	Success bool `json:"success"`
+	Status string `json:"status"`
+	Plan string `json:"plan"`
+	Expiration string `json:"expiration"`
 }
