@@ -111,6 +111,7 @@ func main() {
 	mux.HandleFunc("/completevalidation", completeValidation)
 	mux.HandleFunc("/waitapprove", waitApprove)
 	mux.HandleFunc("/contracts", contracts)
+	mux.HandleFunc("/processpayment", processPayment)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -865,10 +866,75 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(&response)
 
 }
+// =======================================================================
+func processPayment(respWriter http.ResponseWriter, request *http.Request){
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Extraer datos del JWT
+	idUser, ok := claims["uid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	idInst, ok := claims["iid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	idTeam, ok := claims["team"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	authInst, ok := claims["authInst"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	err = json.NewDecoder(request.Body).Decode(&models.PaymentReq)
+	if err != nil {
+		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+		return
+	}
+
+	attrs := []string{"status", "plan", "expiration",}
+	wheres := map[string][]string{"idInstitution": {idInst}}
+	data := db.DB_con.GenericSelect("payments", "idInstitution", attrs, wheres)
+	if len(data) == 0 {
+		cols := []string{"status", "plan", "expiration",}
+		vals := []string{"1", "plan", "expiration",}
+		db.DB_con.GenericInsert("payment")
+	}
+	resp := data[idInst]
+	if data[idInst]["status"] == "1"{
+		err = json.NewDecoder(resp).Decode(&models.PaymentResp)
+		if err != nil {
+			http.Error(respWriter, "Error: JSON no valido.", http.StatusBadRequest)
+			return
+		}
+	} 
+	
+}
+// =======================================================================
 
 // unificar el json de respuestas para que mande estatus y lista de documentos
 // asegurar que multipart puede recibir uno o muchos archivos subidos de un mismo formulario y sugerir mejoras para subir archivos de distinta ubicacion
-
 // =======================================================================
 func login(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
