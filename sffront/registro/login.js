@@ -72,8 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     //==================================================================================================
-
-
     // Validacion representante legal
     const checkbox = document.getElementById('legal-responsible-checkbox');
     const legalContainer = document.getElementById('legal-responsible-container');

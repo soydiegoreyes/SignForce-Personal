@@ -647,7 +647,7 @@
                         <li><i class="fas fa-check"></i> Soporte por email</li>
                         <li><i class="fas fa-times" style="color: var(--warning-color);"></i> Plantillas personalizadas</li>
                     </ul>
-                    <button class="plan-button" data-plan="basico" data-price="9">Seleccionar Plan</button>
+                    <button class="plan-button" data-plan="basico" data-price="9" plan-id="1">Seleccionar Plan</button>
                 </div>
                 
                 <!-- Plan Profesional -->
@@ -661,7 +661,7 @@
                         <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
                         <li><i class="fas fa-check"></i> Plantillas personalizadas</li>
                     </ul>
-                    <button class="plan-button" data-plan="profesional" data-price="19">Seleccionar Plan</button>
+                    <button class="plan-button" data-plan="profesional" data-price="19" plan-id="2">Seleccionar Plan</button>
                 </div>
                 
                 <!-- Plan Empresarial -->
@@ -675,7 +675,7 @@
                         <li><i class="fas fa-check"></i> Soporte dedicado</li>
                         <li><i class="fas fa-check"></i> API acceso e integraciones</li>
                     </ul>
-                    <button class="plan-button" data-plan="empresarial" data-price="49">Seleccionar Plan</button>
+                    <button class="plan-button" data-plan="empresarial" data-price="49" plan-id="3">Seleccionar Plan</button>
                 </div>
             </div>
         </div>
@@ -904,49 +904,87 @@
         }
 
         //===================================== PROCESAMIENTO DE PAGO =========================================
-        function procesarPago(e) {
-            e.preventDefault();
-            
-            // Validar formulario
-            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        async function procesarPago(event) {
+            event.preventDefault();
+
+            // ---------- VALIDACIONES ----------
+            const cardNumber = document.getElementById('cardNumber').value;
             const expiryDate = document.getElementById('expiryDate').value;
-            const cvv = document.getElementById('cvv').value;
-            const cardName = document.getElementById('cardName').value;
-            
+            const cvv        = document.getElementById('cvv').value;
+            const cardName   = document.getElementById('cardName').value;
+
             if (!cardNumber || cardNumber.length !== 16) {
                 mostrarMensaje('Número de tarjeta inválido', 'error');
                 return;
             }
-            
             if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {
                 mostrarMensaje('Fecha de expiración inválida', 'error');
                 return;
             }
-            
             if (!cvv || cvv.length !== 3) {
                 mostrarMensaje('CVV inválido', 'error');
                 return;
             }
-            
-            if (!cardName) {
+            if (!cardName.trim()) {
                 mostrarMensaje('Por favor ingresa el nombre de la tarjeta', 'error');
                 return;
             }
-            
-            // Mostrar loader
-            document.getElementById('paymentLoader').style.display = 'block';
-            
-            // Simular procesamiento de pago
-            setTimeout(() => {
-                document.getElementById('paymentLoader').style.display = 'none';
-                document.getElementById('paymentSuccess').style.display = 'block';
-                
-                // Simular éxito después de 2 segundos
-                setTimeout(() => {
-                    mostrarMensaje('¡Pago procesado con éxito! Tu plan ha sido activado.', 'success');
-                    cerrarModal();
-                }, 2000);
-            }, 2000);
+
+            // ---------- ARMADO DEL BODY ----------
+            const payload = {
+                // Los nombres deben coincidir con la estructura de models.PaymentReq en Go
+                cardNum:     cardNumber,
+                expiration: expiryDate,
+                cvv:         cvv,
+                nameOwner:   cardName,
+                // Estos valores provienen del botón que abrió el modal
+                plan:        document.getElementById('selectedPlan').querySelector('span').textContent,
+                status:      "0"               // o el estado que requieras
+            };
+
+            // ---------- INDICADOR DE CARGA ----------
+            const loader = document.getElementById('paymentLoader');
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/processpayment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // Si tu backend necesita cookies (JWT) automáticamente, no añadas nada más.
+                        // Si usas credenciales explícitas:
+                        // credentials: 'include'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                loader.style.display = 'none';
+
+                if (!response.ok) {
+                    // El backend devolvió un error (4xx/5xx)
+                    const errorText = await response.text();
+                    mostrarMensaje(`Error del servidor: ${errorText}`, 'error');
+                    return;
+                }
+
+                // Suponiendo que el endpoint devuelve JSON con la estructura PaymentResp
+                const data = await response.json();
+
+                // ---------- MENSAJE DE ÉXITO ----------
+                const successDiv = document.getElementById('paymentSuccess');
+                successDiv.style.display = 'block';
+
+                // Puedes usar los datos devueltos para dar feedback más rico:
+                // ejemplo: `Plan activado: ${data.plan}, vence ${data.expiration}`
+                mostrarMensaje('¡Pago procesado con éxito! Tu plan ha sido activado.', 'success');
+
+                // Cerrar modal después de unos segundos (opcional)
+                setTimeout(cerrarModal, 1500);
+            } catch (err) {
+                loader.style.display = 'none';
+                console.error(err);
+                mostrarMensaje('Falló la comunicación con el servidor.', 'error');
+            }
         }
         
         //===================================== SHOW MESSAGES =========================================

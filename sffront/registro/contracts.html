@@ -47,7 +47,8 @@
             <div class="feature-icon" aria-hidden="true">🛡️</div>
             <div>
               <h3>Con tu password validamos que tus llaves sean correctas</h3>
-              <p>Tu password es <strong>TUYO</strong> y no guardamos este dato en ningún momento.</p>
+              <p>Tu password es <strong>TUYO</strong> y no lo guardamos en ningún momento.</p>
+              <p>Por cada firma que realices te lo pediremos.</p>
               <p>Tus llaves se mantienen cifradas y seguras.</p>
             </div>
           </li>
@@ -59,16 +60,16 @@
           <h2 class="form-title">Sube tus credenciales</h2>
           <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
             <div class="form-group">
-              <label for="keyFile">Llave privada RSA (.pem o .key)</label>
-              <input class="input-field" type="file" id="keyFile" accept=".pem,.key" required />
+              <label for="keyFile">Llave privada RSA (.pem - .key - .der)</label>
+              <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
             </div>
             <div class="form-group">
-              <label for="certFile">Certificado público (.cer o .pem)</label>
-              <input class="input-field" type="file" id="certFile" accept=".cer,.pem" required />
+              <label for="certFile">Certificado público (.cer - .crt - .pem - .der)</label>
+              <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
             </div>
             <div class="form-group">
               <label for="keyPassword">Contraseña de la llave</label>
-              <input class="input-field" type="password" id="keyPassword" placeholder="••••••••" required />
+              <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
             </div>
             <button class="btn" type="submit">Continuar</button>
             <p class="form-hint">* En este demo, la verificación es simulada para no requerir backend.</p>
@@ -94,7 +95,7 @@
                   <form id="profileForm" class="grid-2">
                     <div class="form-group">
                       <label for="nombreUsuario">Password</label>
-                      <input class="input-field" id="keypass" type="text" placeholder="************" />
+                      <input class="input-field" id="keypass" type="password" placeholder="************" />
                     </div>
                   </form>
               </div>

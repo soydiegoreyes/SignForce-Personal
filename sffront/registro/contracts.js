@@ -152,35 +152,59 @@ document.addEventListener('DOMContentLoaded', () => {
     showSetup();
   }
 
-  // Form credenciales
-  const credentialsForm = document.getElementById('credentialsForm');
-  credentialsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const keyFile = document.getElementById('keyFile').files[0];
-    const certFile = document.getElementById('certFile').files[0];
-    const keyPassword = document.getElementById('keyPassword').value;
+  // ====== Form credenciales ======
+const credentialsForm = document.getElementById('credentialsForm');
+credentialsForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  console.log("Enviando a api");
+  const keyFile = document.getElementById('keyFile').files[0];
+  const certFile = document.getElementById('certFile').files[0];
+  const keyPassword = document.getElementById('keyPassword').value;
 
-    if (!keyFile || !certFile || !keyPassword) {
-      alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
-      return;
+  if (!keyFile || !certFile || !keyPassword) {
+    alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
+    return;
+  }
+
+  try {
+    // Crear FormData para enviar los archivos
+    const formData = new FormData();
+    formData.append('keyFile', keyFile);
+    formData.append('certFile', certFile);
+    formData.append('passKey', keyPassword);
+
+    // Enviar al endpoint de Go
+    const response = await fetch('/uploadKeys', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include' // Para incluir las cookies (JWT)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
     }
 
-    // Leemos como texto sólo para demostrar el flujo (no se envía).
-    try {
-      const [keyText, certText] = await Promise.all([readFileAsText(keyFile), readFileAsText(certFile)]);
-      // En un ambiente real: validaríamos PKCS#8/PKCS#12 y password en backend/HSM.
+    const result = await response.json();
+    
+    if (result.success) {
+      // Guardar metadata localmente
       const meta = {
         keyName: keyFile.name,
         certName: certFile.name,
         uploadedAt: new Date().toISOString()
       };
       setOnboardingDone(meta);
-      showDashboard();
-    } catch (err) {
-      console.error(err);
-      alert('No se pudo leer los archivos. Verifica el formato.');
+      //showDashboard();
+      alert('Credenciales validadas y guardadas exitosamente.');
+    } else {
+      alert('Error: ' + result.message);
     }
-  });
+  } catch (err) {
+    console.error('Error subiendo archivos:', err);
+    alert('Error al subir los archivos: ' + err.message);
+  }
+});
 
   // Perfil (usuario/empresa)
   const profileForm = document.getElementById('profileForm');
