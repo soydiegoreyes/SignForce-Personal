@@ -11,3 +11,16 @@ type FileMetadata struct {
 	Path    string
 	Ok      bool
 }
+
+// Estructura para metadatos de llaves enviadas al back
+type KeyMetadata struct {
+	IdInst  string
+	IdUser  string
+	PassKey string
+	NameKey string
+	NameCer string
+	HashKey string
+	HashCer string
+	Path    string
+	Ok      bool
+}

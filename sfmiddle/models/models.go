@@ -52,8 +52,14 @@ type ValidationRequest struct {
 	ResidenciaFile multipart.File `json:"-"`
 }
 type PaymentReq struct {
-	Plan string `json:"plan"`
+	Status     string `json:"status"` // 0 PENDING, 1 COMPLETED, 2 REJECTED, 3 CANCELED, 4 HOLD
+	Plan       string `json:"plan"`
+	CardNum    string `json:"cardnumber"`
+	Expiration string `json:"exp"`
+	CVV        string `json:"cvv"`
+	NameOwner  string `json:"nameowner"`
 }
+
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register
 type RegisterResponse struct {
@@ -101,9 +107,10 @@ type UploadResponse struct {
 	Errors      []string `json:"errors,omitempty"`
 }
 
-type PaymentResp struct{
-	Success bool `json:"success"`
-	Status string `json:"status"`
-	Plan string `json:"plan"`
-	Expiration string `json:"expiration"`
+type PaymentResp struct {
+	CurrentSatat string `json:"current"`
+	Success      bool   `json:"success"`
+	Status       string `json:"status"`
+	Plan         string `json:"plan"`
+	Expiration   string `json:"expiration"`
 }

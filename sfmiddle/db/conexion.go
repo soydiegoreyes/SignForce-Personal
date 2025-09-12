@@ -273,7 +273,7 @@ func (cnx *ConexionDB) GenericBatchUpdate(tableName string, whereColumn string, 
 			strings.Join(setClauses, ", "),
 			whereColumn,
 		)
-
+		fmt.Println(query, values)
 		// Ejecutar la consulta
 		if _, err := cnx.DB.Exec(query, values...); err != nil {
 			return fmt.Errorf("error actualizando %s=%v: %w", whereColumn, whereValue, err)
@@ -376,6 +376,7 @@ func (cnx *ConexionDB) GenericInsert(tableName string, columns []string, values 
 	}
 
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s);", tableName, keys, vals)
+	fmt.Println(query)
 	// Ejecutar la consulta
 	if result, err := cnx.DB.Exec(query); err != nil {
 		return "", fmt.Errorf("error insertando datos: %s\nERROR: %w", query, err)

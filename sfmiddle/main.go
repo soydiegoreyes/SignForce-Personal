@@ -101,6 +101,7 @@ func main() {
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/uploadDocs", uploadDocs) // funcion para subir cualquier tipo de documento
+	mux.HandleFunc("/uploadKeys", uploadKeys) // funcion para subir llaves
 	mux.HandleFunc("/upload", upload)         // funcion para subir cualquier tipo de documento
 	mux.HandleFunc("/register", registerInst)
 	mux.HandleFunc("/login", loginPage)
@@ -111,6 +112,7 @@ func main() {
 	mux.HandleFunc("/completevalidation", completeValidation)
 	mux.HandleFunc("/waitapprove", waitApprove)
 	mux.HandleFunc("/contracts", contracts)
+	mux.HandleFunc("/payment", payment)
 	mux.HandleFunc("/processpayment", processPayment)
 
 	mux.Handle("/home/", http.StripPrefix("/home/",
@@ -190,6 +192,14 @@ func upload(respWriter http.ResponseWriter, request *http.Request) {
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/upload_zone.html")
 }
 
+func payment(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/plan_pay.html")
+}
+
 // =======================================================================
 // Handler HTTP para loguear a un usuario por un ID de usuario y un arreglo de atributos a adquirir
 func registerInst(respWriter http.ResponseWriter, request *http.Request) {
@@ -210,8 +220,8 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 	// depende del estatus de la institucion se le permite hacer un registro (DB: statusinstitution)
 	var status = map[string]bool{
 		"2": true, "3": true, "4": false, "5": true,
-		"6": true, "7": true, "8": true, "9": false, "10": false,
-		"11": true, "12": false,
+		"6": true, "7": true, "8": false, "9": false,
+		"10": true, "11": false,
 	}
 
 	// se comprueba que el TAXNUMBER de la empresa no existe en caso de que si, retorna error
@@ -695,6 +705,192 @@ func contracts(respWriter http.ResponseWriter, request *http.Request) {
 	http.ServeFile(respWriter, request, "./../sffront/registro/contracts.html")
 }
 
+// Función para subir llaves
+func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Extraer datos del JWT
+	idUser, ok := claims["uid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	idInst, ok := claims["iid"].(string)
+	if !ok {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Validar Content-Type
+	contentType := request.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "multipart/form-data") {
+		http.Error(respWriter, "Tipo de contenido inesperado", http.StatusBadRequest)
+		return
+	}
+
+	// Parsear el form multipart
+	var maxmem int
+	maxmem, err = strconv.Atoi(os.Getenv("MAX_UPLOAD_MEM"))
+	if err != nil {
+		maxmem = 10 // las llaves no pesan más de 10 kB
+	}
+	maxmem = maxmem << 10
+
+	err = request.ParseMultipartForm(int64(maxmem))
+	if err != nil {
+		http.Error(respWriter, "Error procesando formulario", http.StatusBadRequest)
+		return
+	}
+	// Limpiar recursos del multipart form al finalizar
+	defer func() {
+		if request.MultipartForm != nil {
+			request.MultipartForm.RemoveAll()
+		}
+	}()
+
+	// Obtener la contraseña
+	var passKey string
+	if passVal, exists := request.MultipartForm.Value["passKey"]; exists && len(passVal) > 0 {
+		passKey = passVal[0]
+	} else {
+		http.Error(respWriter, "Contraseña requerida", http.StatusBadRequest)
+		return
+	}
+
+	// Obtener los archivos específicos (keyFile y certFile)
+	keyFile, keyHeader, err := request.FormFile("keyFile")
+	if err != nil {
+		http.Error(respWriter, "Archivo de llave requerido", http.StatusBadRequest)
+		return
+	}
+	defer keyFile.Close()
+
+	certFile, certHeader, err := request.FormFile("certFile")
+	if err != nil {
+		http.Error(respWriter, "Archivo de certificado requerido", http.StatusBadRequest)
+		return
+	}
+	defer certFile.Close()
+
+	// Crear directorio para guardar los archivos
+	basePath := fmt.Sprintf("%s/%s/%s", os.Getenv("KEYS_PATH"), idInst, idUser)
+	err = os.MkdirAll(basePath, 0755)
+	if err != nil {
+		http.Error(respWriter, "Error creando directorio", http.StatusInternalServerError)
+		return
+	}
+
+	// Guardar archivo de llave
+	keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
+	filePath, err := utilities.GuardarArchivo(keyFile, keyPath, keyHeader.Filename, idInst, idUser, false)
+	if err != nil {
+		http.Error(respWriter, "Error creando archivo de llave", http.StatusInternalServerError)
+		return
+	}
+	// Calcular hash de los archivos
+	keyHash, err := utilities.GetHash(filePath, configs.HashConf)
+	if err != nil {
+		http.Error(respWriter, "Error obteniendo hash de la llave", http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("Llave guardada en %s\n", filePath)
+	// Guardar archivo de certificado
+	certPath := fmt.Sprintf("%s/%s", basePath, certHeader.Filename)
+	filePath, err = utilities.GuardarArchivo(certFile, certPath, certHeader.Filename, idInst, idUser, false)
+	if err != nil {
+		http.Error(respWriter, "Error creando archivo de certificado", http.StatusInternalServerError)
+		return
+	}
+	certHash, err := utilities.GetHash(filePath, configs.HashConf)
+	if err != nil {
+		http.Error(respWriter, "Error obteniendo hash del certificado", http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("Certificado guardado en %s\n", filePath)
+
+	// Crear metadata para validación
+	keyMetadata := models.KeyMetadata{
+		IdInst:  idInst,
+		IdUser:  idUser,
+		PassKey: passKey,
+		NameKey: keyHeader.Filename,
+		NameCer: certHeader.Filename,
+		HashKey: keyHash,
+		HashCer: certHash,
+		Path:    basePath,
+		Ok:      false,
+	}
+
+	// Validar las llaves mediante API externa
+	validationData, err := json.Marshal(keyMetadata)
+	if err != nil {
+		http.Error(respWriter, "Error preparando datos para validación", http.StatusInternalServerError)
+		return
+	}
+
+	validationURL := os.Getenv("BACK_URL") + "/validateKeys"
+	req, err := http.NewRequest("POST", validationURL, bytes.NewBuffer(validationData))
+	if err != nil {
+		http.Error(respWriter, "Error creando solicitud de validación", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(respWriter, "Error conectando al servicio de validación", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		http.Error(respWriter, "Error en la validación de llaves", http.StatusInternalServerError)
+		return
+	}
+
+	// Leer respuesta de validación
+	var validationResult struct {
+		Valid bool `json:"valid"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&validationResult)
+	if err != nil || !validationResult.Valid {
+		http.Error(respWriter, "Las llaves no son válidas", http.StatusBadRequest)
+		return
+	}
+
+	// Actualizar metadata con resultado de validación
+	keyMetadata.Ok = validationResult.Valid
+
+	// Aquí deberías guardar keyMetadata en tu base de datos
+
+	// Respuesta exitosa
+	response := models.UploadResponse{
+		Success: true,
+		Message: "Llaves subidas y validadas exitosamente",
+	}
+
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(&response)
+}
+
 // Funcion gneérica para subir archivos de cualquier clase
 func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -866,8 +1062,9 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(&response)
 
 }
+
 // =======================================================================
-func processPayment(respWriter http.ResponseWriter, request *http.Request){
+func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
@@ -907,30 +1104,83 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request){
 		return
 	}
 
-	err = json.NewDecoder(request.Body).Decode(&models.PaymentReq)
+	payReq := models.PaymentReq{}
+	err = json.NewDecoder(request.Body).Decode(&payReq)
 	if err != nil {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
 
-	attrs := []string{"status", "plan", "expiration",}
+	fmt.Println(idUser, idInst, idTeam, authInst)
+
+	attrs := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "nameOwner"}
 	wheres := map[string][]string{"idInstitution": {idInst}}
-	data := db.DB_con.GenericSelect("payments", "idInstitution", attrs, wheres)
-	if len(data) == 0 {
-		cols := []string{"status", "plan", "expiration",}
-		vals := []string{"1", "plan", "expiration",}
-		db.DB_con.GenericInsert("payment")
+	data, err := db.DB_con.GenericSelect("payment", "idInstitution", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de institucion", http.StatusInternalServerError)
+		return
 	}
-	resp := data[idInst]
-	if data[idInst]["status"] == "1"{
-		err = json.NewDecoder(resp).Decode(&models.PaymentResp)
+	fmt.Println(len(data))
+
+	if len(data) == 0 {
+		var plan string
+		switch payReq.Plan {
+		case "Basico":
+			plan = "1"
+		case "Profesional":
+			plan = "2"
+		case "Empresarial":
+			plan = "3"
+		}
+		expPlan := time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
+		cols := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "cardNumber", "expirationDate", "nameOwner"}
+		vals := []interface{}{payReq.Status, plan, expPlan, payReq.CardNum, payReq.Expiration, payReq.NameOwner}
+		idPay, err := db.DB_con.GenericInsert("payment", cols, vals)
 		if err != nil {
-			http.Error(respWriter, "Error: JSON no valido.", http.StatusBadRequest)
+			fmt.Println("Error info pago")
+			http.Error(respWriter, "Error al insertar informacion de pago", http.StatusInternalServerError)
+		}
+		updates := map[string]map[string]interface{}{
+			idInst: {
+				"statusInst_fk":      "6",
+				"paymentDataInst_fk": idPay,
+			},
+		}
+
+		err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
+		if err != nil {
+			http.Error(respWriter, "Error al actualizar informacion de institucion", http.StatusInternalServerError)
+		}
+		resp := &models.PaymentResp{
+			CurrentSatat: plan,
+			Success:      true,
+			Status:       "1",
+			Plan:         plan,
+			Expiration:   expPlan,
+		}
+		// Convertir a JSON
+		jsonData, err := json.Marshal(resp)
+		if err != nil {
+			http.Error(respWriter, "Error al generar JSON", http.StatusInternalServerError)
 			return
 		}
-	} 
-	
+
+		// Configurar headers y enviar respuesta
+		respWriter.Header().Set("Content-Type", "application/json")
+		respWriter.WriteHeader(http.StatusOK)
+		respWriter.Write(jsonData)
+		//json.NewEncoder() armar respuesta con el struct siguiente
+		/*type PaymentResp struct {
+			CurrentSatat string `json:"current"`
+			Success      bool   `json:"success"`
+			Status       string `json:"status"`
+			Plan         string `json:"plan"`
+			Expiration   string `json:"expiration"`
+		}*/
+
+	}
 }
+
 // =======================================================================
 
 // unificar el json de respuestas para que mande estatus y lista de documentos
@@ -1012,8 +1262,8 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	//var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true}
 	//var statusContr = map[string]bool{"6": true, "7": true}
-	var satusActive = map[string]bool{"8": true}
-	var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
+	var satusActive = map[string]bool{"7": true}
+	var satusInactive = map[string]bool{"8": true, "9": true, "10": true, "11": true}
 
 	var location string
 	// Si el usuario esta activo
@@ -1027,7 +1277,9 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			} else if dataInst[idInst]["statusInst_fk"] == "3" {
 				location = "/waitapprove"
 			} else if dataInst[idInst]["statusInst_fk"] == "5" {
-				location = "/ContractPage"
+				location = "/payment"
+			} else if dataInst[idInst]["statusInst_fk"] == "6" {
+				location = "/contracts"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {
