@@ -1122,6 +1122,8 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	fmt.Println(len(data))
 
+	resp := &models.PaymentResp{}
+
 	if len(data) == 0 {
 		var plan string
 		switch payReq.Plan {
@@ -1151,34 +1153,30 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			http.Error(respWriter, "Error al actualizar informacion de institucion", http.StatusInternalServerError)
 		}
-		resp := &models.PaymentResp{
-			CurrentSatat: plan,
-			Success:      true,
-			Status:       "1",
-			Plan:         plan,
-			Expiration:   expPlan,
-		}
-		// Convertir a JSON
-		jsonData, err := json.Marshal(resp)
-		if err != nil {
-			http.Error(respWriter, "Error al generar JSON", http.StatusInternalServerError)
-			return
-		}
-
-		// Configurar headers y enviar respuesta
-		respWriter.Header().Set("Content-Type", "application/json")
-		respWriter.WriteHeader(http.StatusOK)
-		respWriter.Write(jsonData)
-		//json.NewEncoder() armar respuesta con el struct siguiente
-		/*type PaymentResp struct {
-			CurrentSatat string `json:"current"`
-			Success      bool   `json:"success"`
-			Status       string `json:"status"`
-			Plan         string `json:"plan"`
-			Expiration   string `json:"expiration"`
-		}*/
-
+		resp.CurrentSatat = plan
+		resp.Success = true
+		resp.Status = "1"
+		resp.Plan = plan
+		resp.Expiration = expPlan
+	} else {
+		d := data[idInst]
+		resp.CurrentSatat = d["statusPayment_fk"]
+		resp.Success = true
+		resp.Status = d["statusPayment_fk"]
+		resp.Plan = d["planId_fk"]
+		resp.Expiration = d["expirationPlan"]
 	}
+	// Convertir a JSON
+	jsonData, err := json.Marshal(resp)
+	if err != nil {
+		http.Error(respWriter, "Error al generar JSON", http.StatusInternalServerError)
+		return
+	}
+
+	// Configurar headers y enviar respuesta
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	respWriter.Write(jsonData)
 }
 
 // =======================================================================
