@@ -48,6 +48,7 @@ func main() {
 	http.HandleFunc("/getuser", getUserData)
 	http.HandleFunc("/usersignature", signUser)
 	http.HandleFunc("/hashdatab64", hashDataB64)
+	http.HandleFunc("/uploadKeys", uploadKeys)
 	http.HandleFunc("/logout", logoutUser)
 
 	// Inicia el servidor
@@ -155,6 +156,79 @@ func hashDataB64(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	fmt.Println("hashed message: ", hash_b64)
 	json.NewEncoder(respWriter).Encode(models.HashDataResponse{Operation: "abcd", HashedMessage: hash_b64, Check: true})
+}
+
+// recibe solicitud desde cualquier endpoint para validar llaves que ya estan almacenadas
+func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != "POST" {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req models.UploadKeysReq
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		http.Error(respWriter, "Datos inválidos", http.StatusBadRequest)
+		return
+	}
+
+	if req.IdUser == "" || req.IdInst == "" {
+		http.Error(respWriter, "IDs requeridos", http.StatusBadRequest)
+		return
+	}
+
+	kn := fmt.Sprintf("%s/%s", req.Path, req.NameKey)
+	fmt.Println(kn)
+	keyHash, err := utilities.GetHash(kn, configs.HashConf)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(respWriter, "Error obteniendo hash de la llave", http.StatusInternalServerError)
+		return
+	}
+	cn := fmt.Sprintf("%s/%s", req.Path, req.NameCer)
+	fmt.Println(cn)
+	certHash, err := utilities.GetHash(cn, configs.HashConf)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(respWriter, "Error obteniendo hash del certificado", http.StatusInternalServerError)
+		return
+	}
+	if certHash != req.HashCer && keyHash != req.HashKey {
+		fmt.Println("Error Hashes no coinciden")
+		http.Error(respWriter, "Hashes no coinciden", http.StatusExpectationFailed)
+		return
+	}
+
+	keys := objects.NewKeys(kn, cn)
+	valResp, err := keys.ValidateKeys(req.PassKey)
+	if err != nil {
+		fmt.Println("Error Llaves no encontrado o expirado ", err)
+		http.Error(respWriter, "Llaves no encontrado o expirado", http.StatusInternalServerError)
+		return
+	}
+	if !valResp.Valid {
+		fmt.Println("Error Llaves no válidas o expiradas")
+		http.Error(respWriter, "Llaves no válidas o expiradas", http.StatusNotFound)
+		return
+	}
+
+	cols := []string{"keyFilePath", "certFilePath", "serialNumber", "certVersion", "issuerRFC4514",
+		"notValidAfter", "notValidBefore", "subjectRFC4514", "ocspUrl", "crlsUrl", "signature",
+		"signAlgo", "validKeys", "keyLenKey", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber",
+	}
+	values := []interface{}{
+		kn, cn, keys.CertMap["SerialNumber"], keys.CertMap["Version"], keys.CertMap["Issuer"].(map[string]string)["RFC4514"],
+		keys.CertMap["NotAfter"], keys.CertMap["NotBefore"], keys.CertMap["Subject"].(map[string]string)["RFC4514"], keys.CertMap["OCSP"], keys.CertMap["CRLS"], keys.CertMap["Signature"],
+		keys.CertMap["SignatureAlgorithm"], keys.ValidKeys, keys.CertMap["KeySize"], keyHash, certHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
+	}
+
+	valResp.KeysId, err = db.DB_con.GenericInsert("userkeys", cols, values)
+	if err != nil {
+		http.Error(respWriter, "Error insertando nuevo registro de llaves", http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("Propietario: %s, Exp: %s \n", valResp.Owner, valResp.Expiration)
+	respWriter.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(respWriter).Encode(valResp)
 }
 
 func signUser(respWriter http.ResponseWriter, request *http.Request) {

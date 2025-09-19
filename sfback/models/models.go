@@ -19,6 +19,17 @@ type HashDataB64 struct {
 	DigestAlg string `json:"digest_alg"`
 }
 
+type UploadKeysReq struct {
+	IdInst  string `json:"IdInst"`
+	IdUser  string `json:"IdUser"`
+	PassKey string `json:"PassKey"`
+	NameKey string `json:"NameKey"`
+	NameCer string `json:"NameCer"`
+	HashKey string `json:"HashKey"`
+	HashCer string `json:"HashCer"`
+	Path    string `json:"Path"`
+}
+
 // Decodificar el cuerpo (ej: {"id": "123", "password": "secret"})
 type LoginUserReq struct {
 	IdUser   string `json:"iduser"`
@@ -51,4 +62,11 @@ type HashDataResponse struct {
 	Operation     string `json:"operation"`
 	HashedMessage string `json:"hashed_message"`
 	Check         bool   `json:"check"`
+}
+
+type UploadKeysResponse struct {
+	Valid      bool   `json:"valid"`
+	Expiration string `json:"expiration"`
+	Owner      string `json:"owner"`
+	KeysId     string `json:"keysid"`
 }

@@ -92,18 +92,32 @@ func Encoder(hash []byte, encoding string) (string, error) {
 func ConvertCertToPem(rutaCert string) (string, error) {
 	var rutaPem string = rutaCert
 	var err error = nil
-
-	if !strings.HasSuffix(rutaCert, ".pem") {
-		rutaPem = strings.Replace(rutaCert, ".cer", ".pem", 1)
-		cmd := exec.Command("openssl", "x509", "-inform", "DER", "-in", rutaCert, "-out", rutaPem)
-
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println("Error ejecutando OpenSSL:", err)
-			rutaPem = rutaCert
+	_, err = os.Stat(rutaCert)
+	// si existe se sustituye el prefijo
+	if err == nil {
+		if !strings.HasSuffix(rutaCert, ".pem") {
+			rutaPem = strings.Replace(rutaCert, ".cer", ".pem", 1)
+			// se busca archivo pem existente
+			_, err := os.Stat(rutaPem)
+			// si sale error no existe y se crea
+			if err != nil {
+				cmd := exec.Command("openssl", "x509", "-inform", "DER", "-in", rutaCert, "-out", rutaPem)
+				err = cmd.Run()
+				if err != nil {
+					fmt.Println("Error ejecutando OpenSSL:", err)
+					rutaPem = rutaCert
+				} else {
+					fmt.Println("Certificado convertido a formato PEM")
+				}
+			} else {
+				fmt.Println("Certificado PEM ya existe")
+			}
 		} else {
-			fmt.Println("Certificado convertido a formato PEM")
+			fmt.Println("Certificado PEM ya existe")
 		}
+	} else {
+		fmt.Printf("Ruta no existe: %s", rutaCert)
+		rutaPem = ""
 	}
 	return rutaPem, err
 }
@@ -112,19 +126,36 @@ func ConvertCertToPem(rutaCert string) (string, error) {
 func ConvertKeyToPem(rutaKey, password string) (string, error) {
 	var rutaPem string = rutaKey
 	var err error = nil
-	if !strings.HasSuffix(rutaKey, ".pem") {
-		rutaPem = strings.Replace(rutaKey, ".key", ".pem", 1)
-		passin := "pass:" + password
-		cmd := exec.Command("openssl", "pkcs8", "-inform", "DER", "-in", rutaKey, "-out", rutaPem, "-passin", passin)
+	// se encuentra el archivo
+	_, err = os.Stat(rutaKey)
+	// si existe se sustituye el prefijo
+	if err == nil {
+		if !strings.HasSuffix(rutaKey, ".pem") {
+			rutaPem = strings.Replace(rutaKey, ".key", ".pem", 1)
+			// se busca el archivo pem
+			_, err := os.Stat(rutaPem)
+			// si no existe dara error y se crea uno nuevo
+			if err != nil {
+				passin := "pass:" + password
+				cmd := exec.Command("openssl", "pkcs8", "-inform", "DER", "-in", rutaKey, "-out", rutaPem, "-passin", passin)
 
-		err = cmd.Run()
-		if err != nil {
-			fmt.Println("Error ejecutando OpenSSL:", err)
-			rutaPem = rutaKey
+				err = cmd.Run()
+				if err != nil {
+					fmt.Println("Error ejecutando OpenSSL:", err)
+					rutaPem = rutaKey
 
+				} else {
+					fmt.Println("Llave convertida a formato PEM")
+				}
+			} else {
+				fmt.Println("Llave PEM ya existe")
+			}
 		} else {
-			fmt.Println("Llave convertida a formato PEM")
+			fmt.Println("Llave PEM ya existe")
 		}
+	} else {
+		fmt.Printf("Ruta no existe: %s", rutaKey)
+		rutaPem = ""
 	}
 	return rutaPem, err
 }

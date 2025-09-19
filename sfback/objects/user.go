@@ -1,17 +1,18 @@
 package objects
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
+	//"crypto/rsa"
+	//"crypto/x509"
+	//"encoding/pem"
 	"errors"
 	"fmt"
 	"log"
-	"os"
+
+	//"os"
 	"sfback/db"
 	"sfback/utilities"
-	"strings"
-	"time"
+	//"strings"
+	//"time"
 )
 
 // Class User
@@ -26,7 +27,7 @@ type User struct {
 	Active   bool
 }
 
-// NewUser crea una nueva instancia de User
+// NewUser crea una nueva instancia de User que ya tiene todos los datos de llaves cargados en DB
 func NewUser(idUser string, password string) (*User, error) {
 	var attributes = []string{"nameUser", "lastNameUser", "pobUidUser", "taxNumUser", "emailUser", "activeUser", "idKeysUser_fk"}
 	var wheres = map[string][]string{
@@ -50,15 +51,17 @@ func NewUser(idUser string, password string) (*User, error) {
 	}
 	log.Println(keysUser)
 
-	certPathPem, err := utilities.ConvertCertToPem(keysUser[idKeyUser]["certFilePath"])
-	if err != nil {
-		return nil, fmt.Errorf("error al convertir certificado a PEM %v. error: %v", userData["certFilePath"], err)
-	}
+	/*
+		certPathPem, err := utilities.ConvertCertToPem(keysUser[idKeyUser]["certFilePath"])
+		if err != nil {
+			return nil, fmt.Errorf("error al convertir certificado a PEM %v. error: %v", userData["certFilePath"], err)
+		}
 
-	keyPathPem, err := utilities.ConvertKeyToPem(keysUser[idKeyUser]["keyFilePath"], password)
-	if err != nil {
-		return nil, fmt.Errorf("error al convertir llave a PEM %v. error: %v", userData["keyFilePath"], err)
-	}
+		keyPathPem, err := utilities.ConvertKeyToPem(keysUser[idKeyUser]["keyFilePath"], password)
+		if err != nil {
+			return nil, fmt.Errorf("error al convertir llave a PEM %v. error: %v", userData["keyFilePath"], err)
+		}
+	*/
 
 	var usuActivo bool
 	if userData[idUser]["activeUser"] == "1" {
@@ -68,7 +71,7 @@ func NewUser(idUser string, password string) (*User, error) {
 	}
 	user := &User{
 		Uid:      idUser,
-		Keys:     NewKeys(keyPathPem, certPathPem),
+		Keys:     NewKeys(keysUser[idKeyUser]["keyFilePath"], keysUser[idKeyUser]["certFilePath"]),
 		Name:     userData[idUser]["nameUser"],
 		LastName: userData[idUser]["lastNameUser"],
 		PobID:    userData[idUser]["pobUidUser"],
@@ -77,26 +80,68 @@ func NewUser(idUser string, password string) (*User, error) {
 		Active:   usuActivo,
 	}
 
-	// Cargar claves y certificado
-	err = user.loadPrivateKey(keyPathPem)
-	if err != nil {
-		return nil, fmt.Errorf("error al cargar la clave privada: %v", err)
-	}
+	/*
+		// Cargar claves y certificado
+		err = user.Keys.loadPrivateKey(keyPathPem)
+		if err != nil {
+			return nil, fmt.Errorf("error al cargar la clave privada: %v", err)
+		}
 
-	err = user.loadCertificate(certPathPem)
-	if err != nil {
-		return nil, fmt.Errorf("error al cargar el certificado: %v", err)
-	}
+		err = user.Keys.loadCertificate(certPathPem)
+		if err != nil {
+			return nil, fmt.Errorf("error al cargar el certificado: %v", err)
+		}
 
-	// Validar certificado
-	if !user.validateKeys() {
+		// Validar certificado
+		if !user.Keys.TestKeys() {
+			return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
+		}
+	*/
+	valKeysResp, err := user.Keys.ValidateKeys(password)
+	if err != nil {
+		return nil, err
+	}
+	if !user.Keys.ValidKeys {
 		return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
 	}
-	user.Keys.ValidKeys = true
+	fmt.Printf("Propietario: %s, Exp: %s \n", valKeysResp.Owner, valKeysResp.Expiration)
+	validPobUid := user.PobID == user.Keys.CertMap["PobId"]
+	validTaxUid := user.TaxNum == user.Keys.CertMap["TaxNum"]
+
+	if !validPobUid && !validTaxUid {
+		user.Keys.ValidKeys = false
+		return nil, errors.New("el certificado no coincide con el propietario registrado")
+	}
 	fmt.Printf("Usuario logueado: %s %s %s\n", user.Uid, user.Name, user.LastName)
 	return user, nil
 }
 
+func (u *User) GetPublicParams(params []string) map[string]string {
+	responseParams := make(map[string]string)
+	var map_params = map[string]string{
+		"uid":      u.Uid,
+		"name":     u.Name,
+		"lastName": u.LastName,
+		"pobId":    u.PobID,
+		"taxNum":   u.TaxNum,
+		"email":    u.Email,
+	}
+
+	for _, param := range params {
+		switch param {
+		case "certb64":
+			responseParams[param] = utilities.Encode_b64(u.Keys.Certificate.Raw)
+		case "subject4514":
+			responseParams[param] = u.Keys.CertMap["Subject"].(map[string]string)["subject4514"]
+		default:
+			responseParams[param] = map_params[param]
+		}
+
+	}
+	return responseParams
+}
+
+/*
 // Carga la clave privada desde el archivo de usuario
 func (u *User) loadPrivateKey(keyPath string) error {
 	if !strings.HasSuffix(keyPath, ".pem") {
@@ -125,7 +170,9 @@ func (u *User) loadPrivateKey(keyPath string) error {
 
 	return nil
 }
+*/
 
+/*
 // Carga el certificado desde el archivo de usuario
 func (u *User) loadCertificate(certPath string) error {
 	data, err := os.ReadFile(certPath)
@@ -152,7 +199,8 @@ func (u *User) loadCertificate(certPath string) error {
 
 	return nil
 }
-
+*/
+/*
 // Valida si la clave y el certificado coinciden y están vigentes
 func (u *User) validateKeys() bool {
 	if u.Keys.privateKey == nil || u.Keys.Certificate == nil {
@@ -172,28 +220,4 @@ func (u *User) validateKeys() bool {
 
 	return validBase && validExp && notExpired && validTaxUid && validPobUid
 }
-
-func (u *User) GetPublicParams(params []string) map[string]string {
-	responseParams := make(map[string]string)
-	var map_params = map[string]string{
-		"uid":      u.Uid,
-		"name":     u.Name,
-		"lastName": u.LastName,
-		"pobId":    u.PobID,
-		"taxNum":   u.TaxNum,
-		"email":    u.Email,
-	}
-
-	for _, param := range params {
-		switch param {
-		case "certb64":
-			responseParams[param] = utilities.Encode_b64(u.Keys.Certificate.Raw)
-		case "subject4514":
-			responseParams[param] = u.Keys.CertMap["Subject"].(map[string]string)["subject4514"]
-		default:
-			responseParams[param] = map_params[param]
-		}
-
-	}
-	return responseParams
-}
+*/

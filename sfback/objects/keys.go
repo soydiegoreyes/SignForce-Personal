@@ -2,15 +2,22 @@ package objects
 
 import (
 	"crypto"
+	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/sha512"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
+	"encoding/pem"
 	"errors"
 	"fmt"
+	"os"
+	"sfback/models"
 	"sfback/utilities"
+	"strings"
+	"time"
 )
 
 /*
@@ -35,6 +42,112 @@ func NewKeys(keypath string, certpath string) *Keys {
 		keyfile:  keypath,
 		Certfile: certpath,
 	}
+}
+
+// Carga el certificado desde el archivo de usuario
+func (k *Keys) loadCertificate(certPath string) error {
+	data, err := os.ReadFile(certPath)
+	if err != nil {
+		return err
+	}
+
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return errors.New("no se pudo decodificar el certificado")
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return errors.New("error al parsear el certificado")
+	}
+	k.Certificate = cert
+
+	certMap, err := ParseCertificateToMap(cert)
+	if err != nil {
+		return err
+	}
+	k.CertMap = certMap
+
+	return nil
+}
+
+// Carga la clave privada desde el archivo de usuario
+func (k *Keys) loadPrivateKey(keyPath string) error {
+	if !strings.HasSuffix(keyPath, ".pem") {
+		return errors.New("la llave privada no es formato .PEM")
+	}
+	data, err := os.ReadFile(keyPath)
+	if err != nil {
+		return fmt.Errorf("no se pudo leer el archivo de clave privada: %v", err)
+	}
+
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return errors.New("no se pudo decodificar el bloque PEM de la clave privada")
+	}
+
+	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return fmt.Errorf("error al parsear la clave privada: %v", err)
+	}
+
+	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return errors.New("la clave privada no es una clave RSA")
+	}
+	k.privateKey = rsaPrivateKey
+
+	return nil
+}
+
+// Valida si la clave y el certificado coinciden y están vigentes
+func (k *Keys) TestKeys() bool {
+	if k.privateKey == nil || k.Certificate == nil {
+		return false
+	}
+
+	validBase := k.privateKey.PublicKey.N.Cmp(k.Certificate.PublicKey.(*rsa.PublicKey).N) == 0
+	validExp := k.privateKey.PublicKey.E == k.Certificate.PublicKey.(*rsa.PublicKey).E
+
+	now := time.Now()
+	notExpired := now.After(k.Certificate.NotBefore) && now.Before(k.Certificate.NotAfter)
+
+	fmt.Printf("subject--: %v\n", k.CertMap["Subject"].(map[string]string)["commonName"])
+
+	return validBase && validExp && notExpired
+}
+
+func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error) {
+	var valid bool = false
+
+	certPathPem, err := utilities.ConvertCertToPem(k.Certfile)
+	if err != nil {
+		return nil, fmt.Errorf("error al convertir certificado a PEM %v. error: %v", k.Certfile, err)
+	}
+
+	err = k.loadCertificate(certPathPem)
+	if err != nil {
+		return nil, fmt.Errorf("error al cargar el certificado: %v", err)
+	}
+
+	keyPathPem, err := utilities.ConvertKeyToPem(k.keyfile, password)
+	if err != nil {
+		return nil, fmt.Errorf("error al convertir llave a PEM %v. error: %v", k.keyfile, err)
+	}
+
+	// Cargar claves y certificado
+	err = k.loadPrivateKey(keyPathPem)
+	if err != nil {
+		return nil, fmt.Errorf("error al cargar la clave privada: %v", err)
+	}
+	resp := &models.UploadKeysResponse{}
+	if valid = k.TestKeys(); valid {
+		resp.Owner = k.CertMap["Subject"].(map[string]string)["commonName"]
+		resp.Expiration = k.Certificate.NotAfter.Format("2006-01-02 15:04:05")
+		k.ValidKeys = true
+	}
+
+	return resp, nil
 }
 
 // SignData genera una firma con la clave privada
@@ -114,12 +227,11 @@ func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
 	result["NotBefore"] = cert.NotBefore
 	result["NotAfter"] = cert.NotAfter
 	result["SerialNumber"] = cert.SerialNumber.String()
-	result["Signature"] = fmt.Sprintf("%x", cert.Signature)
-	result["SignatureAlgorithm"] = cert.SignatureAlgorithm.String()
+	result["Signature"] = utilities.Encode_b64(cert.Signature) // FIRMA B64
+	result["SignatureAlgorithm"] = strings.ToLower(cert.SignatureAlgorithm.String())
 	result["PublicKey"] = cert.PublicKey.(*rsa.PublicKey).N
 	result["Exponent"] = cert.PublicKey.(*rsa.PublicKey).E
 	result["PublicKeyAlgorithm"] = cert.PublicKeyAlgorithm.String()
-	result["BasicConstraintsValid"] = cert.BasicConstraintsValid
 	result["ExtKeyUsage"] = cert.ExtKeyUsage //[{2.5.29.19 true [48 0]} {2.5.29.15 false [3 2 3 216]} {2.16.840.1.113730.1.1 false [3 2 5 160]} {2.5.29.37 false [48 20 6 8 43 6 1 5 5 7 3 4 6 8 43 6 1 5 5 7 3 2]}]
 	result["Extensions"] = cert.Extensions
 	result["ExtraExtensions"] = cert.ExtraExtensions
@@ -128,12 +240,32 @@ func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
 	result["UnhandledCriticalExtensions"] = cert.UnhandledCriticalExtensions
 	result["UnknownExtKeyUsage"] = cert.UnknownExtKeyUsage
 
+	switch pub := cert.PublicKey.(type) {
+	case *rsa.PublicKey:
+		result["CurveName"] = ""
+		result["KeySize"] = pub.Size() * 8
+	case *ecdsa.PublicKey:
+		result["CurveName"] = pub.Curve.Params().Name
+		result["KeySize"] = pub.Curve.Params().BitSize
+	case ed25519.PublicKey:
+		result["CurveName"] = "Clave Ed25519"
+		result["KeySize"] = 0
+	default:
+		result["CurveName"] = ""
+		result["KeySize"] = 0
+		fmt.Printf("Tipo de clave desconocido: %T\n", pub)
+	}
+
 	// Procesar Subject
 	subjectMap, err := parseRDNsToMap(cert.RawSubject)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing subject: %v", err)
 	}
+	// subject important attrs
 	result["Subject"] = subjectMap
+	result["SubjectUniqueId"] = subjectMap[utilities.Coids["x509"]["x500UniqueIdentifier"]]
+	result["SubjectSerialNumber"] = cert.Subject.SerialNumber
+	//result["SubjectEmailAddress"] = subjectMap[utilities.Coids["x509"]["emailAddress"]]
 
 	// Procesar Issuer
 	issuerMap, err := parseRDNsToMap(cert.RawIssuer)
@@ -141,6 +273,18 @@ func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
 		return nil, fmt.Errorf("error parsing issuer: %v", err)
 	}
 	result["Issuer"] = issuerMap
+	result["IssuerUniqueId"] = issuerMap[utilities.Coids["x509"]["x500UniqueIdentifier"]]
+
+	if len(cert.OCSPServer) > 0 {
+		result["OCSP"] = cert.OCSPServer[0]
+	} else {
+		result["OCSP"] = ""
+	}
+	if len(cert.CRLDistributionPoints) > 0 {
+		result["CRLS"] = cert.CRLDistributionPoints[0]
+	} else {
+		result["CRLS"] = ""
+	}
 
 	return result, nil
 }
@@ -156,7 +300,7 @@ func parseRDNsToMap(rawBytes []byte) (map[string]string, error) {
 		return nil, err
 	}
 
-	var subject4514 string = ""
+	var RFC4514 string = ""
 	// rdnSeq es de tipo map[string]string
 	for _, rdnSet := range rdnSeq {
 		for _, atv := range rdnSet {
@@ -170,10 +314,10 @@ func parseRDNsToMap(rawBytes []byte) (map[string]string, error) {
 			} else {
 				attrMap[name] = valDecoded
 			}
-			subject4514 = subject4514 + utilities.Oids[name]["rfc4514"] + "=" + valDecoded + ","
+			RFC4514 = RFC4514 + utilities.Oids[name]["rfc4514"] + "=" + valDecoded + ","
 		}
 	}
-	attrMap["subject4514"] = subject4514
+	attrMap["RFC4514"] = RFC4514
 
 	return attrMap, nil
 }
