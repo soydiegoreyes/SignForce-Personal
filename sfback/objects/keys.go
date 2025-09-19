@@ -67,7 +67,7 @@ func (k *Keys) loadCertificate(certPath string) error {
 		return err
 	}
 	k.CertMap = certMap
-
+	fmt.Println(certMap)
 	return nil
 }
 
@@ -113,7 +113,7 @@ func (k *Keys) TestKeys() bool {
 	notExpired := now.After(k.Certificate.NotBefore) && now.Before(k.Certificate.NotAfter)
 
 	fmt.Printf("subject--: %v\n", k.CertMap["Subject"].(map[string]string)["commonName"])
-
+	fmt.Printf("%v %v %v\n", validBase, validExp, notExpired)
 	return validBase && validExp && notExpired
 }
 
@@ -134,17 +134,22 @@ func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error)
 	if err != nil {
 		return nil, fmt.Errorf("error al convertir llave a PEM %v. error: %v", k.keyfile, err)
 	}
-
 	// Cargar claves y certificado
 	err = k.loadPrivateKey(keyPathPem)
 	if err != nil {
 		return nil, fmt.Errorf("error al cargar la clave privada: %v", err)
 	}
+	err = os.Remove(keyPathPem)
+	if err != nil {
+		fmt.Println(err)
+	}
 	resp := &models.UploadKeysResponse{}
 	if valid = k.TestKeys(); valid {
-		resp.Owner = k.CertMap["Subject"].(map[string]string)["commonName"]
+		fmt.Println("validas: ", valid)
+		resp.Owner = k.CertMap["Subject"].(map[string]string)[utilities.Coids["x509"]["commonName"]]
 		resp.Expiration = k.Certificate.NotAfter.Format("2006-01-02 15:04:05")
 		k.ValidKeys = true
+		resp.Valid = true
 	}
 
 	return resp, nil
@@ -224,8 +229,8 @@ func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
 
 	// Campos estándar
 	result["Version"] = cert.Version
-	result["NotBefore"] = cert.NotBefore
-	result["NotAfter"] = cert.NotAfter
+	result["NotBefore"] = cert.NotBefore.Format("2006-01-02 15:04:05")
+	result["NotAfter"] = cert.NotAfter.Format("2006-01-02 15:04:05")
 	result["SerialNumber"] = cert.SerialNumber.String()
 	result["Signature"] = utilities.Encode_b64(cert.Signature) // FIRMA B64
 	result["SignatureAlgorithm"] = strings.ToLower(cert.SignatureAlgorithm.String())

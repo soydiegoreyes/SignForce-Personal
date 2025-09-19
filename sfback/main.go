@@ -210,15 +210,20 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Llaves no válidas o expiradas", http.StatusNotFound)
 		return
 	}
+	var validKeys int
+	if keys.ValidKeys {
+		validKeys = 1
+	}
 
 	cols := []string{"keyFilePath", "certFilePath", "serialNumber", "certVersion", "issuerRFC4514",
 		"notValidAfter", "notValidBefore", "subjectRFC4514", "ocspUrl", "crlsUrl", "signature",
 		"signAlgo", "validKeys", "keyLenKey", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber",
 	}
+
 	values := []interface{}{
 		kn, cn, keys.CertMap["SerialNumber"], keys.CertMap["Version"], keys.CertMap["Issuer"].(map[string]string)["RFC4514"],
 		keys.CertMap["NotAfter"], keys.CertMap["NotBefore"], keys.CertMap["Subject"].(map[string]string)["RFC4514"], keys.CertMap["OCSP"], keys.CertMap["CRLS"], keys.CertMap["Signature"],
-		keys.CertMap["SignatureAlgorithm"], keys.ValidKeys, keys.CertMap["KeySize"], keyHash, certHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
+		keys.CertMap["SignatureAlgorithm"], validKeys, keys.CertMap["KeySize"], keyHash, certHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
 	}
 
 	valResp.KeysId, err = db.DB_con.GenericInsert("userkeys", cols, values)
