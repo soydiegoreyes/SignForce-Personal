@@ -52,7 +52,6 @@ type ValidationRequest struct {
 	ResidenciaFile multipart.File `json:"-"`
 }
 type PaymentReq struct {
-	Status     string `json:"status"` // 0 PENDING, 1 COMPLETED, 2 REJECTED, 3 CANCELED, 4 HOLD
 	Plan       string `json:"plan"`
 	CardNum    string `json:"cardnumber"`
 	Expiration string `json:"exp"`

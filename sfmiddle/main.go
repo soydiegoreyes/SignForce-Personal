@@ -789,7 +789,7 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	defer certFile.Close()
 
 	// Crear directorio para guardar los archivos
-	basePath := fmt.Sprintf("%s/%s/%s", os.Getenv("KEYS_PATH"), idInst, idUser)
+	basePath := fmt.Sprintf("%s/%s/%s/%s", os.Getenv("KEYS_PATH"), idInst, idUser, strings.Split(certHeader.Filename, ".")[0])
 	err = os.MkdirAll(basePath, 0755)
 	if err != nil {
 		http.Error(respWriter, "Error creando directorio", http.StatusInternalServerError)
@@ -797,8 +797,8 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Guardar archivo de llave
-	keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
-	filePath, err := utilities.GuardarArchivo(keyFile, keyPath, keyHeader.Filename, idInst, idUser, false)
+	//keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
+	filePath, err := utilities.GuardarArchivo(keyFile, basePath, keyHeader.Filename, idInst, idUser, false)
 	if err != nil {
 		http.Error(respWriter, "Error creando archivo de llave", http.StatusInternalServerError)
 		return
@@ -811,8 +811,8 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	fmt.Printf("Llave guardada en %s\n", filePath)
 	// Guardar archivo de certificado
-	certPath := fmt.Sprintf("%s/%s", basePath, certHeader.Filename)
-	filePath, err = utilities.GuardarArchivo(certFile, certPath, certHeader.Filename, idInst, idUser, false)
+	//certPath := fmt.Sprintf("%s/%s", basePath, certHeader.Filename)
+	filePath, err = utilities.GuardarArchivo(certFile, basePath, certHeader.Filename, idInst, idUser, false)
 	if err != nil {
 		http.Error(respWriter, "Error creando archivo de certificado", http.StatusInternalServerError)
 		return
@@ -834,7 +834,6 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		HashKey: keyHash,
 		HashCer: certHash,
 		Path:    basePath,
-		Ok:      false,
 	}
 
 	// Validar las llaves mediante API externa
@@ -844,8 +843,8 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	validationURL := os.Getenv("BACK_URL") + "/validateKeys"
-	req, err := http.NewRequest("POST", validationURL, bytes.NewBuffer(validationData))
+	uploadKeysURL := os.Getenv("BACK_URL") + "uploadKeys"
+	req, err := http.NewRequest("POST", uploadKeysURL, bytes.NewBuffer(validationData))
 	if err != nil {
 		http.Error(respWriter, "Error creando solicitud de validación", http.StatusInternalServerError)
 		return
@@ -865,9 +864,11 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Leer respuesta de validación
 	var validationResult struct {
-		Valid bool `json:"valid"`
+		Valid      bool   `json:"valid"`
+		Expiration string `json:"expiration"`
+		Owner      string `json:"owner"`
+		KeysId     string `json:"keysid"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&validationResult)
 	if err != nil || !validationResult.Valid {
@@ -875,20 +876,20 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Actualizar metadata con resultado de validación
-	keyMetadata.Ok = validationResult.Valid
-
-	// Aquí deberías guardar keyMetadata en tu base de datos
-
-	// Respuesta exitosa
-	response := models.UploadResponse{
-		Success: true,
-		Message: "Llaves subidas y validadas exitosamente",
+	updates := map[string]map[string]interface{}{
+		idUser: {
+			"idKeysUser_fk": validationResult.KeysId,
+		},
+	}
+	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
+	if err != nil {
+		http.Error(respWriter, "Error al actualizar valor de llaves", http.StatusInternalServerError)
+		return
 	}
 
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(&response)
+	json.NewEncoder(respWriter).Encode(&validationResult)
 }
 
 // Funcion gneérica para subir archivos de cualquier clase
@@ -1134,9 +1135,14 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		case "Empresarial":
 			plan = "3"
 		}
+
+		// aqui se realiza un request a la pasarela de pago que debe regresar un estatus el cual se inserta y se devuelve a la plataforma
+		// debe ser una go routine que se encargue de actualizar el estatus en DB independiente del endpoint
+		payStatus := "1" // 0 PENDING, 1 COMPLETED, 2 REJECTED, 3 CANCELED, 4 HOLD
+
 		expPlan := time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
 		cols := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "cardNumber", "expirationDate", "nameOwner"}
-		vals := []interface{}{payReq.Status, plan, expPlan, payReq.CardNum, payReq.Expiration, payReq.NameOwner}
+		vals := []interface{}{payStatus, plan, expPlan, payReq.CardNum, payReq.Expiration, payReq.NameOwner}
 		idPay, err := db.DB_con.GenericInsert("payment", cols, vals)
 		if err != nil {
 			fmt.Println("Error info pago")
@@ -1155,7 +1161,7 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		}
 		resp.CurrentSatat = plan
 		resp.Success = true
-		resp.Status = "1"
+		resp.Status = payStatus
 		resp.Plan = plan
 		resp.Expiration = expPlan
 	} else {

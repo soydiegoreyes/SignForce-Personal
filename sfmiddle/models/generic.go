@@ -22,5 +22,4 @@ type KeyMetadata struct {
 	HashKey string
 	HashCer string
 	Path    string
-	Ok      bool
 }
