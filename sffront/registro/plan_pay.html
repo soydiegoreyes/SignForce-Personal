@@ -908,11 +908,11 @@
             event.preventDefault();
 
             // ---------- VALIDACIONES ----------
-            const cardNumber = document.getElementById('cardNumber').value;
+            const cardNumber = document.getElementById('cardNumber').value.replaceAll(" ", "");
             const expiryDate = document.getElementById('expiryDate').value;
             const cvv        = document.getElementById('cvv').value;
             const cardName   = document.getElementById('cardName').value;
-
+            
             if (!cardNumber || cardNumber.length !== 16) {
                 mostrarMensaje('Número de tarjeta inválido', 'error');
                 return;
@@ -933,13 +933,12 @@
             // ---------- ARMADO DEL BODY ----------
             const payload = {
                 // Los nombres deben coincidir con la estructura de models.PaymentReq en Go
-                cardNum:     cardNumber,
-                expiration: expiryDate,
+                cardnumber:     cardNumber,
+                exp: expiryDate,
                 cvv:         cvv,
-                nameOwner:   cardName,
+                nameowner:   cardName,
                 // Estos valores provienen del botón que abrió el modal
-                plan:        document.getElementById('selectedPlan').querySelector('span').textContent,
-                status:      "0"               // o el estado que requieras
+                plan:        document.getElementById('selectedPlan').querySelector('span').textContent
             };
 
             // ---------- INDICADOR DE CARGA ----------
@@ -969,17 +968,19 @@
 
                 // Suponiendo que el endpoint devuelve JSON con la estructura PaymentResp
                 const data = await response.json();
+                if (data.success){
+                    // ---------- MENSAJE DE ÉXITO ----------
+                    const successDiv = document.getElementById('paymentSuccess');
+                    successDiv.style.display = 'block';
+                    
+                    mostrarMensaje(`Plan activado: ${data.plan}, vence ${data.expiration}`, 'success');
 
-                // ---------- MENSAJE DE ÉXITO ----------
-                const successDiv = document.getElementById('paymentSuccess');
-                successDiv.style.display = 'block';
-
-                // Puedes usar los datos devueltos para dar feedback más rico:
-                // ejemplo: `Plan activado: ${data.plan}, vence ${data.expiration}`
-                mostrarMensaje('¡Pago procesado con éxito! Tu plan ha sido activado.', 'success');
-
-                // Cerrar modal después de unos segundos (opcional)
-                setTimeout(cerrarModal, 1500);
+                    // Cerrar modal después de unos segundos (opcional)
+                    setTimeout(cerrarModal, 1500);
+                } else {
+                    throw "Error";
+                }
+                
             } catch (err) {
                 loader.style.display = 'none';
                 console.error(err);

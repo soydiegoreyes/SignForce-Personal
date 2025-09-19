@@ -186,8 +186,8 @@ credentialsForm.addEventListener('submit', async (e) => {
     }
 
     const result = await response.json();
-    
-    if (result.success) {
+    console.log(result);
+    if (result.valid) {
       // Guardar metadata localmente
       const meta = {
         keyName: keyFile.name,
