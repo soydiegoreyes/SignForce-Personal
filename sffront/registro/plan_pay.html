@@ -968,15 +968,16 @@
 
                 // Suponiendo que el endpoint devuelve JSON con la estructura PaymentResp
                 const data = await response.json();
+                
+                // Cerrar modal después de unos segundos (opcional)
+                setTimeout(cerrarModal, 1000);
+                // ---------- MENSAJE DE ÉXITO ----------
                 if (data.success){
-                    // ---------- MENSAJE DE ÉXITO ----------
                     const successDiv = document.getElementById('paymentSuccess');
                     successDiv.style.display = 'block';
                     
                     mostrarMensaje(`Plan activado: ${data.plan}, vence ${data.expiration}`, 'success');
-
-                    // Cerrar modal después de unos segundos (opcional)
-                    setTimeout(cerrarModal, 1500);
+                    window.location.href = "/uploadKeys";
                 } else {
                     throw "Error";
                 }

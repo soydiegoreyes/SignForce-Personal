@@ -544,7 +544,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusActa">Pendiente</span>
                                 <div class="file-input-container">
-                                    <label for="fileActa" class="btn btn-upload">Subir</label>
+                                    <label id="btnActa" for="fileActa" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -555,7 +555,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusPoder">Pendiente</span>
                                 <div class="file-input-container">
-                                    <label for="filePoder" class="btn btn-upload">Subir</label>
+                                    <label id="btnPoder" for="filePoder" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -566,7 +566,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
                                 <div class="file-input-container">
-                                    <label for="fileIdentificacion" class="btn btn-upload">Subir</label>
+                                    <label id="btnIdentificacion" for="fileIdentificacion" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -577,7 +577,7 @@
                             <div>
                                 <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
                                 <div class="file-input-container">
-                                    <label for="fileDomicilio" class="btn btn-upload">Subir</label>
+                                    <label id="btnDomicilio" for="fileDomicilio" class="btn btn-upload">Subir</label>
                                     <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                                 </div>
                             </div>
@@ -947,7 +947,7 @@
                 
                 // Redirigir o mostrar mensaje de éxito
                 setTimeout(() => {
-                    window.location.href = '/dashboard'; // Cambiar por la URL correcta
+                    window.location.href = '/waitapprove'; // Cambiar por la URL correcta
                 }, 2000);
             } catch (error) {
                 console.error('Error al completar validación:', error);
