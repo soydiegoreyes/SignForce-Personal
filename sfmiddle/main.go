@@ -108,6 +108,7 @@ func main() {
 	mux.HandleFunc("/updatevaldata", updateValidationData)    // funcion para actualizar estatus de usuario en registro
 	mux.HandleFunc("/completevalidation", completeValidation) // funcion para completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
+	mux.HandleFunc("/checkUserStatus", checkUserStatus)
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
@@ -1103,24 +1104,11 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Extraer datos del JWT
-	idUser, ok := claims["uid"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	idInst, ok := claims["iid"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	idTeam, ok := claims["team"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	authInst, ok := claims["authInst"].(string)
-	if !ok {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	idTeam, ok3 := claims["team"].(string)
+	authInst, ok4 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 || !ok4 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -1206,7 +1194,35 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
+func checkUserStatus(respWriter http.ResponseWriter, request *http.Request) {
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
 
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims)
+	// Extraer datos del JWT
+	/*
+		idUser, ok1 := claims["uid"].(string)
+		idInst, ok2 := claims["iid"].(string)
+		idTeam, ok3 := claims["team"].(string)
+		authInst, ok4 := claims["authInst"].(string)
+		if !ok1 || !ok2 || !ok3 || !ok4 {
+			http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+			return
+		}
+
+		db.DB_con.GenericJoinSelect("users", "userkeys", )
+	*/
+}
+
+// =======================================================================
 // unificar el json de respuestas para que mande estatus y lista de documentos
 // asegurar que multipart puede recibir uno o muchos archivos subidos de un mismo formulario y sugerir mejoras para subir archivos de distinta ubicacion
 // =======================================================================
