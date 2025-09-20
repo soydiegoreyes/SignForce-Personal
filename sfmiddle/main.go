@@ -100,21 +100,20 @@ func main() {
 
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/uploadDocs", uploadDocs) // funcion para subir cualquier tipo de documento
-	mux.HandleFunc("/uploadKeys", uploadKeys) // funcion para subir llaves
-	mux.HandleFunc("/upload", upload)         // funcion para subir cualquier tipo de documento
-	mux.HandleFunc("/register", registerInst)
+	mux.HandleFunc("/uploadDocs", uploadDocs)                 // funcion para subir cualquier tipo de documento
+	mux.HandleFunc("/uploadk", uploadk)                       // funcion para subir llaves
+	mux.HandleFunc("/register", registerInst)                 // funcion para registrar nuevo cliente
+	mux.HandleFunc("/loginUser", login)                       // funcion para loguear usuario
+	mux.HandleFunc("/getvaldata", getValidationData)          // funcion para validar estatus de usuario en registro
+	mux.HandleFunc("/updatevaldata", updateValidationData)    // funcion para actualizar estatus de usuario en registro
+	mux.HandleFunc("/completevalidation", completeValidation) // funcion para completar validacion de usuario en registro
+	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
 	mux.HandleFunc("/login", loginPage)
-	mux.HandleFunc("/loginUser", login)
 	mux.HandleFunc("/validation", validationPage)
-	mux.HandleFunc("/getvaldata", getValidationData)
-	mux.HandleFunc("/updatevaldata", updateValidationData)
-	mux.HandleFunc("/completevalidation", completeValidation)
 	mux.HandleFunc("/waitapprove", waitApprove)
-	mux.HandleFunc("/contracts", contracts)
+	mux.HandleFunc("/upload", upload)
+	mux.HandleFunc("/uploadKeys", uploadKeys)
 	mux.HandleFunc("/payment", payment)
-	mux.HandleFunc("/processpayment", processPayment)
-
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Determinar el Content-Type basado en la extensión del archivo
@@ -137,7 +136,6 @@ func main() {
 
 			http.FileServer(http.Dir("./../sffront")).ServeHTTP(w, r)
 		})))
-
 	// Servir archivos estáticos desde el directorio registro CORREGIDO ("registro")
 	mux.Handle("/registro/", http.StripPrefix("/registro/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -160,6 +158,28 @@ func main() {
 			}
 
 			http.FileServer(http.Dir("./../sffront/registro")).ServeHTTP(w, r)
+		})))
+	mux.Handle("/administracion/", http.StripPrefix("/administracion/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Determinar el Content-Type basado en la extensión del archivo
+			switch filepath.Ext(r.URL.Path) {
+			case ".css":
+				w.Header().Set("Content-Type", "text/css")
+			case ".js":
+				w.Header().Set("Content-Type", "application/javascript")
+			case ".html":
+				w.Header().Set("Content-Type", "text/html")
+			case ".png":
+				w.Header().Set("Content-Type", "image/png")
+			case ".jpg", ".jpeg":
+				w.Header().Set("Content-Type", "image/jpeg")
+			case ".ico":
+				w.Header().Set("Content-Type", "image/x-icon")
+			default:
+				w.Header().Set("Content-Type", "text/plain")
+			}
+
+			http.FileServer(http.Dir("./../sffront/administracion")).ServeHTTP(w, r)
 		})))
 
 	// Aplicar middleware CORS
@@ -374,7 +394,7 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 
 	cookie, err := request.Cookie("token")
 	if err != nil {
-		fmt.Println("validation page: No cookie")
+		fmt.Println("validation page: No cookie ", err)
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -697,16 +717,16 @@ func waitApprove(respWriter http.ResponseWriter, request *http.Request) {
 	http.ServeFile(respWriter, request, "./../sffront/registro/waitapprove.html")
 }
 
-func contracts(respWriter http.ResponseWriter, request *http.Request) {
+func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/registro/contracts.html")
+	http.ServeFile(respWriter, request, "./../sffront/administracion/uploadk.html")
 }
 
 // Función para subir llaves
-func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
+func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
@@ -1283,7 +1303,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			} else if dataInst[idInst]["statusInst_fk"] == "5" {
 				location = "/payment"
 			} else if dataInst[idInst]["statusInst_fk"] == "6" {
-				location = "/contracts"
+				location = "/uploadk"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {
