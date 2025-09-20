@@ -197,7 +197,10 @@ func (cl *EmailClient) EmailSender(idApp string, data EmailData) bool {
 		log.Println("Error al cerrar el escritor del cuerpo del email:", err)
 		return false
 	}
-
+	if strings.Contains(message.String(), "Correo de verificación") {
+		message.Reset()
+		message.WriteString("Email bienvenida")
+	}
 	// insertar registro en base de datos
 	attributes := []string{"idUserSender_fk", "reason", "subjectEmail", "bodyEmail", "idAppSource_fk"}
 	values := []interface{}{data.IdUser, data.Subject, cl.SMTPsender, message.String(), idApp}
