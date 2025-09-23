@@ -108,7 +108,8 @@ func main() {
 	mux.HandleFunc("/updatevaldata", updateValidationData)    // funcion para actualizar estatus de usuario en registro
 	mux.HandleFunc("/completevalidation", completeValidation) // funcion para completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
-	mux.HandleFunc("/checkUserStatus", checkUserStatus)
+	mux.HandleFunc("/checkUserStatus", checkUserStatus)       // funcion para obtener datos de un usuario
+	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
@@ -1188,6 +1189,10 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 
 // =======================================================================
 func checkUserStatus(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
 	cookie, err := request.Cookie("token")
 	if err != nil {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
@@ -1213,6 +1218,84 @@ func checkUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 
 		db.DB_con.GenericJoinSelect("users", "userkeys", )
 	*/
+}
+
+// =======================================================================
+
+func getKeysData(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims)
+	// Extraer datos del JWT
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	idTeam, ok3 := claims["team"].(string)
+
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	wheres := map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+		"idTeam_fk":        {idTeam},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "idKeysUser_fk"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
+		return
+	}
+	if userData[idUser]["activeUser"] != "1" {
+		http.Error(respWriter, "No autorizado. Usuario inactivo", http.StatusUnauthorized)
+		return
+	}
+
+	wheres = map[string][]string{
+		"idUser_fk": {idUser},
+	}
+	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
+		return
+	}
+
+	keyStatResp := make([]*models.KeysStatus, 0)
+	var selected bool
+	for idKey, key := range keys {
+		if userData[idUser]["idKeysUser_fk"] == idKey {
+			selected = true
+		} else {
+			selected = false
+		}
+		ks := &models.KeysStatus{
+			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
+			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
+			Expiration:      key["notValidAfter"],
+			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
+			SubjectUniqueId: key["subjectUniqueId"],
+			UploadedAt:      key["createdAtKey"],
+			Selected:        selected,
+		}
+		keyStatResp = append(keyStatResp, ks)
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(keyStatResp)
 }
 
 // =======================================================================

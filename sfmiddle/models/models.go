@@ -121,3 +121,13 @@ type UserStatus struct {
 	Active       string `json:"plan"`
 	Expiration   string `json:"expiration"`
 }
+
+type KeysStatus struct {
+	NameKey         string `json:"nameKey"`
+	NameCer         string `json:"nameCer"`
+	Expiration      string `json:"expiration"`
+	Owner           string `json:"owner"`
+	SubjectUniqueId string `json:"subjectUniqueId"`
+	UploadedAt      string `json:"uploadedAt"`
+	Selected        bool   `json:"selected"`
+}
