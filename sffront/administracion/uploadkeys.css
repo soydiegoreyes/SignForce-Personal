@@ -22,6 +22,7 @@
       font-family: Inter, "Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       color: var(--color-text-primary);
       margin: 0;
+      overflow-y: hidden;
     }
 
     .bg {
@@ -121,7 +122,9 @@
 
     .content-left {
       max-width: 800px;     /* límite máximo */
-      overflow: hidden;     /* evita overflow lateral */
+      max-height: 70vh;     /* límite máximo */
+      overflow: auto;     /* evita overflow lateral */
+      scrollbar-width: none;  /* oculta scrollbar en Firefox */
     }
 
     .content-right {
