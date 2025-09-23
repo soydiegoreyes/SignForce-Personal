@@ -9,7 +9,7 @@ import (
 	"log"
 
 	//"os"
-	"sfback/configs"
+
 	"sfback/db"
 	"sfback/utilities"
 	//"strings"
@@ -68,16 +68,11 @@ func NewUser(idUser string, password string) (*User, error) {
 		Email:    userData[idUser]["emailUser"],
 		Active:   usuActivo,
 	}
+	if user.Keys == nil {
+		return nil, fmt.Errorf("error al obtener hash de las llaves")
+	}
 
-	keyHash, err := utilities.GetHash(user.Keys.keyfile, configs.HashConf)
-	if err != nil {
-		return nil, errors.New("error al obtener hash de llave privada")
-	}
-	certHash, err := utilities.GetHash(user.Keys.Certfile, configs.HashConf)
-	if err != nil {
-		return nil, errors.New("error al obtener hash de certificado")
-	}
-	valKeysResp, err := user.Keys.ValidateKeys(password, keyHash, certHash)
+	valKeysResp, err := user.Keys.ValidateKeys(password)
 	if err != nil {
 		return nil, err
 	}

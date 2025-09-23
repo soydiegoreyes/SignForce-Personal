@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sfback/configs"
 	"sfback/db"
 	"sfback/models"
 	"sfback/utilities"
@@ -31,6 +32,8 @@ import (
 type Keys struct {
 	keyfile     string
 	Certfile    string
+	KeyHash     string
+	CertHash    string
 	privateKey  *rsa.PrivateKey
 	Certificate *x509.Certificate
 	CertMap     CertificateMap
@@ -39,9 +42,21 @@ type Keys struct {
 
 // Constructor para Keys
 func NewKeys(keypath string, certpath string) *Keys {
+	keyHash, err := utilities.GetHash(keypath, configs.HashConf)
+	if err != nil {
+		fmt.Println("error al obtener hash de llave privada")
+		return nil
+	}
+	cerHash, err := utilities.GetHash(certpath, configs.HashConf)
+	if err != nil {
+		fmt.Println("error al obtener hash de certificado")
+		return nil
+	}
 	return &Keys{
 		keyfile:  keypath,
 		Certfile: certpath,
+		KeyHash:  keyHash,
+		CertHash: cerHash,
 	}
 }
 
@@ -113,12 +128,10 @@ func (k *Keys) TestKeys() bool {
 	now := time.Now()
 	notExpired := now.After(k.Certificate.NotBefore) && now.Before(k.Certificate.NotAfter)
 
-	fmt.Printf("subject--: %v\n", k.CertMap["Subject"].(map[string]string)["commonName"])
-	fmt.Printf("%v %v %v\n", validBase, validExp, notExpired)
 	return validBase && validExp && notExpired
 }
 
-func (k *Keys) ValidateKeys(password, hashKey, hashCer string) (*models.UploadKeysResponse, error) {
+func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error) {
 	var valid bool = false
 
 	certPathPem, err := utilities.ConvertCertToPem(k.Certfile)
@@ -149,8 +162,8 @@ func (k *Keys) ValidateKeys(password, hashKey, hashCer string) (*models.UploadKe
 	if valid = k.TestKeys(); valid {
 		fmt.Println("validas: ", valid)
 		wheres := map[string][]string{
-			"hashKey": {hashKey},
-			"hashCer": {hashCer},
+			"hashKey": {k.KeyHash},
+			"hashCer": {k.CertHash},
 		}
 		keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"serialNumber", "signature", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber"}, wheres)
 		if err != nil {

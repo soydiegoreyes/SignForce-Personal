@@ -177,29 +177,19 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	kn := fmt.Sprintf("%s/%s", req.Path, req.NameKey)
-	fmt.Println(kn)
-	keyHash, err := utilities.GetHash(kn, configs.HashConf)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(respWriter, "Error obteniendo hash de la llave", http.StatusInternalServerError)
-		return
-	}
 	cn := fmt.Sprintf("%s/%s", req.Path, req.NameCer)
-	fmt.Println(cn)
-	certHash, err := utilities.GetHash(cn, configs.HashConf)
-	if err != nil {
-		fmt.Println(err)
-		http.Error(respWriter, "Error obteniendo hash del certificado", http.StatusInternalServerError)
+
+	keys := objects.NewKeys(kn, cn)
+	if keys == nil {
+		http.Error(respWriter, "Error al obtener hash de las llaves", http.StatusInternalServerError)
 		return
 	}
-	if certHash != req.HashCer && keyHash != req.HashKey {
+	if keys.CertHash != req.HashCer && keys.KeyHash != req.HashKey {
 		fmt.Println("Error Hashes no coinciden")
 		http.Error(respWriter, "Hashes no coinciden", http.StatusExpectationFailed)
 		return
 	}
-
-	keys := objects.NewKeys(kn, cn)
-	valResp, err := keys.ValidateKeys(req.PassKey, keyHash, certHash)
+	valResp, err := keys.ValidateKeys(req.PassKey)
 	if err != nil {
 		fmt.Println("Error Llaves no encontrado o expirado ", err)
 		http.Error(respWriter, "Llaves no encontrado o expirado", http.StatusInternalServerError)
@@ -220,15 +210,15 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		validKeys = 1
 	}
 
-	cols := []string{"keyFilePath", "certFilePath", "serialNumber", "certVersion", "issuerRFC4514",
+	cols := []string{"idUser_fk", "keyFilePath", "certFilePath", "serialNumber", "certVersion", "issuerRFC4514",
 		"notValidAfter", "notValidBefore", "subjectRFC4514", "ocspUrl", "crlsUrl", "signature",
 		"signAlgo", "validKeys", "keyLenKey", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber",
 	}
 
 	values := []interface{}{
-		kn, cn, keys.CertMap["SerialNumber"], keys.CertMap["Version"], keys.CertMap["Issuer"].(map[string]string)["RFC4514"],
+		req.IdUser, kn, cn, keys.CertMap["SerialNumber"], keys.CertMap["Version"], keys.CertMap["Issuer"].(map[string]string)["RFC4514"],
 		keys.CertMap["NotAfter"], keys.CertMap["NotBefore"], keys.CertMap["Subject"].(map[string]string)["RFC4514"], keys.CertMap["OCSP"], keys.CertMap["CRLS"], keys.CertMap["Signature"],
-		keys.CertMap["SignatureAlgorithm"], validKeys, keys.CertMap["KeySize"], keyHash, certHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
+		keys.CertMap["SignatureAlgorithm"], validKeys, keys.CertMap["KeySize"], keys.KeyHash, keys.CertHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
 	}
 
 	keysId, err := db.DB_con.GenericInsert("userkeys", cols, values)
