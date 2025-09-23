@@ -238,15 +238,9 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
-	// depende del estatus de la institucion se le permite hacer un registro (DB: statusinstitution)
-	var status = map[string]bool{
-		"2": true, "3": true, "4": false, "5": true,
-		"6": true, "7": true, "8": false, "9": false,
-		"10": true, "11": false,
-	}
 
 	// se comprueba que el TAXNUMBER de la empresa no existe en caso de que si, retorna error
-	var whereMap = map[string][]string{
+	whereMap := map[string][]string{
 		"taxNumInst": {registerReq.TaxNumInst},
 	}
 
@@ -257,8 +251,17 @@ func registerInst(respWriter http.ResponseWriter, request *http.Request) {
 		return
 
 	} else {
+		whereMap = map[string][]string{
+			"idStatusInst": {data["idInstitution"]["statusInst_fk"]},
+		}
+		status, err := db.DB_con.GenericSelect("statusinstitution", "idStatusInst", []string{"permissionStatusInst_fk"}, whereMap)
+		if err != nil {
+			registerResp.Error = "Critical: error al obtener estatus de institucion"
+			json.NewEncoder(respWriter).Encode(registerResp)
+			return
+		}
 		// en caso de no haber ningun registro con el mismo TAXNUMBER  se procede al registro
-		if len(data) == 0 || status[data["idInstitution"]["statusInst_fk"]] {
+		if len(data) == 0 || status["idStatusInst"]["permissionStatusInst_fk"] == "1" {
 
 			// se registra la institucion
 			lastId, err := objects.RegisterInst(&registerReq)
@@ -830,7 +833,7 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error obteniendo hash de la llave", http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Llave guardada en %s\n", filePath)
+
 	// Guardar archivo de certificado
 	//certPath := fmt.Sprintf("%s/%s", basePath, certHeader.Filename)
 	filePath, err = utilities.GuardarArchivo(certFile, basePath, certHeader.Filename, idInst, idUser, false)
@@ -843,7 +846,6 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error obteniendo hash del certificado", http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Certificado guardado en %s\n", filePath)
 
 	// Crear metadata para validación
 	keyMetadata := models.KeyMetadata{
@@ -879,7 +881,10 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	defer resp.Body.Close()
-
+	if resp.StatusCode == http.StatusConflict {
+		http.Error(respWriter, "LLaves ya existen", http.StatusConflict)
+		return
+	}
 	if resp.StatusCode != http.StatusOK {
 		http.Error(respWriter, "Error en la validación de llaves", http.StatusInternalServerError)
 		return
@@ -889,22 +894,10 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		Valid      bool   `json:"valid"`
 		Expiration string `json:"expiration"`
 		Owner      string `json:"owner"`
-		KeysId     string `json:"keysid"`
 	}
 	err = json.NewDecoder(resp.Body).Decode(&validationResult)
 	if err != nil || !validationResult.Valid {
 		http.Error(respWriter, "Las llaves no son válidas", http.StatusBadRequest)
-		return
-	}
-
-	updates := map[string]map[string]interface{}{
-		idUser: {
-			"idKeysUser_fk": validationResult.KeysId,
-		},
-	}
-	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
-	if err != nil {
-		http.Error(respWriter, "Error al actualizar valor de llaves", http.StatusInternalServerError)
 		return
 	}
 
@@ -1319,7 +1312,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			} else if dataInst[idInst]["statusInst_fk"] == "5" {
 				location = "/payment"
 			} else if dataInst[idInst]["statusInst_fk"] == "6" {
-				location = "/uploadk"
+				location = "/uploadKeys"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {

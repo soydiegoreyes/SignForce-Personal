@@ -113,3 +113,11 @@ type PaymentResp struct {
 	Plan         string `json:"plan"`
 	Expiration   string `json:"expiration"`
 }
+
+type UserStatus struct {
+	CurrentSatat string `json:"current"`
+	Success      bool   `json:"success"`
+	Status       string `json:"status"`
+	Active       string `json:"plan"`
+	Expiration   string `json:"expiration"`
+}

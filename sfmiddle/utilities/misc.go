@@ -86,6 +86,12 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 	}
 
 	filePath := path.Join(uploadDir, uniqueName)
+	_, err = os.Stat(filePath)
+	// si el error es nulo es que ya existe el archivo
+	if err == nil {
+		fmt.Printf("archivo ya existe %s\n", filePath)
+		return filePath, nil
+	}
 
 	// Crear el archivo
 	dst, err := os.Create(filePath)
