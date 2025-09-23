@@ -112,17 +112,24 @@
 
     .main-content {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr 400px; /* izquierda flexible, derecha fija */
+      gap: 32px;
+      align-items: flex-start;
+      margin-top: 24px;
     }
+
 
     .content-left {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      max-width: 800px;     /* límite máximo */
+      overflow: hidden;     /* evita overflow lateral */
     }
 
-    .content-right { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; }
+    .content-right {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
 
     .headline { font-size: 40px; font-weight: 800; margin: 0 0 8px; }
     .lead { color: var(--color-text-secondary); margin: 0 0 16px; }
@@ -155,30 +162,46 @@
     .form-group { margin-bottom: 14px; }
     .form-group label { display: block; margin-bottom: 6px; }
 
-    .input-field {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #1a1c2266;
-      font-size: 1rem;
-      color: var(--color-text-primary);
-      border: 1px solid rgba(200, 90, 255, 0.5);
-    }
+    .form-container {
+        padding: 24px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      }
+
+      .form-title {
+        margin-bottom: 16px;
+        font-weight: 600;
+        font-size: 1.3rem;
+        text-align: center;
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.05);
+        color: inherit;
+      }
     .input-field:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-ghost); }
 
     .btn {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--color-accent);
-      color: white;
-      border: none;
+      display: inline-block;
+      padding: 10px 16px;
       border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 700;
+      font-weight: 600;
+      text-align: center;
+      background: #00000020;
+      color: white;
+      border-color: var(--color-accent);
       cursor: pointer;
-      transition: transform .2s ease, filter .2s ease;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
-    .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.9;
+    }
     .btn.ghost { background: transparent; border: 1px solid rgba(255,255,255,.2); }
 
     .grid-2 {
@@ -190,9 +213,36 @@
     .grid-2 .btn { grid-column: span 2; }
 
     /* ===== Keys List ===== */
-    .keys-list { display: grid; grid-template-columns: 1fr; gap: 16px; width: 100%; }
-    .key-card { padding: 16px; display: grid; gap: 12px; margin-bottom: 16px; }
-    .key-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .keys-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 70vh;       /* altura máxima */
+      overflow-y: auto;       /* scroll solo vertical */
+      scrollbar-width: none;  /* oculta scrollbar en Firefox */
+    }
+    .keys-list::-webkit-scrollbar {
+      display: none;          /* oculta scrollbar en Chrome/Safari */
+    }
+    .key-card {
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .key-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .key-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
     .key-title { margin: 0; font-size: 1.2rem; }
 
     .key-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
