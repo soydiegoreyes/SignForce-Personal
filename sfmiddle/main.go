@@ -727,7 +727,7 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/administracion/uploadk.html")
+	http.ServeFile(respWriter, request, "./../sffront/administracion/uploadkeys.html")
 }
 
 // Función para subir llaves
