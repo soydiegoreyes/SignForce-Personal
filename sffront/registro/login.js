@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // Si login exitoso, hacer redirect usando JavaScript
                     if (data.redirectTo) {
-                        console.log(`Redirecting to: ${data.redirectTo}`);
+                        alert(`Redirecting to: ${data.redirectTo}`);
                         // Redirect usando window.location
                         window.location.href = `${data.redirectTo}`;
                         // O si prefieres usar el dominio actual:

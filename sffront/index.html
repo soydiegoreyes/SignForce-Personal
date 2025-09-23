@@ -10,6 +10,133 @@
     <link rel="stylesheet" href="/home/index.css">
     <script src="/home/index.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        .hero-section {
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .carousel-slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+        }
+
+        /* Contenido superpuesto opcional */
+        .slide-content {
+            text-align: center;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 600px;
+        }
+
+        .slide-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .slide-content p {
+            font-size: 1.2rem;
+            line-height: 1.6;
+        }
+
+        /* Controles de navegación */
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #333;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-prev {
+            left: 20px;
+        }
+
+        .carousel-next {
+            right: 20px;
+        }
+
+        /* Indicadores */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slide-content h1 {
+                font-size: 2rem;
+            }
+            
+            .slide-content p {
+                font-size: 1rem;
+            }
+            
+            .carousel-nav {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Barra superior rediseñada -->
@@ -43,79 +170,63 @@
 
     <!-- empieza web -->
     <div class="bg">
-      <section id="hero-section">
-        
-        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between max-w-[100%] p-6 gap-6">
-          <!-- Columna texto -->
-          <div class="max-w-[40%] ">
-            <h1 class="font-extrabold text-5xl mb-2 drop-shadow-md">
-            SOLUCIONES AVANZADAS 
-            </h1>
-            <h2 class="text-xl text-stone-300">PARA FIRMAS AVANZADAS</h3>
-            <p class="text-white/70 text-lg md:text-xl mb-8">
-              Crea, Envía y Firma documentos <span class="text-purple-400 text-lg md:text-xl mb-8">Eficiente, confiable y Seguro</span>
-            </p>
-            <a href="#contact"
-              class="inline-flex items-center justify-center h-14 px-8 rounded-full bg-white/20 text-white text-lg font-bold tracking-wide hover:bg-white/30 hover-glow transition-all duration-300 shadow-lg">
-              🚀 Solicitar Demo
-            </a>
-          </div>
-
-          <div class="flex max-w-[60%] px-4 md:px-6 shadow-xl/50 shadow-black-500 relative group">
-            <!-- Contenedor del Carrusel -->
-            <div class="carousel">
-              
-              <!-- Card 1 -->
-              <div class="carousel-card flex w-64 h-96 rounded-2xl overflow-hidden shadow-xl snap-center transition-transform duration-300 hover:scale-110 hover:shadow-3xl">
-                <img src="./home/images/person_glass.png" alt="Seguridad digital" class="w-full h-full object-cover" />
-                <div class="card-overlay absolute bottom-0 w-full p-6 bg-gray-800/40 backdrop-blur-md text-white text-center">
-                  <h3 class="text-xl font-bold">Seguridad Avanzada</h3>
-                  <p class="text-sm mt-2">Protege tus documentos con cifrado de grado bancario.</p>
+      
+      <section class="hero-section">
+        <div class="carousel-container" id="heroCarousel">
+            <!-- Slide 1 -->
+            <div class="carousel-slide active" style="background-image: url('./home/images/person_glass.png')">
+                <div class="slide-content">
+                    <h1>SIGNFORCE</h1>
+                    <p>Crea, Comparte y Firma documentos de la forma mas sencilla</p>
                 </div>
-              </div>
-              
-              <!-- Card 2 -->
-              <div class="carousel-card flex-none w-64 h-96 rounded-2xl overflow-hidden shadow-xl snap-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
-                <img src="./home/images/man_signing.png" alt="Firma rápida" class="w-full h-full object-cover" />
-                <div class="card-overlay absolute bottom-0 w-full p-6 bg-gray-800/40 backdrop-blur-md text-white text-center">
-                  <h3 class="text-xl font-bold">Firma en Segundos</h3>
-                  <p class="text-sm mt-2">Agiliza tus procesos y reduce tiempos de espera.</p>
-                </div>
-              </div>
-              
-              <!-- Card 3 -->
-              <div class="carousel-card flex-none w-64 h-96 rounded-2xl overflow-hidden shadow-xl snap-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
-                <img src="./home/images/person_viewing_doc.png" alt="Blockchain" class="w-full h-full object-cover" />
-                <div class="card-overlay absolute bottom-0 w-full p-6 bg-gray-800/40 backdrop-blur-md text-white text-center">
-                  <h3 class="text-xl font-bold">Firma con Blockchain</h3>
-                  <p class="text-sm mt-2">Garantía de integridad y trazabilidad en cada firma.</p>
-                </div>
-              </div>
-
-              <!-- Card 4 -->
-              <div class="carousel-card flex w-64 h-96 rounded-2xl overflow-hidden shadow-xl snap-center transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
-                <img src="./home/images/person_viewing_doc1.png" alt="Blockchain" class="w-full h-full object-cover" />
-                <div class="card-overlay absolute bottom-0 w-full p-6 bg-gray-800/40 backdrop-blur-md text-white text-center">
-                  <h3 class="text-xl font-bold">Gestion de Documentos</h3>
-                  <p class="text-sm mt-2">Todos tus contratos y documentos en un solo lugar.</p>
-                </div>
-              </div>
             </div>
-            
-            <!-- Flechas de navegación -->
-            <button class="carousel-prev absolute left-2 top-1/2 -translate-y-1/2 bg-white/20 p-3 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30 z-10">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-            </button>
-            <button class="carousel-next absolute right-2 top-1/2 -translate-y-1/2 bg-white/20 p-3 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white/30 z-10">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
+
+            <!-- Slide 2 -->
+            <div class="carousel-slide" style="background-image: url('./home/images/man_signing.png')">
+                <div class="slide-content">
+                    <h1>Seguridad de vanguardia</h1>
+                    <p>Protege tus documentos con cifrado de grado bancario.</p>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc.png')">
+                <div class="slide-content">
+                    <h1>Firma en segundos</h1>
+                    <p>Agiliza tus procesos y reduce tiempos de espera.</p>
+                </div>
+            </div>
         </div>
-      </section>
+        
+        <!-- Slide 4 -->
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc1.png')">
+                <div class="slide-content">
+                    <h1>Trazabilidad Blockchain</h1>
+                    <p>Garantía de integridad en cada firma.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc2.png')">
+                <div class="slide-content">
+                    <h1>Gestion de Documentos</h1>
+                    <p>Todos tus contratos y documentos en un solo lugar.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles de navegación -->
+        <button class="carousel-nav carousel-prev" onclick="changeSlide(-1)">❮</button>
+        <button class="carousel-nav carousel-next" onclick="changeSlide(1)">❯</button>
+
+        <!-- Indicadores -->
+        <div class="carousel-indicators">
+            <span class="indicator active" onclick="currentSlide(1)"></span>
+            <span class="indicator" onclick="currentSlide(2)"></span>
+            <span class="indicator" onclick="currentSlide(3)"></span>
+        </div>
+    </section>
 
       <!-- Features Section -->
       <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="features">
@@ -288,4 +399,95 @@
       </footer>
     </div>
 </body>
+<script>
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
+    const totalSlides = slides.length;
+
+    // Función para mostrar slide específico
+    function showSlide(n) {
+        // Remover clase active de todos los slides e indicadores
+        slides.forEach(slide => slide.classList.remove('active'));
+        indicators.forEach(indicator => indicator.classList.remove('active'));
+
+        // Asegurar que el índice esté en el rango correcto
+        if (n >= totalSlides) currentSlideIndex = 0;
+        if (n < 0) currentSlideIndex = totalSlides - 1;
+
+        // Mostrar slide actual
+        slides[currentSlideIndex].classList.add('active');
+        indicators[currentSlideIndex].classList.add('active');
+    }
+
+    // Función para cambiar slide (anterior/siguiente)
+    function changeSlide(n) {
+        currentSlideIndex += n;
+        showSlide(currentSlideIndex);
+    }
+
+    // Función para ir a slide específico
+    function currentSlide(n) {
+        currentSlideIndex = n - 1;
+        showSlide(currentSlideIndex);
+    }
+
+    // Auto-play del carrusel (opcional)
+    function autoPlay() {
+        currentSlideIndex++;
+        showSlide(currentSlideIndex);
+    }
+
+    // Iniciar auto-play cada 5 segundos
+    let autoPlayInterval = setInterval(autoPlay, 5000);
+
+    // Pausar auto-play cuando el usuario interactúa
+    function pauseAutoPlay() {
+        clearInterval(autoPlayInterval);
+        // Reiniciar auto-play después de 10 segundos de inactividad
+        setTimeout(() => {
+            autoPlayInterval = setInterval(autoPlay, 5000);
+        }, 10000);
+    }
+
+    // Agregar event listeners para pausar auto-play
+    document.querySelector('.carousel-prev').addEventListener('click', pauseAutoPlay);
+    document.querySelector('.carousel-next').addEventListener('click', pauseAutoPlay);
+    indicators.forEach(indicator => {
+        indicator.addEventListener('click', pauseAutoPlay);
+    });
+
+    // Soporte para navegación con teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') {
+            changeSlide(-1);
+            pauseAutoPlay();
+        } else if (e.key === 'ArrowRight') {
+            changeSlide(1);
+            pauseAutoPlay();
+        }
+    });
+
+    // Soporte para gestos táctiles (mobile)
+    let startX = 0;
+    let endX = 0;
+
+    document.querySelector('.carousel-container').addEventListener('touchstart', function(e) {
+        startX = e.touches[0].clientX;
+    });
+
+    document.querySelector('.carousel-container').addEventListener('touchend', function(e) {
+        endX = e.changedTouches[0].clientX;
+        
+        if (startX - endX > 50) {
+            // Swipe izquierda - siguiente slide
+            changeSlide(1);
+            pauseAutoPlay();
+        } else if (endX - startX > 50) {
+            // Swipe derecha - slide anterior
+            changeSlide(-1);
+            pauseAutoPlay();
+        }
+    });
+  </script>
 </html>

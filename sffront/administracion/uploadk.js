@@ -182,7 +182,7 @@ credentialsForm.addEventListener('submit', async (e) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
+      throw new Error(`Error: ${response.status} - ${errorText}`);
     }
 
     const result = await response.json();
