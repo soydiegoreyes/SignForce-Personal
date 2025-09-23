@@ -69,4 +69,5 @@ type UploadKeysResponse struct {
 	Expiration string `json:"expiration"`
 	Owner      string `json:"owner"`
 	KeysId     string `json:"keysid"`
+	Exists     bool   `json:"exists"`
 }

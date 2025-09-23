@@ -9,6 +9,7 @@ import (
 	"log"
 
 	//"os"
+	"sfback/configs"
 	"sfback/db"
 	"sfback/utilities"
 	//"strings"
@@ -51,18 +52,6 @@ func NewUser(idUser string, password string) (*User, error) {
 	}
 	log.Println(keysUser)
 
-	/*
-		certPathPem, err := utilities.ConvertCertToPem(keysUser[idKeyUser]["certFilePath"])
-		if err != nil {
-			return nil, fmt.Errorf("error al convertir certificado a PEM %v. error: %v", userData["certFilePath"], err)
-		}
-
-		keyPathPem, err := utilities.ConvertKeyToPem(keysUser[idKeyUser]["keyFilePath"], password)
-		if err != nil {
-			return nil, fmt.Errorf("error al convertir llave a PEM %v. error: %v", userData["keyFilePath"], err)
-		}
-	*/
-
 	var usuActivo bool
 	if userData[idUser]["activeUser"] == "1" {
 		usuActivo = true
@@ -80,33 +69,28 @@ func NewUser(idUser string, password string) (*User, error) {
 		Active:   usuActivo,
 	}
 
-	/*
-		// Cargar claves y certificado
-		err = user.Keys.loadPrivateKey(keyPathPem)
-		if err != nil {
-			return nil, fmt.Errorf("error al cargar la clave privada: %v", err)
-		}
-
-		err = user.Keys.loadCertificate(certPathPem)
-		if err != nil {
-			return nil, fmt.Errorf("error al cargar el certificado: %v", err)
-		}
-
-		// Validar certificado
-		if !user.Keys.TestKeys() {
-			return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
-		}
-	*/
-	valKeysResp, err := user.Keys.ValidateKeys(password)
+	keyHash, err := utilities.GetHash(user.Keys.keyfile, configs.HashConf)
+	if err != nil {
+		return nil, errors.New("error al obtener hash de llave privada")
+	}
+	certHash, err := utilities.GetHash(user.Keys.Certfile, configs.HashConf)
+	if err != nil {
+		return nil, errors.New("error al obtener hash de certificado")
+	}
+	valKeysResp, err := user.Keys.ValidateKeys(password, keyHash, certHash)
 	if err != nil {
 		return nil, err
+	}
+	// nunca deberia de suceder ya que un nuevo usuario
+	if !valKeysResp.Exists {
+		return nil, errors.New("critical: las llaves del usuario no coinciden con el id del usuario en registros de base de datos")
 	}
 	if !user.Keys.ValidKeys {
 		return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
 	}
 	fmt.Printf("Propietario: %s, Exp: %s \n", valKeysResp.Owner, valKeysResp.Expiration)
-	validPobUid := user.PobID == user.Keys.CertMap["PobId"]
-	validTaxUid := user.TaxNum == user.Keys.CertMap["TaxNum"]
+	validPobUid := user.PobID == user.Keys.CertMap["SubjectSerialNumber"]
+	validTaxUid := user.TaxNum == user.Keys.CertMap["SubjectUniqueId"]
 
 	if !validPobUid && !validTaxUid {
 		user.Keys.ValidKeys = false
@@ -140,84 +124,3 @@ func (u *User) GetPublicParams(params []string) map[string]string {
 	}
 	return responseParams
 }
-
-/*
-// Carga la clave privada desde el archivo de usuario
-func (u *User) loadPrivateKey(keyPath string) error {
-	if !strings.HasSuffix(keyPath, ".pem") {
-		return errors.New("la clave privada no es formato .PEM")
-	}
-	data, err := os.ReadFile(keyPath)
-	if err != nil {
-		return fmt.Errorf("no se pudo leer el archivo de clave privada: %v", err)
-	}
-
-	block, _ := pem.Decode(data)
-	if block == nil {
-		return errors.New("no se pudo decodificar el bloque PEM de la clave privada")
-	}
-
-	privateKey, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if err != nil {
-		return fmt.Errorf("error al parsear la clave privada: %v", err)
-	}
-
-	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
-	if !ok {
-		return errors.New("la clave privada no es una clave RSA")
-	}
-	u.Keys.privateKey = rsaPrivateKey
-
-	return nil
-}
-*/
-
-/*
-// Carga el certificado desde el archivo de usuario
-func (u *User) loadCertificate(certPath string) error {
-	data, err := os.ReadFile(certPath)
-	if err != nil {
-		return err
-	}
-
-	block, _ := pem.Decode(data)
-	if block == nil {
-		return errors.New("no se pudo decodificar el certificado")
-	}
-
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return errors.New("error al parsear el certificado")
-	}
-	u.Keys.Certificate = cert
-
-	certMap, err := ParseCertificateToMap(cert)
-	if err != nil {
-		log.Fatal(err)
-	}
-	u.Keys.CertMap = certMap
-
-	return nil
-}
-*/
-/*
-// Valida si la clave y el certificado coinciden y están vigentes
-func (u *User) validateKeys() bool {
-	if u.Keys.privateKey == nil || u.Keys.Certificate == nil {
-		return false
-	}
-
-	validBase := u.Keys.privateKey.PublicKey.N.Cmp(u.Keys.Certificate.PublicKey.(*rsa.PublicKey).N) == 0
-	validExp := u.Keys.privateKey.PublicKey.E == u.Keys.Certificate.PublicKey.(*rsa.PublicKey).E
-
-	now := time.Now()
-	notExpired := now.After(u.Keys.Certificate.NotBefore) && now.Before(u.Keys.Certificate.NotAfter)
-
-	validPobUid := u.PobID == u.Keys.CertMap["Subject"].(map[string]string)[utilities.Coids["x509"]["serialNumber"]]
-	validTaxUid := u.TaxNum == u.Keys.CertMap["Subject"].(map[string]string)[utilities.Coids["x509"]["x500UniqueIdentifier"]]
-
-	fmt.Printf("subject--: %v\n", u.Keys.CertMap["Subject"].(map[string]string)["commonName"])
-
-	return validBase && validExp && notExpired && validTaxUid && validPobUid
-}
-*/

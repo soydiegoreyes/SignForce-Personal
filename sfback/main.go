@@ -199,7 +199,7 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	keys := objects.NewKeys(kn, cn)
-	valResp, err := keys.ValidateKeys(req.PassKey)
+	valResp, err := keys.ValidateKeys(req.PassKey, keyHash, certHash)
 	if err != nil {
 		fmt.Println("Error Llaves no encontrado o expirado ", err)
 		http.Error(respWriter, "Llaves no encontrado o expirado", http.StatusInternalServerError)
@@ -208,6 +208,11 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	if !valResp.Valid {
 		fmt.Println("Error Llaves no válidas o expiradas")
 		http.Error(respWriter, "Llaves no válidas o expiradas", http.StatusNotFound)
+		return
+	}
+	if valResp.Exists {
+		fmt.Println("Error usuario ya ha subido la llave previamente")
+		http.Error(respWriter, "Llaves no válidas o expiradas", http.StatusConflict)
 		return
 	}
 	var validKeys int
@@ -226,11 +231,23 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		keys.CertMap["SignatureAlgorithm"], validKeys, keys.CertMap["KeySize"], keyHash, certHash, keys.CertMap["SubjectUniqueId"], keys.CertMap["SubjectSerialNumber"],
 	}
 
-	valResp.KeysId, err = db.DB_con.GenericInsert("userkeys", cols, values)
+	keysId, err := db.DB_con.GenericInsert("userkeys", cols, values)
 	if err != nil {
 		http.Error(respWriter, "Error insertando nuevo registro de llaves", http.StatusInternalServerError)
 		return
 	}
+
+	updates := map[string]map[string]interface{}{
+		req.IdUser: {
+			"idKeysUser_fk": keysId,
+		},
+	}
+	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
+	if err != nil {
+		http.Error(respWriter, "Error al actualizar valor de llaves", http.StatusInternalServerError)
+		return
+	}
+
 	fmt.Printf("Propietario: %s, Exp: %s \n", valResp.Owner, valResp.Expiration)
 	respWriter.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(respWriter).Encode(valResp)

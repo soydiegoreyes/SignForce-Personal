@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sfback/db"
 	"sfback/models"
 	"sfback/utilities"
 	"strings"
@@ -117,7 +118,7 @@ func (k *Keys) TestKeys() bool {
 	return validBase && validExp && notExpired
 }
 
-func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error) {
+func (k *Keys) ValidateKeys(password, hashKey, hashCer string) (*models.UploadKeysResponse, error) {
 	var valid bool = false
 
 	certPathPem, err := utilities.ConvertCertToPem(k.Certfile)
@@ -143,9 +144,30 @@ func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error)
 	if err != nil {
 		fmt.Println(err)
 	}
+
 	resp := &models.UploadKeysResponse{}
 	if valid = k.TestKeys(); valid {
 		fmt.Println("validas: ", valid)
+		wheres := map[string][]string{
+			"hashKey": {hashKey},
+			"hashCer": {hashCer},
+		}
+		keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"serialNumber", "signature", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber"}, wheres)
+		if err != nil {
+			fmt.Println(err)
+			resp.Exists = true
+		}
+		if len(keys) == 0 {
+			resp.Exists = false
+		} else {
+			for _, key := range keys {
+				if k.CertMap["SerialNumber"] == key["serialNumber"] && k.CertMap["Signature"] == key["signature"] && k.CertMap["SubjectUniqueId"] == key["subjectUniqueId"] && k.CertMap["SubjectSerialNumber"] == key["subjectSerialNumber"] {
+					resp.Exists = true
+					break
+				}
+			}
+		}
+
 		resp.Owner = k.CertMap["Subject"].(map[string]string)[utilities.Coids["x509"]["commonName"]]
 		resp.Expiration = k.Certificate.NotAfter.Format("2006-01-02 15:04:05")
 		k.ValidKeys = true
