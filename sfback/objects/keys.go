@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"sfback/configs"
 	"sfback/db"
 	"sfback/models"
@@ -260,6 +261,7 @@ type CertificateMap map[string]interface{}
 
 // ParseCertificateToNestedMap convierte un certificado x509 a nuestro formato de mapas anidados
 func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
+	alfanum := regexp.MustCompile("[A-Za-z0-9]+")
 	result := make(CertificateMap)
 
 	// Campos estándar
@@ -304,7 +306,7 @@ func ParseCertificateToMap(cert *x509.Certificate) (CertificateMap, error) {
 	// subject important attrs
 	result["Subject"] = subjectMap
 	result["SubjectUniqueId"] = subjectMap[utilities.Coids["x509"]["x500UniqueIdentifier"]]
-	result["SubjectSerialNumber"] = cert.Subject.SerialNumber
+	result["SubjectSerialNumber"] = alfanum.FindString(cert.Subject.SerialNumber)
 	//result["SubjectEmailAddress"] = subjectMap[utilities.Coids["x509"]["emailAddress"]]
 
 	// Procesar Issuer
