@@ -123,6 +123,7 @@ type UserStatus struct {
 }
 
 type KeysStatus struct {
+	IdKey           string `json:"idKey"`
 	NameKey         string `json:"nameKey"`
 	NameCer         string `json:"nameCer"`
 	Expiration      string `json:"expiration"`

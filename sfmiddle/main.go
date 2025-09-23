@@ -110,6 +110,7 @@ func main() {
 	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
 	mux.HandleFunc("/checkUserStatus", checkUserStatus)       // funcion para obtener datos de un usuario
 	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
+	mux.HandleFunc("/updatek", updateKeysData)                // funcion para actualizar datos de llaves de usuario
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
@@ -1283,6 +1284,7 @@ func getKeysData(respWriter http.ResponseWriter, request *http.Request) {
 			selected = false
 		}
 		ks := &models.KeysStatus{
+			IdKey:           idKey,
 			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
 			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
 			Expiration:      key["notValidAfter"],
@@ -1296,6 +1298,72 @@ func getKeysData(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(keyStatResp)
+}
+
+// =======================================================================
+
+func updateKeysData(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims)
+	// Extraer datos del JWT
+
+	idUser, ok1 := claims["uid"].(string)
+
+	if !ok1 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	type updateKeyReq struct {
+		IdKeyUpdate string `json:"idKeyUpdate"`
+	}
+	keyReq := updateKeyReq{}
+	err = json.NewDecoder(request.Body).Decode(&keyReq)
+	if err != nil {
+		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+		return
+	}
+	fmt.Println(keyReq)
+	updates := map[string]map[string]interface{}{
+		idUser: {
+			"idKeysUser_fk": strings.TrimLeft(keyReq.IdKeyUpdate, "key-"),
+		},
+	}
+
+	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
+		return
+	}
+
+	type updateKeys struct {
+		Status  bool   `json:"status"`
+		Message string `json:"message"`
+	}
+	ks := &updateKeys{
+		Status:  true,
+		Message: "Valor actualizdo",
+	}
+	// Convertir a JSON
+	jsonData, _ := json.Marshal(ks)
+
+	// Configurar headers y enviar respuesta
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	respWriter.Write(jsonData)
 }
 
 // =======================================================================
