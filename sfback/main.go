@@ -238,30 +238,6 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// se busca si el usuario tiene llaves.
-	wheres := map[string][]string{
-		"idInstitution": {req.IdInst}, // todas las llaves del usuario
-	}
-	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "typeContractInst"}, wheres)
-	if err != nil {
-		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
-		return
-	}
-	// si no tiene contrato aun y esta en el paso de subir llaves entonces es usuario nuevo y debe pasar a firma de contratos
-	if instData[req.IdInst]["statusInst_fk"] == "6" && instData[req.IdInst]["typeContractInst"] == "0" {
-		updates := map[string]map[string]interface{}{
-			req.IdInst: {
-				"statusInst_fk": 7,
-			},
-		}
-
-		err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
-		if err != nil {
-			http.Error(respWriter, "Error al actualizar valor de llaves", http.StatusInternalServerError)
-			return
-		}
-	}
-
 	fmt.Printf("Propietario: %s, Exp: %s \n", valResp.Owner, valResp.Expiration)
 	respWriter.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(respWriter).Encode(valResp)
