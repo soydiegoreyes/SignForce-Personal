@@ -4,232 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SignForce | Firma Electrónica Avanzada</title>
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/home/index.css">
-    <script src="/home/index.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style>
-        .hero-section {
-            height: 100vh;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .carousel-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .carousel-slide {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            transition: opacity 0.8s ease-in-out;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .carousel-slide.active {
-            opacity: 1;
-        }
-
-        /* Contenido superpuesto opcional */
-        .slide-content {
-            text-align: center;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 2rem;
-            border-radius: 10px;
-            max-width: 600px;
-        }
-
-        .slide-content h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
-
-        .slide-content p {
-            font-size: 1.2rem;
-            line-height: 1.6;
-        }
-
-        /* Controles de navegación */
-        .carousel-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.8);
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #333;
-            transition: all 0.3s ease;
-            z-index: 10;
-        }
-
-        .carousel-nav:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .carousel-prev {
-            left: 20px;
-        }
-
-        .carousel-next {
-            right: 20px;
-        }
-
-        /* Indicadores */
-        .carousel-indicators {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .indicator.active {
-            background: white;
-            transform: scale(1.2);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .slide-content h1 {
-                font-size: 2rem;
-            }
-            
-            .slide-content p {
-                font-size: 1rem;
-            }
-            
-            .carousel-nav {
-                width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-        }
-    </style>
 </head>
 <body>
-    <!-- Barra superior rediseñada -->
+    <!-- Barra superior -->
     <header class="glass-header" id="mainHeader">
-      <div class="flex items-center gap-8 relative">
-        <!-- Burbuja liquid glass -->
-        <div class="liquid-bubble" id="liquidBubble"></div>
-        
-        <div class="flex items-center gap-4 text-primary">
-          <div class="size-4">
-            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
-          </div>
-          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+            </div>
         </div>
-        <div class="flex items-center gap-9">
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+        <div class="flex flex-1 justify-end gap-8">
+            <a href="./registro/login.html" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
+                Iniciar Sesión
+            </a>
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
-      </div>
-      <div class="flex flex-1 justify-end gap-8">
-        <a href="./registro/login.html" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
-          Iniciar Sesión
-        </a>
-        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
-      </div>
     </header>
 
-    <!-- empieza web -->
-    <div class="bg">
-      
-      <section class="hero-section">
+    <!-- Hero Section Rediseñado -->
+    <section class="hero-section" id="hero-section">
+        <!-- Carrusel de fondo -->
         <div class="carousel-container" id="heroCarousel">
-            <!-- Slide 1 -->
-            <div class="carousel-slide active" style="background-image: url('./home/images/person_glass.png')">
-                <div class="slide-content">
-                    <h1>SIGNFORCE</h1>
-                    <p>Crea, Comparte y Firma documentos de la forma mas sencilla</p>
-                </div>
-            </div>
-
-            <!-- Slide 2 -->
-            <div class="carousel-slide" style="background-image: url('./home/images/man_signing.png')">
-                <div class="slide-content">
-                    <h1>Seguridad de vanguardia</h1>
-                    <p>Protege tus documentos con cifrado de grado bancario.</p>
-                </div>
-            </div>
-
-            <!-- Slide 3 -->
-            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc.png')">
-                <div class="slide-content">
-                    <h1>Firma en segundos</h1>
-                    <p>Agiliza tus procesos y reduce tiempos de espera.</p>
-                </div>
-            </div>
+            <div class="carousel-slide active" style="background-image: url('./home/images/person_glass.png')"></div>
+            <div class="carousel-slide" style="background-image: url('./home/images/man_signing.png')"></div>
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc.png')"></div>
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc1.png')"></div>
+            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc2.png')"></div>
         </div>
-        
-        <!-- Slide 4 -->
-            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc1.png')">
-                <div class="slide-content">
-                    <h1>Trazabilidad Blockchain</h1>
-                    <p>Garantía de integridad en cada firma.</p>
-                </div>
+
+        <!-- Barra lateral izquierda - Características -->
+        <div class="hero-sidebar">
+            <div class="hero-feature fade-in">
+                <h3>🔒 Seguridad Blockchain</h3>
+                <p>Trazabilidad inmutable para todas tus firmas electrónicas</p>
+            </div>
+            <div class="hero-feature fade-in delay-1">
+                <h3>⚡ Firma Rápida</h3>
+                <p>Completa documentos en segundos desde cualquier dispositivo</p>
+            </div>
+            <div class="hero-feature fade-in delay-2">
+                <h3>📈 Analítica Avanzada</h3>
+                <p>Dashboard en tiempo real con métricas de productividad</p>
             </div>
         </div>
 
-        <!-- Slide 5 -->
-            <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc2.png')">
-                <div class="slide-content">
-                    <h1>Gestion de Documentos</h1>
-                    <p>Todos tus contratos y documentos en un solo lugar.</p>
+        <!-- Contenido principal central -->
+        <div class="hero-main">
+            <h1 class="fade-in">REVOLUCIONA TU FORMA DE FIRMAR</h1>
+            <p class="hero-subtitle fade-in delay-1">
+                La plataforma de firma electrónica más avanzada con tecnología blockchain. 
+                <br>Validez legal garantizada en México y Latinoamérica.
+            </p>
+            
+            <div class="hero-cta fade-in delay-2">
+                <button class="btn-primary">Comenzar Gratis</button>
+                <button class="btn-secondary">Ver Demo</button>
+            </div>
+
+            <div class="hero-stats fade-in delay-3">
+                <div class="stat-item">
+                    <span class="stat-number" data-target="50">0+</span>
+                    <span class="stat-label">Empresas Confían</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-target="100">0+</span>
+                    <span class="stat-label">K Documentos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-target="99">0+</span>
+                    <span class="stat-label">% Satisfacción</span>
                 </div>
             </div>
         </div>
 
-        <!-- Controles de navegación -->
-        <button class="carousel-nav carousel-prev" onclick="changeSlide(-1)">❮</button>
-        <button class="carousel-nav carousel-next" onclick="changeSlide(1)">❯</button>
+        <!-- Barra lateral derecha - Información adicional -->
+        <div class="hero-sidebar">
+            <div class="hero-feature fade-in">
+                <h3>🌎 Multiplataforma</h3>
+                <p>Funciona en web, móvil y desktop sin instalación</p>
+            </div>
+            <div class="hero-feature fade-in delay-1">
+                <h3>📋 NOM-151 Compliant</h3>
+                <p>Cumplimiento total con regulaciones mexicanas</p>
+            </div>
+            <div class="hero-feature fade-in delay-2">
+                <h3>🔄 Integraciones</h3>
+                <p>Conecta con tus herramientas favoritas</p>
+            </div>
+        </div>
 
-        <!-- Indicadores -->
+        <!-- Controles del carrusel -->
+        <button class="carousel-nav carousel-prev">❮</button>
+        <button class="carousel-nav carousel-next">❯</button>
         <div class="carousel-indicators">
-            <span class="indicator active" onclick="currentSlide(1)"></span>
-            <span class="indicator" onclick="currentSlide(2)"></span>
-            <span class="indicator" onclick="currentSlide(3)"></span>
+            <span class="indicator active"></span>
+            <span class="indicator"></span>
+            <span class="indicator"></span>
+            <span class="indicator"></span>
+            <span class="indicator"></span>
         </div>
     </section>
 
-      <!-- Features Section -->
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="features">
+    <!-- Resto de las secciones (Features, Testimonials, etc.) -->
+    <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="features">
         <div class="layout-container flex h-full grow flex-col">
           <div class="gap-1 flex flex-1 justify-center py-5">
             <div class="flex flex-col w-full glass-panel p-12">
@@ -287,10 +184,9 @@
             </div>
           </div>
         </div>
-      </section>
+    </section>
 
-      <!-- Testimonials Section -->
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="testimonials">
+    <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="testimonials">
         <div class="layout-container flex h-full grow flex-col">
           <div class="gap-1 flex flex-1 justify-center py-5">
             <div class="flex flex-col w-full glass-panel p-12">
@@ -333,10 +229,9 @@
             </div>
           </div>
         </div>
-      </section>
+    </section>
 
-      <!-- CTA Section -->
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="contact">
+    <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="contact">
         <div class="layout-container flex h-full grow flex-col">
           <div class="gap-1 flex flex-1 justify-center py-5">
             <div class="flex flex-col items-center justify-center w-full glass-panel p-12 text-center">
@@ -346,10 +241,9 @@
             </div>
           </div>
         </div>
-      </section>
+    </section>
 
-      <!-- Footer -->
-      <footer class="glass-panel mt-20">
+    <footer class="glass-panel mt-20">
         <div class="footer-content container mx-auto px-[100px] py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div class="footer-column">
             <h3 class="text-primary text-lg font-bold mb-4">SignForce</h3>
@@ -396,98 +290,8 @@
         <div class="copyright text-center py-6 border-t border-white/10">
           <p class="text-secondary">&copy; 2025 SignForce. Todos los derechos reservados.</p>
         </div>
-      </footer>
-    </div>
+    </footer>
+
+    <script src="/home/index.js"></script>
 </body>
-<script>
-    let currentSlideIndex = 0;
-    const slides = document.querySelectorAll('.carousel-slide');
-    const indicators = document.querySelectorAll('.indicator');
-    const totalSlides = slides.length;
-
-    // Función para mostrar slide específico
-    function showSlide(n) {
-        // Remover clase active de todos los slides e indicadores
-        slides.forEach(slide => slide.classList.remove('active'));
-        indicators.forEach(indicator => indicator.classList.remove('active'));
-
-        // Asegurar que el índice esté en el rango correcto
-        if (n >= totalSlides) currentSlideIndex = 0;
-        if (n < 0) currentSlideIndex = totalSlides - 1;
-
-        // Mostrar slide actual
-        slides[currentSlideIndex].classList.add('active');
-        indicators[currentSlideIndex].classList.add('active');
-    }
-
-    // Función para cambiar slide (anterior/siguiente)
-    function changeSlide(n) {
-        currentSlideIndex += n;
-        showSlide(currentSlideIndex);
-    }
-
-    // Función para ir a slide específico
-    function currentSlide(n) {
-        currentSlideIndex = n - 1;
-        showSlide(currentSlideIndex);
-    }
-
-    // Auto-play del carrusel (opcional)
-    function autoPlay() {
-        currentSlideIndex++;
-        showSlide(currentSlideIndex);
-    }
-
-    // Iniciar auto-play cada 5 segundos
-    let autoPlayInterval = setInterval(autoPlay, 5000);
-
-    // Pausar auto-play cuando el usuario interactúa
-    function pauseAutoPlay() {
-        clearInterval(autoPlayInterval);
-        // Reiniciar auto-play después de 10 segundos de inactividad
-        setTimeout(() => {
-            autoPlayInterval = setInterval(autoPlay, 5000);
-        }, 10000);
-    }
-
-    // Agregar event listeners para pausar auto-play
-    document.querySelector('.carousel-prev').addEventListener('click', pauseAutoPlay);
-    document.querySelector('.carousel-next').addEventListener('click', pauseAutoPlay);
-    indicators.forEach(indicator => {
-        indicator.addEventListener('click', pauseAutoPlay);
-    });
-
-    // Soporte para navegación con teclado
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowLeft') {
-            changeSlide(-1);
-            pauseAutoPlay();
-        } else if (e.key === 'ArrowRight') {
-            changeSlide(1);
-            pauseAutoPlay();
-        }
-    });
-
-    // Soporte para gestos táctiles (mobile)
-    let startX = 0;
-    let endX = 0;
-
-    document.querySelector('.carousel-container').addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-    });
-
-    document.querySelector('.carousel-container').addEventListener('touchend', function(e) {
-        endX = e.changedTouches[0].clientX;
-        
-        if (startX - endX > 50) {
-            // Swipe izquierda - siguiente slide
-            changeSlide(1);
-            pauseAutoPlay();
-        } else if (endX - startX > 50) {
-            // Swipe derecha - slide anterior
-            changeSlide(-1);
-            pauseAutoPlay();
-        }
-    });
-  </script>
 </html>
