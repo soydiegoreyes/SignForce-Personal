@@ -117,6 +117,7 @@ func main() {
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/uploadKeys", uploadKeys)
 	mux.HandleFunc("/payment", payment)
+	mux.HandleFunc("/mydocs", myDocuments)
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Determinar el Content-Type basado en la extensión del archivo
@@ -184,6 +185,29 @@ func main() {
 
 			http.FileServer(http.Dir("./../sffront/administracion")).ServeHTTP(w, r)
 		})))
+	// Servir archivos estáticos desde el directorio registro CORREGIDO ("registro")
+	mux.Handle("/documentflow/", http.StripPrefix("/documentflow/",
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Determinar el Content-Type basado en la extensión del archivo
+			switch filepath.Ext(r.URL.Path) {
+			case ".css":
+				w.Header().Set("Content-Type", "text/css")
+			case ".js":
+				w.Header().Set("Content-Type", "application/javascript")
+			case ".html":
+				w.Header().Set("Content-Type", "text/html")
+			case ".png":
+				w.Header().Set("Content-Type", "image/png")
+			case ".jpg", ".jpeg":
+				w.Header().Set("Content-Type", "image/jpeg")
+			case ".ico":
+				w.Header().Set("Content-Type", "image/x-icon")
+			default:
+				w.Header().Set("Content-Type", "text/plain")
+			}
+
+			http.FileServer(http.Dir("./../sffront/documentFlow")).ServeHTTP(w, r)
+		})))
 
 	// Aplicar middleware CORS
 	handler := corsMiddleware(mux)
@@ -221,6 +245,13 @@ func payment(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/registro/plan_pay.html")
+}
+func myDocuments(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/my_documents.html")
 }
 
 // =======================================================================
@@ -1491,6 +1522,10 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 				location = "/payment"
 			} else if dataInst[idInst]["statusInst_fk"] == "6" {
 				location = "/uploadKeys"
+			} else if dataInst[idInst]["statusInst_fk"] == "7" {
+				location = "/mydocs"
+			} else if dataInst[idInst]["statusInst_fk"] == "8" {
+				location = "/dashboard"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {
