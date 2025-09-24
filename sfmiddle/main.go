@@ -102,6 +102,8 @@ func main() {
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/uploadDocs", uploadDocs)                 // funcion para subir cualquier tipo de documento
 	mux.HandleFunc("/uploadk", uploadk)                       // funcion para subir llaves
+	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
+	mux.HandleFunc("/updatek", updateKeysData)                // funcion para actualizar datos de llaves de usuario
 	mux.HandleFunc("/register", registerInst)                 // funcion para registrar nuevo cliente
 	mux.HandleFunc("/loginUser", login)                       // funcion para loguear usuario
 	mux.HandleFunc("/getvaldata", getValidationData)          // funcion para validar estatus de usuario en registro
@@ -109,8 +111,6 @@ func main() {
 	mux.HandleFunc("/completevalidation", completeValidation) // funcion para completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
 	mux.HandleFunc("/checkUserStatus", checkUserStatus)       // funcion para obtener datos de un usuario
-	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
-	mux.HandleFunc("/updatek", updateKeysData)                // funcion para actualizar datos de llaves de usuario
 	mux.HandleFunc("/login", loginPage)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
@@ -945,14 +945,11 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	//docs := models.Docs{}
-
 	// Validar Content-Type
 	contentType := request.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "multipart/form-data") {
 		http.Error(respWriter, "Tipo de contenido inesperado", http.StatusBadRequest)
 		return
-
 	}
 
 	// Parsear el form multipart
@@ -976,6 +973,8 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}()
 
 	var processedFiles []models.FileMetadata
+	var docIds []string
+
 	if request.MultipartForm.File != nil {
 		var docType string
 
@@ -1051,13 +1050,14 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				// Actualizar datos en la base de datos
 				cols := []string{"hashDoc", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "nameDoc", "pathDoc", "extDoc"}
 				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext}
-				_, err := db.DB_con.GenericInsert("documents", cols, vals)
+				idDoc, err := db.DB_con.GenericInsert("documents", cols, vals)
 				if err != nil {
 					fmt.Printf("Error actualizando datos en DB: %v\n", err)
 					http.Error(respWriter, "Error actualizando datos", http.StatusInternalServerError)
 					return
 				}
 				processedFiles = append(processedFiles, docData)
+				docIds = append(docIds, idDoc)
 			}
 		}
 	}
@@ -1070,14 +1070,13 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	response := models.UploadResponse{
 		Success:     true,
 		Message:     fmt.Sprintf("Se subieron %d archivo(s) exitosamente", len(processedFiles)),
-		DocumentIDs: []string{"1", "2", "3"},
+		DocumentIDs: docIds,
 	}
 	// Respuesta exitosa
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(respWriter).Encode(&response)
-
 }
 
 // =======================================================================
@@ -1114,7 +1113,7 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
-
+	// borrar cuando ya no se requiera
 	fmt.Println(idUser, idInst, idTeam, authInst)
 
 	attrs := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "nameOwner"}
@@ -1124,7 +1123,6 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener informacion de institucion", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(len(data))
 
 	resp := &models.PaymentResp{}
 
@@ -1142,7 +1140,6 @@ func processPayment(respWriter http.ResponseWriter, request *http.Request) {
 		// aqui se realiza un request a la pasarela de pago que debe regresar un estatus el cual se inserta y se devuelve a la plataforma
 		// debe ser una go routine que se encargue de actualizar el estatus en DB independiente del endpoint
 		payStatus := "1" // 0 PENDING, 1 COMPLETED, 2 REJECTED, 3 CANCELED, 4 HOLD
-
 		expPlan := time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
 		cols := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "cardNumber", "expirationDate", "nameOwner"}
 		vals := []interface{}{payStatus, plan, expPlan, payReq.CardNum, payReq.Expiration, payReq.NameOwner}
@@ -1207,18 +1204,49 @@ func checkUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	fmt.Println(claims)
 	// Extraer datos del JWT
-	/*
-		idUser, ok1 := claims["uid"].(string)
-		idInst, ok2 := claims["iid"].(string)
-		idTeam, ok3 := claims["team"].(string)
-		authInst, ok4 := claims["authInst"].(string)
-		if !ok1 || !ok2 || !ok3 || !ok4 {
-			http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-			return
-		}
 
-		db.DB_con.GenericJoinSelect("users", "userkeys", )
-	*/
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	idTeam, ok3 := claims["team"].(string)
+	authInst, ok4 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 || !ok4 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	wheres := map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+		"idTeam_fk":        {idTeam},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"nameUser", "lastNameUser", "aliasUser", "emailUser", "activeUser", "roleAppUser_fk", "idTeam_fk", "kycUser_fk"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
+		return
+	}
+	if userData[idUser]["activeUser"] != "1" || authInst != "1" {
+		http.Error(respWriter, "No autorizado. Usuario inactivo", http.StatusUnauthorized)
+		return
+	}
+
+	userD := &models.UserDataResp{
+		Name:     userData[idUser]["nameUser"],
+		LastName: userData[idUser]["lastNameUser"],
+		Alias:    userData[idUser]["aliasUser"],
+		Email:    userData[idUser]["emailUser"],
+		Active:   userData[idUser]["activeUser"],
+		Role:     userData[idUser]["roleAppUser_fk"],
+		Team:     userData[idUser]["idTeam_fk"],
+		Kyc:      userData[idUser]["kycUser_fk"],
+	}
+	jsonData, err := json.Marshal(userD)
+	if err != nil {
+		http.Error(respWriter, "Error preparando datos para validación", http.StatusInternalServerError)
+		return
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	respWriter.Write(jsonData)
 }
 
 // =======================================================================
@@ -1336,7 +1364,6 @@ func updateKeysData(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(keyReq)
 	updates := map[string]map[string]interface{}{
 		idUser: {
 			"idKeysUser_fk": strings.TrimLeft(keyReq.IdKeyUpdate, "key-"),
