@@ -76,16 +76,16 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 		return "", err
 	}
 
-	var uniqueName string
+	var name string
 	// Generar nombre único para el archivo
 	if hasUniqueName {
-		uniqueName = fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
+		name = fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
 	} else {
-		uniqueName = filename
+		name = filename
 
 	}
 
-	filePath := path.Join(uploadDir, uniqueName)
+	filePath := path.Join(uploadDir, name)
 	_, err = os.Stat(filePath)
 	// si el error es nulo es que ya existe el archivo
 	if err == nil {

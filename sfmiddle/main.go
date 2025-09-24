@@ -101,6 +101,7 @@ func main() {
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
 	mux.HandleFunc("/uploadDocs", uploadDocs)                 // funcion para subir cualquier tipo de documento
+	mux.HandleFunc("/getDocs", getDocs)                       // funcion para subir cualquier tipo de documento
 	mux.HandleFunc("/uploadk", uploadk)                       // funcion para subir llaves
 	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
 	mux.HandleFunc("/updatek", updateKeysData)                // funcion para actualizar datos de llaves de usuario
@@ -624,6 +625,12 @@ func updateValidationData(respWriter http.ResponseWriter, request *http.Request)
 			http.Error(respWriter, "Error procesando formulario", http.StatusBadRequest)
 			return
 		}
+		// Limpiar recursos del multipart form al finalizar
+		defer func() {
+			if request.MultipartForm != nil {
+				request.MultipartForm.RemoveAll()
+			}
+		}()
 
 		// Procesar campos de texto
 		if request.MultipartForm.Value != nil {
@@ -852,6 +859,8 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error creando directorio", http.StatusInternalServerError)
 		return
 	}
+	// check para saber si hubo errores en el proceso una vez guardados los archivos para borrar los datos
+	var check bool
 
 	// Guardar archivo de llave
 	//keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
@@ -923,6 +932,36 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if !check {
+		defer func() {
+			os.RemoveAll(basePath)
+		}()
+	}
+
+	// se busca si el usuario tiene llaves.
+	wheres := map[string][]string{
+		"idInstitution": {idInst}, // todas las llaves del usuario
+	}
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "typeContractInst"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
+		return
+	}
+	// si no tiene contrato aun y esta en el paso de subir llaves entonces es usuario nuevo y debe pasar a firma de contratos
+	if instData[idInst]["statusInst_fk"] == "6" && instData[idInst]["typeContractInst"] == "0" {
+		updates := map[string]map[string]interface{}{
+			idInst: {
+				"statusInst_fk": 7,
+			},
+		}
+
+		err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
+		if err != nil {
+			http.Error(respWriter, "Error al actualizar valor de llaves", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	var validationResult struct {
 		Valid      bool   `json:"valid"`
 		Expiration string `json:"expiration"`
@@ -939,6 +978,85 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(&validationResult)
 }
 
+// =======================================================================
+func getDocs(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims)
+	// Extraer datos del JWT
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	idTeam, ok3 := claims["team"].(string)
+
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	wheres := map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+		"idTeam_fk":        {idTeam},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "idKeysUser_fk"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
+		return
+	}
+	if userData[idUser]["activeUser"] != "1" {
+		http.Error(respWriter, "No autorizado. Usuario inactivo", http.StatusUnauthorized)
+		return
+	}
+
+	wheres = map[string][]string{
+		"idUser_fk": {idUser},
+	}
+	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
+		return
+	}
+
+	keyStatResp := make([]*models.KeysStatus, 0)
+	var selected bool
+	for idKey, key := range keys {
+		if userData[idUser]["idKeysUser_fk"] == idKey {
+			selected = true
+		} else {
+			selected = false
+		}
+		ks := &models.KeysStatus{
+			IdKey:           idKey,
+			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
+			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
+			Expiration:      key["notValidAfter"],
+			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
+			SubjectUniqueId: key["subjectUniqueId"],
+			UploadedAt:      key["createdAtKey"],
+			Selected:        selected,
+		}
+		keyStatResp = append(keyStatResp, ks)
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(keyStatResp)
+}
+
+// =====================================================================================
 // Funcion gneérica para subir archivos de cualquier clase
 func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -1281,7 +1399,6 @@ func checkUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
-
 func getKeysData(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
