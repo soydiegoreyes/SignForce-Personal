@@ -132,3 +132,14 @@ type KeysStatus struct {
 	UploadedAt      string `json:"uploadedAt"`
 	Selected        bool   `json:"selected"`
 }
+
+type UserDataResp struct {
+	Name     string `json:"name"`
+	LastName string `json:"lastname"`
+	Alias    string `json:"alias"`
+	Email    string `json:"email"`
+	Active   string `json:"active"`
+	Role     string `json:"role"`
+	Team     string `json:"team"`
+	Kyc      string `json:"kyc"`
+}
