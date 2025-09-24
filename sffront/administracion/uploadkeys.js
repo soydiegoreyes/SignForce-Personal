@@ -64,7 +64,7 @@
 
         const title = document.createElement('h3');
         title.className = 'key-title';
-        title.textContent = key.nameKey;
+        title.textContent = key.owner;
 
         const expBadge = document.createElement('span');
         expBadge.className = 'badge';
@@ -80,7 +80,7 @@
         details.className = 'key-details';
         details.innerHTML = `
           <p class="key-detail"><strong>Certificado:</strong> ${key.nameCer}</p>
-          <p class="key-detail"><strong>Propietario:</strong> ${key.owner}</p>
+          <p class="key-detail"><strong>Llave:</strong> ${key.nameKey}</p>
           <p class="key-detail"><strong>ID único:</strong> ${key.subjectUniqueId}</p>
           <p class="key-detail"><strong>Expiración:</strong> ${key.expiration}</p>
           <p class="key-detail"><strong>Subido el:</strong> ${key.uploadedAt}</p>

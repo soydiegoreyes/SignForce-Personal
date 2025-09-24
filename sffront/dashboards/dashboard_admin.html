@@ -65,9 +65,9 @@
         let usuarios= JSON.parse(sessionStorage.getItem('usuarios')) || [];
 
 
-        if (!currentUser || currentUser.tipo !== 'admin_equipo') {
+        /*if (!currentUser || currentUser.tipo !== 'admin_equipo') {
             window.location.href = './../registro/login.html';
-        }
+        }*/
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
         
