@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -100,25 +101,32 @@ func main() {
 
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/uploadDocs", uploadDocs)                 // funcion para subir cualquier tipo de documento
-	mux.HandleFunc("/getDocs", getDocs)                       // funcion para subir cualquier tipo de documento
-	mux.HandleFunc("/uploadk", uploadk)                       // funcion para subir llaves
-	mux.HandleFunc("/statusk", getKeysData)                   // funcion para obtener datos de llaves de usuario
-	mux.HandleFunc("/updatek", updateKeysData)                // funcion para actualizar datos de llaves de usuario
-	mux.HandleFunc("/register", registerInst)                 // funcion para registrar nuevo cliente
-	mux.HandleFunc("/loginUser", login)                       // funcion para loguear usuario
-	mux.HandleFunc("/getvaldata", getValidationData)          // funcion para validar estatus de usuario en registro
-	mux.HandleFunc("/updatevaldata", updateValidationData)    // funcion para actualizar estatus de usuario en registro
-	mux.HandleFunc("/completevalidation", completeValidation) // funcion para completar validacion de usuario en registro
-	mux.HandleFunc("/processpayment", processPayment)         // funcion para procesar pago de plan
-	mux.HandleFunc("/checkUserStatus", checkUserStatus)       // funcion para obtener datos de un usuario
+	mux.HandleFunc("/uploadDocs", uploadDocs)                 // subir cualquier tipo de documento
+	mux.HandleFunc("/getDocs", getDocs)                       // obtener datos de cualquier tipo de documento
+	mux.HandleFunc("/uploadk", uploadk)                       // subir llaves
+	mux.HandleFunc("/statusk", getKeysData)                   // obtener datos de llaves de usuario
+	mux.HandleFunc("/updatek", updateKeysData)                // actualizar datos de llaves de usuario
+	mux.HandleFunc("/register", registerInst)                 // registrar nuevo cliente
+	mux.HandleFunc("/loginUser", login)                       // loguear usuario
+	mux.HandleFunc("/getvaldata", getValidationData)          // validar estatus de usuario en registro
+	mux.HandleFunc("/updatevaldata", updateValidationData)    // actualizar estatus de usuario en registro
+	mux.HandleFunc("/completevalidation", completeValidation) // completar validacion de usuario en registro
+	mux.HandleFunc("/processpayment", processPayment)         // procesar pago de plan
+	mux.HandleFunc("/checkUserStatus", checkUserStatus)       // obtener datos de un usuario
+	mux.HandleFunc("/approvals", approvals)                   // obtener datos de instituciones que estan en aprovacion
+
+	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
+	mux.HandleFunc("/noAuthPage", noauth)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/uploadKeys", uploadKeys)
 	mux.HandleFunc("/payment", payment)
+	mux.HandleFunc("/dashboard/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
+
+	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/",
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Determinar el Content-Type basado en la extensión del archivo
@@ -231,6 +239,15 @@ func home(respWriter http.ResponseWriter, request *http.Request) {
 	http.ServeFile(respWriter, request, "./../sffront/index.html")
 }
 
+// pagina de no autorizacion
+func noauth(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/noauth.html")
+}
+
 // pagina de login
 func upload(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
@@ -239,7 +256,13 @@ func upload(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/upload_zone.html")
 }
-
+func approvalsDash(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/dashboards/dashboard_approvals.html")
+}
 func payment(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -543,7 +566,7 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Campos que queremos obtener de la tabla
-	attrs = []string{"documentType", "documentName", "documentClass", "documentPath", "expirationDate"}
+	attrs = []string{"documentPath", "documentName", "documentExt", "documentClass", "expirationDate"}
 
 	// Condiciones WHERE
 	wheres = map[string][]string{
@@ -571,9 +594,9 @@ func getValidationData(respWriter http.ResponseWriter, request *http.Request) {
 				// Nos aseguramos de que cada clave exista antes de usarla.
 				path := row["documentPath"]
 				name := row["documentName"]
-				typ := row["documentType"]
+				ext := row["documentExt"]
 
-				concatenated := fmt.Sprintf("%s%s.%s", path, name, typ)
+				concatenated := fmt.Sprintf("%s%s.%s", path, name, ext)
 
 				// Guardamos el resultado en el campo correspondiente de valResp
 				*ptr = concatenated
@@ -731,12 +754,27 @@ func completeValidation(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-
+	type StatusData struct {
+		IdInst string `json:"institution"`
+		Status string `json:"status"`
+	}
+	statusData := StatusData{}
+	err = json.NewDecoder(request.Body).Decode(&statusData)
+	if err != nil {
+		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
+		return
+	}
 	// Obtener user ID e institution ID
+	// si la instutucion signforce hace la actualizacion de alguien entonces debe mandar id
+	// si no manda id o la institucion no es signforce entonces se esta haciendo un update de ella misma
+	fmt.Println(statusData)
 	idInst := claims["iid"].(string)
+	if idInst == "1" && statusData.IdInst != "" {
+		idInst = statusData.IdInst
+	}
 	updates := map[string]map[string]interface{}{
 		idInst: {
-			"statusInst_fk": "3",
+			"statusInst_fk": statusData.Status,
 		},
 	}
 	err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
@@ -860,7 +898,13 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// check para saber si hubo errores en el proceso una vez guardados los archivos para borrar los datos
-	var check bool
+	var Check bool
+
+	defer func() {
+		if Check {
+			os.RemoveAll(basePath)
+		}
+	}()
 
 	// Guardar archivo de llave
 	//keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
@@ -932,12 +976,6 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	if !check {
-		defer func() {
-			os.RemoveAll(basePath)
-		}()
-	}
-
 	// se busca si el usuario tiene llaves.
 	wheres := map[string][]string{
 		"idInstitution": {idInst}, // todas las llaves del usuario
@@ -961,6 +999,7 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
+	Check = true
 
 	var validationResult struct {
 		Valid      bool   `json:"valid"`
@@ -978,12 +1017,14 @@ func uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(&validationResult)
 }
 
+// ========================================================================
 // =======================================================================
 func getDocs(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
+	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
+
 	cookie, err := request.Cookie("token")
 	if err != nil {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
@@ -995,9 +1036,8 @@ func getDocs(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println(claims)
-	// Extraer datos del JWT
 
+	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	idTeam, ok3 := claims["team"].(string)
@@ -1007,14 +1047,30 @@ func getDocs(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// Estructura para recibir los datos del frontend
+	type DocDataRequest struct {
+		IdDoc   string `json:"id"`
+		Type    string `json:"type"`
+		PathDoc string `json:"path"`
+	}
+
+	// Leer el body de la petición
+	var docRequest DocDataRequest
+	decoder := json.NewDecoder(request.Body)
+	if err := decoder.Decode(&docRequest); err != nil {
+		http.Error(respWriter, "Error al leer los datos de la petición", http.StatusBadRequest)
+		return
+	}
+
+	// Validar datos del usuario
 	wheres := map[string][]string{
 		"idUser":           {idUser},
 		"idInstitution_fk": {idInst},
 		"idTeam_fk":        {idTeam},
 	}
-	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "idKeysUser_fk"}, wheres)
+	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser"}, wheres)
 	if err != nil {
-		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
+		http.Error(respWriter, "Error al obtener información de usuario", http.StatusInternalServerError)
 		return
 	}
 	if userData[idUser]["activeUser"] != "1" {
@@ -1022,38 +1078,136 @@ func getDocs(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	wheres = map[string][]string{
-		"idUser_fk": {idUser},
-	}
-	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}, wheres)
-	if err != nil {
-		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
+	// Determinar la tabla y ruta base según el tipo
+	var tableName string
+	var idColMain string
+	var basePath string
+	var attrs []string
+	var docWheres map[string][]string
+	switch docRequest.Type {
+	case "kyc":
+		splitted := strings.Split(docRequest.PathDoc, "@")
+		hash := splitted[0]
+		pathDoc := splitted[1]
+		basePath = pathDoc[:strings.LastIndex(pathDoc, "/")+1]
+		fll, _ := strings.CutPrefix(pathDoc, basePath)
+		fullname := strings.Split(fll, ".")
+		tableName = "kyc"
+		attrs = append(attrs, "documentHash", "documentPath", "documentName", "documentExt")
+		idColMain = "documentHash"
+		docWheres = map[string][]string{
+			"documentHash": {hash}, // Ajusta el nombre de la columna según tu esquema
+			"documentPath": {basePath},
+			"documentName": {fullname[0]},
+			"documentExt":  {fullname[1]},
+		}
+	case "uploaded":
+		tableName = "documents"
+		attrs = append(attrs, "idDocument", "documentPath", "documentName", "documentExt", "documentHash", "authUseStatus", "authRoleStatus", "activeDoc", "sizeB", "abstractDoc")
+		idColMain = "idDocument"
+		docWheres = map[string][]string{
+			"idDocument": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
+		}
+	default:
+		http.Error(respWriter, "Tipo de documento no válido", http.StatusBadRequest)
 		return
 	}
 
-	keyStatResp := make([]*models.KeysStatus, 0)
-	var selected bool
-	for idKey, key := range keys {
-		if userData[idUser]["idKeysUser_fk"] == idKey {
-			selected = true
-		} else {
-			selected = false
-		}
-		ks := &models.KeysStatus{
-			IdKey:           idKey,
-			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
-			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
-			Expiration:      key["notValidAfter"],
-			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
-			SubjectUniqueId: key["subjectUniqueId"],
-			UploadedAt:      key["createdAtKey"],
-			Selected:        selected,
-		}
-		keyStatResp = append(keyStatResp, ks)
+	// Obtener datos del documento
+	docData, err := db.DB_con.GenericSelect(tableName, idColMain, attrs, docWheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener información del documento", http.StatusInternalServerError)
+		return
 	}
-	respWriter.Header().Set("Content-Type", "application/json")
-	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(keyStatResp)
+
+	// Verificar si se encontró el documento
+	if len(docData) == 0 {
+		http.Error(respWriter, "Documento no encontrado", http.StatusNotFound)
+		return
+	}
+
+	// Obtener el primer (y único) documento encontrado
+	var docInfo map[string]string
+	for _, doc := range docData {
+		docInfo = doc
+		break
+	}
+	switch docRequest.Type {
+	case "uploaded":
+		// Verificar permisos y estado del documento
+		if docInfo["activeDoc"] != "1" {
+			http.Error(respWriter, "Documento inactivo", http.StatusForbidden)
+			return
+		}
+
+		if docInfo["authRoleStatus"] != "1" {
+			http.Error(respWriter, "No autorizado para descargar este documento", http.StatusForbidden)
+			return
+		}
+
+		if docInfo["authUseStatus"] != "1" {
+			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
+			return
+		}
+	case "kyc":
+		if docInfo["expirationDate"] != "" {
+			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
+			return
+		}
+	}
+
+	// Verificar permisos adicionales (opcional)
+	// Puedes agregar lógica adicional aquí para verificar si el usuario tiene permisos
+	// basándose en ownerInstDoc_fk, ownerTeamDoc_fk, creatorUserDoc_fk, etc.
+
+	// Construir la ruta completa del archivo
+	var filePath string = fmt.Sprintf("./%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
+	fmt.Println(filePath)
+	// Verificar si el archivo existe
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		http.Error(respWriter, "Archivo no encontrado en el sistema", http.StatusNotFound)
+		return
+	}
+
+	// Obtener información del archivo
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener información del archivo. Es posible que el recurso no exista", http.StatusNotFound)
+		return
+	}
+
+	// Abrir el archivo
+	file, err := os.Open(filePath)
+	if err != nil {
+		http.Error(respWriter, "Error al acceder al archivo", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Detectar el tipo MIME del archivo
+	buffer := make([]byte, 512)
+	_, err = file.Read(buffer)
+	if err != nil {
+		http.Error(respWriter, "Error al leer el archivo", http.StatusInternalServerError)
+		return
+	}
+	contentType := http.DetectContentType(buffer)
+
+	// Resetear el puntero del archivo al inicio
+	file.Seek(0, 0)
+
+	// Configurar headers de respuesta
+	respWriter.Header().Set("Content-Type", contentType)
+	respWriter.Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+	respWriter.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", filepath.Base(filePath)))
+
+	// Copiar el contenido del archivo a la respuesta
+	_, err = io.Copy(respWriter, file)
+	if err != nil {
+		// No podemos usar http.Error aquí porque ya hemos comenzado a escribir la respuesta
+		log.Printf("Error al enviar archivo: %v", err)
+		return
+	}
 }
 
 // =====================================================================================
@@ -1127,7 +1281,7 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	if request.MultipartForm.File != nil {
 		var docType string
 
-		if docTypeVal, exists := request.MultipartForm.Value["documentType"]; exists && len(docTypeVal) > 0 {
+		if docTypeVal, exists := request.MultipartForm.Value["documentExt"]; exists && len(docTypeVal) > 0 {
 			docType = docTypeVal[0]
 		}
 
@@ -1197,7 +1351,7 @@ func uploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				}
 
 				// Actualizar datos en la base de datos
-				cols := []string{"hashDoc", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "nameDoc", "pathDoc", "extDoc"}
+				cols := []string{"documentHash", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt"}
 				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext}
 				idDoc, err := db.DB_con.GenericInsert("documents", cols, vals)
 				if err != nil {
@@ -1542,6 +1696,119 @@ func updateKeysData(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
+// Endpoint para obtener datos de validación
+func approvals(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Validar JWT
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Obtener datos de la base de datos usando el user ID
+	idUser := claims["uid"].(string)
+	idInst := claims["iid"].(string)
+	if idInst != "1" && idUser == "0" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// obtener datos faltantes de la institucion
+	var attrs = []string{"legalNameInst", "aliasNameInst", "taxNumInst", "legalSignupName", "legalSignupLastname", "streetAddress", "addressLine", "postalCode", "neighborhood", "locality"}
+
+	// Para que una empresa sea aprovada debe haber subido sus documentos y o estar en estatus de rechazo de documentos y asi mismo debe estar inactivo
+	wheres := map[string][]string{
+		"statusInst_fk": {"3", "4"},
+		"activeInst":    {"0"},
+	}
+	validationData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, fmt.Sprintf("Error obteniendo datos: %s", err), http.StatusInternalServerError)
+		return
+	}
+
+	arrayResp := make(map[string]*models.ValidationResponse)
+	for instId, instData := range validationData {
+		valResp := &models.ValidationResponse{
+			LegalName:           instData["legalNameInst"],
+			AliasName:           instData["aliasNameInst"],
+			TaxNum:              instData["taxNumInst"],
+			LegalSignupName:     instData["legalSignupName"],
+			LegalSignupLastname: instData["legalSignupLastname"],
+			StreetAddress:       instData["streetAddress"],
+			//AddressLine,
+			PostalCode:   instData["postalCode"],
+			Neighborhood: instData["neighborhood"],
+			Locality:     instData["locality"],
+		}
+
+		// Mapeamos el nombre de la clase del documento al puntero del campo correspondiente
+		documentClasses := map[string]*string{
+			"ActaConstitutiva":   &valResp.ActaConstitutiva,
+			"PoderRepresentante": &valResp.PoderRepresentante,
+			"IdentidadOficial":   &valResp.IdentidadOficial,
+			"PruebaResidencia":   &valResp.PruebaResidencia,
+		}
+
+		// Campos que queremos obtener de la tabla
+		attrs = []string{"documentClass", "documentPath", "documentName", "documentExt"}
+
+		// Condiciones WHERE
+		wheres = map[string][]string{
+			"idInsttitution_fk": {instId},
+		}
+
+		// Ejecutamos la consulta genérica
+		validationDocs, err := db.DB_con.GenericSelect("kyc", "documentHash", attrs, wheres)
+		if err != nil {
+			http.Error(respWriter, "Error obteniendo datos", http.StatusInternalServerError)
+			return
+		}
+
+		// Recorremos cada registro (key = hash, value = fila)
+		for docHash, row := range validationDocs {
+			// Obtenemos la clase del documento
+			if docClass, ok := row["documentClass"]; !ok {
+				// Si no existe la columna, pasamos al siguiente registro
+				continue
+			} else {
+				// Verificamos si esa clase está en nuestro mapa de punteros
+				if ptr, exists := documentClasses[docClass]; exists && ptr != nil {
+					// Concatenamos los valores que necesitamos.
+					// Nos aseguramos de que cada clave exista antes de usarla.
+					path := row["documentPath"]
+					name := row["documentName"]
+					ext := row["documentExt"]
+
+					concatenated := fmt.Sprintf("%s@%s%s.%s", docHash, path, name, ext)
+
+					// Guardamos el resultado en el campo correspondiente de valResp
+					*ptr = concatenated
+				}
+			}
+		}
+		arrayResp[instId] = valResp
+	}
+
+	// Configurar headers de seguridad
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+
+	json.NewEncoder(respWriter).Encode(arrayResp)
+}
+
+// =======================================================================
 // unificar el json de respuestas para que mande estatus y lista de documentos
 // asegurar que multipart puede recibir uno o muchos archivos subidos de un mismo formulario y sugerir mejoras para subir archivos de distinta ubicacion
 // =======================================================================
@@ -1621,8 +1888,8 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	//var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true}
 	//var statusContr = map[string]bool{"6": true, "7": true}
-	var satusActive = map[string]bool{"7": true}
-	var satusInactive = map[string]bool{"8": true, "9": true, "10": true, "11": true}
+	var satusActive = map[string]bool{"8": true}
+	var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
 
 	var location string
 	// Si el usuario esta activo

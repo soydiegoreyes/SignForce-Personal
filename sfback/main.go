@@ -47,6 +47,7 @@ func main() {
 	http.HandleFunc("/login", loginUser)
 	http.HandleFunc("/getuser", getUserData)
 	http.HandleFunc("/usersignature", signUser)
+	http.HandleFunc("/newinvitation", newInvitation)
 	http.HandleFunc("/hashdatab64", hashDataB64)
 	http.HandleFunc("/uploadKeys", uploadKeys)
 	http.HandleFunc("/logout", logoutUser)
@@ -271,6 +272,10 @@ func signUser(respWriter http.ResponseWriter, request *http.Request) {
 	signature := utilities.Encode_b64(signBytes)
 	fmt.Println("signature: ", signature)
 	json.NewEncoder(respWriter).Encode(models.SignatureResponse{Operation: "abcd", Signature: signature, Check: true})
+}
+
+func newInvitation(respWriter http.ResponseWriter, request *http.Request) {
+
 }
 
 // logout handler para desloguear

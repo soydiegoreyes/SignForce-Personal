@@ -320,7 +320,7 @@ func (cnx *ConexionDB) UpdateValData(idInst string, idUser string, valReq *model
 		fmt.Println("Valores actualizados.")
 	}
 
-	// se llenan los campos de kyc idInsttitution_fk, idUser_fk, documentHash, documentType, documentName, documentClass, documentPath, expirationDate
+	// se llenan los campos de kyc idInsttitution_fk, idUser_fk, documentHash, documentExt, documentName, documentClass, documentPath, expirationDate
 	for k, v := range kycFields {
 		if v == "" {
 			continue
@@ -339,7 +339,7 @@ func (cnx *ConexionDB) UpdateValData(idInst string, idUser string, valReq *model
 			return fmt.Errorf("error al obtener hash del documento: %w", err)
 		}
 
-		cols := []string{"idInsttitution_fk", "idUser_fk", "documentHash", "documentType", "documentName", "documentClass", "documentPath"}
+		cols := []string{"idInsttitution_fk", "idUser_fk", "documentHash", "documentExt", "documentName", "documentClass", "documentPath"}
 		idx, err := cnx.GenericInsert("kyc", cols, []interface{}{idInst, idUser, hash, ext, name, k, path})
 		if err != nil {
 			return fmt.Errorf("error al insertar valores de documento: %w", err)
