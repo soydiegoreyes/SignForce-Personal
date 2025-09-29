@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    :root {
+        --color-background: #000;
+        --color-card: rgba(255, 255, 255, 0.05);
+        --color-text-primary: #ffffff;
+        --color-text-secondary: rgba(255, 255, 255, 0.7);
+        --color-accent: rgb(255, 255, 255, 0.5);
+        --color-shadow: rgba(0, 0, 0, 0.3);
+        --color-blue-dark: #1e2c4b;
+        --color-blue-light: #93bde5;
+        --color-gold: #e5b019;
+        --color-red-wine: #74273a;
+    }
+
+    body {
+        background: linear-gradient(180deg, #2a2e35, #7b8fa1, #e4e9ec);
+        min-height: 100vh;
+        background-attachment: fixed;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    h1, h2, h3, h4 {
+        font-family: "Michroma", sans-serif;
+    }
+
+    .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    }
+
+    .glass-panel {
+        background: rgba(1, 0, 28, 0.1);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 0px 20px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .text-primary {
+        color: #ffffff;
+    }
+
+    .text-secondary {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .hover-glow:hover {
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+        animation: fadeIn 0.8s ease forwards;
+    }
+
+    .delay-1 { animation-delay: 0.2s; }
+    .delay-2 { animation-delay: 0.4s; }
+    .delay-3 { animation-delay: 0.6s; }
+
+    .btn-primary {
+        background: linear-gradient(#faf9f6, #dcd7ce, #aca69a);
+        color: black;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 204, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .glass-header {
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70%;
+        height: 62.5px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border-radius: 50px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 
+        0 8px 32px 0 rgba(255, 255, 255, 0.1),
+        0 0 10px 1px rgba(200, 90, 255, 0.4);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 25px;
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+    }
+
+    .liquid-bubble {
+        position: fixed;
+        width: 120px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: -1;
+        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+    }
+
+    .nav-item {
+        position: relative;
+        padding: 8px 16px;
+        transition: color 0.3s ease;
+    }
+
+    .nav-item:hover {
+        color: rgb(255, 255, 255) !important;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background: rgba(1, 0, 28, 0.9);
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        position: relative;
+    }
+
+    .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        position: absolute;
+        right: 15px;
+        top: 10px;
+    }
+
+    .close-modal:hover {
+        color: white;
+    }
+
+    .document-viewer {
+        width: 100%;
+        height: 70vh;
+        border: none;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+    }
+
+    .spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top: 4px solid white;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+</head>
+<body class="font-display text-gray-800 dark:text-gray-200">
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="clients">Clientes</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="requests">Solicitudes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+            </div>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen pt-24 pb-8 px-8">
+        <aside class="w-64 glass-panel mr-6 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Dashboard</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Clientes</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
+                    <span class="material-symbols-outlined">folder_shared</span>
+                    <span>Solicitudes</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>Documentos</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Configuración</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="flex-1">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-primary fade-in">Nuevas Solicitudes de Clientes</h2>
+                <div id="messageContainer"></div>
+            </div>
+            <div class="glass-panel overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full" id="requestsTable">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-800">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Cliente</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Dirección</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="requestsTableBody">
+                                    <!-- Los datos se cargarán dinámicamente aquí -->
+                                    <tr>
+                                        <td colspan="3" class="text-center py-8">
+                                            <div class="loading">
+                                                <div class="spinner"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-6 border-l border-gray-200 dark:border-gray-800" id="sidebarDetails">
+                        <div class="flex flex-col h-full">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center space-x-4 mb-6">
+                                    <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-3xl text-white">person</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-semibold text-primary" id="sidebarName">Seleccione un cliente</h3>
+                                        <p class="text-sm text-secondary" id="sidebarEmail">-</p>
+                                        <p class="text-sm text-secondary" id="sidebarTaxNum">-</p>
+                                    </div>
+                                </div>
+                                <h4 class="text-lg font-semibold text-primary mb-4">Documentos Enviados</h4>
+                                <div class="space-y-4" id="sidebarDocuments">
+                                    <!-- Los documentos se cargarán dinámicamente aquí -->
+                                    <p class="text-secondary text-center py-4">Seleccione un cliente para ver sus documentos</p>
+                                </div>
+                            </div>
+                            <div class="mt-auto pt-6 flex gap-4" id="sidebarActions" style="display: none;">
+                                <button class="w-full py-3 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold btn-secondary" id="rejectBtn">Rechazar</button>
+                                <button class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold btn-primary" id="approveBtn">Aprobar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para visualizar documentos -->
+    <div id="documentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 class="text-xl font-semibold text-primary mb-4" id="modalTitle">Visualizar Documento</h3>
+            <div class="loading" id="modalLoading">
+                <div class="spinner"></div>
+            </div>
+            <iframe id="documentViewer" class="document-viewer" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Variables globales
+        let currentData = {};
+        let selectedClientId = null;
+
+        // Efecto liquid glass para la burbuja del menú
+        const liquidBubble = document.getElementById('liquidBubble');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        const itemPositions = {};
+        
+        function calculatePositions() {
+            navItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                
+                itemPositions[item.dataset.item] = {
+                    left: rect.left - headerRect.left,
+                    width: rect.width
+                };
+            });
+            
+            moveBubble('requests');
+        }
+        
+        function moveBubble(itemName) {
+            const item = itemPositions[itemName];
+            if (item && liquidBubble) {
+                liquidBubble.style.left = `${item.left - 10}px`;
+                liquidBubble.style.width = `${item.width + 20}px`;
+            }
+        }
+        
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                moveBubble(item.dataset.item);
+            });
+        });
+
+        window.addEventListener('load', calculatePositions);
+        window.addEventListener('resize', calculatePositions);
+
+        // Toggle de tema claro/oscuro
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-theme');
+                
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('light-theme')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        // Intersection Observer para animaciones
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(element => {
+            observer.observe(element);
+        });
+        
+        function mostrarMensaje(mensaje, tipo) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Cargar datos desde la API
+        async function loadApprovalsData() {
+            try {
+                const response = await fetch('/approvals');
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                currentData = data;
+                populateTable(data);
+            } catch (error) {
+                console.error('Error al cargar los datos:', error);
+                document.getElementById('requestsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-8 text-red-400">
+                            Error al cargar los datos. Intente nuevamente.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Poblar la tabla con los datos
+        function populateTable(data) {
+            const tableBody = document.getElementById('requestsTableBody');
+            tableBody.innerHTML = '';
+
+            if (Object.keys(data).length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-8 text-secondary">
+                            No hay solicitudes pendientes.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            Object.keys(data).forEach((clientId, index) => {
+                const client = data[clientId];
+                const delayClass = `delay-${(index % 3) + 1}`;
+                
+                const row = document.createElement('tr');
+                row.className = `cursor-pointer glass-card fade-in ${delayClass}`;
+                row.dataset.clientId = clientId;
+                
+                // Crear nombre para mostrar
+                const displayName = client.legalName || 
+                                   (client.legalSignupName && client.legalSignupLastname 
+                                    ? `${client.legalSignupName} ${client.legalSignupLastname}` 
+                                    : client.aliasName || 'Cliente');
+                
+                // Crear dirección para mostrar
+                const addressParts = [
+                    client.streetAddress,
+                    client.neighborhood,
+                    client.locality,
+                    client.postalCode
+                ].filter(part => part && part.trim() !== '');
+                
+                const displayAddress = addressParts.length > 0 ? addressParts.join(', ') : 'Dirección no disponible';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white">person</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-primary">${displayName}</div>
+                                <div class="text-sm text-secondary">${client.taxNum || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-primary">${displayAddress}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">Pendiente</span>
+                    </td>
+                `;
+                
+                row.addEventListener('click', () => {
+                    selectClient(clientId, client);
+                });
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Seleccionar un cliente y mostrar sus detalles
+        function selectClient(clientId, clientData) {
+            selectedClientId = clientId;
+            
+            // Actualizar la información del cliente en el sidebar
+            const displayName = clientData.legalName || 
+                               (clientData.legalSignupName && clientData.legalSignupLastname 
+                                ? `${clientData.legalSignupName} ${clientData.legalSignupLastname}` 
+                                : clientData.aliasName || 'Cliente');
+            
+            document.getElementById('sidebarName').textContent = displayName;
+            document.getElementById('sidebarEmail').textContent = clientData.taxNum ? `RFC: ${clientData.taxNum}` : '-';
+            
+            const addressParts = [
+                clientData.streetAddress,
+                clientData.neighborhood,
+                clientData.locality,
+                clientData.postalCode
+            ].filter(part => part && part.trim() !== '');
+            
+            document.getElementById('sidebarTaxNum').textContent = addressParts.length > 0 ? addressParts.join(', ') : '-';
+            
+            // Actualizar la lista de documentos
+            const documentsContainer = document.getElementById('sidebarDocuments');
+            documentsContainer.innerHTML = '';
+            
+            // Filtrar y mostrar solo los campos que son documentos (que empiezan con "doc")
+            const documentFields = Object.keys(clientData).filter(key => 
+                key.startsWith('doc') && clientData[key]
+            );
+            
+            if (documentFields.length === 0) {
+                documentsContainer.innerHTML = '<p class="text-secondary text-center py-4">No hay documentos disponibles</p>';
+            } else {
+                documentFields.forEach(fieldName => {
+                    const documentPath = clientData[fieldName];
+                    const documentName = getDocumentDisplayName(fieldName, documentPath);
+                    
+                    const documentElement = document.createElement('div');
+                    documentElement.className = 'flex items-center justify-between p-3 glass-card rounded-lg';
+                    documentElement.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-white">description</span>
+                            <span class="font-medium text-primary">${documentName}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 rounded-full hover:bg-white/10 text-secondary view-doc" data-path="${documentPath}" data-name="${documentName}">
+                                <span class="material-symbols-outlined text-sm">visibility</span>
+                            </button>
+                            <button class="p-2 rounded-full hover:bg-white/10 text-secondary download-doc" data-path="${documentPath}" data-name="${documentName}">
+                                <span class="material-symbols-outlined text-sm">download</span>
+                            </button>
+                        </div>
+                    `;
+                    
+                    documentsContainer.appendChild(documentElement);
+                });
+                
+                // Agregar event listeners a los botones de ver y descargar
+                documentsContainer.querySelectorAll('.view-doc').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const path = button.getAttribute('data-path');
+                        const name = button.getAttribute('data-name');
+                        viewDocument(path, name);
+                    });
+                });
+                
+                documentsContainer.querySelectorAll('.download-doc').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const path = button.getAttribute('data-path');
+                        const name = button.getAttribute('data-name');
+                        downloadDocument(path, name.replace(" ", "_"));
+                    });
+                });
+            }
+            
+            // Mostrar los botones de acción
+            document.getElementById('sidebarActions').style.display = 'flex';
+        }
+
+        // Obtener nombre legible para el documento
+        function getDocumentDisplayName(fieldName, path) {
+            const nameMap = {
+                'docActa': 'Acta Constitutiva',
+                'docPoder': 'Poder del Representante',
+                'docIdentidad': 'Identificación Oficial',
+                'docResidencia': 'Comprobante de Domicilio'
+            };
+            
+            if (nameMap[fieldName]) {
+                return nameMap[fieldName];
+            }
+            
+            // Si no está en el mapa, usar el nombre del archivo de la ruta
+            const fileName = path.split('/').pop() || 'Documento';
+            return fileName;
+        }
+
+        // Ver documento en modal
+        async function viewDocument(path, name) {
+            const modal = document.getElementById('documentModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalLoading = document.getElementById('modalLoading');
+            const documentViewer = document.getElementById('documentViewer');
+            
+            modalTitle.textContent = `Visualizar: ${name}`;
+            modalLoading.style.display = 'flex';
+            documentViewer.style.display = 'none';
+            modal.style.display = 'block';
+            
+            try {
+                // Descargar el documento
+                const response = await fetch('/getDocs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        id: "",
+                        type: "kyc",
+                        path: path,
+
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                // Crear un blob a partir de la respuesta
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                // Mostrar el documento en el iframe
+                documentViewer.src = url;
+                modalLoading.style.display = 'none';
+                documentViewer.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error al cargar el documento:', error);
+                modalLoading.innerHTML = `
+                    <div class="text-red-400 text-center">
+                        <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                        <p>Error al cargar el documento. Intente nuevamente.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Descargar documento
+        async function downloadDocument(path, name) {
+            try {
+                const response = await fetch('/getDocs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        id: "",
+                        type: "kyc",
+                        path: path,
+
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                // Crear un enlace temporal para descargar el archivo
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = name || 'documento';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+            } catch (error) {
+                console.error('Error al descargar el documento:', error);
+                alert('Error al descargar el documento. Intente nuevamente.');
+            }
+        }
+
+        async function completarValidacion(data) {
+            try {
+                const response = await fetch('/completevalidation', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    console.error('Error al enviar marcador:', await response.text());
+                }
+            } catch (error) {
+                console.error('Error de red:', error);
+            }
+            
+        }
+
+        // Cerrar modal
+        document.querySelector('.close-modal').addEventListener('click', () => {
+            document.getElementById('documentModal').style.display = 'none';
+        });
+
+        // Cerrar modal al hacer clic fuera del contenido
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('documentModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Botones de aprobar y rechazar
+        document.getElementById('approveBtn').addEventListener('click', () => {
+            if (selectedClientId) {
+                // Aquí puedes implementar la lógica para aprobar
+                alert(`Aprobando solicitud de ${selectedClientId}`);
+                completarValidacion({status: "5", institution: selectedClientId});
+            }
+        });
+
+        document.getElementById('rejectBtn').addEventListener('click', () => {
+            if (selectedClientId) {
+                // Aquí puedes implementar la lógica para rechazar
+                alert(`Rechazando solicitud de ${selectedClientId}`);
+                completarValidacion({status: "4", institution: selectedClientId});
+            }
+        });
+
+        // Cargar los datos al iniciar
+        loadApprovalsData();
+    });
+    </script>
+</body>
+</html>

@@ -136,9 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById('login-email').value;
-        const login_password = document.getElementById('login-password').value;
-
+        const email = document.getElementById('login-email').value.trim();
+        const login_password = document.getElementById('login-password').value.trim();
         if (EmailRegex.test(email) && login_password.length >= 8) {
             const loginRequest = {
                 account: email,

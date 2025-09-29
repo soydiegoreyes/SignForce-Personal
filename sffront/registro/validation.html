@@ -934,6 +934,10 @@
                 
                 const response = await fetch('/completevalidation', {
                     method: 'POST',
+                    body: JSON.stringify({ status: '3' }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     credentials: 'include'
                 });
                 
