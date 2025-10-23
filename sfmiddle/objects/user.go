@@ -14,7 +14,7 @@ type User struct{}
 
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
 // NewUser crea una nueva instancia de User
-func RegisterUser(registerReq *models.RegisterRequest, idInst string, passHash string) (string, error) {
+func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, passHash string) (string, error) {
 	idInstHash, err := utilities.GetHash([]byte(idInst), configs.HashConf)
 	if err != nil {
 		return "", err
@@ -42,7 +42,7 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, passHash s
 		"1",
 		"1",
 		passHash,
-		"0",
+		idTeam,
 		idInst,
 	}
 	idUser, err := db.DB_con.GenericInsert("users", columns, values)
