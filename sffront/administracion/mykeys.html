@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SignForce - Gestión de Llaves RSA</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;600;800&family=Noto+Sans:wght@400;600">
+  <link rel="stylesheet" href="/administracion/mykeys.css">
+  <script src="/administracion/mykeys.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="glass-header" id="mainHeader">
+    <div class="header-left">
+      <div class="liquid-bubble" id="liquidBubble"></div>
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+        </div>
+        <h2 class="brand-title">SignForce</h2>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="#" data-item="home">Inicio</a>
+        <a class="nav-item" href="/mydocs" data-item="contact">Documentos</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="btn-chip" id="goHome">Home</button>
+      <button class="btn-chip" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <main class="bg">
+    <section class="container" id="view-setup" aria-labelledby="setup-title">
+    </br>
+      <h1 id="setup-title" class="headline text-center">Gestión de llaves</h1>
+      <div class="main-content">
+        <div class="content-left">
+          <h2>Tus llaves registradas</h2>
+          <div id="keysList" class="keys-list">
+            <!-- Las llaves se cargarán aquí dinámicamente -->
+          </div>
+        </div>
+
+        <div class="content-right">
+          <div class="form-container glass-panel">
+            <h2 class="form-title">Sube tus credenciales</h2>
+            <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
+              <div class="form-group">
+                <label for="keyFile">Llave privada RSA (.pem / .key / .der)
+                  <span class="help-icon">?
+                    <div class="help-modal glass-panel">
+                      <p>Tu llave privada suele tener extensión .key, .pem o .der</p>
+                      <img src="./home/images/keys_folder1.png">
+                    </div>
+                  </span>
+                </label>
+                <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
+              </div>
+              <div class="form-group">
+                <label for="certFile">Certificado público (.cer / .crt / .pem / .der)</label>
+                <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
+              </div>
+              <div class="form-group">
+                <label for="keyPassword">Contraseña de la llave</label>
+                <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
+              </div>
+              <button class="btn" type="submit">Subir Llaves</button>
+              
+              <div class="disclaimer">
+                Al subir tus llaves aceptas los <span class="terms-link" id="termsLink">Términos y Condiciones</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="glass-panel footer">
+    <p>&copy; 2025 SignForce. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- Modal de Términos y Condiciones -->
+  <dialog id="termsModal" class="modal glass-panel">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3>Términos y Condiciones</h3>
+        <button class="btn-chip ghost" id="closeTerms" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="modal-body">
+        <h2>Aviso de Privacidad</h2>
+        <p>Este Aviso de Privacidad describe cómo SignForce trata tus datos personales conforme a la legislación aplicable. Tu información se utiliza exclusivamente para la prestación de servicios de firma y sellado de tiempo. Al continuar, aceptas los términos descritos.</p>
+        <h3>Términos y Condiciones</h3>
+        <p>El uso de la plataforma implica la aceptación plena de los presentes términos. El usuario se compromete a proporcionar información veraz y a custodiar sus credenciales de firma.</p>
+        <p>Fecha: <span id="termsDate"></span></p>
+      </div>
+      <footer class="modal-footer">
+        <button class="btn ghost" id="closeTerms2">Cerrar</button>
+      </footer>
+    </div>
+  </dialog>
+</body>
+</html>

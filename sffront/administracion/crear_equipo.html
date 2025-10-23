@@ -59,7 +59,8 @@
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
 
         if (!currentUser || currentUser.tipo !== 'root') {
-            window.location.href = './../registro/login.html';
+            console.log("No es root o no hay current user")
+            //window.location.href = './../registro/login.html';
         }
         // Cargar información de los equipos
         let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];

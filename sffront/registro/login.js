@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch("http://192.168.1.70:8000/loginUser", {
+                const response = await fetch("http://192.168.1.67:8000/loginUser", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // manda los datos a la api para crear un nuevo cliente que empezara el proceso
-                const response = await fetch('http://192.168.1.70:8000/register', {
+                const response = await fetch('http://192.168.1.67:8000/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -655,7 +655,7 @@
             
             try {
                 // Descargar el documento
-                const response = await fetch('/getDocs', {
+                const response = await fetch('/downloadDoc', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -695,7 +695,7 @@
         // Descargar documento
         async function downloadDocument(path, name) {
             try {
-                const response = await fetch('/getDocs', {
+                const response = await fetch('/downloadDoc', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

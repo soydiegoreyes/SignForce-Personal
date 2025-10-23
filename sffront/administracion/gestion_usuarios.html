@@ -101,7 +101,8 @@
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
         
         if (!currentUser || currentUser.tipo !== 'admin_equipo') {
-            window.location.href = './../registro/login.html';
+            console.log("Usuario no es admin o no usuario ")
+            //window.location.href = './../registro/login.html';
         }
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
