@@ -63,6 +63,18 @@ func (cnx *ConexionDB) Desconectar() {
 
 // ================================ SELECTS ================================================
 // Obtener atributos de una tabla genérica basada en el id principal de la tabla
+/*
+	EJEMPLO WHERE CON LOGICA:
+	wheres := map[string][]string{
+		"createdAtDoc":    {"2025-10-21", "2025-10-23"},
+		"ownerTeamDoc_fk": {"4"},
+		"ownerInstDoc_fk": {"1"},
+		"idDocument":      {"ASC"},
+		"LOGIC":           {"ownerInstDoc_fk AND NOT ownerTeamDoc_fk AND createdAtDoc BETWEEN ORDER BY idDocument", "LIMIT 5 OFFSET 0"},
+	}
+
+	RESULT: SELECT idDocument, documentHash,documentPath FROM documents WHERE ownerInstDoc_fk IN ('1') AND ownerTeamDoc_fk NOT IN ('4') AND createdAtDoc BETWEEN '2025-10-21' AND '2025-10-23' ORDER BY idDocument ASC LIMIT 5 OFFSET 0;
+*/
 func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
 
@@ -81,9 +93,16 @@ func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attribu
 		for k, v := range whereMap {
 			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
 				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
+			} else if strings.Contains(wheres, fmt.Sprintf("%s BETWEEN", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("%s BETWEEN", k), fmt.Sprintf("%s BETWEEN '%s' AND '%s'", k, v[0], v[1]))
+			} else if strings.Contains(wheres, fmt.Sprintf("ORDER BY %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("ORDER BY %s", k), fmt.Sprintf("ORDER BY %s %s", k, v[0]))
 			} else {
 				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
 			}
+		}
+		if len(logic) == 2 {
+			wheres = fmt.Sprintf("%s %s", wheres, logic[1])
 		}
 	}
 
@@ -234,6 +253,67 @@ func (cnx *ConexionDB) GenericJoinSelect(
 		}
 
 		result[id] = rowData
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error al iterar filas: %v", err)
+	}
+
+	return result, nil
+}
+
+func (cnx *ConexionDB) ExecuteSelect(query string) (map[string]map[string]string, error) {
+	result := make(map[string]map[string]string)
+
+	// Ejecutar el SELECT
+	rows, err := cnx.DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("error al ejecutar la consulta: %s -> %v", query, err)
+	}
+	defer rows.Close()
+
+	// Obtener nombres de columnas dinámicamente
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, fmt.Errorf("error al obtener columnas: %v", err)
+	}
+	if len(cols) == 0 {
+		return nil, fmt.Errorf("la consulta no devolvió columnas")
+	}
+
+	// Preparar valores y punteros
+	values := make([]interface{}, len(cols))
+	for i := range values {
+		values[i] = new(sql.NullString)
+	}
+
+	for rows.Next() {
+		if err := rows.Scan(values...); err != nil {
+			return nil, fmt.Errorf("error al escanear fila: %v", err)
+		}
+
+		// La primera columna será usada como clave (igual que en tu función original)
+		idVal := ""
+		if ns, ok := values[0].(*sql.NullString); ok && ns.Valid {
+			idVal = ns.String
+		}
+
+		rowData := make(map[string]string)
+		for i, colName := range cols {
+			ns := values[i].(*sql.NullString)
+			if ns.Valid {
+				rowData[colName] = ns.String
+			} else {
+				rowData[colName] = ""
+			}
+		}
+
+		// Si no hay valor en la primera columna, genera una clave numérica
+		if idVal == "" {
+			idVal = fmt.Sprintf("row_%d", len(result)+1)
+		}
+
+		result[idVal] = rowData
 	}
 
 	if err = rows.Err(); err != nil {
