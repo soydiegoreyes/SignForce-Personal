@@ -106,7 +106,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				docData := models.FileMetadata{
 					Id:      i,
 					DocType: docType,
-					Name:    fileHeader.Filename,
+					Name:    fileHeader.Filename[:strings.LastIndex(fileHeader.Filename, ".")],
 					Ext:     strings.ToLower(fileHeader.Filename[strings.LastIndex(fileHeader.Filename, ".")+1:]),
 					Size:    fileHeader.Size,
 					Hash:    "",
@@ -121,9 +121,9 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 
 				switch docType {
 				case "template":
-					docData.Path = fmt.Sprintf("%s/%s/%s/templates", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
+					docData.Path = fmt.Sprintf("%s/%s/%s/templates/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
 				default:
-					docData.Path = fmt.Sprintf("%s/%s/%s/%s", os.Getenv("GENERIC_DOC_PATH"), idInst, idTeam, idUser)
+					docData.Path = fmt.Sprintf("%s/%s/%s/%s/", os.Getenv("GENERIC_DOC_PATH"), idInst, idTeam, idUser)
 				}
 
 				file, err = fileHeader.Open()
@@ -155,10 +155,10 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
 					return
 				}
-
+				fmt.Println(docData)
 				// Actualizar datos en la base de datos
-				cols := []string{"documentHash", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt"}
-				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext}
+				cols := []string{"documentHash", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
+				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
 				idDoc, err := db.DB_con.GenericInsert("documents", cols, vals)
 				if err != nil {
 					fmt.Printf("Error actualizando datos en DB: %v\n", err)
