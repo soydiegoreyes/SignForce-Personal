@@ -75,6 +75,9 @@
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
                     <div class="p-6">
                         <div class="overflow-x-auto">
+                            <div class="flex justify-center items-center gap-2 py-4" id="paginationContainer">
+                                <!-- Los botones de paginación se generan aquí dinámicamente -->
+                            </div>
                             <table class="w-full" id="documentsTable">
                                 <thead>
                                     <tr class="border-b border-gray-200 dark:border-gray-800">
@@ -107,8 +110,8 @@
                                     </div>
                                     <div>
                                         <h3 class="text-xl font-semibold text-primary" id="sidebarName">Seleccione un documento</h3>
-                                        <p class="text-sm text-secondary" id="sidebarOwner">-</p>
-                                        <p class="text-sm text-secondary" id="sidebarDate">-</p>
+                                        <p class="text-sm text-secondary" id="sidebarOwner"></p>
+                                        <p class="text-sm text-secondary" id="sidebarDate"></p>
                                     </div>
                                 </div>
                                 
@@ -129,10 +132,9 @@
                                     <!-- El historial de firmas se cargará dinámicamente aquí -->
                                     <p class="text-secondary text-center py-4">No hay firmas registradas</p>
                                 </div>
-                            </div>
-                            <div class="mt-auto pt-6 flex gap-4" id="sidebarActions" style="display: none;">
-                                <button class="w-full py-3 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold btn-secondary" id="cancelBtn">Cancelar</button>
-                                <button class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold btn-primary" id="signBtn">Firmar/Aprobar</button>
+                                <div class="mt-auto pt-6 flex gap-2" id="sidebarActions" style="display: none;">
+                                    <!-- El botón de firma se cargará dinámicamente aquí -->
+                                </div>
                             </div>
                         </div>
                     </div>

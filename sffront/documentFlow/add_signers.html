@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Subir Documento - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/documentflow/add_signers.css">
+</head>
+<body class="font-display text-gray-800 dark:text-gray-200">
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="home">Home</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Mis Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="shared">Compartidos</a>
+            </div>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+            <label class="flex flex-col min-w-40 !h-8 max-w-64">
+                <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+                    <div class="text-secondary flex border-none bg-white/20 items-center justify-center pl-4 rounded-l-xl border-r-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
+                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
+                        </svg>
+                    </div>
+                    <input
+                        placeholder="Buscar"
+                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-white/20 focus:border-none h-full placeholder:text-secondary px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
+                        value=""
+                    />
+                </div>
+            </label>
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="flex min-h-screen pt-24 pb-8 px-8">
+        <!-- Panel izquierdo -->
+        <aside class="w-64 glass-panel mr-6 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Mi Panel</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="home">
+                    <span class="material-symbols-outlined">home</span>
+                    <span>Home</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-tab="documents">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>Documentos</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="teams">
+                    <span class="material-symbols-outlined">groups</span>
+                    <span>Equipos</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="templates">
+                    <span class="material-symbols-outlined">note</span>
+                    <span>Plantillas</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="settings">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Ajustes</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Panel principal -->
+        <main class="flex-1">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-primary fade-in">Subir un Documento</h2>
+            </div>
+
+            <div class="glass-panel">
+                <!-- Sección principal en fila -->
+                <div class="flex flex-wrap justify-between gap-6 mb-8">
+                    <!-- Columna izquierda: campos de texto -->
+                    <div class="flex flex-col gap-4 max-w-xl flex-1">
+                        <label class="flex flex-col">
+                            <p class="text-primary text-base font-medium leading-normal pb-2">Nombre del documento</p>
+                            <input 
+                                disabled
+                                id="docName"
+                                placeholder="documento_importante.pdf"
+                                class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                            />
+                        </label>
+
+                        <label class="flex flex-col">
+                            <p class="text-primary text-base font-medium leading-normal pb-2">Clasificación</p>
+                            <select
+                                id="docType"
+                                class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                            >
+                                <option value="">Selecciona tipo de documento</option>
+                                <option value="contract">Contrato</option>
+                                <option value="memorandum">Memorándum</option>
+                                <option value="invoice">Invitación</option>
+                            </select>
+                        </label>
+
+                        <label class="flex flex-col">
+                            <p class="text-primary text-base font-medium leading-normal pb-2">Descripción</p>
+                            <input
+                                id="docDesc"
+                                placeholder="Añade una descripción"
+                                class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                            />
+                        </label>
+                        
+                        <input id="fileInput" type="file" accept=".pdf" class="hidden"/>
+                        <label for="fileInput" class="btn-secondary flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 text-sm font-bold leading-normal tracking-[0.015em]">
+                            <span class="truncate">Seleccionar archivo</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Columna derecha: previsualización PDF -->
+                    <div id="preview-container" class="glass-card flex items-center justify-center rounded-xl overflow-hidden cursor-pointer w-[50%] h-[500px]">
+                        <div class="flex-wrap">
+                            <!-- Mensaje inicial -->
+                            <div id="drop-message" class="flex-wrap text-center">
+                                <span class="material-symbols-outlined text-6xl text-secondary mb-4">cloud_upload</span>
+                                <p class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Arrastra un documento aquí</p>
+                                <p class="text-secondary text-sm font-normal leading-normal">Archivos PDF únicamente. Máx 100MB</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección de Firmantes -->
+                <h2 class="text-2xl font-bold text-primary mb-4">Firmantes y Observadores</h2>
+                
+                <div class="overflow-hidden rounded-xl glass-card mb-6">
+                    <table id="reviewersTable" class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200 dark:border-gray-800">
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Usuario</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Rol</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Equipo</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Comentario Personal</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="reviewersTableBody" class="divide-y divide-gray-200 dark:divide-gray-800">
+                            <!-- Aquí se agregarán dinámicamente las filas -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Formulario para añadir firmante -->
+                <h3 class="text-xl font-bold text-primary mb-4">Añadir Firmante</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <label class="flex flex-col">
+                        <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Equipo</p>
+                        <select
+                            id="teamSelect"
+                            class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                        >
+                            <option value="">Equipos</option>
+                            <option value="1">Equipo 1</option>
+                            <option value="2">Equipo 2</option>
+                            <option value="3">Equipo 3</option>
+                            <option value="4">Equipo 4</option>
+                        </select>
+                    </label>
+
+                    <label class="flex flex-col">
+                        <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Usuario</p>
+                        <select
+                            id="userSelect"
+                            class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                        >
+                            <option value="">Usuarios del Equipo</option>
+                            <option value="Peter">Pedro</option>
+                            <option value="Mary">María</option>
+                            <option value="Daniel">Daniel</option>
+                            <option value="Joshua">José</option>
+                        </select>
+                    </label>
+                </div>
+
+                <label class="flex flex-col mb-6">
+                    <p class="text-primary text-base font-medium leading-normal pb-2">Añade un comentario personalizado para el usuario</p>
+                    <input
+                        id="userComment"
+                        placeholder="Comentario opcional"
+                        class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                    />
+                </label>
+                
+                <div class="flex gap-4 justify-center">
+                    <button
+                        id="addReviewerBtn"
+                        class="btn-secondary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]"
+                    >
+                        <span class="material-symbols-outlined mr-2">person_add</span>
+                        <span class="truncate">Añadir Firmante</span>
+                    </button>
+                    
+                    <button
+                        id="uploadBtn"
+                        class="btn-primary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]"
+                    >
+                        <span class="material-symbols-outlined mr-2">upload</span>
+                        <span class="truncate">Aceptar y Subir</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/documentflow/add_signers.js"></script>
+    <script>
+        // Efecto liquid glass para la burbuja del menú
+        const liquidBubble = document.getElementById('liquidBubble');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        const itemPositions = {};
+        
+        function calculatePositions() {
+            navItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                
+                itemPositions[item.dataset.item] = {
+                    left: rect.left - headerRect.left,
+                    width: rect.width
+                };
+            });
+            
+            moveBubble('documents');
+        }
+        
+        function moveBubble(itemName) {
+            const item = itemPositions[itemName];
+            if (item) {
+                liquidBubble.style.left = `${item.left - 10}px`;
+                liquidBubble.style.width = `${item.width + 20}px`;
+            }
+        }
+        
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                moveBubble(item.dataset.item);
+            });
+            
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveBubble(item.dataset.item);
+            });
+        });
+        
+        window.addEventListener('load', calculatePositions);
+        window.addEventListener('resize', calculatePositions);
+    </script>
+</body>
+</html>
