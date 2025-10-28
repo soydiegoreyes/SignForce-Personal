@@ -138,7 +138,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				filePath, err = utilities.GuardarArchivo(
 					file, // archivo completo
 					docData.Path,
-					docData.Name,
+					fileHeader.Filename,
 					idInst,
 					idUser,
 					false,

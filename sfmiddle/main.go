@@ -108,8 +108,9 @@ func main() {
 	mux.HandleFunc("/completevalidation", handlers.CompleteValidation) // completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", handlers.ProcessPayment)         // procesar pago de plan
 	mux.HandleFunc("/checkUserStatus", handlers.CheckUserStatus)       // obtener datos de un usuario
-	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // obtener datos de un usuario
+	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
 	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
+	mux.HandleFunc("/newSignProcess", handlers.NewSignProcess)         // empezar un proceso de firma desde cero
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -121,6 +122,8 @@ func main() {
 	mux.HandleFunc("/payment", payment)
 	mux.HandleFunc("/dashboard/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
+	mux.HandleFunc("/addSigners", addSigners)
+	mux.HandleFunc("/addSignatures", addSignatures)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -343,6 +346,26 @@ func myKeys(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/administracion/mykeys.html")
+}
+
+// ==========================================================================================================
+// sirve la pagina para añadir firmantes
+func addSigners(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/add_signers.html")
+}
+
+// ==========================================================================================================
+// sirve la pagina para añadir firmas
+func addSignatures(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/add_signs.html")
 }
 
 // =======================================================================
