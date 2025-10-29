@@ -133,7 +133,7 @@
               <button id="prev-page" class="glass-button px-3 py-2 rounded-xl text-white bg-black/50 hover:bg-black/70">Anterior</button>
               <span id="page-info" class="text-white bg-black/50 px-3 py-2 rounded-xl">Página 1 de 1</span>
               <button id="next-page" class="glass-button px-3 py-2 rounded-xl text-white bg-black/50 hover:bg-black/70">Siguiente</button>
-            </div>´<br>
+            </div><br>
             <!-- Contenedor en fila para preview + tabla -->
             <div class="flex flex-row w-full gap-4 px-4 pb-4">
               <!-- Columna izquierda: Preview PDF -->
@@ -170,101 +170,13 @@
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </div>
-            <div class="px-4 pb-4">
-              <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Comments</h2>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAaLDuj7-S_XIXiykr-oaM6Ei2yvM23t9yQ5rlrd3rjjcK6lPwl7ptJ9PZZXfNwZJHagbOMLvd7A0N-F3VLAMTTXAo14r6T2UGJRx9VnUpKS47Zf5tiU073OlF6TtO8WtmorIyxqI0F-li2XNWl4H35tLetAdo_QTQ04tkBafS2m4UvRZqPI88wayUfEEY3NydzNj235kW64YVnFyrPO235APi7SGt74aaZKXSuLI15D2p_B1DZyFlnGVueJwUiTM1lmo978HIgfUs");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Sarah</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 13, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">This document looks great! Approved.</p>
+                <!-- Botón para guardar firmas y pasar al siguiente documento -->
+                <div class="flex justify-end mt-6 pr-6">
+                  <button id="nextDoc"
+                          class="glass-button bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-5 py-2 rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-800 transition-all">
+                    Aceptar firmas
+                  </button>
                 </div>
-              </div>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl mt-2">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAN23cU4LBaihwIghrXcMWK0Fg9IFKlJdTjWmy07uwkHaaHNES5hKuYdxJTWeEDNevOWI4ZyPIKmDk3Y3S6CbWWJywv9iUA_G0neLDCgWseS-eEDPcgBRvtRZRVQA0yh-SeMJb0yAsryCx7Fd0AV0Kgo3WxWHodM3FQ0-km9T5xnIDG7gPcbCI5ijWsNl8SfdCXhZnOExgNd1XhCBKdRQnvyuNPFZHkmK6W8Pl2gVvoXATQkMEj8s-_jp2DCBhzfQv7OMO3A8f0RXo");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">David</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 14, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">I agree, the document is well-prepared and meets our requirements.</p>
-                </div>
-              </div>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl mt-2">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuADR56l_DWvq8Ofy-HU9zgzmNmqldQsT65TP7cF1LiJA1edbBDBS-RKX2Dk0IF3LeLm0Il2kSFsFOjPIxvUl40R73d4slIsMAA0LZYqemdc7tjj9u9T9tkDW9aaADgJAOPYsHNiL7ESVVaYuCd65UCTNbeUJBZactU0ExOPcw9RDDTTL6xhZoNZqcn0QpghinTIyPxc8vGshpIiak45TV5JI7srMpiEd6c4i6dNJkncfh3xMCePvpTW3ivIsiZ_48K-o3l5Z_mwLbk");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Emily</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 16, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">Reviewing now, will provide feedback soon.</p>
-                </div>
-              </div>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl mt-2">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB7SRq4TjlVCBzOj5zPqJhkNARDoJH3Ckyo4ppOlpC6s42WqmdpZtxB0OwoS8Hr8I3MqB1fJ2eWlTm32jmpRk9Vk0pOyVYGZHKr3oYwx8zK-Q_z3ug6Ueg9XM5CWYjJwZemB3L_kQmf2PR497guuHr6PxdsiANvLw-CEaxJUAIUlUrVU_bUb3oiZFLQrccGqbg0D51THTKqlJJHFMwLeWoJHPs0nkImzvzwY6K5hCWpdXFqVyGMhHn_pTtdqajtRfM9AlZd2_ITbUo");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Michael</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 17, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">Looks good to me, just waiting for a few minor clarifications.</p>
-                </div>
-              </div>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl mt-2">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAQqjI0ZkY-AvUhDmmaAn2uKgyssruz4igF_a0GyUL2wMP-DCndDUxLHc43ucDyw7Ba8pw3rCB5PTPGYk2S_mRD0cEHiSYyludONQ2Gv7s4-Bj4Gm_mbqMPxIziPBVnQmfc6NlAJoXgJnUrNH9YchPGc5mUa7MmBeqmFvw97ZmGkwjoYBLIpzaYS2QXWUu3hxbqI8PvNGT49nIOwYFUU5c0YhqQsRxYwvVma7XhmCf2aMJVOWHtUtKCqdMnjuTPfSkISW-bqc6qAhc");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Jessica</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 19, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">Haven't started the review yet, but will get to it by the deadline.</p>
-                </div>
-              </div>
-              
-              <div class="flex w-full flex-row items-start justify-start gap-3 p-4 glass-card rounded-xl mt-2">
-                <div
-                  class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 shrink-0 border-2 border-white/30"
-                  style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCk1rD4JbQo82Yeg0PtcU5CbxMHjMMOSs2DPpIUY0UE60gWKq-YxiTF20WReP1o9qAJw4dV2ZYldyn0cu_0WgkBdn1lOt-Hvqn1J1A5HfFU_8F1IDNTzsXCoM_s4Uk9m7f6afH194bBxqXLCaYm5lr5nIZHz1WI8q_QpbJFxcwSchs95EzGaeHC1aX7qt2Ac8xl10dY0Mtd-2xihahZ4Twng81y6YdAI8YlXNKUKaugje41a-Bm7ZGjAQ_apW7cl17MevggZVEujUQ");'
-                ></div>
-                <div class="flex h-full flex-1 flex-col items-start justify-start">
-                  <div class="flex w-full flex-row items-start justify-start gap-x-3">
-                    <p class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">Chris</p>
-                    <p class="text-secondary text-sm font-normal leading-normal">July 19, 2024</p>
-                  </div>
-                  <p class="text-primary text-sm font-normal leading-normal">Will review this tomorrow, thanks for the heads-up.</p>
-                </div>
-              </div>
-              
-              <div class="flex px-4 py-6 justify-end">
-                <button
-                  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-white/30 text-primary text-sm font-bold leading-normal tracking-[0.015em] hover:bg-white/40"
-                >
-                  <span class="truncate">Add Comment</span>
-                </button>
               </div>
             </div>
           </div>

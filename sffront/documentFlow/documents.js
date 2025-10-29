@@ -615,12 +615,13 @@ async function startGlobalSignProcess() {
 
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const result = await resp.json();
-        console.log(result);
-        // Si el backend devuelve una URL de redirección
+
+        sessionStorage.setItem("folder", JSON.stringify(result));
+
         if (result.redirect_url) {
             window.location.href = result.redirect_url;
         } else {
-            alert('Proceso de firma creado correctamente.');
+            window.location.href = "/addSigners"; // ruta por defecto si no hay redirect_url
         }
     } catch (err) {
         console.error('Error creando el proceso:', err);
