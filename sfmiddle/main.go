@@ -110,7 +110,8 @@ func main() {
 	mux.HandleFunc("/checkUserStatus", handlers.CheckUserStatus)       // obtener datos de un usuario
 	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
 	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
-	mux.HandleFunc("/newSignProcess", handlers.NewSignProcess)         // empezar un proceso de firma desde cero
+	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
+	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
