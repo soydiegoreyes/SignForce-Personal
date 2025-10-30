@@ -607,7 +607,7 @@ async function startGlobalSignProcess() {
     }));
 
     try {
-        const resp = await fetch('/newSignProcess', {
+        const resp = await fetch('/newSignFolder', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(docs)

@@ -36,15 +36,22 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     initPDFElements();
 
-    // Mostrar título
     const title = document.getElementById('docTitle');
     if (title) title.textContent = `${currentDoc.documentName}.${currentDoc.documentExt}`;
 
-    // Mostrar tabla de firmantes
+    // Cambiar texto del botón según documento actual
+    const nextDocBtn = document.getElementById('nextDoc');
+    if (nextDocBtn) {
+        if (currentIndex + 1 < docIds.length) {
+            nextDocBtn.textContent = "Guardar y continuar";
+        } else {
+            nextDocBtn.textContent = "Finalizar proceso";
+        }
+    }
+
     updateApprovalTable(currentDoc.reviewers);
     setupCanvasInteractions();
 
-    // Descargar el PDF desde el backend
     await loadPDFfromServer(currentDocId);
 });
 
@@ -299,26 +306,55 @@ function canvasToRealPDF(x, y, w, h) {
 }
 
 async function saveAndNextDoc() {
-    // Guardar los marcadores del documento actual
-    const positions = markers.map(m => ({
-        user: m.user,
-        page: m.page,
-        position: canvasToRealPDF(m.x, m.y, m.width, m.height)
-    }));
+    // Agrupamos los marcadores por usuario
+    const groupedByUser = {};
+    markers.forEach(m => {
+        const pos = canvasToRealPDF(m.x, m.y, m.width, m.height);
+        if (!groupedByUser[m.user]) groupedByUser[m.user] = [];
+        groupedByUser[m.user].push({
+            page: m.page,
+            x: pos.x,
+            y: pos.y,
+            width: pos.width,
+            height: pos.height
+        });
+    });
 
-    currentDoc.signPositions = positions;
+    // Insertamos las posiciones dentro de cada reviewer
+    if (currentDoc.reviewers && Array.isArray(currentDoc.reviewers)) {
+        currentDoc.reviewers.forEach(rev => {
+            if (groupedByUser[rev.user]) {
+                rev.positions = groupedByUser[rev.user];
+            }
+        });
+    }
+
+    // Guardamos los cambios
     folderData[currentDocId] = currentDoc;
     sessionStorage.setItem("folder", JSON.stringify(folderData));
 
+    console.log("✅ Posiciones guardadas dentro de reviewers:", currentDoc);
+
+    // Lógica para pasar al siguiente documento (igual que antes)
+    const nextDocBtn = document.getElementById('nextDoc');
     if (currentIndex + 1 < docIds.length) {
         sessionStorage.setItem("signIndex", currentIndex + 1);
+        if (nextDocBtn) nextDocBtn.textContent = "Cargando siguiente documento...";
+        nextDocBtn.disabled = true;
         window.location.href = "/addSignatures";
     } else {
         sessionStorage.removeItem("signIndex");
+        if (nextDocBtn) {
+            nextDocBtn.textContent = "Finalizando...";
+            nextDocBtn.disabled = true;
+        }
         console.log("✅ Paquete final listo para enviar:", folderData);
-        // Aquí podrías enviar folderData al backend:
-        // await fetch('/submitSignatures', { method:'POST', body: JSON.stringify(folderData) });
+        await fetch('/closeInvite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(folderData)
+        });
         alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
-        window.location.href = "/dashboard";
+        window.location.href = "/mydocs";
     }
 }
