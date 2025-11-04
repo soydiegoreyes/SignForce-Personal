@@ -51,6 +51,7 @@ type ValidationRequest struct {
 	IdentidadFile  multipart.File `json:"-"`
 	ResidenciaFile multipart.File `json:"-"`
 }
+
 type PaymentReq struct {
 	Plan       string `json:"plan"`
 	CardNum    string `json:"cardnumber"`
@@ -58,6 +59,8 @@ type PaymentReq struct {
 	CVV        string `json:"cvv"`
 	NameOwner  string `json:"nameowner"`
 }
+
+type InviteRequest map[string]Document
 
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register

@@ -112,6 +112,7 @@ func main() {
 	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
+	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -119,12 +120,13 @@ func main() {
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
 	mux.HandleFunc("/upload", upload)
-	mux.HandleFunc("/myKeys", myKeys)
+	mux.HandleFunc("/mykeys", myKeys)
 	mux.HandleFunc("/payment", payment)
 	mux.HandleFunc("/dashboard/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
+	mux.HandleFunc("/viewinvite", viewInvite)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -367,6 +369,16 @@ func addSignatures(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/add_signs.html")
+}
+
+// ==========================================================================================================
+// sirve la pagina para ver una invitacion
+func viewInvite(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/view_invite.html")
 }
 
 // =======================================================================

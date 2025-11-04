@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Firmar Documento - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/documentflow/documents.css">
+    <style>
+        .keys-list {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+        
+        .keys-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .keys-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .keys-list::-webkit-scrollbar-thumb {
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 3px;
+        }
+        
+        .keys-list::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255,255,255,0.5);
+        }
+        
+        .key-card {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .key-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .key-card.selected {
+            border-color: rgba(33, 150, 243, 0.5);
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .document-card {
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .document-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .document-card.selected {
+            border-left-color: #2196f3;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        .badge-approve {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .badge-sign {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+    </style>
+</head>
+<body class="font-display text-gray-800 dark:text-gray-200">
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="clients">Clientes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="requests">Solicitudes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+            </div>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen pt-24 pb-8 px-8">
+        <aside class="w-64 glass-panel mr-6 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Firmar Documento</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-tab="invitations">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <span>Invitaciones</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="flex-1">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-primary fade-in" id="sectionTitle">Documentos para Firmar</h2>
+                <div id="messageContainer"></div>
+            </div>
+            <div class="glass-panel overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full" id="documentsTable">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-800">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Documento</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Emisor</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Tipo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="documentsTableBody">
+                                    <!-- Los datos se cargarán dinámicamente aquí -->
+                                    <tr>
+                                        <td colspan="5" class="text-center py-8">
+                                            <div class="loading">
+                                                <div class="spinner"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-6 border-l border-gray-200 dark:border-gray-800" id="sidebarDetails">
+                        <div class="flex flex-col h-full">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center space-x-4 mb-6">
+                                    <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-3xl text-white">description</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-semibold text-primary" id="sidebarName">Seleccione un documento</h3>
+                                        <p class="text-sm text-secondary" id="sidebarOwner"></p>
+                                        <p class="text-sm text-secondary" id="sidebarDate"></p>
+                                    </div>
+                                </div>
+                                
+                                <h4 class="text-lg font-semibold text-primary mb-4">Información de la Invitación</h4>
+                                <div class="space-y-4 mb-6" id="sidebarDetailsContent">
+                                    <!-- Los detalles se cargarán dinámicamente aquí -->
+                                    <p class="text-secondary text-center py-4">Seleccione un documento para ver los detalles de la invitación</p>
+                                </div>
+                                
+                                <h4 class="text-lg font-semibold text-primary mb-4">Tus Llaves RSA</h4>
+                                <div class="keys-list glass-card rounded-lg p-4 mb-4" id="sidebarKeys">
+                                    <!-- Las llaves RSA se cargarán dinámicamente aquí -->
+                                    <p class="text-secondary text-center py-4">No hay llaves disponibles</p>
+                                </div>
+                                
+                                <div class="mt-auto pt-6 flex gap-2" id="sidebarActions" style="display: none;">
+                                    <!-- Los botones de acción se cargarán dinámicamente aquí -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para visualizar documentos -->
+    <div id="documentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 class="text-xl font-semibold text-primary mb-4" id="modalTitle">Visualizar Documento</h3>
+            <div class="loading" id="modalLoading">
+                <div class="spinner"></div>
+            </div>
+            <iframe id="documentViewer" class="document-viewer" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Variables globales
+            let currentData = {};
+            let selectedDocumentId = null;
+            let userKeys = [];
+            let selectedKeyId = null;
+            let currentInvite = null;
+            let currentFolder = null;
+
+            // Efecto liquid glass para la burbuja del menú
+            const liquidBubble = document.getElementById('liquidBubble');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            const itemPositions = {};
+            
+            function calculatePositions() {
+                navItems.forEach(item => {
+                    const rect = item.getBoundingClientRect();
+                    const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                    
+                    itemPositions[item.dataset.item] = {
+                        left: rect.left - headerRect.left,
+                        width: rect.width
+                    };
+                });
+                
+                moveBubble('settings');
+            }
+            
+            function moveBubble(itemName) {
+                const item = itemPositions[itemName];
+                if (item && liquidBubble) {
+                    liquidBubble.style.left = `${item.left - 10}px`;
+                    liquidBubble.style.width = `${item.width + 20}px`;
+                }
+            }
+            
+            navItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    moveBubble(item.dataset.item);
+                });
+            });
+
+            window.addEventListener('load', calculatePositions);
+            window.addEventListener('resize', calculatePositions);
+
+            // Toggle de tema claro/oscuro
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('light-theme');
+                    
+                    const icon = themeToggle.querySelector('i');
+                    if (document.body.classList.contains('light-theme')) {
+                        icon.classList.remove('fa-moon');
+                        icon.classList.add('fa-sun');
+                    } else {
+                        icon.classList.remove('fa-sun');
+                        icon.classList.add('fa-moon');
+                    }
+                });
+            }
+
+            // Obtener parámetros de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const inviteId = urlParams.get('idInvite');
+
+            if (!inviteId) {
+                mostrarMensaje('No se encontró idInvite en la URL', 'error');
+                return;
+            }
+
+            // Cargar datos de la invitación
+            await loadInviteData(inviteId);
+
+            // Cerrar modal
+            document.querySelector('.close-modal').addEventListener('click', () => {
+                document.getElementById('documentModal').style.display = 'none';
+            });
+
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('documentModal');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+
+        // Función para cargar datos de la invitación
+        async function loadInviteData(inviteId) {
+            try {
+                const response = await fetch('/getinvite', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ idInvite: inviteId })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+
+                const rawData = await response.json();
+
+                if (!rawData || !rawData.folder) throw new Error('Respuesta inválida: no viene folder');
+                const folder = rawData.folder;
+                currentFolder = folder;
+
+                if (!Array.isArray(folder.invites) || folder.invites.length === 0) {
+                    throw new Error('No hay invitaciones en el folder');
+                }
+
+                const invite = folder.invites.find(i => i.idInvite === inviteId) || folder.invites[0];
+                currentInvite = invite;
+
+                if (folder.userDest && Array.isArray(folder.userDest.keys)) {
+                    userKeys = folder.userDest.keys;
+                    // Encontrar la llave seleccionada
+                    const selectedKey = userKeys.find(k => k.selected);
+                    if (selectedKey) {
+                        selectedKeyId = selectedKey.idKey;
+                    }
+                } else {
+                    userKeys = [];
+                }
+
+                // Poblar la tabla con los documentos
+                populateDocumentsTable(folder, invite);
+
+            } catch (err) {
+                console.error('Error al cargar invitación:', err);
+                mostrarMensaje('Error al cargar la invitación: ' + err.message, 'error');
+            }
+        }
+
+        // Poblar la tabla con los documentos
+        function populateDocumentsTable(folder, invite) {
+            const tableBody = document.getElementById('documentsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!folder || !invite || !invite.document) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-8 text-secondary">
+                            No hay documentos en esta invitación.
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            // Crear una fila para el documento de la invitación
+            const doc = invite.document;
+            const docId = doc.idDocument;
+
+            const row = document.createElement('tr');
+            row.className = "document-card fade-in cursor-pointer";
+            row.addEventListener('click', () => {
+                selectDocument(docId, doc, folder, invite);
+            });
+            
+            const expirationDate = folder.expirationDate
+                ? new Date(folder.expirationDate).toLocaleDateString('es-MX', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                })
+                : 'N/A';
+
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer" onclick="event.stopPropagation(); viewDocument('${doc.documentFullName}', '${docId}')">
+                            <span class="material-symbols-outlined text-white">description</span>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-primary">${doc.documentFullName}</div>
+                            <div class="text-sm text-secondary">ID: ${docId}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-primary">${folder.userEmisor?.nameUserEmisor || '-'}</td>
+                <td class="px-6 py-4 text-sm text-secondary">${expirationDate}</td>
+                <td class="px-6 py-4">
+                    <span class="badge ${invite.isSigner ? 'badge-sign' : 'badge-approve'}">
+                        ${invite.isSigner ? 'Firmante' : 'Observador'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm">
+                    <button class="text-blue-400 hover:text-blue-300" onclick="event.stopPropagation(); viewDocument('${doc.documentFullName}', '${docId}')">
+                        <span class="material-symbols-outlined text-lg">visibility</span>
+                    </button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+
+            // Seleccionar el documento por defecto
+            selectDocument(docId, doc, folder, invite);
+        }
+
+        // Seleccionar un documento
+        function selectDocument(docId, documentData, folder, invite) {
+            selectedDocumentId = docId;
+
+            // Actualizar la información del documento en el sidebar
+            document.getElementById('sidebarName').textContent = documentData.documentFullName || `Documento ${docId}`;
+            document.getElementById('sidebarOwner').textContent = `Emisor: ${folder.userEmisor?.nameUserEmisor || '-'}`;
+
+            // Actualizar detalles de la invitación
+            const detailsContainer = document.getElementById('sidebarDetailsContent');
+            
+            const expirationDate = folder.expirationDate ? 
+                new Date(folder.expirationDate).toLocaleDateString('es-MX', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'No disponible';
+
+            const sentDate = invite.sentAt ? 
+                new Date(invite.sentAt).toLocaleDateString('es-MX', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }) : 'No disponible';
+
+            detailsContainer.innerHTML = `
+                <div class="grid grid-cols-1 gap-3">
+                    <div>
+                        <p class="text-sm text-secondary">Emisor:</p>
+                        <p class="text-sm text-primary">${folder.userEmisor?.nameUserEmisor || '-'} (${folder.userEmisor?.nameInstEmisor || '-'})</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Destinatario:</p>
+                        <p class="text-sm text-primary">${folder.userDest?.nameUserDest || '-'} (${folder.userDest?.nameInstDest || '-'})</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Mensaje del emisor:</p>
+                        <p class="text-sm text-primary">${invite.messageEmisor || '-'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Fecha de envío:</p>
+                        <p class="text-sm text-primary">${sentDate}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Expiración:</p>
+                        <p class="text-sm text-primary">${expirationDate}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Tipo:</p>
+                        <p class="text-sm text-primary">${invite.isSigner ? 'Firmante' : 'Observador'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Biometría:</p>
+                        <p class="text-sm text-primary">${invite.aliveProof ? 'Requerida' : 'No requerida'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Actualizar las llaves RSA
+            const keysContainer = document.getElementById('sidebarKeys');
+            renderKeys(userKeys, keysContainer);
+
+            // Actualizar acciones
+            const sidebarActions = document.getElementById('sidebarActions');
+            sidebarActions.style.display = 'flex';
+            sidebarActions.innerHTML = '';
+
+            if (invite.isSigner) {
+                if (userKeys.length > 0) {
+                    sidebarActions.innerHTML = `
+                        <button class="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" onclick="signDocument('${invite.idInvite}', '${folder.idFolder}')">Firmar Documento</button>
+                    `;
+                } else {
+                    sidebarActions.innerHTML = `
+                        <button class="w-full py-3 px-4 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold" onclick="showKeyUploadForm()">Subir Llaves</button>
+                    `;
+                }
+            } else {
+                sidebarActions.innerHTML = `
+                    <button class="w-full py-3 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold" onclick="acceptDocument('${invite.idInvite}', '${folder.idFolder}')">Aceptar y Dar Visto Bueno</button>
+                `;
+            }
+
+            // Resaltar la fila seleccionada
+            document.querySelectorAll('.document-card').forEach(row => {
+                row.classList.remove('selected');
+            });
+            
+            // Como solo hay una fila, seleccionarla directamente
+            const selectedRow = document.querySelector('.document-card');
+            if (selectedRow) {
+                selectedRow.classList.add('selected');
+            }
+        }
+
+        // Renderizar las llaves RSA
+        function renderKeys(keys, container) {
+            container.innerHTML = '';
+
+            if (!keys || keys.length === 0) {
+                container.innerHTML = '<p class="text-secondary text-center py-4">No tienes llaves registradas todavía.</p>';
+                return;
+            }
+
+            keys.forEach(k => {
+                const card = document.createElement('div');
+                card.className = `key-card ${k.selected ? 'selected' : ''}`;
+                card.setAttribute('data-idkey', k.idKey);
+
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center mb-2';
+
+                const title = document.createElement('div');
+                title.innerHTML = `<strong class="text-sm text-primary">${k.owner}</strong><div class="text-xs text-secondary">${k.subjectUniqueId}</div>`;
+
+                const badge = document.createElement('div');
+                badge.className = 'badge';
+                badge.textContent = (new Date(k.expiration) < new Date()) ? 'Expirada' : 'Vigente';
+
+                header.appendChild(title);
+                header.appendChild(badge);
+
+                const details = document.createElement('div');
+                details.className = 'text-xs text-secondary mb-2';
+                details.innerHTML = `
+                    <div>Certificado: ${k.nameCer}</div>
+                    <div>Llave: ${k.nameKey}</div>
+                    <div>Expira: ${new Date(k.expiration).toLocaleDateString('es-MX')}</div>
+                `;
+
+                const actions = document.createElement('div');
+
+                if (k.selected) {
+                    const sel = document.createElement('span'); 
+                    sel.className = 'badge badge-sign'; 
+                    sel.textContent = 'Seleccionada'; 
+                    actions.appendChild(sel);
+                } else {
+                    const btn = document.createElement('button'); 
+                    btn.className = 'text-xs py-1 px-2 rounded bg-blue-600 hover:bg-blue-700 text-white'; 
+                    btn.textContent = 'Seleccionar';
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        seleccionarKey(k.idKey, btn);
+                    });
+                    actions.appendChild(btn);
+                }
+
+                card.appendChild(header);
+                card.appendChild(details);
+                card.appendChild(actions);
+
+                container.appendChild(card);
+            });
+        }
+
+        // Seleccionar una llave
+        async function seleccionarKey(idKey, btn) {
+            btn.disabled = true; 
+            const orig = btn.textContent; 
+            btn.textContent = 'Seleccionando...';
+            
+            try {
+                const r = await fetch('/updatek', { 
+                    method: 'POST', 
+                    credentials: 'include', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ idKeyUpdate: idKey }) 
+                });
+                
+                if (!r.ok) throw new Error(await r.text());
+                
+                selectedKeyId = idKey;
+                
+                // Actualizar la UI localmente
+                userKeys.forEach(k => k.selected = (k.idKey === idKey));
+                const keysContainer = document.getElementById('sidebarKeys');
+                renderKeys(userKeys, keysContainer);
+                
+                mostrarMensaje('Llave seleccionada correctamente', 'success');
+                
+            } catch (err) {
+                console.error(err); 
+                mostrarMensaje('Error al seleccionar la llave: ' + err.message, 'error');
+                btn.disabled = false; 
+                btn.textContent = orig;
+            }
+        }
+
+        // Mostrar formulario para subir llaves
+        function showKeyUploadForm() {
+            const sidebarActions = document.getElementById('sidebarActions');
+            sidebarActions.innerHTML = `
+                <div class="w-full">
+                    <form id="credentialsForm" class="space-y-4" autocomplete="off" novalidate>
+                        <div>
+                            <label class="block text-sm text-secondary mb-1">Llave privada (.pem/.key)</label>
+                            <input type="file" id="keyFile" accept=".key,.pem,.der" class="w-full p-2 bg-white/10 rounded text-sm text-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-secondary mb-1">Certificado (.cer/.crt/.pem)</label>
+                            <input type="file" id="certFile" accept=".cer,.crt,.pem,.der" class="w-full p-2 bg-white/10 rounded text-sm text-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-secondary mb-1">Contraseña</label>
+                            <input type="password" id="keyPassword" class="w-full p-2 bg-white/10 rounded text-sm text-primary">
+                        </div>
+                        <button class="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" type="submit">Subir Llaves</button>
+                    </form>
+                </div>
+            `;
+
+            document.getElementById('credentialsForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                mostrarMensaje('Subiendo llaves...', 'info');
+                // Aquí iría la lógica para subir las llaves
+                setTimeout(() => {
+                    mostrarMensaje('Llaves subidas correctamente', 'success');
+                    // Recargar la página para actualizar las llaves
+                    location.reload();
+                }, 2000);
+            });
+        }
+
+        // Ver documento en modal
+        async function viewDocument(name, docId) {
+            const modal = document.getElementById('documentModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalLoading = document.getElementById('modalLoading');
+            const documentViewer = document.getElementById('documentViewer');
+            
+            modalTitle.textContent = `Visualizar: ${name}`;
+            modalLoading.style.display = 'flex';
+            documentViewer.style.display = 'none';
+            modal.style.display = 'block';
+            
+            try {
+                // Descargar el documento usando el folderId y documentId
+                const response = await fetch('/downloadDoc', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      id: docId,
+                      type: "uploaded",
+                      path: ""
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                // Crear un blob a partir de la respuesta
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                // Mostrar el documento en el iframe
+                documentViewer.src = url;
+                modalLoading.style.display = 'none';
+                documentViewer.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error al cargar el documento:', error);
+                modalLoading.innerHTML = `
+                    <div class="text-red-400 text-center">
+                        <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                        <p>Error al cargar el documento. Intente nuevamente.</p>
+                        <p class="text-sm mt-2">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Firmar documento
+        async function signDocument(inviteId, folderId) {
+            if (!selectedKeyId && userKeys.length > 0) { 
+                mostrarMensaje('Por favor selecciona una llave', 'error'); 
+                return; 
+            }
+            
+            if (currentInvite.aliveProof) {
+                if (!confirm('Esta invitación requiere prueba de vida. ¿Deseas continuar?')) return;
+            }
+
+            mostrarMensaje('Firmando documento...', 'info');
+            
+            try {
+                const res = await fetch('/signDocument', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ 
+                        inviteId: inviteId, 
+                        keyId: selectedKeyId, 
+                        folderId: folderId 
+                    }) 
+                });
+                
+                if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+                
+                const j = await res.json();
+                if (j.success) { 
+                    mostrarMensaje('Documento firmado correctamente', 'success'); 
+                } else { 
+                    mostrarMensaje('Error: ' + (j.message || 'sin detalle'), 'error'); 
+                }
+            } catch (err) { 
+                console.error(err); 
+                mostrarMensaje('Error al firmar: ' + err.message, 'error'); 
+            }
+        }
+
+        // Aceptar documento
+        async function acceptDocument(inviteId, folderId) {
+            if (!confirm('¿Estás seguro de dar visto bueno?')) return;
+            
+            mostrarMensaje('Aceptando documento...', 'info');
+            
+            try {
+                const res = await fetch('/acceptDocument', { 
+                    method: 'POST', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ 
+                        inviteId: inviteId, 
+                        folderId: folderId 
+                    }) 
+                });
+                
+                if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+                
+                const j = await res.json();
+                if (j.success) { 
+                    mostrarMensaje('Visto bueno registrado correctamente', 'success'); 
+                } else { 
+                    mostrarMensaje('Error: ' + (j.message || 'sin detalle'), 'error'); 
+                }
+            } catch (err) { 
+                console.error(err); 
+                mostrarMensaje('Error al aceptar: ' + err.message, 'error'); 
+            }
+        }
+
+        // Mostrar mensajes
+        function mostrarMensaje(mensaje, tipo) {
+            const messageContainer = document.getElementById('messageContainer');
+            const alertClass = tipo === 'error' ? 'bg-red-500' : (tipo === 'info' ? 'bg-blue-500' : 'bg-green-500');
+            messageContainer.innerHTML = `<div class="${alertClass} text-white px-4 py-2 rounded-lg">${mensaje}</div>`;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Hacer las funciones globales
+        window.viewDocument = viewDocument;
+        window.signDocument = signDocument;
+        window.acceptDocument = acceptDocument;
+        window.showKeyUploadForm = showKeyUploadForm;
+    </script>
+</body>
+</html>
