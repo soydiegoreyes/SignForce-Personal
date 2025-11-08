@@ -320,3 +320,208 @@ func LoadInviteInfo(idInvite string) (*InviteInfoResp, error) {
 
 	return inviteInfo, nil
 }
+
+// Request structure
+type SignByFolderRequest struct {
+	IdFolder string `json:"idFolder"`
+}
+
+func LoadInviteInfoByFolder(idFolder string) (*InviteInfoResp, error) {
+	// Obtener datos del folder
+	attrs := []string{"secuentialSign", "expirationDate", "idUserEmisor_fk", "idInstitutionEmisor_fk", "idTeamEmisor_fk"}
+	wheres := map[string][]string{
+		"idFolder": {idFolder},
+	}
+
+	folderData, err := db.DB_con.GenericSelect("folders", "idFolder", attrs, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo datos del folder: %v", err)
+	}
+
+	if len(folderData) == 0 {
+		return nil, fmt.Errorf("folder no encontrado")
+	}
+
+	folderInfo := folderData[idFolder]
+
+	// Obtener todas las invitaciones del folder
+	attrs = []string{"idInvite", "idInstitutionDest_fk", "idUserDest_fk", "idTeamDest_fk", "requireAliveProof",
+		"signerViewer", "sentAt", "descriptionText", "idDocument"}
+	
+	invitesWheres := map[string][]string{
+		"idFolder": {idFolder},
+	}
+
+	invitesData, err := db.DB_con.GenericSelect("invites", "idInvite", attrs, invitesWheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo invitaciones del folder: %v", err)
+	}
+
+	if len(invitesData) == 0 {
+		return nil, fmt.Errorf("no se encontraron invitaciones para este folder")
+	}
+
+	// Obtener IDs de documentos únicos
+	documentIDs := make([]string, 0)
+	for _, invite := range invitesData {
+		if docID, exists := invite["idDocument"]; exists && docID != "" {
+			documentIDs = append(documentIDs, docID)
+		}
+	}
+
+	// Obtener datos de todos los documentos
+	var allDocData map[string]map[string]string
+	if len(documentIDs) > 0 {
+		attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
+			"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc"}
+		wheres = map[string][]string{
+			"idDocument": documentIDs,
+		}
+
+		allDocData, err = db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo datos de los documentos: %v", err)
+		}
+	}
+
+	// Validar documentos y construir mapa de documentos válidos
+	validDocuments := make(map[string]map[string]string)
+	for idDoc, doc := range allDocData {
+		if doc["activeDoc"] != "1" {
+			continue // Saltar documentos no activos
+		}
+
+		if doc["authRoleStatus"] != "1" {
+			continue // Saltar documentos sin autorización
+		}
+
+		if doc["authUseStatus"] != "1" {
+			continue // Saltar documentos sin autorización de uso
+		}
+
+		filePath := fmt.Sprintf("./%s%s.%s", doc["documentPath"], doc["documentName"], doc["documentExt"])
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			continue // Saltar archivos no encontrados
+		}
+
+		hash, err := utilities.GetHash(filePath, configs.HashConf)
+		if err != nil {
+			continue // Saltar documentos con error de hash
+		}
+
+		if doc["documentHash"] != hash {
+			continue // Saltar documentos con hash no correspondiente
+		}
+
+		validDocuments[idDoc] = doc
+	}
+
+	// Obtener datos del usuario destinatario (tomamos el primero como referencia)
+	// En un escenario real, podrías necesitar manejar múltiples destinatarios
+	for k := range invitesData {
+		break
+	}
+	firstInvite := invitesData[k]
+	wheres = map[string][]string{
+		"idUser":           {firstInvite["idUserDest_fk"]},
+		"idInstitution_fk": {firstInvite["idInstitutionDest_fk"]},
+		"idTeam_fk":        {firstInvite["idTeamDest_fk"]},
+	}
+	
+	userData, err := db.DB_con.GenericSelect("users", "idUser",
+		[]string{"activeUser", "idKeysUser_fk", "nameUser"}, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo datos del usuario: %v", err)
+	}
+
+	if len(userData) == 0 {
+		return nil, fmt.Errorf("usuario destinatario no encontrado")
+	}
+
+	// Obtener llaves RSA del usuario
+	wheres = map[string][]string{
+		"idUser_fk": {firstInvite["idUserDest_fk"]},
+	}
+	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys",
+		[]string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514",
+			"subjectUniqueId", "createdAtKey"}, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo llaves del usuario: %v", err)
+	}
+
+	keyStatResp := make([]*models.KeysStatus, 0)
+	for idKey, key := range keys {
+		selected := userData[firstInvite["idUserDest_fk"]]["idKeysUser_fk"] == idKey
+
+		ks := &models.KeysStatus{
+			IdKey:           idKey,
+			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
+			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
+			Expiration:      key["notValidAfter"],
+			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
+			SubjectUniqueId: key["subjectUniqueId"],
+			UploadedAt:      key["createdAtKey"],
+			Selected:        selected,
+		}
+		keyStatResp = append(keyStatResp, ks)
+	}
+
+	// TODO: Obtener datos reales del emisor desde la BD usando folderInfo["idUserEmisor_fk"]
+	userEmisor := UserInfo{
+		NameInstEmisor: "Nombre Institución Emisor",
+		NameUserEmisor: "Nombre Usuario Emisor", 
+		NameTeamEmisor: "Nombre Team Emisor",
+	}
+
+	// TODO: Obtener datos reales de institución y equipo del destinatario
+	userDest := UserDestInfo{
+		NameInstDest: "Nombre Institución Destino",
+		NameUserDest: userData[firstInvite["idUserDest_fk"]]["nameUser"],
+		NameTeamDest: "Nombre Team Destino",
+		Keys:         keyStatResp,
+	}
+
+	// Construir array de invites
+	invites := make([]Invite, 0)
+	for inviteID, invite := range invitesData {
+		docID := invite["idDocument"]
+		
+		// Solo incluir invites con documentos válidos
+		if doc, exists := validDocuments[docID]; exists {
+			documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
+
+			invite := Invite{
+				IdInvite:      inviteID,
+				AliveProof:    invite["requireAliveProof"] == "1",
+				IsSigner:      invite["signerViewer"] == "1",
+				SentAt:        invite["sentAt"],
+				MessageEmisor: invite["descriptionText"],
+				Document: Document{
+					IdDocument:       docID,
+					DocumentFullName: documentFullName,
+					AbstractDoc:      doc["abstractDoc"],
+				},
+			}
+			invites = append(invites, invite)
+		}
+	}
+
+	if len(invites) == 0 {
+		return nil, fmt.Errorf("no se encontraron documentos válidos para firmar en este folder")
+	}
+
+	// Construir respuesta completa
+	inviteInfo := &InviteInfoResp{
+		Folder: Folder{
+			IdFolder:       idFolder,
+			IsSecuential:   folderInfo["secuentialSign"] == "1",
+			ExpirationDate: folderInfo["expirationDate"],
+			UserEmisor:     userEmisor,
+			UserDest:       userDest,
+			Invites:        invites,
+		},
+	}
+
+	return inviteInfo, nil
+}
