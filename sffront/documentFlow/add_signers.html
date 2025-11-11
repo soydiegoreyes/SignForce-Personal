@@ -149,82 +149,86 @@
 
                 <!-- Sección de Firmantes -->
                 <h2 class="text-2xl font-bold text-primary mb-4">Firmantes y Observadores</h2>
-                
+
                 <div class="overflow-hidden rounded-xl glass-card mb-6">
-                    <table id="reviewersTable" class="w-full">
-                        <thead>
-                            <tr class="border-b border-gray-200 dark:border-gray-800">
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Usuario</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Rol</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Equipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Comentario Personal</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="reviewersTableBody" class="divide-y divide-gray-200 dark:divide-gray-800">
-                            <!-- Aquí se agregarán dinámicamente las filas -->
-                        </tbody>
-                    </table>
+                <table id="reviewersTable" class="w-full">
+                    <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-800">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Usuario</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Rol</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Equipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Comentario Personal</th>
+                        <th class="px-6 py-3"></th>
+                    </tr>
+                    </thead>
+                    <tbody id="reviewersTableBody" class="divide-y divide-gray-200 dark:divide-gray-800">
+                    <!-- Filas agregadas dinámicamente -->
+                    </tbody>
+                </table>
                 </div>
-                
+
                 <!-- Formulario para añadir firmante -->
                 <h3 class="text-xl font-bold text-primary mb-4">Añadir Firmante</h3>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <label class="flex flex-col">
-                        <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Equipo</p>
-                        <select
-                            id="teamSelect"
-                            class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
-                        >
-                            <option value="">Equipos</option>
-                            <option value="2">Equipo 2</option>
-                        </select>
-                    </label>
-
-                    <label class="flex flex-col">
-                        <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Usuario</p>
-                        <select
-                            id="userSelect"
-                            class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
-                        >
-                            <option value="">Usuarios del Equipo</option>
-                            <option value="1">Pedro</option>
-                            <option value="2">María</option>
-                        </select>
-                    </label>
-                </div>
-
-                <label class="flex flex-col mb-6">
-                    <p class="text-primary text-base font-medium leading-normal pb-2">Añade un comentario personalizado para el usuario</p>
-                    <input
-                        id="userComment"
-                        placeholder="Comentario opcional"
-                        class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
-                    />
+                <!-- Selector de equipos -->
+                <label class="flex flex-col">
+                    <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Equipo</p>
+                    <select
+                    id="teamSelect"
+                    class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl 
+                            focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                    >
+                    <option value="">Cargando equipos...</option>
+                    </select>
                 </label>
-                
-                <div class="flex gap-4 justify-center">
-                    <button
-                        id="addReviewerBtn"
-                        class="btn-secondary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]"
+
+                <!-- Selector de usuarios -->
+                <label class="flex flex-col">
+                    <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Usuario</p>
+                    <select
+                    id="userSelect"
+                    class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl 
+                            focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                    disabled
                     >
-                        <span class="material-symbols-outlined mr-2">person_add</span>
-                        <span class="truncate">Añadir Firmante</span>
-                    </button>
-                    
-                    <button
-                        id="uploadBtn"
-                        class="btn-primary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]"
-                    >
-                        <span class="material-symbols-outlined mr-2">upload</span>
-                        <span class="truncate">Aceptar y Subir</span>
-                    </button>
+                    <option value="">Selecciona primero un equipo</option>
+                    </select>
+                </label>
                 </div>
-            </div>
-        </main>
-    </div>
+
+                <!-- Comentario -->
+                <label class="flex flex-col mb-6">
+                <p class="text-primary text-base font-medium leading-normal pb-2">Añade un comentario personalizado para el usuario</p>
+                <input
+                    id="userComment"
+                    placeholder="Comentario opcional"
+                    class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 
+                        focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                />
+                </label>
+
+                <!-- Botones de acción -->
+                <div class="flex gap-4 justify-center">
+                <button
+                    id="addReviewerBtn"
+                    class="btn-secondary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 
+                        text-sm font-bold leading-normal tracking-[0.015em]"
+                >
+                    <span class="material-symbols-outlined mr-2">person_add</span>
+                    <span class="truncate">Añadir Firmante</span>
+                </button>
+
+                <button
+                    id="uploadBtn"
+                    class="btn-primary flex min-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 
+                        text-sm font-bold leading-normal tracking-[0.015em]"
+                >
+                    <span class="material-symbols-outlined mr-2">upload</span>
+                    <span class="truncate">Aceptar y Subir</span>
+                </button>
+                </div>
 
     <script src="/documentflow/add_signers.js"></script>
     <script>

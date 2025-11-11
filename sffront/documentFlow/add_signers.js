@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 🔹 VARIABLES Y FUNCIONES GLOBALES
   // ==============================
   const reviewers = [];
+  const teamSelect = document.getElementById("teamSelect");
+  const userSelect = document.getElementById("userSelect");
 
   async function toBase64(file) {
     return new Promise((resolve, reject) => {
@@ -31,6 +33,113 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ==============================
+  // 🔹 CARGAR EQUIPOS DE LA INSTITUCIÓN
+  // ==============================
+  async function loadTeams() {
+  try {
+    console.log("Cargando equipos...");
+    const response = await fetch("/instteams", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const teams = await response.json();
+
+    const teamSelect = document.getElementById("teamSelect");
+    if (!teamSelect) {
+      console.warn("⚠️ No se encontró el select de equipos.");
+      return;
+    }
+
+    if (!Array.isArray(teams) || teams.length === 0) {
+      teamSelect.innerHTML = `<option value="">No hay equipos disponibles</option>`;
+      return;
+    }
+
+    teamSelect.innerHTML = `<option value="">Selecciona un equipo...</option>`;
+    teams.forEach(team => {
+      if (team.deletedAt && team.deletedAt.trim() !== "") return;
+      const opt = document.createElement("option");
+      opt.value = team.id;
+      opt.textContent = `${team.name} (Límite: ${team.limitusers || "-"} usuarios / ${team.limitsigners || "-"} firmantes)`;
+      teamSelect.appendChild(opt);
+    });
+    console.log("Equipos cargados correctamente:", teams);
+  } catch (err) {
+    console.error("Error al cargar equipos:", err);
+  }
+}
+
+// Se ejecuta automáticamente cuando el DOM está listo
+/*
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", loadTeams);
+} else {
+  loadTeams();
+}
+  */
+
+  // ==============================
+  // 🔹 CARGAR USUARIOS DE UN EQUIPO
+  // ==============================
+  async function loadUsers(idTeam) {
+  try {
+    const response = await fetch("/teamusers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        idteam: idTeam,
+        fields: []
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const users = await response.json();
+    console.log("Usuarios recibidos:", users);
+
+    userSelect.innerHTML = `<option value="">Selecciona un usuario...</option>`;
+
+    users.forEach(u => {
+      // Mostrar solo usuarios activos
+      if (u.active !== "1") return;
+      // Si quieres filtrar por vivos, descomenta:
+      // if (u.hasOwnProperty("isAlive") && !u.isAlive) return;
+
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.textContent = `${(u.name && u.lastname) ? (u.name + " " + u.lastname) : (u.alias || "Sin nombre")} - ${u.email || "sin correo"}`;
+      userSelect.appendChild(opt);
+    });
+
+    // Habilitar el select una vez cargado
+    userSelect.disabled = false;
+
+  } catch (err) {
+    console.error("Error al cargar usuarios:", err);
+    userSelect.innerHTML = `<option value="">Error al cargar usuarios</option>`;
+  }
+}
+  // ==============================
+  // 🔹 EVENTO CAMBIO DE EQUIPO
+  // ==============================
+  teamSelect.addEventListener("change", async () => {
+    const idTeam = teamSelect.value;
+    if (!idTeam) {
+      userSelect.innerHTML = `<option value="">Selecciona un usuario...</option>`;
+      return;
+    }
+    await loadUsers(idTeam);
+  });
+
+  // Inicializar carga de equipos al entrar
+  loadTeams();
+
+  // ==============================
+  // 🔹 RENDERIZAR TABLA
+  // ==============================
   function renderTable() {
     const tbody = document.getElementById('reviewersTableBody');
     tbody.innerHTML = '';
@@ -108,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==============================
-  // 🔹 EVENTOS
+  // 🔹 EVENTO AÑADIR REVISOR
   // ==============================
   document.getElementById('addReviewerBtn').addEventListener('click', () => {
     const user = document.getElementById('userSelect');
@@ -135,12 +244,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // 🔹 GUARDAR Y PASAR AL SIGUIENTE DOCUMENTO
   // ==============================
   document.getElementById('uploadBtn').addEventListener('click', async () => {
-    // guardar firmantes en el documento actual
     currentDoc.reviewers = reviewers;
     folderData[currentDocId] = currentDoc;
     sessionStorage.setItem("folder", JSON.stringify(folderData));
 
-    // avanzar al siguiente documento
     if (currentIndex + 1 < docIds.length) {
       sessionStorage.setItem("currentIndex", currentIndex + 1);
       window.location.href = "/addSigners";
@@ -151,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==============================
-  // 🔹 PREVISUALIZACIÓN DEL DOCUMENTO PDF (USANDO /downloadDoc)
+  // 🔹 PREVISUALIZACIÓN DEL DOCUMENTO PDF
   // ==============================
   const previewContainer = document.getElementById('preview-container');
   const dropMessage = document.getElementById('drop-message');

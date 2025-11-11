@@ -11,11 +11,12 @@
       const d = new Date();
       return d.toISOString().slice(0, 10);
     }
-
+    /*
     function setOnboardingDone(meta) {
       localStorage.setItem(LS_KEYS.ONBOARDING_DONE, '1');
       if (meta) localStorage.setItem(LS_KEYS.CREDS_META, JSON.stringify(meta));
     }
+    */
 
     // ====== Simulación de endpoint /statusk ======
     async function fetchKeysStatus() {
@@ -219,6 +220,7 @@
           const result = await response.json();
           console.log(result);
           if (result.valid) {
+            /*
             // Guardar metadata localmente
             const meta = {
               keyName: keyFile.name,
@@ -226,6 +228,7 @@
               uploadedAt: new Date().toISOString()
             };
             setOnboardingDone(meta);
+            */
             
             // Recargar la página para mostrar la nueva llave
             location.reload();

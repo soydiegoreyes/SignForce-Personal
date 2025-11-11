@@ -280,16 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (selectedDocuments.keys > 0) {
             btnContainer.innerHTML = `
-                <button id="startGlobalSign"
+                <button id="createSignFolder"
                     class="py-2 px-4 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold">
                     Iniciar proceso de firma (${selectedDocuments.size})
                 </button>
             `;
-            document.getElementById('startGlobalSign').onclick = startGlobalSignProcess;
+            document.getElementById('createSignFolder').onclick = createSignFolder;
         } else {
             btnContainer.innerHTML = '';
         }
-        if (document.getElementById('startGlobalSignSidebar')) selectDocument(selectedDocumentId, currentData[selectedDocumentId]);
+        if (document.getElementById('createFolderSignSidebar')) selectDocument(selectedDocumentId, currentData[selectedDocumentId]);
     }
     // --------------------
     // Reemplazo: selectDocument
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const disabled = count === 0 ? 'disabled' : '';
 
             sidebarActions.innerHTML = `
-                <button id="startGlobalSignSidebar"
+                <button id="createFolderSignSidebar"
                     class="w-full py-3 px-4 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold ${disabled ? 'opacity-60 cursor-not-allowed' : ''}"
                     ${disabled}>
                     Iniciar Proceso de Firma ${count > 0 ? `(${count})` : ''}
@@ -410,13 +410,13 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             // Escuchar clic en el botón (crea el folder con todos los documentos seleccionados)
-            const startBtn = document.getElementById('startGlobalSignSidebar');
+            const startBtn = document.getElementById('createFolderSignSidebar');
             startBtn.addEventListener('click', async () => {
                 if (Object.keys(selectedDocuments).length === 0) {
                     alert('Selecciona al menos un documento antes de iniciar el proceso.');
                     return;
                 }
-                startGlobalSignProcess();
+                createSignFolder();
             });
         } else if (currentTab === 'inprocess') {
             sidebarActions.style.display = 'flex';
@@ -600,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Acciones: stubs / llamadas al backend
 // --------------------
-async function startGlobalSignProcess() {
+async function createSignFolder() {
     const docs = Object.entries(selectedDocuments).map(([id, hash]) => ({
         idDoc: id,
         hashDoc: hash
