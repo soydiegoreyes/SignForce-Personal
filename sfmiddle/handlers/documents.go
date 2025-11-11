@@ -527,9 +527,9 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s' AND ownerTeamDoc_fk = '%s'",
 		idUser, idInst, idTeam)
 
-	countQuery := fmt.Sprintf("SELECT COUNT(*) FROM documents WHERE %s;", baseWhere)
+	query := fmt.Sprintf("SELECT COUNT(*) FROM documents WHERE %s;", baseWhere)
 	var total int
-	err = db.DB_con.DB.QueryRow(countQuery).Scan(&total)
+	err = db.DB_con.DB.QueryRow(query).Scan(&total)
 	if err != nil {
 		total = -1
 	}

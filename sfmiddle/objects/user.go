@@ -64,3 +64,15 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, pa
 	}
 	return idUser, nil
 }
+
+func UserInstTeam(idUser string) map[string]string {
+	query := fmt.Sprintf(`SELECT users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, teams.nameTeam
+		FROM users INNER JOIN institutions ON institutions.idInstitution = users.idInstitution_fk INNER JOIN teams ON teams.idTeam = users.idTeam_fk 
+		WHERE users.idUser = %s;`, idUser)
+	userData, err := db.DB_con.ExecuteSelect(query)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return nil
+	}
+	return userData[idUser]
+}

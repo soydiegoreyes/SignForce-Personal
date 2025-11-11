@@ -22,6 +22,11 @@ type GetUserRequest struct {
 	Fields []string `json:"fields"`
 }
 
+type GetTeamUsersRequest struct {
+	IdTeam string   `json:"idteam"`
+	Fields []string `json:"fields,omitempty"`
+}
+
 // Decodificar el cuerpo (ej: {"id": "123", "password": "secret"})
 type LoginRequest struct {
 	Account  string `json:"account"`
@@ -62,6 +67,10 @@ type PaymentReq struct {
 
 type InviteRequest map[string]Document
 
+type SignByInviteRequest struct {
+	IdInvite string `json:"idInvite"`
+}
+
 // ==================== RESPONSES ====================//
 // RegisterResponse estructura para respuesta a register
 type RegisterResponse struct {
@@ -72,7 +81,6 @@ type RegisterResponse struct {
 
 // LoginResponse estructura para la respuesta del login
 type LoginResponse struct {
-	//Token      string `json:"token"`
 	Error      string `json:"error"`
 	RedirectTo string `json:"redirectTo"`
 }
@@ -137,12 +145,29 @@ type KeysStatus struct {
 }
 
 type UserDataResp struct {
+	Id       string `json:"id"`
 	Name     string `json:"name"`
 	LastName string `json:"lastname"`
 	Alias    string `json:"alias"`
 	Email    string `json:"email"`
+	Phone    string `json:"phone"`
 	Active   string `json:"active"`
 	Role     string `json:"role"`
 	Team     string `json:"team"`
 	Kyc      string `json:"kyc"`
+	IsAlive  bool   `json:"isAlive"`
+}
+
+type TeamDataResp struct {
+	Id           string `json:"id"`
+	CreatorUser  string `json:"creator"`
+	Name         string `json:"name"`
+	LimitSigners string `json:"limitsigners"`
+	LimitUsers   string `json:"limitusers"`
+	DeletedAt    string `json:"deletedAt"`
+	Description  string `json:"description"`
+}
+
+type InviteInfoResp struct {
+	Folder Folder `json:"folder"`
 }

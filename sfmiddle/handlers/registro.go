@@ -118,6 +118,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Configurar headers y enviar respuesta
 	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	respWriter.Write(jsonData)
 }
@@ -276,7 +277,8 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
-
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	json.NewEncoder(respWriter).Encode(registerResp)
 }
 
@@ -391,7 +393,6 @@ func GetValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	// Configurar headers de seguridad
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-
 	json.NewEncoder(respWriter).Encode(valResp)
 }
 
@@ -515,6 +516,7 @@ func UpdateValidationData(respWriter http.ResponseWriter, request *http.Request)
 
 	// Respuesta exitosa
 	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	response := map[string]string{"message": "Datos actualizados correctamente"}
 	json.NewEncoder(respWriter).Encode(response)

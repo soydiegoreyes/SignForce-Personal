@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invitación a Equipo – {HOST_INSTNAME}</title>
+    <style>
+        body {
+            background:#F3E2D4;
+            min-height:100vh;
+            font-family:Inter,Helvetica,sans-serif;
+            margin:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#eaeaea;
+        }
+        .container{
+            background:#180130;
+            border-radius:16px;
+            padding:20px;
+            max-width:800px;
+            width:100%;
+            box-shadow:
+                0 8px 32px rgba(0,0,0,.6),
+                0 0 20px rgba(200,90,255,.25);
+            border:1px solid rgba(255,255,255,.08);
+            text-align:center;
+        }
+        h1,h2,h3,h4{
+            color:#fff;
+            margin-bottom:15px;
+            line-height:1.8;
+        }
+        h1{background:#35004366;}
+        a{
+            color:rgb(255,0,255);
+        }
+        a:hover{
+            color:rgb(0,255,200);
+        }
+        p{
+            margin-bottom:20px;
+            font-size:1rem;
+            line-height:1.5;
+            color:#dcdcdc;
+        }
+        .cta-button{
+            display:inline-block;
+            background:#410041;
+            color:#fff !important;
+            text-decoration:none;
+            padding:14px 30px;
+            border-radius:10px;
+            font-weight:600;
+            margin:20px 0;
+            transition:.3s ease;
+            box-shadow:0 4px 12px rgba(0,0,0,.35);
+        }
+        .cta-button:hover{
+            transform:translateY(-3px);
+            background:#660066;
+            box-shadow:0 8px 25px rgba(0,0,0,.4);
+        }
+        .divider{
+            height:1px;
+            background:linear-gradient(90deg,transparent,#afafaf,transparent);
+            margin:30px 0;
+        }
+        .footer{
+            margin-top:30px;
+            font-size:.85rem;
+            color:#999;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>¡Te han invitado a unirte a un equipo!</h1>
+    </div>
+
+    <h4>Hola <strong>{GUEST_ALIAS}</strong>,</h4>
+
+    <p>Has sido invitado por <strong>{HOST_FULLNAME}</strong> (<a href="mailto:{HOST_EMAIL}">{HOST_EMAIL}</a>) para formar parte del equipo <strong>{GUEST_TEAMNAME}</strong> en <strong>{HOST_INSTALIAS}</strong> (<em>{HOST_INSTNAME}</em>).</p>
+
+    <div class="divider"></div>
+
+    <p>Para formar parte del equipo {GUEST_TEAMNAME}, simplemente haz clic en el botón de abajo.</p>
+
+    <div style="text-align:center;">
+        <a href="{URL_ACCEPT}" class="cta-button">¡Unirme!</a>
+    </div>
+
+    <p>Esta invitación expirará el <strong>{EXPIRATION_TIME}</strong>.</p>
+    <p>Si no la aceptas antes de esa fecha, tendrás que solicitar una nueva.</p>
+
+    <div class="divider"></div>
+    <p>Si no esperabas esta invitación, puedes ignorarla sin ningún problema.</p>
+
+    <p>¿Tienes preguntas? Escríbenos a <a href="mailto:preguntas@signforce.com">preguntas@signforce.com</a>.</p>
+
+    <p>¡Esperamos verte pronto en <strong>{HOST_INSTNAME}</strong>!</p>
+
+    <div class="footer">
+        <p>© 2025 SIGNFORCE S.A. DE C.V. Todos los derechos reservados.</p>
+        <p>
+            <a href="https://www.signforce.com/privacy" style="color:#fae5ff;text-decoration:none;">Política de Privacidad</a> |
+            <a href="https://www.signforce.com/terms" style="color:#fae5ff;text-decoration:none;">Términos de Servicio</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

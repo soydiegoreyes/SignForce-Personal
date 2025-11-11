@@ -113,6 +113,10 @@ func main() {
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
+	mux.HandleFunc("/inviteteam", handlers.InviteUserTeam)             // manda una invitacion a un usuario para formar parte de un equipo
+	mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
+	mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
+	mux.HandleFunc("/getfolder", handlers.GetFolder)                   // obtiene los folders de un usuario
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)

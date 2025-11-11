@@ -24,6 +24,7 @@ type KeyMetadata struct {
 	Path    string
 }
 
+// Position representa las coordenadas y dimensiones de una firma
 type SignPosition struct {
 	X      float64 `json:"x"`
 	Y      float64 `json:"y"`
@@ -42,21 +43,63 @@ type Reviewer struct {
 	SignPositions []SignPosition `json:"positions"`
 }
 
-// Position representa las coordenadas y dimensiones de una firma
-
 // Document representa cada documento en el JSON
 type Document struct {
-	ActiveDoc       string     `json:"activeDoc"`
-	AuthRoleStatus  string     `json:"authRoleStatus"`
-	AuthUseStatus   string     `json:"authUseStatus"`
-	CreatedAtDoc    string     `json:"createdAtDoc"`
-	DocumentExt     string     `json:"documentExt"`
-	DocumentHash    string     `json:"documentHash"`
-	DocumentName    string     `json:"documentName"`
-	DocumentPath    string     `json:"documentPath"`
-	DocumentClass   string     `json:"documentClass"`
-	Description     string     `json:"description"`
-	IdFD            string     `json:"idFD"`
-	LastModifiedDoc string     `json:"lastModifiedDoc"`
-	Reviewers       []Reviewer `json:"reviewers"`
+	IdDocument       string     `json:"idDocument"`
+	ActiveDoc        string     `json:"activeDoc"`
+	AuthRoleStatus   string     `json:"authRoleStatus"`
+	AuthUseStatus    string     `json:"authUseStatus"`
+	CreatedAtDoc     string     `json:"createdAtDoc"`
+	DocumentExt      string     `json:"documentExt"`
+	DocumentHash     string     `json:"documentHash"`
+	DocumentName     string     `json:"documentName"`
+	DocumentPath     string     `json:"documentPath"`
+	DocumentClass    string     `json:"documentClass"`
+	DocumentFullName string     `json:"documentFullName"`
+	Abstract         string     `json:"abstract"`
+	IdFolder         string     `json:"idFolder"`
+	LastModifiedDoc  string     `json:"lastModifiedDoc"`
+	Reviewers        []Reviewer `json:"reviewers"`
+}
+
+// datos para llenar la plantilla de invitacion por email
+type InviteMail struct {
+	IdUser        string
+	ReviewerName  string
+	ReviewerEmail string
+	ReviewerInst  string
+	SentDate      string
+	SenderMessage string
+	UrlSignLink   string
+}
+
+type Folder struct {
+	IdFolder       string       `json:"idFolder"`
+	IsSecuential   bool         `json:"isSecuential"`
+	ExpirationDate string       `json:"expirationDate"`
+	UserEmisor     UserInfo     `json:"userEmisor"`
+	UserDest       UserDestInfo `json:"userDest"`
+	Invites        []Invite     `json:"invites"`
+}
+
+type UserInfo struct {
+	NameInstEmisor string `json:"nameInstEmisor"`
+	NameUserEmisor string `json:"nameUserEmisor"`
+	NameTeamEmisor string `json:"nameTeamEmisor"`
+}
+
+type UserDestInfo struct {
+	NameInstDest string        `json:"nameInstDest"`
+	NameUserDest string        `json:"nameUserDest"`
+	NameTeamDest string        `json:"nameTeamDest"`
+	Keys         []*KeysStatus `json:"keys"`
+}
+
+type Invite struct {
+	IdInvite      string   `json:"idInvite"`
+	AliveProof    bool     `json:"aliveProof"`
+	IsSigner      bool     `json:"isSigner"`
+	SentAt        string   `json:"sentAt"`
+	MessageEmisor string   `json:"messageEmisor"`
+	Document      Document `json:"document"`
 }

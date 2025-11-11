@@ -77,7 +77,7 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// validacion deñ hash del documento
+	// validacion del hash del documento
 	for _, d := range req {
 		if docData[d.IdDoc]["documentHash"] != d.HashDoc {
 			docData[d.IdDoc]["activeDoc"] = "-1"
@@ -104,9 +104,10 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			fmt.Println("Error al insertar documento en folderdocuments", err)
 		}
-		docData[d.IdDoc]["idFD"] = idFD
+		docData[d.IdDoc]["idFolder"] = idFolder
 	}
 	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	json.NewEncoder(respWriter).Encode(docData)
 }
 
@@ -130,15 +131,13 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	idUser, ok1 := claims["uid"].(string)
+	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
+	_, ok3 := claims["team"].(string)
 	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
-
-	fmt.Println(idInst, idUser, idTeam)
 
 	// ===== Leer y parsear el JSON =====
 	var requestData models.InviteRequest
@@ -148,53 +147,15 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Procesar cada documento =====
-	for idDocument, doc := range requestData {
+	for _, doc := range requestData {
 		// invitaciones para el documento
-		invites := []documentflow.InviteMail{}
+		invites := []models.InviteMail{}
 
-		// ===== SELECT en tabla folderdocuments =====
-		attrs := []string{"idFolder"}
-		wheres := map[string][]string{
-			"idfolderdocument": {doc.IdFD},
-			"idDocument":       {idDocument},
-		}
+		idInvite := uuid.NewString()
+		sentAt := time.Now().Format("2006-01-02 15:04:05")
+		for i, reviewer := range doc.Reviewers {
 
-		folderData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", attrs, wheres)
-		if err != nil || len(folderData) == 0 {
-			http.Error(respWriter, "Error al obtener datos del folder: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		idFolder := folderData[doc.IdFD]["idFolder"]
-
-		for _, reviewer := range doc.Reviewers {
-			idInvite := uuid.NewString()
-			sentAt := time.Now().Format("2006-01-02 15:04:05")
-			// ===== INSERT en tabla invites =====
-			inviteCols := []string{
-				"idInvite", "idFolderDocument", "idInstitutionDest_fk",
-				"idUserDest_fk", "idTeamDest_fk", "expirationDate", "signerViewer", "sentAt", "descriptionText",
-			}
-
-			inviteAttrs := []interface{}{
-				idInvite,         // idInvite
-				doc.IdFD,         // idFolderDocument
-				idInst,           // idInstitutionDest_fk
-				reviewer.User,    // idUserDest_fk
-				reviewer.Team,    // idTeamDest_fk
-				reviewer.DueDate, // expirationDate
-				reviewer.Role,    // signerViewer
-				sentAt,           // sentAt
-				reviewer.Comment, // descriptionText
-			}
-
-			_, err := db.DB_con.GenericInsert("invites", inviteCols, inviteAttrs)
-			if err != nil {
-				http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
-				return
-			}
-
-			// ===== Consultar institución del reviewer =====
+			// ===== Consultar datos del reviewer =====
 			attrs := []string{"idInstitution_fk", "nameUser", "lastNameUser", "emailUser"}
 			wheres := map[string][]string{
 				"idUser": {reviewer.User},
@@ -224,13 +185,13 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 			// ===== INSERT en tabla signatures =====
 			signatureCols := []string{
-				"idInvite_fk", "idFolderDocument", "digestValueSign",
+				"idInvite_fk", "idFolder", "digestValueSign",
 				"idInstitution_fk", "idUser_fk", "idTeam_fk",
 			}
 
 			signatureAttrs := []interface{}{
 				idInvite,         // idInvite_fk
-				doc.IdFD,         // idFolderDocument
+				doc.IdFolder,     // idFolder
 				doc.DocumentHash, // digestValueSign
 				reviewerInst,     // idInstitution_fk
 				reviewer.User,    // idUser_fk
@@ -264,21 +225,43 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					return
 				}
 			}
-			invite := documentflow.InviteMail{
-				IdUser:        reviewer.User,
-				DocumentName:  doc.DocumentName,
-				ReviewerName:  reviewerName,
-				ReviewerEmail: reviewerEmail,
-				ReviewerInst:  fmt.Sprintf("%s (%s)", InstData[reviewerInst]["legalNameInst"], InstData[reviewerInst]["aliasNameInst"]),
-				SentDate:      sentAt,
-				DeadlineDate:  reviewer.DueDate,
-				DocumentClass: doc.DocumentClass,
-				Description:   doc.Description,
-				SenderMessage: reviewer.Comment,
-				UrlSignLink:   fmt.Sprintf("https://www.signforce.com/invites?idInvite=%s&idFolder=%s", idInvite, idFolder),
+			if i == len(doc.Reviewers)-1 {
+				// ===== INSERT en tabla invites =====
+				inviteCols := []string{
+					"idInvite", "idFolder", "idInstitutionDest_fk",
+					"idUserDest_fk", "idTeamDest_fk", "expirationDate", "sentAt", "descriptionText",
+				}
+
+				inviteAttrs := []interface{}{
+					idInvite,         // idInvite
+					doc.IdFolder,     // idFolder
+					idInst,           // idInstitutionDest_fk
+					reviewer.User,    // idUserDest_fk
+					reviewer.Team,    // idTeamDest_fk
+					reviewer.DueDate, // expirationDate
+					sentAt,           // sentAt
+					reviewer.Comment, // descriptionText
+				}
+
+				_, err := db.DB_con.GenericInsert("invites", inviteCols, inviteAttrs)
+				if err != nil {
+					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				invite := models.InviteMail{
+					IdUser:        reviewer.User,
+					ReviewerName:  reviewerName,
+					ReviewerEmail: reviewerEmail,
+					ReviewerInst:  fmt.Sprintf("%s (%s)", InstData[reviewerInst]["legalNameInst"], InstData[reviewerInst]["aliasNameInst"]),
+					SentDate:      sentAt,
+					SenderMessage: reviewer.Comment,
+					UrlSignLink:   fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInvite),
+				}
+				invites = append(invites, invite)
 			}
-			invites = append(invites, invite)
 		}
+
 		err = documentflow.GenerateInvites(invites)
 		if err != nil {
 			fmt.Println(err)
@@ -287,6 +270,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 	// ===== Respuesta exitosa =====
 	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(map[string]interface{}{
 		"success":   true,
@@ -296,9 +280,6 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
-	// Configurar headers
-	respWriter.Header().Set("Content-Type", "application/json")
-
 	// Validar método
 	if request.Method != http.MethodPost {
 		respWriter.WriteHeader(http.StatusMethodNotAllowed)
@@ -309,11 +290,7 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Decodificar request
-	// Request structure
-	type SignByInviteRequest struct {
-		IdInvite string `json:"idInvite"`
-	}
-	var req SignByInviteRequest
+	var req models.SignByInviteRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		respWriter.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(respWriter).Encode(map[string]string{
@@ -341,7 +318,54 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// Responder con éxito
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(inviteInfo)
+}
+
+func GetFolder(respWriter http.ResponseWriter, request *http.Request) {
+	// Validar método
+	if request.Method != http.MethodPost {
+		respWriter.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "Método no permitido",
+		})
+		return
+	}
+
+	// Decodificar request
+
+	var req models.SignByInviteRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		respWriter.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "Request inválido",
+		})
+		return
+	}
+
+	// Validar que idInvite no esté vacío
+	if req.IdInvite == "" {
+		respWriter.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "idInvite es requerido",
+		})
+		return
+	}
+
+	// Cargar información de la invitación
+	folderInfo, err := documentflow.LoadInviteInfo(req.IdInvite)
+	if err != nil {
+		respWriter.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(folderInfo)
 }
