@@ -113,10 +113,10 @@ func main() {
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
+	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
 	mux.HandleFunc("/inviteteam", handlers.InviteUserTeam)             // manda una invitacion a un usuario para formar parte de un equipo
 	mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
 	mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
-	mux.HandleFunc("/getfolder", handlers.GetFolder)                   // obtiene los folders de un usuario
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -131,6 +131,7 @@ func main() {
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
 	mux.HandleFunc("/viewinvite", viewInvite)
+	mux.HandleFunc("/myfolders", myFolders)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -278,6 +279,13 @@ func myDocuments(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/documents.html")
+}
+func myFolders(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/folders.html")
 }
 
 // =======================================================================

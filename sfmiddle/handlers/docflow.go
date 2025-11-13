@@ -111,6 +111,73 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(docData)
 }
 
+// Funcion para devolver datos de folders
+func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Estructura de entrada =====
+	var req models.FolderRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
+		return
+	}
+
+	// ===== Validaciones básicas =====
+	if req.PageSize > 100 {
+		req.PageSize = 100
+	}
+
+	// ===== Llamar a la función principal =====
+	folderData, err := documentflow.LoadFolderInfo(
+		req.IdFolder,
+		idTeam,
+		idUser,
+		req.OnlyShared,
+		req.OnlyTeam,
+		req.OnlyUser,
+		req.Page,
+		req.PageSize,
+		req.OrderBy,
+		req.OrderDir,
+	)
+
+	if err != nil {
+		http.Error(respWriter, "Error al obtener folders: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// ===== Respuesta JSON =====
+	respWriter.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(respWriter).Encode(folderData); err != nil {
+		http.Error(respWriter, "Error al generar respuesta", http.StatusInternalServerError)
+		return
+	}
+}
+
 // Handler para cerrar folder y enviar invitaciones a firma
 func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -322,50 +389,4 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(inviteInfo)
-}
-
-func GetFolder(respWriter http.ResponseWriter, request *http.Request) {
-	// Validar método
-	if request.Method != http.MethodPost {
-		respWriter.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(respWriter).Encode(map[string]string{
-			"error": "Método no permitido",
-		})
-		return
-	}
-
-	// Decodificar request
-
-	var req models.SignByInviteRequest
-	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		respWriter.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(respWriter).Encode(map[string]string{
-			"error": "Request inválido",
-		})
-		return
-	}
-
-	// Validar que idInvite no esté vacío
-	if req.IdInvite == "" {
-		respWriter.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(respWriter).Encode(map[string]string{
-			"error": "idInvite es requerido",
-		})
-		return
-	}
-
-	// Cargar información de la invitación
-	folderInfo, err := documentflow.LoadInviteInfo(req.IdInvite)
-	if err != nil {
-		respWriter.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(respWriter).Encode(map[string]string{
-			"error": err.Error(),
-		})
-		return
-	}
-
-	respWriter.Header().Set("Content-Type", "application/json")
-	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(folderInfo)
 }

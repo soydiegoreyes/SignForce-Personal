@@ -216,7 +216,7 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 
 	// Construir respuesta completa
 	inviteInfo := &models.InviteInfoResp{
-		Folder: models.Folder{
+		Folder: models.FolderInvite{
 			IdFolder:       idFolder,
 			IsSecuential:   folderData[idFolder]["secuentialSign"] == "1",
 			ExpirationDate: folderData[idFolder]["expirationDate"],

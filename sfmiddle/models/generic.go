@@ -73,13 +73,34 @@ type InviteMail struct {
 	UrlSignLink   string
 }
 
-type Folder struct {
+type FolderInvite struct {
 	IdFolder       string       `json:"idFolder"`
 	IsSecuential   bool         `json:"isSecuential"`
 	ExpirationDate string       `json:"expirationDate"`
 	UserEmisor     UserInfo     `json:"userEmisor"`
 	UserDest       UserDestInfo `json:"userDest"`
 	Invites        []Invite     `json:"invites"`
+}
+
+type Folder struct {
+	IdFolder       string       `json:"idFolder"`
+	IsSecuential   bool         `json:"isSecuential"`
+	ExpirationDate string       `json:"expirationDate"`
+	UserEmisor     UserInfo     `json:"userEmisor"`
+	UserDest       UserDestInfo `json:"userDest"`
+	ClosedAt       string       `json:"closedAt"`
+	CompletedAt    string       `json:"completedAt"`
+	DeletedAt      string       `json:"deletedAt"`
+	DeletedReason  string       `json:"deletedReason"`
+	Description    string       `json:"description"`
+	LastModified   string       `json:"lastModified"`
+	NnumDocs       string       `json:"numDocs"`
+	NumDocsSign    string       `json:"numDocsSign"`
+	NumReceivers   string       `json:"numReceivers"`
+	NumSigners     string       `json:"numSigners"`
+	Path           string       `json:"path"`
+	Purpose        string       `json:"purpose"`
+	Documents      []string     `json:"documents"`
 }
 
 type UserInfo struct {

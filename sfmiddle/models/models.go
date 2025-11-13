@@ -65,10 +65,35 @@ type PaymentReq struct {
 	NameOwner  string `json:"nameowner"`
 }
 
+type DocDataRequest struct {
+	IdDocs   []string `json:"idDocs,omitempty"`
+	Type     string   `json:"type,omitempty"`
+	PathDocs []string `json:"paths,omitempty"`
+	DateFrom string   `json:"date_from,omitempty"`
+	DateTo   string   `json:"date_to,omitempty"`
+	Page     int      `json:"page,omitempty"`
+	PageSize int      `json:"page_size,omitempty"`
+	OrderBy  string   `json:"order_by,omitempty"`  // opcional, default: createdAtDoc
+	OrderDir string   `json:"order_dir,omitempty"` // ASC o DESC
+}
+
 type InviteRequest map[string]Document
 
 type SignByInviteRequest struct {
 	IdInvite string `json:"idInvite"`
+}
+
+type FolderRequest struct {
+	IdFolder   string `json:"idFolder,omitempty"`
+	OnlyShared bool   `json:"onlyShared,omitempty"`
+	OnlyTeam   bool   `json:"onlyTeam,omitempty"`
+	OnlyUser   bool   `json:"onlyUser,omitempty"`
+	DateFrom   string `json:"dateFrom,omitempty"`
+	DateTo     string `json:"dateTo,omitempty"`
+	Page       int    `json:"page,omitempty"`
+	PageSize   int    `json:"pageSize,omitempty"`
+	OrderBy    string `json:"orderBy,omitempty"`
+	OrderDir   string `json:"orderDir,omitempty"`
 }
 
 // ==================== RESPONSES ====================//
@@ -169,5 +194,12 @@ type TeamDataResp struct {
 }
 
 type InviteInfoResp struct {
-	Folder Folder `json:"folder"`
+	Folder FolderInvite `json:"folder"`
+}
+
+type FolderListResp struct {
+	Page        int                    `json:"page"`
+	PageSize    int                    `json:"page_size"`
+	Total       int                    `json:"total"`
+	FoldersData map[string]interface{} `json:"folders"`
 }

@@ -435,19 +435,8 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Estructura de entrada =====
-	type DocDataRequest struct {
-		IdDoc    string `json:"id,omitempty"`
-		Type     string `json:"type,omitempty"`
-		PathDoc  string `json:"path,omitempty"`
-		DateFrom string `json:"date_from,omitempty"`
-		DateTo   string `json:"date_to,omitempty"`
-		Page     int    `json:"page,omitempty"`
-		PageSize int    `json:"page_size,omitempty"`
-		OrderBy  string `json:"order_by,omitempty"`  // opcional, default: createdAtDoc
-		OrderDir string `json:"order_dir,omitempty"` // ASC o DESC
-	}
 
-	var req DocDataRequest
+	var req models.DocDataRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
 		return
@@ -488,16 +477,16 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	logic := ""
-
+	fmt.Println(req)
 	// Si hay filtros por id, tipo o path -> se priorizan
 	switch {
-	case req.IdDoc != "":
+	case len(req.IdDocs) != 0:
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND idDocument"
-		wheres["idDocument"] = []string{req.IdDoc}
+		wheres["idDocument"] = req.IdDocs
 
-	case req.PathDoc != "":
+	case len(req.PathDocs) != 0:
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentPath"
-		wheres["documentPath"] = []string{req.PathDoc}
+		wheres["documentPath"] = req.PathDocs
 
 	case req.Type != "":
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentExt"
