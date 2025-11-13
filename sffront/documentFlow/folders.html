@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Visor de Folders - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/documentflow/documents.css">
+</head>
+<body class="font-display text-gray-800 dark:text-gray-200">
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="clients">Clientes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="requests">Solicitudes</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="folders">Folders</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+            </div>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex min-h-screen pt-24 pb-8 px-8">
+        <aside class="w-64 glass-panel mr-6 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Visor de Folders</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-folder-type="user">
+                    <span class="material-symbols-outlined">folder</span>
+                    <span>Mis Folders</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-folder-type="team">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Folders del Equipo</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-folder-type="shared">
+                    <span class="material-symbols-outlined">share</span>
+                    <span>Compartidos conmigo</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="flex-1">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-primary fade-in" id="sectionTitle">Mis Folders</h2>
+                <div id="messageContainer"></div>
+            </div>
+            <div class="glass-panel overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
+                    <div class="p-6">
+                        <div class="overflow-x-auto">
+                            <div class="flex justify-center items-center gap-2 py-4" id="paginationContainer">
+                                <!-- Los botones de paginación se generan aquí dinámicamente -->
+                            </div>
+                            <table class="w-full" id="foldersTable">
+                                <thead>
+                                    <tr class="border-b border-gray-200 dark:border-gray-800">
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Folder</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Creado por</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Documentos</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="foldersTableBody">
+                                    <!-- Los folders se cargarán dinámicamente aquí -->
+                                    <tr>
+                                        <td colspan="5" class="text-center py-8">
+                                            <div class="loading">
+                                                <div class="spinner"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="p-6 border-l border-gray-200 dark:border-gray-800" id="sidebarDetails">
+                        <div class="flex flex-col h-full">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center space-x-4 mb-6">
+                                    <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-3xl text-white">folder</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-semibold text-primary" id="sidebarName">Seleccione un folder</h3>
+                                        <p class="text-sm text-secondary" id="sidebarOwner"></p>
+                                        <p class="text-sm text-secondary" id="sidebarDate"></p>
+                                    </div>
+                                </div>
+                                
+                                <h4 class="text-lg font-semibold text-primary mb-2">Progreso de Firma</h4>
+                                <div class="progress-bar mb-4">
+                                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-secondary mb-4" id="progressText">0% completado</p>
+                                
+                                <h4 class="text-lg font-semibold text-primary mb-4">Documentos del Folder</h4>
+                                <div class="space-y-4 mb-6 max-h-64 overflow-y-auto" id="sidebarDocuments">
+                                    <!-- Los documentos se cargarán dinámicamente aquí -->
+                                    <p class="text-secondary text-center py-4">Seleccione un folder para ver sus documentos</p>
+                                </div>
+                                
+                                <div class="mt-auto pt-6 flex gap-2" id="sidebarActions" style="display: none;">
+                                    <!-- Los botones de acción se cargarán dinámicamente aquí -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para visualizar documentos -->
+    <div id="documentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 class="text-xl font-semibold text-primary mb-4" id="modalTitle">Visualizar Documento</h3>
+            <div class="loading" id="modalLoading">
+                <div class="spinner"></div>
+            </div>
+            <iframe id="documentViewer" class="document-viewer" style="display: none;"></iframe>
+        </div>
+    </div>
+
+    <script src="/documentflow/folders.js"></script>
+</body>
+</html>
