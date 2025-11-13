@@ -2,8 +2,8 @@
     --color-background: #000;
     --color-card: rgba(255, 255, 255, 0.05);
     --color-text-primary: #ffffff;
-    --color-text-secondary: rgba(255, 255, 255, 0.7);
-    --color-accent: rgb(255, 255, 255, 0.5);
+    --color-text-secondary: rgba(255, 255, 255);
+    --color-accent: rgba(160, 0, 125, 0.8);
     --color-shadow: rgba(0, 0, 0, 0.3);
     --color-blue-dark: #1e2c4b;
     --color-blue-light: #93bde5;
@@ -20,6 +20,7 @@ body {
 
 h1, h2, h3, h4 {
     font-family: "Michroma", sans-serif;
+    color: var(--color-text-primary);
 }
 
 .material-symbols-outlined {
@@ -39,6 +40,7 @@ h1, h2, h3, h4 {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
+    min-height: 50px;
 }
 
 .glass-card:hover {
@@ -46,13 +48,10 @@ h1, h2, h3, h4 {
     box-shadow: 0px 0px 20px 1px rgba(255, 255, 255, 0.1);
 }
 
-.text-primary {
-    color: #ffffff;
+.abstract-block {
+    min-height: 50px;
 }
 
-.text-secondary {
-    color: rgba(255, 255, 255, 0.7);
-}
 
 .hover-glow:hover {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
@@ -151,6 +150,13 @@ h1, h2, h3, h4 {
 }
 
 /* Modal Styles */
+#modalTitle {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  line-height: 1.3;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -169,8 +175,9 @@ h1, h2, h3, h4 {
     padding: 20px;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 80%;
-    max-width: 800px;
+    max-width: 900px;
+    width: 90%;
+    overflow: hidden;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
     position: relative;
 }
@@ -194,7 +201,7 @@ h1, h2, h3, h4 {
     width: 100%;
     height: 70vh;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-top: 20px;
 }
 
@@ -310,4 +317,40 @@ h1, h2, h3, h4 {
 
 .signature-item:last-child {
     border-bottom: none;
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.doc-name {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.truncate-2 {
+  display: -webkit-box;
+  line-clamp: 4;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.break-all {
+  word-break: break-all;
+}
+
+.text-primary {
+  color: #fff; /* Ajusta a tu tema */
+}
+
+.text-secondary {
+  color: rgba(255, 255, 255);
 }

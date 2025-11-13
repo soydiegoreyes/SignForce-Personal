@@ -171,94 +171,100 @@ document.addEventListener('DOMContentLoaded', () => {
             clearSidebar();
         } catch (error) {
             console.error('Error al cargar los folders:', error);
-            document.getElementById('foldersTableBody').innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-8 text-red-400">
+            const gridContainer = document.getElementById('foldersGrid');
+            if (gridContainer) {
+                gridContainer.innerHTML = `
+                    <div class="text-center py-8 text-red-400 col-span-full">
                         Error al cargar los folders. Intente nuevamente.
-                    </td>
-                </tr>
-            `;
+                    </div>`;
+            }
         }
     }
 
     // Poblar la tabla con los folders
     function populateFoldersTable(folders) {
-        const tableBody = document.getElementById('foldersTableBody');
-        tableBody.innerHTML = '';
+        const gridContainer = document.getElementById('foldersGrid');
+        if (!gridContainer) {
+            console.warn('⚠️ No se encontró el contenedor #foldersGrid');
+            return;
+        }
+
+        gridContainer.innerHTML = '';
 
         if (!folders || Object.keys(folders).length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-8 text-secondary">
-                        No hay folders en esta categoría.
-                    </td>
-                </tr>`;
+            gridContainer.innerHTML = `
+                <div class="text-center py-8 text-secondary col-span-full">
+                    No hay folders en esta categoría.
+                </div>`;
             return;
         }
 
         Object.keys(folders).forEach(folderId => {
-            const folder = folders[folderId];
-            
-            // Calcular progreso
+            const folder = folders[folderId] || {};
+
+            // 🧩 Valores por defecto seguros
             const numDocs = parseInt(folder.numDocs) || 0;
             const numDocsSign = parseInt(folder.numDocsSign) || 0;
             const progressPercent = numDocs > 0 ? Math.round((numDocsSign / numDocs) * 100) : 0;
-            
-            // Determinar estado
-            let statusText = 'En Proceso';
-            let statusClass = 'status-in-progress';
-            
-            if (folder.closedAt && folder.closedAt !== "") {
-                statusText = 'Cerrado';
-                statusClass = 'status-completed';
-            } else if (folder.deletedAt && folder.deletedAt !== "") {
-                statusText = 'Eliminado';
-                statusClass = 'status-canceled';
-            } else if (progressPercent === 100) {
-                statusText = 'Completado';
-                statusClass = 'status-completed';
-            }
-            
-            // Formatear fecha de expiración
-            const expirationDate = folder.expirationDate ? 
-                new Date(folder.expirationDate).toLocaleDateString('es-MX', {
+
+            const statusText = folder.deletedAt
+                ? 'Eliminado'
+                : folder.closedAt
+                ? 'Cerrado'
+                : progressPercent === 100
+                ? 'Completado'
+                : 'En Proceso';
+
+            const statusColor =
+                statusText === 'Eliminado'
+                    ? 'text-red-400'
+                    : statusText === 'Cerrado'
+                    ? 'text-gray-400'
+                    : statusText === 'Completado'
+                    ? 'text-green-400'
+                    : 'text-yellow-400';
+
+            const expirationDate = folder.expirationDate
+                ? new Date(folder.expirationDate).toLocaleDateString('es-MX', {
                     year: 'numeric',
                     month: 'short',
-                    day: 'numeric'
-                }) : 'Sin fecha límite';
-            
-            // Nombre del emisor
-            const emisorName = folder.userEmisor?.nameUserEmisor || 
-                              folder.userEmisor?.nameTeamEmisor || 
-                              folder.userEmisor?.nameInstEmisor || 
-                              'Usuario';
+                    day: 'numeric',
+                })
+                : 'Sin fecha límite';
 
-            const row = document.createElement('tr');
-            row.addEventListener('click', () => {
-                selectFolder(folderId, folder);
-            });
-            row.className = "glass-card fade-in cursor-pointer";
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center">
-                            <span class="material-symbols-outlined text-white">folder</span>
-                        </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-primary">Folder ${folderId}</div>
-                            <div class="text-sm text-secondary">${folder.description || 'Sin descripción'}</div>
-                        </div>
+            const emisorName =
+                folder.userEmisor?.nameUserEmisor ||
+                folder.userEmisor?.nameTeamEmisor ||
+                folder.userEmisor?.nameInstEmisor ||
+                'Usuario desconocido';
+
+            const desc = folder.description?.trim() || 'Sin descripción';
+
+            const card = document.createElement('div');
+            card.className = 'feature-card glass-card p-6 rounded-xl cursor-pointer fade-in';
+            card.addEventListener('click', () => selectFolder(folderId, folder));
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-white bg-blue-600 p-2 rounded-full">folder</span>
+                        <h3 class="text-lg font-semibold text-primary">Folder ${folderId}</h3>
                     </div>
-                </td>
-                <td class="px-6 py-4 text-sm text-primary">${emisorName}</td>
-                <td class="px-6 py-4 text-sm text-primary">${expirationDate}</td>
-                <td class="px-6 py-4 text-sm text-secondary">${numDocsSign}/${numDocs} firmados</td>
-                <td class="px-6 py-4">
-                    <span class="document-status ${statusClass}">${statusText}</span>
-                </td>
+                    <span class="${statusColor} text-sm font-semibold">${statusText}</span>
+                </div>
+
+                <p class="text-sm text-secondary mb-2">${desc}</p>
+                <p class="text-sm text-secondary mb-1"><strong>Emisor:</strong> ${emisorName}</p>
+                <p class="text-sm text-secondary mb-1"><strong>Fecha límite:</strong> ${expirationDate}</p>
+                <p class="text-sm text-secondary mb-3"><strong>Documentos:</strong> ${numDocsSign}/${numDocs} firmados</p>
+
+                <div class="w-full bg-white/10 rounded-full h-2 mt-2">
+                    <div class="bg-blue-500 h-2 rounded-full transition-all duration-500" style="width:${progressPercent}%"></div>
+                </div>
+                <p class="text-xs text-secondary mt-1">${progressPercent}% completado</p>
             `;
 
-            tableBody.appendChild(row);
+            gridContainer.appendChild(card);
         });
     }
 
@@ -331,36 +337,72 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebarDocuments.innerHTML = '';
             
             Object.keys(documents).forEach(docId => {
-                const doc = documents[docId];
-                
-                const docElement = document.createElement('div');
-                docElement.className = 'glass-card rounded-lg p-4 cursor-pointer hover:bg-white/10';
-                docElement.addEventListener('click', () => {
-                    viewDocument(doc.documentName, docId, doc.documentPath);
-                });
-                
-                const uploadDate = doc.createdAtDoc ? 
-                    new Date(doc.createdAtDoc).toLocaleDateString('es-MX', {
+                const doc = documents[docId] || {};
+
+                const uploadDate = doc.createdAtDoc
+                    ? new Date(doc.createdAtDoc).toLocaleDateString('es-MX', {
                         year: 'numeric',
                         month: 'short',
-                        day: 'numeric'
-                    }) : 'Fecha no disponible';
-                
-                docElement.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <span class="material-symbols-outlined text-primary mr-2">description</span>
-                            <div>
-                                <p class="text-sm font-medium text-primary">${doc.documentName}</p>
+                        day: 'numeric',
+                    })
+                    : 'Fecha no disponible';
+
+                const modifiedDate = doc.lastModifiedDoc
+                    ? new Date(doc.lastModifiedDoc).toLocaleDateString('es-MX', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                    })
+                    : 'N/A';
+
+                const ext = doc.documentExt?.toUpperCase() || 'N/A';
+                const hashFull = doc.documentHash || '—';
+                const isActive = doc.activeDoc === "1";
+
+                const statusColor = isActive ? 'bg-green-500' : 'bg-yellow-500';
+                const statusText = isActive ? 'Activo' : 'Inactivo';
+
+                const abstract = (doc.abstractDoc && doc.abstractDoc.trim()) 
+                    ? doc.abstractDoc 
+                    : 'Sin descripción disponible.';
+
+                const docCard = document.createElement('div');
+                docCard.className =
+                    'feature-card glass-card p-4 rounded-xl cursor-pointer hover:bg-white/10 fade-in flex flex-col gap-2';
+                docCard.addEventListener('click', () =>
+                    viewDocument(doc.documentName, docId, doc.documentPath)
+                );
+
+                docCard.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2 w-full">
+                            <span class="material-symbols-outlined text-blue-400 flex-shrink-0">description</span>
+                            <div class="flex flex-col w-full">
+                                <h4 class="text-sm font-semibold text-primary doc-name truncate-2">${doc.documentName || `Documento ${docId}`}</h4>
                                 <p class="text-xs text-secondary">${uploadDate}</p>
                             </div>
                         </div>
-                        <span class="material-symbols-outlined text-secondary">visibility</span>
+                        
+                    </div>
+                    <div class="text-xs text-secondary space-y-1">
+                        <div class="flex items-center gap-1">
+                            <span class="w-3 h-3 rounded-full ${statusColor}"></span>
+                            <span class="text-xs text-secondary">${statusText}</span>
+                        </div>
+                        <p><strong>Extensión:</strong> ${ext}</p>
+                        <p><strong>Última mod.:</strong> ${modifiedDate}</p>
+                        <p class="break-all"><strong>Hash:</strong> <span class="text-primary">${hashFull}</span></p>
+                    </div>
+
+                    <div class="mt-2 bg-white/5 p-2 rounded-lg">
+                        <p class="text-xs text-secondary mb-1 font-semibold">Descripción:</p>
+                        <p class="text-xs text-primary whitespace-pre-line">${abstract}</p>
                     </div>
                 `;
-                
-                sidebarDocuments.appendChild(docElement);
+
+                sidebarDocuments.appendChild(docCard);
             });
+
         } catch (error) {
             console.error('Error al cargar documentos del folder:', error);
             sidebarDocuments.innerHTML = '<p class="text-red-400 text-center py-4">Error al cargar los documentos</p>';
