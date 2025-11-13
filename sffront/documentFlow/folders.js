@@ -471,6 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const documentViewer = document.getElementById('documentViewer');
         
         modalTitle.textContent = `Visualizar: ${name}`;
+        modalTitle.title = name; // Tooltip con nombre completo
         modalLoading.style.display = 'flex';
         documentViewer.style.display = 'none';
         modal.style.display = 'block';
