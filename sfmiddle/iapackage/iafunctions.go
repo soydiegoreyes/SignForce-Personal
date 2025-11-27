@@ -19,10 +19,12 @@ func GetAbstractDoc(idDoc string) {
 	}
 
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
-	if err != nil && len(docData) > 0 {
-		fileName := fmt.Sprintf("%s%s%s.%s", os.Getenv("BASE_DIR"), docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
+	if err == nil && len(docData) > 0 {
+		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
 		_, err = os.Stat(fileName)
 		if err != nil {
+			fmt.Println("No se encontró el archivo: ", fileName)
+		} else {
 
 			wheres = map[string][]string{
 				"nameApp": {"llmServ"},
@@ -72,7 +74,6 @@ func GetAbstractDoc(idDoc string) {
 					fmt.Println("Error al convertir respuesta a JSON:", err)
 					return
 				}
-				fmt.Println(llamaresp)
 
 				updates := map[string]map[string]interface{}{
 					idDoc: {
@@ -88,5 +89,7 @@ func GetAbstractDoc(idDoc string) {
 			}
 			resp.Body.Close()
 		}
+	} else {
+		fmt.Println("Error en obtener datos de documentos o no hay información")
 	}
 }

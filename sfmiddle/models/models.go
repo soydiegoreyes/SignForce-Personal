@@ -77,7 +77,13 @@ type DocDataRequest struct {
 	OrderDir string   `json:"order_dir,omitempty"` // ASC o DESC
 }
 
-type InviteRequest map[string]Document
+type DocRev struct {
+	IdFolder  string     `json:"idfolder"`
+	Document  Document   `json:"document"`
+	Reviewers []Reviewer `json:"reviewers"`
+}
+
+type InviteRequest map[string]DocRev
 
 type SignByInviteRequest struct {
 	IdInvite string `json:"idInvite"`
@@ -94,6 +100,11 @@ type FolderRequest struct {
 	PageSize   int    `json:"pageSize,omitempty"`
 	OrderBy    string `json:"orderBy,omitempty"`
 	OrderDir   string `json:"orderDir,omitempty"`
+}
+
+type LLMrequest struct {
+	Path   string `json:"path"`
+	Action int    `json:"action"`
 }
 
 // ==================== RESPONSES ====================//
@@ -202,4 +213,10 @@ type FolderListResp struct {
 	PageSize    int                    `json:"page_size"`
 	Total       int                    `json:"total"`
 	FoldersData map[string]interface{} `json:"folders"`
+}
+
+type LLMresp struct {
+	Status  bool   `json:"status"`
+	Message string `json:"message"`
+	Date    string `json:"date"`
 }

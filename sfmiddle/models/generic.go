@@ -45,21 +45,19 @@ type Reviewer struct {
 
 // Document representa cada documento en el JSON
 type Document struct {
-	IdDocument       string     `json:"idDocument"`
-	ActiveDoc        string     `json:"activeDoc"`
-	AuthRoleStatus   string     `json:"authRoleStatus"`
-	AuthUseStatus    string     `json:"authUseStatus"`
-	CreatedAtDoc     string     `json:"createdAtDoc"`
-	DocumentExt      string     `json:"documentExt"`
-	DocumentHash     string     `json:"documentHash"`
-	DocumentName     string     `json:"documentName"`
-	DocumentPath     string     `json:"documentPath"`
-	DocumentClass    string     `json:"documentClass"`
-	DocumentFullName string     `json:"documentFullName"`
-	Abstract         string     `json:"abstract"`
-	IdFolder         string     `json:"idFolder"`
-	LastModifiedDoc  string     `json:"lastModifiedDoc"`
-	Reviewers        []Reviewer `json:"reviewers"`
+	IdDocument       string `json:"idDocument"`
+	ActiveDoc        string `json:"activeDoc"`
+	AuthRoleStatus   string `json:"authRoleStatus"`
+	AuthUseStatus    string `json:"authUseStatus"`
+	CreatedAtDoc     string `json:"createdAtDoc"`
+	DocumentExt      string `json:"documentExt"`
+	DocumentHash     string `json:"documentHash"`
+	DocumentName     string `json:"documentName"`
+	DocumentPath     string `json:"documentPath"`
+	DocumentClass    string `json:"documentClass"`
+	DocumentFullName string `json:"documentFullName"`
+	Abstract         string `json:"abstract"`
+	LastModifiedDoc  string `json:"lastModifiedDoc"`
 }
 
 // datos para llenar la plantilla de invitacion por email
@@ -74,12 +72,10 @@ type InviteMail struct {
 }
 
 type FolderInvite struct {
-	IdFolder       string       `json:"idFolder"`
-	IsSecuential   bool         `json:"isSecuential"`
-	ExpirationDate string       `json:"expirationDate"`
-	UserEmisor     UserInfo     `json:"userEmisor"`
-	UserDest       UserDestInfo `json:"userDest"`
-	Invites        []Invite     `json:"invites"`
+	IdFolder     string   `json:"idFolder"`
+	IsSecuential bool     `json:"isSecuential"`
+	UserEmisor   UserInfo `json:"userEmisor"`
+	Invites      []Invite `json:"invites"`
 }
 
 type Folder struct {
@@ -100,7 +96,7 @@ type Folder struct {
 	NumSigners     string       `json:"numSigners"`
 	Path           string       `json:"path"`
 	Purpose        string       `json:"purpose"`
-	Documents      []string     `json:"documents"`
+	Documents      []Document   `json:"documents"`
 }
 
 type UserInfo struct {
@@ -117,10 +113,17 @@ type UserDestInfo struct {
 }
 
 type Invite struct {
-	IdInvite      string   `json:"idInvite"`
-	AliveProof    bool     `json:"aliveProof"`
-	IsSigner      bool     `json:"isSigner"`
-	SentAt        string   `json:"sentAt"`
-	MessageEmisor string   `json:"messageEmisor"`
-	Document      Document `json:"document"`
+	IdInvite   string      `json:"idInvite"`
+	UserDest   Reviewer    `json:"userDest"`
+	AliveProof bool        `json:"aliveProof"`
+	SentAt     string      `json:"sentAt"`
+	InviteDocs []InviteDoc `json:"invitedocs"`
+}
+
+type InviteDoc struct {
+	Doc       Document `json:"document"`
+	ForSign   bool     `json:"forSign"`
+	ExpiresAt string   `json:"expirationDate"`
+	Order     int      `json:"order"`
+	Comment   string   `json:"comment"`
 }

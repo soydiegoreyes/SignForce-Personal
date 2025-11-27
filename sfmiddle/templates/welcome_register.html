@@ -5,20 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bienvenido a Signforce</title>
     <style>
-       body {
-            background: #F3E2D4;
-            min-height: 100vh;
-            font-family: Inter, "Helvetica", sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0px;
-            color: #eaeaea;
+       :root {
+            --color-background: #000;
+            --color-card: rgba(255, 255, 255, 0.05);
+            --color-text-primary: #ffffff;
+            --color-text-secondary: rgba(255, 255, 255, 0.7);
+            --color-accent: rgba(255, 255, 255, 0.5);
+            --color-shadow: rgba(0, 0, 0, 0.3);
+            --color-blue-dark: #070013;
+            --color-blue-light: #93bde5;
+            --color-gold: #e5b019;
+            --color-red-wine: #74273a;
         }
 
+        body {
+            background: var(--color-background);
+            min-height: 100vh;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--color-text-primary);
+        }
+
+
         .container {
-            background: rgb(24, 1, 48);
+           background: var(--color-shadow);
             border-radius: 16px;
             padding: 20px;
             max-width: 800px;
@@ -48,11 +58,9 @@
             word-spacing: 1px;
             line-height: 1.8;
         }
-        h1 {
-            background:  #35004366;
-        }
+        
 
-         a {
+        a {
             color: rgb(255, 0, 255); /* Color de los enlaces por defecto */
         }
 

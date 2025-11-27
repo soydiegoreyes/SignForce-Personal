@@ -491,7 +491,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			} else if dataInst[idInst]["statusInst_fk"] == "5" {
 				location = "/payment"
 			} else if dataInst[idInst]["statusInst_fk"] == "6" {
-				location = "/myKeys"
+				location = "/mykeys"
 			} else if dataInst[idInst]["statusInst_fk"] == "7" {
 				location = "/mydocs"
 			} else if dataInst[idInst]["statusInst_fk"] == "8" {

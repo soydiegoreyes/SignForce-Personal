@@ -77,15 +77,13 @@ func GenerateInvites(invites []models.InviteMail) error {
 			fmt.Println("TODO OK")
 		}
 		resp.Body.Close()
-
-		//fmt.Println(inviteResp, dataInvites)
 	}
 	return nil
 }
 
 func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	// obtenemos datos de la invitación (solo una por usuario)
-	attrs := []string{"idFolder", "idInstitutionDest_fk", "idUserDest_fk", "idTeamDest_fk", "requireAliveProof",
+	attrs := []string{"idFolder", "idUserOwnner_fk", "idUserDest_fk", "requireAliveProof",
 		"expirationDate", "sentAt", "descriptionText"}
 	wheres := map[string][]string{
 		"idInvite": {idInvite},
@@ -101,11 +99,10 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	// Obtener datos del folder
-	attrs = []string{"secuentialSign", "expirationDate"}
+	attrs = []string{"secuentialSign", "expirationDate", "creatorUser_fk", "ownerInst_fk", "ownerTeam_fk"}
 	wheres = map[string][]string{
 		"idFolder": {inviteData[idInvite]["idFolder"]},
 	}
-
 	folderData, err := db.DB_con.GenericSelect("folders", "idFolder", attrs, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo datos del folder: %v", err)
@@ -118,92 +115,85 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	idFolder := inviteData[idInvite]["idFolder"]
 
 	// Obtener datos del usuario destinatario
+	attrs = []string{"activeUser", "idKeysUser_fk", "nameUser", "lastNameUser", "emailUser", "idInstitution_fk", "idTeam_fk"}
 	wheres = map[string][]string{
-		"idUser":           {inviteData[idInvite]["idUserDest_fk"]},
-		"idInstitution_fk": {inviteData[idInvite]["idInstitutionDest_fk"]},
-		"idTeam_fk":        {inviteData[idInvite]["idTeamDest_fk"]},
+		"idUser": {inviteData[idInvite]["idUserDest_fk"]},
 	}
-
-	userData, err := db.DB_con.GenericSelect("users", "idUser",
-		[]string{"activeUser", "idKeysUser_fk", "nameUser"}, wheres)
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo datos del usuario: %v", err)
 	}
-
 	if len(userData) == 0 {
 		return nil, fmt.Errorf("usuario destinatario no encontrado")
 	}
 
-	// Obtener llaves RSA del usuario
+	// Obtener datos del usuario emisor
 	wheres = map[string][]string{
-		"idUser_fk": {inviteData[idInvite]["idUserDest_fk"]},
+		"idUser": {inviteData[idInvite]["idUserOwnner_fk"]},
 	}
-	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys",
-		[]string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514",
-			"subjectUniqueId", "createdAtKey"}, wheres)
+
+	ownerUserData, err := db.DB_con.GenericSelect("users", "idUser",
+		[]string{"nameUser", "lastNameUser", "emailUser"}, wheres)
 	if err != nil {
-		return nil, fmt.Errorf("error obteniendo llaves del usuario: %v", err)
+		return nil, fmt.Errorf("error obteniendo datos del usuario emisor: %v", err)
 	}
 
-	keyStatResp := make([]*models.KeysStatus, 0)
-	for idKey, key := range keys {
-		selected := userData[inviteData[idInvite]["idUserDest_fk"]]["idKeysUser_fk"] == idKey
+	// Obtener datos de la institución del emisor
+	wheres = map[string][]string{
+		"idInstitution": {folderData[idFolder]["ownerInst_fk"]},
+	}
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution",
+		[]string{"legalNameInst", "aliasNameInst"}, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo datos de la institución: %v", err)
+	}
 
-		ks := &models.KeysStatus{
-			IdKey:           idKey,
-			NameKey:         key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:],
-			NameCer:         key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:],
-			Expiration:      key["notValidAfter"],
-			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
-			SubjectUniqueId: key["subjectUniqueId"],
-			UploadedAt:      key["createdAtKey"],
-			Selected:        selected,
+	// Obtener datos del equipo del emisor
+	attrs = []string{"nameTeam"}
+	wheres = map[string][]string{
+		"idTeam": {folderData[idFolder]["ownerTeam_fk"]},
+	}
+	teamData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo datos del equipo: %v", err)
+	}
+
+	// Obtener los documentos de la invitación específica
+	attrs = []string{"idfolderdocument"}
+	wheres = map[string][]string{
+		"idInvite": {idInvite},
+	}
+
+	inviteDocsData, err := db.DB_con.GenericSelect("invitesdetail", "idfolderdocument", attrs, wheres)
+	if err != nil {
+		return nil, fmt.Errorf("error obteniendo documentos de la invitación: %v", err)
+	}
+
+	if len(inviteDocsData) == 0 {
+		return nil, fmt.Errorf("no se encontraron documentos en la invitación")
+	}
+
+	// Obtener los idDocument de los folderdocuments
+	var docIds []string
+	for _, doc := range inviteDocsData {
+		wheres = map[string][]string{
+			"idfolderdocument": {doc["idfolderdocument"]},
 		}
-		keyStatResp = append(keyStatResp, ks)
+		folderDocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument",
+			[]string{"idDocument"}, wheres)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo documentos del folder: %v", err)
+		}
+		for _, fd := range folderDocData {
+			docIds = append(docIds, fd["idDocument"])
+		}
 	}
 
-	// Aquí deberías obtener los datos del emisor, institución y equipo
-	// (esto depende de tu esquema de base de datos)
-	// Por ahora dejo valores de ejemplo - debes ajustar según tu BD
-
-	// TODO: Obtener datos reales del emisor desde la BD
-	userEmisor := models.UserInfo{
-		NameInstEmisor: "Nombre Institución Emisor",
-		NameUserEmisor: "Nombre Usuario Emisor",
-		NameTeamEmisor: "Nombre Team Emisor",
-	}
-
-	// TODO: Obtener datos reales de institución y equipo del destinatario
-	userDest := models.UserDestInfo{
-		NameInstDest: "Nombre Institución Destino",
-		NameUserDest: userData[inviteData[idInvite]["idUserDest_fk"]]["nameUser"],
-		NameTeamDest: "Nombre Team Destino",
-		Keys:         keyStatResp,
-	}
-
-	// Obtener los id de los documentos del folder
-	attrs = []string{"idDocument"}
-	wheres = map[string][]string{
-		"idFolder": {inviteData[idInvite]["idFolder"]},
-	}
-
-	folderDocs, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", attrs, wheres)
-	if err != nil {
-		return nil, fmt.Errorf("error obteniendo datos del folder: %v", err)
-	}
-
-	if len(folderDocs) == 0 {
-		return nil, fmt.Errorf("documentos no encontrados")
-	}
-
-	// Obtener datos de los documentos del folder
+	// Obtener datos de los documentos
 	attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
-		"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc"}
+		"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
 	wheres = map[string][]string{
-		"idDocument": {},
-	}
-	for _, d := range folderDocs {
-		wheres["idDocument"] = append(wheres["idDocument"], d["idDocument"])
+		"idDocument": docIds,
 	}
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
 	if err != nil {
@@ -211,66 +201,91 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	if len(docData) == 0 {
-		return nil, fmt.Errorf("documento no encontrado")
+		return nil, fmt.Errorf("documentos no encontrados")
 	}
 
-	// Construir respuesta completa
+	// Construir UserInfo del emisor
+	userEmisor := models.UserInfo{
+		NameInstEmisor: fmt.Sprintf("%s (%s)", instData[folderData[idFolder]["ownerInst_fk"]]["legalNameInst"],
+			instData[folderData[idFolder]["ownerInst_fk"]]["aliasNameInst"]),
+		NameUserEmisor: fmt.Sprintf("%s %s",
+			ownerUserData[inviteData[idInvite]["idUserOwnner_fk"]]["nameUser"],
+			ownerUserData[inviteData[idInvite]["idUserOwnner_fk"]]["lastNameUser"]),
+		NameTeamEmisor: teamData[folderData[idFolder]["ownerTeam_fk"]]["name"],
+	}
+
+	// Construir UserDestInfo del destinatario
+	userDest := models.UserDestInfo{
+		NameUserDest: fmt.Sprintf("%s %s",
+			userData[inviteData[idInvite]["idUserDest_fk"]]["nameUser"],
+			userData[inviteData[idInvite]["idUserDest_fk"]]["lastNameUser"]),
+		// Nota: Necesitarías obtener nombre de institución y equipo del destinatario si es necesario
+	}
+	fmt.Println(userDest)
+	// Construir la invitación con documentos
+	var inviteDocs []models.InviteDoc
+	for _, docId := range docIds {
+		if doc, exists := docData[docId]; exists {
+			if doc["activeDoc"] != "1" {
+				return nil, fmt.Errorf("documento %s ya no se encuentra activo", docId)
+			}
+
+			documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
+			filePath := fmt.Sprintf("./%s%s", doc["documentPath"], documentFullName)
+
+			if _, err := os.Stat(filePath); os.IsNotExist(err) {
+				return nil, fmt.Errorf("archivo no encontrado en el sistema: %s", filePath)
+			}
+
+			hash, err := utilities.GetHash(filePath, configs.HashConf)
+			if err != nil {
+				return nil, fmt.Errorf("error al obtener hash: %v", err)
+			}
+
+			if doc["documentHash"] != hash {
+				return nil, fmt.Errorf("hash no corresponde al archivo %s", documentFullName)
+			}
+
+			inviteDoc := models.InviteDoc{
+				Doc: models.Document{
+					IdDocument:       docId,
+					ActiveDoc:        doc["activeDoc"],
+					AuthRoleStatus:   doc["authRoleStatus"],
+					AuthUseStatus:    doc["authUseStatus"],
+					CreatedAtDoc:     doc["createdAtDoc"],
+					DocumentExt:      doc["documentExt"],
+					DocumentHash:     doc["documentHash"],
+					DocumentName:     doc["documentName"],
+					DocumentPath:     doc["documentPath"],
+					DocumentFullName: documentFullName,
+					Abstract:         doc["abstractDoc"],
+					LastModifiedDoc:  doc["lastModifiedDoc"],
+				},
+				ForSign:   true, // Esto debería venir de la base de datos según el rol del usuario
+				ExpiresAt: inviteData[idInvite]["expirationDate"],
+				Comment:   inviteData[idInvite]["descriptionText"],
+			}
+			inviteDocs = append(inviteDocs, inviteDoc)
+		}
+	}
+
+	// Construir la Invite completa
+	invite := models.Invite{
+		IdInvite:   idInvite,
+		UserDest:   models.Reviewer{User: inviteData[idInvite]["idUserDest_fk"]}, // Solo el ID por ahora
+		AliveProof: inviteData[idInvite]["requireAliveProof"] == "1",
+		SentAt:     inviteData[idInvite]["sentAt"],
+		InviteDocs: inviteDocs,
+	}
+
+	// Construir respuesta final
 	inviteInfo := &models.InviteInfoResp{
 		Folder: models.FolderInvite{
-			IdFolder:       idFolder,
-			IsSecuential:   folderData[idFolder]["secuentialSign"] == "1",
-			ExpirationDate: folderData[idFolder]["expirationDate"],
-			UserEmisor:     userEmisor,
-			UserDest:       userDest,
-			Invites:        []models.Invite{},
+			IdFolder:     idFolder,
+			IsSecuential: folderData[idFolder]["secuentialSign"] == "1",
+			UserEmisor:   userEmisor,
+			Invites:      []models.Invite{invite},
 		},
-	}
-
-	// Validar documento y añadir datos de la invitacion
-	for idDoc, doc := range docData {
-		if doc["activeDoc"] != "1" {
-			return nil, fmt.Errorf("documento ya no se encuentra activo")
-		}
-
-		if doc["authRoleStatus"] != "1" {
-			return nil, fmt.Errorf("no autorizado para acceder a este documento")
-		}
-
-		if doc["authUseStatus"] != "1" {
-			return nil, fmt.Errorf("documento sin autorización de uso")
-		}
-
-		documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
-		filePath := fmt.Sprintf("./%s%s", doc["documentPath"], documentFullName)
-
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			return nil, fmt.Errorf("archivo no encontrado en el sistema")
-		}
-
-		hash, err := utilities.GetHash(filePath, configs.HashConf)
-		if err != nil {
-			return nil, fmt.Errorf("error al obtener hash: %v", err)
-		}
-
-		// Corregido: debería ser != en lugar de ==
-		if doc["documentHash"] != hash {
-			return nil, fmt.Errorf("hash no corresponde al archivo")
-		}
-
-		// Crear invite con documento
-		invite := models.Invite{
-			IdInvite:      idInvite,
-			AliveProof:    inviteData[idInvite]["requireAliveProof"] == "1",
-			IsSigner:      inviteData[idInvite]["signerViewer"] == "1",
-			SentAt:        inviteData[idInvite]["sentAt"],
-			MessageEmisor: inviteData[idInvite]["descriptionText"],
-			Document: models.Document{
-				IdDocument:       idDoc,
-				DocumentFullName: documentFullName,
-				Abstract:         doc["abstractDoc"],
-			},
-		}
-		inviteInfo.Folder.Invites = append(inviteInfo.Folder.Invites, invite)
 	}
 
 	return inviteInfo, nil

@@ -178,6 +178,7 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 	}
 }
 
+// ===============================================================================================
 // Handler para cerrar folder y enviar invitaciones a firma
 func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -198,8 +199,8 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	_, ok1 := claims["uid"].(string)
-	idInst, ok2 := claims["iid"].(string)
+	idUser, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
 	_, ok3 := claims["team"].(string)
 	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
@@ -207,6 +208,49 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Leer y parsear el JSON =====
+	/* InviteRequest model
+		{
+			Doc1:
+				data1...
+				Rev1:
+					User
+					Role
+					DueDate
+					Team
+					Comment
+					Pos1, Pos2, Pos3
+				Rev2:
+					datauser...
+					[Pos4, Pos5]
+			Doc2:
+				data2...
+				Rev1:
+					datauser...
+					Pos6, Pos7
+				Rev3:
+					datauser...
+					Pos8
+			Doc3:
+				data3...
+				Rev1:
+					datauser...
+					Pos9, Pos10, Pos11
+				Rev3:
+					datauser...
+					Pos12, Pos13
+				Rev4:
+					datauser...
+					Pos14, Pos15, Pos16
+		}
+
+		type InviteRequest map[string]DocRev
+
+		type DocRev struct {
+		idFolder string `json:"idfolder"`
+		Document  Document   `json:"document"`
+		Reviewers []Reviewer `json:"reviewers"`
+	}
+	*/
 	var requestData models.InviteRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
@@ -214,36 +258,119 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Procesar cada documento =====
-	for _, doc := range requestData {
-		// invitaciones para el documento
-		invites := []models.InviteMail{}
+	// se toman los reviewers unicos de todos los documentos y se le añaden los documentos que debe firmar
+	// se obtienen los datos para la invitacion por email del reviewer
+	// una invitacion por usuario y cada invitacion tiene un link, al entrar al link debe tener los documentos del folder que el usuario va a firmar solamente
+	// doc tiene datos del documento como hash, ruta, id
+	/*
+			type Reviewer struct {
+				User          string         `json:"user"`      -> idUser
+				Role          int            `json:"role"`      -> firmante o revisor
+				DueDate       string         `json:"due_date"`  -> fecha limite
+				Team          string         `json:"team"`      -> idTeam
+				Comment       string         `json:"comment"`   -> Comentario del remitente al revisor
+				SignPositions []SignPosition `json:"positions"` -> Posiciones de firma solo del documento correspondiente
+			}
 
-		idInvite := uuid.NewString()
-		sentAt := time.Now().Format("2006-01-02 15:04:05")
-		for i, reviewer := range doc.Reviewers {
+			Invites map[string]Invite -> (un invite por usuario con el id del usuario)
 
-			// ===== Consultar datos del reviewer =====
+			type Invite struct {
+				IdInvite   string      `json:"idInvite"`
+				UserDest   Reviewer    `json:"userDest"`
+				AliveProof bool        `json:"aliveProof"`
+				SentAt     string      `json:"sentAt"`
+				InviteDocs []InviteDoc `json:"invitedocs"`
+			}
+
+			type InviteDoc struct {
+				Doc       Document `json:"document"`
+				ForSign   bool     `json:"forSign"`
+				ExpiresAt string   `json:"expirationDate"`
+				Comment   string   `json:"comment"`
+			}
+			type Document struct {
+				IdDocument       string `json:"idDocument"`
+				ActiveDoc        string `json:"activeDoc"`
+				AuthRoleStatus   string `json:"authRoleStatus"`
+				AuthUseStatus    string `json:"authUseStatus"`
+				CreatedAtDoc     string `json:"createdAtDoc"`
+				DocumentExt      string `json:"documentExt"`
+				DocumentHash     string `json:"documentHash"`
+				DocumentName     string `json:"documentName"`
+				DocumentPath     string `json:"documentPath"`
+				DocumentClass    string `json:"documentClass"`
+				DocumentFullName string `json:"documentFullName"`
+				Abstract         string `json:"abstract"`
+				LastModifiedDoc  string `json:"lastModifiedDoc"`
+			}
+		}
+	*/
+
+	// lista de invitaciones que serán identificadas cada una por el id del usuario
+	invites := make(map[string]*models.Invite)
+	invitesMails := make(map[string]models.InviteMail) // cada usuario tiene su invite mail y se deben de enviar como lista
+	for _, docrev := range requestData {               // -> por cada documento dentro del request
+
+		for i, reviewer := range docrev.Reviewers { // -> por cada revisor dentro del documento
+			// si dentro de la lista de invitaciones NO esta el idUser entonces se crea una nueva invitación
+			if _, ok := invites[reviewer.User]; !ok {
+				invites[reviewer.User] = &models.Invite{ //-> dado que es una invitacion por usuario entonces el id es el del usuario como director de la invitacion
+					IdInvite:   uuid.NewString(), // -> el uuid es para que la invitacion se identifique en base de datos
+					UserDest:   reviewer,         // -> dado que el userDest es el reviewer y son la misma estructura se asigna directamente
+					SentAt:     time.Now().Format("2006-01-02 15:04:05"),
+					InviteDocs: []models.InviteDoc{}, // -> el usuario solo podrá ver los documentos que esten dentro de esta lista aunque sea el mismo folder
+				}
+
+				// ===== INSERT en tabla invites =====
+				inviteCols := []string{"idInvite", "idFolder", "idUserOwnner_fk", "idUserDest_fk", "expirationDate", "sentAt", "descriptionText"}
+
+				inviteAttrs := []interface{}{
+					invites[reviewer.User].IdInvite, // idInvite
+					docrev.IdFolder,                 //idFolder
+					idUser,                          // idUserOwnner
+					reviewer.User,                   // idUserDest_fk
+					reviewer.DueDate,                // expirationDate
+					invites[reviewer.User].SentAt,   // sentAt
+					reviewer.Comment,                // descriptionText
+				}
+
+				_, err = db.DB_con.GenericInsert("invites", inviteCols, inviteAttrs)
+				if err != nil {
+					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
+					return
+				}
+			}
+			// se inserta en InviteDocs los datos del documento que hay que firmar (uno por documento)
+			var invdoc = models.InviteDoc{
+				ForSign:   reviewer.Role == 1,
+				ExpiresAt: reviewer.DueDate,
+				Comment:   reviewer.Comment,
+				Order:     i,
+				Doc:       docrev.Document,
+			}
+
+			// se inserta la invitacion con el id del usuario
+			invites[reviewer.User].InviteDocs = append(invites[reviewer.User].InviteDocs, invdoc)
+
+			// ===== Obtener datos del reviewer para personalizar la invitacion de email =====
+			// como solo se cuenta con el id del usuario al que se dirije la inv se debe sacar su institucion y correo y nombre
 			attrs := []string{"idInstitution_fk", "nameUser", "lastNameUser", "emailUser"}
 			wheres := map[string][]string{
 				"idUser": {reviewer.User},
 			}
-
 			userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 			if err != nil || len(userData) == 0 {
 				http.Error(respWriter, "Error al obtener institución del usuario: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
-
-			reviewerInst := userData[reviewer.User]["idInstitution_fk"]
 			reviewerName := fmt.Sprintf("%s %s", userData[reviewer.User]["nameUser"], userData[reviewer.User]["lastNameUser"])
 			reviewerEmail := userData[reviewer.User]["emailUser"]
 
-			// ===== Consultar institución del reviewer =====
+			// ===== Consultar institución del reviewer para personalizar email =====
 			attrs = []string{"legalNameInst", "aliasNameInst", "activeInst"}
 			wheres = map[string][]string{
-				"idInstitution": {reviewerInst},
+				"idInstitution": {userData[reviewer.User]["idInstitution_fk"]},
 			}
-
 			InstData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
 			if err != nil || len(InstData) == 0 {
 				http.Error(respWriter, "Error al obtener institución del usuario: "+err.Error(), http.StatusInternalServerError)
@@ -252,17 +379,13 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 			// ===== INSERT en tabla signatures =====
 			signatureCols := []string{
-				"idInvite_fk", "idFolder", "digestValueSign",
-				"idInstitution_fk", "idUser_fk", "idTeam_fk",
+				"idInvite_fk", "digestValueSign", "idUser_fk",
 			}
 
 			signatureAttrs := []interface{}{
-				idInvite,         // idInvite_fk
-				doc.IdFolder,     // idFolder
-				doc.DocumentHash, // digestValueSign
-				reviewerInst,     // idInstitution_fk
-				reviewer.User,    // idUser_fk
-				reviewer.Team,    // idTeam_fk
+				invites[reviewer.User].IdInvite, // idInvite_fk
+				docrev.Document.DocumentHash,    // digestValueSign
+				reviewer.User,                   // idUser_fk
 			}
 
 			idSignature, err := db.DB_con.GenericInsert("signatures", signatureCols, signatureAttrs)
@@ -292,46 +415,54 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					return
 				}
 			}
-			if i == len(doc.Reviewers)-1 {
-				// ===== INSERT en tabla invites =====
-				inviteCols := []string{
-					"idInvite", "idFolder", "idInstitutionDest_fk",
-					"idUserDest_fk", "idTeamDest_fk", "expirationDate", "sentAt", "descriptionText",
+
+			wheres = map[string][]string{
+				"idFolder": {docrev.IdFolder},
+			}
+
+			folderdocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", []string{"idDocument"}, wheres)
+			if err != nil {
+				http.Error(respWriter, "Error al obtener documentos del folder: "+err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			inviteDetCols := []string{"idInvite", "idfolderdocument"}
+
+			for idfolderdoc := range folderdocData {
+				inviteDetAttrs := []interface{}{
+					invites[reviewer.User].IdInvite,
+					idfolderdoc,
 				}
 
-				inviteAttrs := []interface{}{
-					idInvite,         // idInvite
-					doc.IdFolder,     // idFolder
-					idInst,           // idInstitutionDest_fk
-					reviewer.User,    // idUserDest_fk
-					reviewer.Team,    // idTeamDest_fk
-					reviewer.DueDate, // expirationDate
-					sentAt,           // sentAt
-					reviewer.Comment, // descriptionText
-				}
-
-				_, err := db.DB_con.GenericInsert("invites", inviteCols, inviteAttrs)
+				_, err = db.DB_con.GenericInsert("invitesdetail", inviteDetCols, inviteDetAttrs)
 				if err != nil {
 					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
 					return
 				}
+			}
 
-				invite := models.InviteMail{
+			if _, ok := invitesMails[reviewer.User]; !ok {
+				reviewerInst := userData[reviewer.User]["idInstitution_fk"]
+
+				inviteEmail := models.InviteMail{
 					IdUser:        reviewer.User,
 					ReviewerName:  reviewerName,
 					ReviewerEmail: reviewerEmail,
 					ReviewerInst:  fmt.Sprintf("%s (%s)", InstData[reviewerInst]["legalNameInst"], InstData[reviewerInst]["aliasNameInst"]),
-					SentDate:      sentAt,
+					SentDate:      invites[reviewer.User].SentAt,
 					SenderMessage: reviewer.Comment,
-					UrlSignLink:   fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInvite),
+					UrlSignLink:   fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), invites[reviewer.User].IdInvite),
 				}
-				invites = append(invites, invite)
+				invitesMails[reviewer.User] = inviteEmail
 			}
 		}
-
-		err = documentflow.GenerateInvites(invites)
+		imails := []models.InviteMail{}
+		for _, invs := range invitesMails {
+			imails = append(imails, invs)
+		}
+		err = documentflow.GenerateInvites(imails)
 		if err != nil {
-			fmt.Println(err)
+			http.Error(respWriter, "Error al generar invite: "+err.Error(), http.StatusInternalServerError)
 		}
 	}
 

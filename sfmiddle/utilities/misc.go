@@ -65,7 +65,7 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 	// Crear directorio si no existe
 	var uploadDir string
 	if savepath == "" {
-		uploadDir = fmt.Sprintf("./%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+		uploadDir = fmt.Sprintf("%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
 	} else {
 		savepath, _ = strings.CutSuffix(savepath, "/")
 		uploadDir = fmt.Sprintf("%s/", savepath)

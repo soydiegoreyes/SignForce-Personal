@@ -62,6 +62,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	resp := &models.PaymentResp{}
+	var idPay string
 
 	if len(data) == 0 {
 		var plan string
@@ -80,7 +81,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		expPlan := time.Now().AddDate(0, 1, 0).Format("2006-01-02 15:04:05")
 		cols := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "cardNumber", "expirationDate", "nameOwner"}
 		vals := []interface{}{payStatus, plan, expPlan, payReq.CardNum, payReq.Expiration, payReq.NameOwner}
-		idPay, err := db.DB_con.GenericInsert("payment", cols, vals)
+		idPay, err = db.DB_con.GenericInsert("payment", cols, vals)
 		if err != nil {
 			fmt.Println("Error info pago")
 			http.Error(respWriter, "Error al insertar informacion de pago", http.StatusInternalServerError)
@@ -91,11 +92,11 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 				"paymentDataInst_fk": idPay,
 			},
 		}
-
 		err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
 		if err != nil {
 			http.Error(respWriter, "Error al actualizar informacion de institucion", http.StatusInternalServerError)
 		}
+
 		resp.CurrentSatat = plan
 		resp.Success = true
 		resp.Status = payStatus
@@ -115,7 +116,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al generar JSON", http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Println("Pago procesado con ID: ", idPay)
 	// Configurar headers y enviar respuesta
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
@@ -210,7 +211,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				"nameApp": {"emailServ"},
 			}
 
-			data, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
+			appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
 			if err != nil {
 				registerResp.Error = fmt.Sprintf("%s", err)
 				json.NewEncoder(respWriter).Encode(registerResp)
@@ -243,7 +244,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 			var host, port string
-			for _, v := range data {
+			for _, v := range appData {
 				host = v["domainApp"]
 				port = v["portApp"]
 				break

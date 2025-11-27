@@ -199,11 +199,11 @@ func LoadFolderInfo(idFolder, idTeam, idUser string, onlyShared, onlyTeam, onlyU
 	}
 
 	// Mapear documentos por folder
-	docsByFolder := make(map[string][]string)
+	docsByFolder := make(map[string][]models.Document)
 	for _, docData := range folderDocs {
 		folderID := docData["idFolder"]
 		docID := docData["idDocument"]
-		docsByFolder[folderID] = append(docsByFolder[folderID], docID)
+		docsByFolder[folderID] = append(docsByFolder[folderID], models.Document{IdDocument: docID})
 	}
 
 	// Construir el map de folders estructurados
@@ -230,7 +230,7 @@ func LoadFolderInfo(idFolder, idTeam, idUser string, onlyShared, onlyTeam, onlyU
 
 		// Si no hay documentos para este folder, inicializar como slice vacío
 		if folder.Documents == nil {
-			folder.Documents = []string{}
+			folder.Documents = []models.Document{}
 		}
 
 		foldersMap[folderID] = folder

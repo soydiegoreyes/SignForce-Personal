@@ -11,6 +11,7 @@ import (
 	"sfmiddle/auth"
 	"sfmiddle/configs"
 	"sfmiddle/db"
+	"sfmiddle/iapackage"
 	"sfmiddle/models"
 	"strconv"
 	"strings"
@@ -155,7 +156,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
 					return
 				}
-				fmt.Println(docData)
+
 				// Actualizar datos en la base de datos
 				cols := []string{"documentHash", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
 				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
@@ -167,6 +168,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				}
 				processedFiles = append(processedFiles, docData)
 				docIds = append(docIds, idDoc)
+				go iapackage.GetAbstractDoc(idDoc)
 			}
 		}
 	}
@@ -445,7 +447,7 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Configuración base =====
 	attrs := []string{
 		"documentHash", "createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
-		"deletedReasonDoc", "documentPath", "documentName", "documentExt",
+		"deletedReasonDoc", "documentPath", "documentName", "documentExt", "sizeB",
 		"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
 	}
 
