@@ -95,7 +95,7 @@ app.add_middleware(CORSMiddleware,
 #=================================================================================
 @app.get("/")
 async def get():
-    return "hello :9"
+    return "hola :9"
 
 @app.post("/chat")
 async def chat(data: dict = Body(...)):
