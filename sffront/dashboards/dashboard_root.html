@@ -1,66 +1,192 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_root.css">
+    <link rel="stylesheet" href="dashboard_styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <title>Dashboard ROOT</title>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">Sistema de Gestión</div>
-        <div class="user-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-            </svg>
-            <span id="nombreUsuario">Usuario ROOT</span>
-            <button onclick="logout()" style="margin-left: 20px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Gestión</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="teams">Equipos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="reports">Reportes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+            </div>
         </div>
-    </div>
-    
-    <div class="container">
-        <div class="welcome">
-            <h1>Bienvenido, Usuario ROOT</h1>
-            <p>Desde aquí puedes gestionar los equipos de tu empresa.</p>
+        <div class="flex flex-1 justify-end gap-8">
+            <div class="user-info flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
+                </svg>
+                <span id="nombreUsuario">Usuario ROOT</span>
+            </div>
+            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar glass-panel">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Dashboard ROOT</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="./../administracion/crear_equipo.html">
+                    <span class="material-symbols-outlined">group_add</span>
+                    <span>Crear Equipo</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">assessment</span>
+                    <span>Reportes</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Configuración</span>
+                </a>
+            </nav>
+        </aside>
         
-        <div class="actions">
-            <div class="action-card" onclick="window.location.href='./../administracion/crear-equipo.html'">
-                <h3>Crear Nuevo Equipo</h3>
-                <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
-                <a href="./../administracion/crear_equipo.html" class="btn btn-crear">Crear Equipo</a>
+        <main class="content">
+            <div class="welcome glass-panel p-6 mb-6 fade-in">
+                <h1 id="tituloBienvenida" class="text-3xl font-bold text-primary mb-2">Bienvenido, Usuario ROOT</h1>
+                <p class="text-secondary">Desde aquí puedes gestionar los equipos de tu empresa.</p>
             </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Ver Reportes</h3>
-                <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
-                <a href="#" class="btn">Ver Reportes</a>
+            
+            <div class="actions-grid">
+                <div class="action-card" onclick="window.location.href='./../administracion/crear_equipo.html'">
+                    <h3>Crear Nuevo Equipo</h3>
+                    <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
+                    <a href="./../administracion/crear_equipo.html" class="btn-primary text-center">Crear Equipo</a>
+                </div>
+                <div class="action-card" onclick="window.location.href='#'">
+                    <h3>Ver Reportes</h3>
+                    <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
+                    <a href="#" class="btn-secondary text-center">Ver Reportes</a>
+                </div>
+                <div class="action-card" onclick="window.location.href='#'">
+                    <h3>Configuración de Empresa</h3>
+                    <p>Actualiza la información general de tu empresa.</p>
+                    <a href="#" class="btn-secondary text-center">Configurar</a>
+                </div>
             </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Configuración de Empresa</h3>
-                <p>Actualiza la información general de tu empresa.</p>
-                <a href="#" class="btn">Configurar</a>
+            
+            <div class="equipos-list glass-panel p-6">
+                <h2 class="text-2xl font-bold text-primary mb-4">Tus Equipos</h2>
+                <div id="listaEquipos">
+                    <!-- Los equipos se cargarán dinámicamente -->
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div class="equipos-list">
-            <h2>Tus Equipos</h2>
-            <div id="listaEquipos">
-                <!-- Los equipos se cargarán dinámicamente -->
-                <p>No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
         // Cargar información del usuario
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
         
-        if (!currentUser || currentUser.tipo !== 'root') {
+        /*if (!currentUser || currentUser.tipo !== 'root') {
             window.location.href = './../registro/login.html';
-        }
+        }*/
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Usuario ROOT';
+        document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Usuario ROOT'}`;
+        
+        // Efecto liquid glass para la burbuja del menú
+        const liquidBubble = document.getElementById('liquidBubble');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        const itemPositions = {};
+        
+        function calculatePositions() {
+            navItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                
+                itemPositions[item.dataset.item] = {
+                    left: rect.left - headerRect.left,
+                    width: rect.width
+                };
+            });
+            
+            moveBubble('dashboard');
+        }
+        
+        function moveBubble(itemName) {
+            const item = itemPositions[itemName];
+            if (item && liquidBubble) {
+                liquidBubble.style.left = `${item.left - 10}px`;
+                liquidBubble.style.width = `${item.width + 20}px`;
+            }
+        }
+        
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                moveBubble(item.dataset.item);
+            });
+        });
+
+        window.addEventListener('load', calculatePositions);
+        window.addEventListener('resize', calculatePositions);
+
+        // Toggle de tema claro/oscuro
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-theme');
+                
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('light-theme')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        // Intersection Observer para animaciones
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(element => {
+            observer.observe(element);
+        });
         
         // Cargar equipos de la empresa
         function cargarEquipos() {
@@ -83,18 +209,20 @@
                 let html = '';
                 equiposEmpresa.forEach(equipo => {
                     html += `
-                        <div class="equipo-item">
+                        <div class="equipo-item fade-in">
                             <div>
-                                <h3>${equipo.nombre}</h3>
-                                <p>Usuario maestro: ${equipo.usuarioMaestroEmail}</p>
+                                <h3 class="text-primary font-semibold">${equipo.nombre}</h3>
+                                <p class="text-secondary">Usuario maestro: ${equipo.usuarioMaestroEmail}</p>
                             </div>
                             <div>
-                                <span>Miembros: ${equipo.miembros ? equipo.miembros.length : 0}</span>
+                                <span class="text-secondary">Miembros: ${equipo.miembros ? equipo.miembros.length : 0}</span>
                             </div>
                         </div>
                     `;
                 });
                 document.getElementById('listaEquipos').innerHTML = html;
+            } else {
+                document.getElementById('listaEquipos').innerHTML = '<p class="text-secondary text-center py-4">No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>';
             }
         }
         

@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const requestBody = {
-                IdDocs: documentIds,
+                IdDocs: documentIds.map(item => item.idDocument),
                 Type: "uploaded",
                 Page: 1,
                 PageSize: 50, // Número alto para obtener todos los documentos

@@ -21,14 +21,14 @@ let pdfRealWidth = 612, pdfRealHeight = 792;
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
 // Control de documentos en sessionStorage
-let folderData = JSON.parse(sessionStorage.getItem("folder")) || {};
-let docIds = Object.keys(folderData);
+let inviteRequest = JSON.parse(sessionStorage.getItem("inviteRequest")) || {};
+let docIds = Object.keys(inviteRequest);
 let currentIndex = parseInt(sessionStorage.getItem("signIndex") || "0");
 let currentDocId = docIds[currentIndex];
-let currentDoc = folderData[currentDocId];
+let currentDocRev = inviteRequest[currentDocId];
 
 document.addEventListener('DOMContentLoaded', async function() {
-    if (!currentDoc) {
+    if (!currentDocRev) {
         alert("No hay más documentos por firmar.");
         sessionStorage.removeItem("signIndex");
         return;
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initPDFElements();
 
     const title = document.getElementById('docTitle');
-    if (title) title.textContent = `${currentDoc.documentName}.${currentDoc.documentExt}`;
+    if (title) title.textContent = `${currentDocRev.document.documentName}.${currentDocRev.document.documentExt}`;
 
     // Cambiar texto del botón según documento actual
     const nextDocBtn = document.getElementById('nextDoc');
@@ -49,10 +49,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    updateApprovalTable(currentDoc.reviewers);
+    updateApprovalTable(currentDocRev.reviewers);
     setupCanvasInteractions();
 
-    await loadPDFfromServer(currentDocId);
+    await loadPDFfromServer(currentDocRev.document.idDocument);
 });
 
 async function loadPDFfromServer(docId) {
@@ -189,7 +189,7 @@ function updateApprovalTable(reviewers) {
         row.innerHTML = `
             <td class="px-4 py-2 text-primary text-sm">${rev.user}</td>
             <td class="px-4 py-2 text-secondary text-sm">${rev.team}</td>
-            <td class="px-4 py-2 text-secondary text-sm">${rev.role}</td>
+            <td class="px-4 py-2 text-secondary text-sm">${rev.role === 1 ? "Firmante" : "Revisor"}</td>
         `;
         row.addEventListener('dragstart', e => {
             currentDraggedReviewer = { user: rev.user };
@@ -320,22 +320,22 @@ async function saveAndNextDoc() {
         });
     });
 
-    // Insertamos las posiciones dentro de cada reviewer
-    if (currentDoc.reviewers && Array.isArray(currentDoc.reviewers)) {
-        currentDoc.reviewers.forEach(rev => {
+    // Insertamos las posiciones dentro de cada reviewer del documento actual
+    if (currentDocRev.reviewers && Array.isArray(currentDocRev.reviewers)) {
+        currentDocRev.reviewers.forEach(rev => {
             if (groupedByUser[rev.user]) {
                 rev.positions = groupedByUser[rev.user];
             }
         });
     }
 
-    // Guardamos los cambios
-    folderData[currentDocId] = currentDoc;
-    sessionStorage.setItem("folder", JSON.stringify(folderData));
+    // Actualizar el inviteRequest con los cambios
+    inviteRequest[currentDocId] = currentDocRev;
+    sessionStorage.setItem("inviteRequest", JSON.stringify(inviteRequest));
 
-    console.log("✅ Posiciones guardadas dentro de reviewers:", currentDoc);
+    console.log("✅ Posiciones guardadas para documento:", currentDocId);
 
-    // Lógica para pasar al siguiente documento (igual que antes)
+    // Lógica para pasar al siguiente documento
     const nextDocBtn = document.getElementById('nextDoc');
     if (currentIndex + 1 < docIds.length) {
         sessionStorage.setItem("signIndex", currentIndex + 1);
@@ -348,13 +348,26 @@ async function saveAndNextDoc() {
             nextDocBtn.textContent = "Finalizando...";
             nextDocBtn.disabled = true;
         }
-        console.log("✅ Paquete final listo para enviar:", folderData);
-        await fetch('/closeInvite', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(folderData)
-        });
-        alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
-        window.location.href = "/mydocs";
+        
+        console.log("✅ Paquete final listo para enviar:", inviteRequest);
+        
+        // Enviar todo el inviteRequest al backend
+        try {
+            const response = await fetch('/closeInvite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(inviteRequest)
+            });
+            
+            if (response.ok) {
+                alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
+                window.location.href = "/mydocs";
+            } else {
+                alert("Error al enviar las invitaciones.");
+            }
+        } catch (err) {
+            console.error("Error al enviar invitaciones:", err);
+            alert("Error al enviar las invitaciones.");
+        }
     }
 }

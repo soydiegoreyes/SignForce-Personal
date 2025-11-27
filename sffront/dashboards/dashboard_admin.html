@@ -1,59 +1,115 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Administrador de Equipo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_admin.css">
+    <link rel="stylesheet" href="dashboard_styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">Sistema de Gestión</div>
-        <div class="user-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-            </svg>
-            <span id="nombreUsuario">Administrador de Equipo</span>
-            <button onclick="logout()" style="margin-left: 20px; background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Gestión</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="./../administracion/gestion_usuarios.html" data-item="users">Usuarios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
+            </div>
         </div>
-    </div>
-    
-    <div class="container">
-        <div class="welcome">
-            <h1 id="tituloBienvenida">Bienvenido, Administrador de Equipo</h1>
-            <p>Gestiona los miembros y actividades de tu equipo.</p>
+        <div class="flex flex-1 justify-end gap-8">
+            <div class="user-info flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
+                </svg>
+                <span id="nombreUsuario">Administrador de Equipo</span>
+            </div>
+            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar glass-panel">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-primary">Dashboard Admin</h1>
+            </div>
+            <nav class="flex-1 px-4 py-2">
+                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="./../administracion/gestion_usuarios.html">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Gestionar Usuarios</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">settings</span>
+                    <span>Configuración</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>Documentos</span>
+                </a>
+            </nav>
+        </aside>
         
-        <div class="equipo-info" id="infoEquipo">
-            <!-- Información del equipo se cargará dinámicamente -->
-        </div>
-        
-        <div class="actions">
-            <div class="action-card" onclick="window.location.href='./../administracion/gestion_usuarios.html'">
-                <h3>Gestionar Usuarios</h3>
-                <p>Agrega, edita o elimina usuarios de tu equipo y asigna roles administrativos.</p>
-                <a href="./../administracion/gestion_usuarios.html" class="btn btn-agregar">Gestionar Usuarios</a>
+        <main class="content">
+            <div class="welcome glass-panel p-6 mb-6 fade-in">
+                <h1 id="tituloBienvenida" class="text-3xl font-bold text-primary mb-2">Bienvenido, Administrador de Equipo</h1>
+                <p class="text-secondary">Gestiona los miembros y actividades de tu equipo.</p>
             </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Configuración del Equipo</h3>
-                <p>Actualiza la información y configuración de tu equipo.</p>
-                <a href="#" class="btn btn-configurar">Configurar</a>
+            
+            <div class="equipo-info glass-panel p-6 mb-6" id="infoEquipo">
+                <!-- Información del equipo se cargará dinámicamente -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
             </div>
-            <div class="action-card" onclick="window.location.href='#'">
-                <h3>Documentos del Equipo</h3>
-                <p>Consulta documentos y estadísticas de tu equipo.</p>
-                <a href="#" class="btn">Ver Documentos</a>
+            
+            <div class="actions-grid">
+                <div class="action-card" onclick="window.location.href='./../administracion/gestion_usuarios.html'">
+                    <h3>Gestionar Usuarios</h3>
+                    <p>Agrega, edita o elimina usuarios de tu equipo y asigna roles administrativos.</p>
+                    <a href="./../administracion/gestion_usuarios.html" class="btn-primary text-center">Gestionar Usuarios</a>
+                </div>
+                <div class="action-card" onclick="window.location.href='#'">
+                    <h3>Configuración del Equipo</h3>
+                    <p>Actualiza la información y configuración de tu equipo.</p>
+                    <a href="#" class="btn-secondary text-center">Configurar</a>
+                </div>
+                <div class="action-card" onclick="window.location.href='#'">
+                    <h3>Documentos del Equipo</h3>
+                    <p>Consulta documentos y estadísticas de tu equipo.</p>
+                    <a href="#" class="btn-secondary text-center">Ver Documentos</a>
+                </div>
             </div>
-        </div>
-        
-        <div class="miembros-list">
-            <h2>Miembros del Equipo</h2>
-            <div id="listaMiembros">
-                <!-- Los miembros se cargarán dinámicamente -->
-                <p>Cargando miembros del equipo...</p>
+            
+            <div class="miembros-list glass-panel p-6">
+                <h2 class="text-2xl font-bold text-primary mb-4">Miembros del Equipo</h2>
+                <div id="listaMiembros">
+                    <!-- Los miembros se cargarán dinámicamente -->
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -64,12 +120,83 @@
         // Cargar información de los usuarios
         let usuarios= JSON.parse(sessionStorage.getItem('usuarios')) || [];
 
-
         /*if (!currentUser || currentUser.tipo !== 'admin_equipo') {
             window.location.href = './../registro/login.html';
         }*/
         
         document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
+        
+        // Efecto liquid glass para la burbuja del menú
+        const liquidBubble = document.getElementById('liquidBubble');
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        const itemPositions = {};
+        
+        function calculatePositions() {
+            navItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                
+                itemPositions[item.dataset.item] = {
+                    left: rect.left - headerRect.left,
+                    width: rect.width
+                };
+            });
+            
+            moveBubble('dashboard');
+        }
+        
+        function moveBubble(itemName) {
+            const item = itemPositions[itemName];
+            if (item && liquidBubble) {
+                liquidBubble.style.left = `${item.left - 10}px`;
+                liquidBubble.style.width = `${item.width + 20}px`;
+            }
+        }
+        
+        navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                moveBubble(item.dataset.item);
+            });
+        });
+
+        window.addEventListener('load', calculatePositions);
+        window.addEventListener('resize', calculatePositions);
+
+        // Toggle de tema claro/oscuro
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('light-theme');
+                
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('light-theme')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        // Intersection Observer para animaciones
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(element => {
+            observer.observe(element);
+        });
         
         // Cargar información del equipo y miembros
         function cargarEquipoYMiembros() {
@@ -87,9 +214,9 @@
             
             if (equipo) {
                 document.getElementById('infoEquipo').innerHTML = `
-                    <h2>${equipo.nombre}</h2>
-                    <p>${equipo.descripcion || 'Sin descripción'}</p>
-                    <p><strong>Creado el:</strong> ${new Date(equipo.fechaCreacion).toLocaleDateString()}</p>
+                    <h2 class="text-2xl font-bold text-primary mb-2">${equipo.nombre}</h2>
+                    <p class="text-secondary mb-2">${equipo.descripcion || 'Sin descripción'}</p>
+                    <p class="text-secondary"><strong>Creado el:</strong> ${new Date(equipo.fechaCreacion).toLocaleDateString()}</p>
                 `;
                 
                 document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Administrador'} - ${equipo.nombre}`;
@@ -97,7 +224,7 @@
                 // Cargar miembros del equipo
                 cargarMiembros(equipo);
             } else {
-                document.getElementById('infoEquipo').innerHTML = '<p>No se encontró información del equipo</p>';
+                document.getElementById('infoEquipo').innerHTML = '<p class="text-secondary">No se encontró información del equipo</p>';
             }
         }
         
@@ -124,10 +251,10 @@
                                         miembroEquipo.rol === 'miembro' ? 'rol-miembro' : '';
                         
                         html += `
-                            <div class="miembro-item">
+                            <div class="miembro-item fade-in">
                                 <div>
-                                    <h3>${usuario.nombre}</h3>
-                                    <p>${usuario.email}</p>
+                                    <h3 class="text-primary font-semibold">${usuario.nombre}</h3>
+                                    <p class="text-secondary">${usuario.email}</p>
                                 </div>
                                 <div>
                                     <span class="miembro-rol ${rolClass}">${miembroEquipo.rol.toUpperCase()}</span>
@@ -139,7 +266,7 @@
                 
                 document.getElementById('listaMiembros').innerHTML = html;
             } else {
-                document.getElementById('listaMiembros').innerHTML = '<p>No hay miembros en este equipo aún.</p>';
+                document.getElementById('listaMiembros').innerHTML = '<p class="text-secondary text-center py-4">No hay miembros en este equipo aún.</p>';
             }
         }
         

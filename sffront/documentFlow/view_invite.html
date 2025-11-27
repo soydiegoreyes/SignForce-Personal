@@ -54,21 +54,6 @@
             box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
         }
         
-        .document-card {
-            border-left: 4px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .document-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .document-card.selected {
-            border-left-color: #2196f3;
-            box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
-        }
-        
         .badge {
             display: inline-block;
             padding: 2px 6px;
@@ -86,6 +71,139 @@
         .badge-sign {
             background-color: rgba(33, 150, 243, 0.2);
             color: #2196f3;
+        }
+        
+        /* Futuristic card styles */
+        .invitation-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .invitation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        }
+        
+        .invitation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .invitation-card.selected {
+            border-color: rgba(33, 150, 243, 0.5);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+        }
+        
+        .document-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .document-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .document-abstract {
+            max-height: 80px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .document-abstract::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.1));
+        }
+        
+        .glow-effect {
+            position: relative;
+        }
+        
+        .glow-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+        }
+        
+        .futuristic-btn {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.8), rgba(156, 39, 176, 0.8));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .futuristic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .futuristic-btn:hover::before {
+            left: 100%;
+        }
+        
+        .futuristic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-pending {
+            background-color: #ff9800;
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.5);
+        }
+        
+        .status-completed {
+            background-color: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-expired {
+            background-color: #f44336;
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.5);
         }
     </style>
 </head>
@@ -118,7 +236,7 @@
         </div>
     </header>
 
-    <div class="flex min-h-screen pt-24 pb-8 px-8">
+    <div class="bg flex min-h-screen pt-24 pb-8 px-8">
         <aside class="w-64 glass-panel mr-6 flex flex-col">
             <div class="p-6">
                 <h1 class="text-2xl font-bold text-primary">Firmar Documento</h1>
@@ -135,31 +253,27 @@
                 <h2 class="text-3xl font-bold text-primary fade-in" id="sectionTitle">Documentos para Firmar</h2>
                 <div id="messageContainer"></div>
             </div>
+            
+            <!-- Grid de tarjetas de invitaciones -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8" id="invitationsGrid">
+                <!-- Las tarjetas se cargarán dinámicamente aquí -->
+                <div class="col-span-full text-center py-12">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p class="mt-4 text-secondary">Cargando invitaciones...</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="glass-panel overflow-hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
                     <div class="p-6">
-                        <div class="overflow-x-auto">
-                            <table class="w-full" id="documentsTable">
-                                <thead>
-                                    <tr class="border-b border-gray-200 dark:border-gray-800">
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Documento</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Emisor</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Tipo</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="documentsTableBody">
-                                    <!-- Los datos se cargarán dinámicamente aquí -->
-                                    <tr>
-                                        <td colspan="5" class="text-center py-8">
-                                            <div class="loading">
-                                                <div class="spinner"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <h3 class="text-xl font-semibold text-primary mb-4">Documentos en la Invitación</h3>
+                        <div id="documentsList" class="space-y-4">
+                            <!-- Los documentos se cargarán dinámicamente aquí -->
+                            <div class="text-center py-8 text-secondary">
+                                Selecciona una invitación para ver los documentos
+                            </div>
                         </div>
                     </div>
                     <div class="p-6 border-l border-gray-200 dark:border-gray-800" id="sidebarDetails">
@@ -212,15 +326,16 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Variables globales
-            let currentData = {};
-            let selectedDocumentId = null;
-            let userKeys = [];
-            let selectedKeyId = null;
-            let currentInvite = null;
-            let currentFolder = null;
+        // Variables globales
+        let currentData = {};
+        let selectedDocumentId = null;
+        let userKeys = [];
+        let selectedKeyId = null;
+        let currentInvite = null;
+        let currentFolder = null;
+        let selectedInviteId = null;
 
+        document.addEventListener('DOMContentLoaded', async () => {
             // Efecto liquid glass para la burbuja del menú
             const liquidBubble = document.getElementById('liquidBubble');
             const navItems = document.querySelectorAll('.nav-item');
@@ -331,8 +446,30 @@
                 const invite = folder.invites.find(i => i.idInvite === inviteId) || folder.invites[0];
                 currentInvite = invite;
 
-                if (folder.userDest && Array.isArray(folder.userDest.keys)) {
-                    userKeys = folder.userDest.keys;
+                // Cargar llaves RSA del usuario (si están disponibles)
+                await loadUserKeys();
+
+                // Poblar las tarjetas de invitaciones
+                populateInvitationsGrid(folder, folder.invites);
+
+            } catch (err) {
+                console.error('Error al cargar invitación:', err);
+                mostrarMensaje('Error al cargar la invitación: ' + err.message, 'error');
+            }
+        }
+
+        // Cargar llaves RSA del usuario
+        async function loadUserKeys() {
+            try {
+                const response = await fetch('/statusk', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const keysData = await response.json();
+                    userKeys = keysData || [];
+                    
                     // Encontrar la llave seleccionada
                     const selectedKey = userKeys.find(k => k.selected);
                     if (selectedKey) {
@@ -341,97 +478,206 @@
                 } else {
                     userKeys = [];
                 }
-
-                // Poblar la tabla con los documentos
-                populateDocumentsTable(folder, folder.invites);
-
             } catch (err) {
-                console.error('Error al cargar invitación:', err);
-                mostrarMensaje('Error al cargar la invitación: ' + err.message, 'error');
+                console.error('Error al cargar llaves:', err);
+                userKeys = [];
             }
         }
 
-        // Poblar la tabla con los documentos
-        function populateDocumentsTable(folder, invites) {
+        // Poblar el grid con las invitaciones como tarjetas
+        function populateInvitationsGrid(folder, invites) {
+            const invitationsGrid = document.getElementById('invitationsGrid');
+            invitationsGrid.innerHTML = '';
 
-            const tableBody = document.getElementById('documentsTableBody');
-            tableBody.innerHTML = '';
             invites.forEach(invite => {
-                if (!folder || !invite || !invite.document) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="text-center py-8 text-secondary">
-                                No hay documentos en esta invitación.
-                            </td>
-                        </tr>`;
-                    ;
+                if (!folder || !invite) {
+                    invitationsGrid.innerHTML = `
+                        <div class="col-span-full text-center py-8 text-secondary">
+                            No hay invitaciones disponibles.
+                        </div>`;
+                    return;
                 }
-                // Crear una fila para el documento de la invitación
-                const doc = invite.document;
-                const docId = doc.idDocument;
 
-                const row = document.createElement('tr');
-                row.className = "document-card fade-in cursor-pointer";
-                row.addEventListener('click', () => {
-                    selectDocument(docId, doc, folder, invite);
-                });
-                
-                const expirationDate = folder.expirationDate
-                    ? new Date(folder.expirationDate).toLocaleDateString('es-MX', {
+                // Calcular la fecha de expiración más temprana de los documentos
+                let earliestExpiration = null;
+                if (invite.invitedocs && invite.invitedocs.length > 0) {
+                    earliestExpiration = invite.invitedocs.reduce((earliest, doc) => {
+                        const docExpiration = new Date(doc.expirationDate);
+                        return (!earliest || docExpiration < earliest) ? docExpiration : earliest;
+                    }, null);
+                }
+
+                const expirationDate = earliestExpiration
+                    ? earliestExpiration.toLocaleDateString('es-MX', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric'
                     })
                     : 'N/A';
 
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center cursor-pointer" onclick="event.stopPropagation(); viewDocument('${doc.documentFullName}', '${docId}')">
-                                <span class="material-symbols-outlined text-white">description</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-primary">${doc.documentFullName}</div>
-                                <div class="text-sm text-secondary">ID: ${docId}</div>
-                            </div>
+                // Crear tarjeta para cada invitación
+                const card = document.createElement('div');
+                card.className = `invitation-card glow-effect p-6 cursor-pointer ${selectedInviteId === invite.idInvite ? 'selected' : ''}`;
+                card.setAttribute('data-invite-id', invite.idInvite);
+                card.addEventListener('click', () => {
+                    selectInvitation(invite, folder);
+                });
+
+                // Determinar estado de la invitación
+                let statusText = 'Pendiente';
+                let statusClass = 'status-pending';
+                
+                if (earliestExpiration && new Date() > earliestExpiration) {
+                    statusText = 'Expirado';
+                    statusClass = 'status-expired';
+                }
+
+                // Verificar si hay documentos para firmar
+                const hasDocumentsToSign = invite.invitedocs && 
+                    invite.invitedocs.some(doc => doc.forSign);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-primary">Invitación de Firma</h3>
+                            <p class="text-sm text-secondary">ID: ${invite.idInvite}</p>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-primary">${folder.userEmisor?.nameUserEmisor || '-'}</td>
-                    <td class="px-6 py-4 text-sm text-secondary">${expirationDate}</td>
-                    <td class="px-6 py-4">
-                        <span class="badge ${invite.isSigner ? 'badge-sign' : 'badge-approve'}">
-                            ${invite.isSigner ? 'Firmante' : 'Observador'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm">
-                        <button class="text-blue-400 hover:text-blue-300" onclick="event.stopPropagation(); viewDocument('${doc.documentFullName}', '${docId}')">
-                            <span class="material-symbols-outlined text-lg">visibility</span>
-                        </button>
-                    </td>
+                        <div class="flex items-center">
+                            <span class="${statusClass} status-indicator"></span>
+                            <span class="text-xs font-medium">${statusText}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-symbols-outlined text-sm mr-2 text-secondary">person</span>
+                            <span class="text-sm text-primary">${folder.userEmisor?.nameUserEmisor || '-'}</span>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <span class="material-symbols-outlined text-sm mr-2 text-secondary">business</span>
+                            <span class="text-sm text-primary">${folder.userEmisor?.nameInstEmisor || '-'}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-sm mr-2 text-secondary">schedule</span>
+                            <span class="text-sm text-secondary">Vence: ${expirationDate}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="badge ${hasDocumentsToSign ? 'badge-sign' : 'badge-approve'}">
+                                ${hasDocumentsToSign ? 'Firmante' : 'Observador'}
+                            </span>
+                            ${invite.aliveProof ? '<span class="badge badge-approve">Biometría</span>' : ''}
+                        </div>
+                        <span class="material-symbols-outlined text-secondary">chevron_right</span>
+                    </div>
                 `;
 
-                tableBody.appendChild(row);
-
-                // Seleccionar el documento por defecto
-                //selectDocument(docId, doc, folder, invite);
+                invitationsGrid.appendChild(card);
             });
 
-            
+            // Seleccionar la primera invitación por defecto
+            if (invites.length > 0) {
+                selectInvitation(invites[0], folder);
+            }
         }
 
-        // Seleccionar un documento
-        function selectDocument(docId, documentData, folder, invite) {
-            selectedDocumentId = docId;
+        // Seleccionar una invitación
+        function selectInvitation(invite, folder) {
+            selectedInviteId = invite.idInvite;
+            currentInvite = invite;
+            
+            // Actualizar clases de selección en las tarjetas
+            document.querySelectorAll('.invitation-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = document.querySelector(`[data-invite-id="${invite.idInvite}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // Poblar la lista de documentos
+            populateDocumentsList(invite, folder);
+            
+            // Actualizar detalles del sidebar
+            updateSidebarDetails(invite, folder);
+        }
 
-            // Actualizar la información del documento en el sidebar
-            document.getElementById('sidebarName').textContent = documentData.documentFullName || `Documento ${docId}`;
-            document.getElementById('sidebarOwner').textContent = `Emisor: ${folder.userEmisor?.nameUserEmisor || '-'}`;
+        // Poblar la lista de documentos de una invitación
+        function populateDocumentsList(invite, folder) {
+            const documentsList = document.getElementById('documentsList');
+            documentsList.innerHTML = '';
+
+            if (!invite.invitedocs || invite.invitedocs.length === 0) {
+                documentsList.innerHTML = `
+                    <div class="text-center py-8 text-secondary">
+                        No hay documentos en esta invitación.
+                    </div>`;
+                return;
+            }
+
+            invite.invitedocs.forEach(invitedoc => {
+                const doc = invitedoc.document;
+                const docId = doc.idDocument;
+
+                const docItem = document.createElement('div');
+                docItem.className = 'document-item glow-effect';
+                
+                docItem.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                                <span class="material-symbols-outlined text-white">description</span>
+                            </div>
+                            <div>
+                                <h4 class="text-md font-medium text-primary">${doc.documentFullName}</h4>
+                                <p class="text-xs text-secondary">ID: ${docId}</p>
+                            </div>
+                        </div>
+                        <button class="futuristic-btn text-sm" onclick="viewDocument('${doc.documentFullName}', '${docId}')">
+                            <span class="material-symbols-outlined text-sm mr-1">visibility</span>
+                            Ver
+                        </button>
+                    </div>
+                    
+                    <div class="document-abstract text-sm text-secondary mb-3">
+                        ${doc.abstract || 'Sin descripción disponible'}
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-xs">
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-xs mr-1">schedule</span>
+                            <span>${new Date(doc.createdAtDoc).toLocaleDateString('es-MX')}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="material-symbols-outlined text-xs mr-1">check_circle</span>
+                            <span>${invitedoc.forSign ? 'Para firmar' : 'Para revisar'}</span>
+                        </div>
+                    </div>
+                `;
+
+                documentsList.appendChild(docItem);
+            });
+        }
+
+        // Actualizar detalles del sidebar
+        function updateSidebarDetails(invite, folder) {
+            // Calcular la fecha de expiración más temprana de los documentos
+            let earliestExpiration = null;
+            if (invite.invitedocs && invite.invitedocs.length > 0) {
+                earliestExpiration = invite.invitedocs.reduce((earliest, doc) => {
+                    const docExpiration = new Date(doc.expirationDate);
+                    return (!earliest || docExpiration < earliest) ? docExpiration : earliest;
+                }, null);
+            }
 
             // Actualizar detalles de la invitación
             const detailsContainer = document.getElementById('sidebarDetailsContent');
             
-            const expirationDate = folder.expirationDate ? 
-                new Date(folder.expirationDate).toLocaleDateString('es-MX', {
+            const expirationDate = earliestExpiration ? 
+                earliestExpiration.toLocaleDateString('es-MX', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -448,19 +694,15 @@
                     minute: '2-digit'
                 }) : 'No disponible';
 
+            // Verificar si hay documentos para firmar
+            const hasDocumentsToSign = invite.invitedocs && 
+                invite.invitedocs.some(doc => doc.forSign);
+
             detailsContainer.innerHTML = `
                 <div class="grid grid-cols-1 gap-3">
                     <div>
                         <p class="text-sm text-secondary">Emisor:</p>
                         <p class="text-sm text-primary">${folder.userEmisor?.nameUserEmisor || '-'} (${folder.userEmisor?.nameInstEmisor || '-'})</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-secondary">Destinatario:</p>
-                        <p class="text-sm text-primary">${folder.userDest?.nameUserDest || '-'} (${folder.userDest?.nameInstDest || '-'})</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-secondary">Mensaje del emisor:</p>
-                        <p class="text-sm text-primary">${invite.messageEmisor || '-'}</p>
                     </div>
                     <div>
                         <p class="text-sm text-secondary">Fecha de envío:</p>
@@ -472,7 +714,7 @@
                     </div>
                     <div>
                         <p class="text-sm text-secondary">Tipo:</p>
-                        <p class="text-sm text-primary">${invite.isSigner ? 'Firmante' : 'Observador'}</p>
+                        <p class="text-sm text-primary">${hasDocumentsToSign ? 'Firmante' : 'Observador'}</p>
                     </div>
                     <div>
                         <p class="text-sm text-secondary">Biometría:</p>
@@ -490,33 +732,127 @@
             sidebarActions.style.display = 'flex';
             sidebarActions.innerHTML = '';
 
-            if (invite.isSigner) {
+            if (hasDocumentsToSign) {
                 if (userKeys.length > 0) {
                     sidebarActions.innerHTML = `
-                        <button class="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" onclick="signDocument('${invite.idInvite}', '${folder.idFolder}')">Firmar Documento</button>
+                        <button class="futuristic-btn w-full" onclick="signDocument('${invite.idInvite}', '${folder.idFolder}')">
+                            <span class="material-symbols-outlined text-sm mr-2">edit</span>
+                            Firmar Documento
+                        </button>
                     `;
                 } else {
                     sidebarActions.innerHTML = `
-                        <button class="w-full py-3 px-4 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold" onclick="showKeyUploadForm()">Subir Llaves</button>
+                        <button class="futuristic-btn w-full" onclick="showKeyUploadForm()">
+                            <span class="material-symbols-outlined text-sm mr-2">key</span>
+                            Subir Llaves
+                        </button>
                     `;
                 }
             } else {
                 sidebarActions.innerHTML = `
-                    <button class="w-full py-3 px-4 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold" onclick="acceptDocument('${invite.idInvite}', '${folder.idFolder}')">Aceptar y Dar Visto Bueno</button>
+                    <button class="futuristic-btn w-full" onclick="acceptDocument('${invite.idInvite}', '${folder.idFolder}')">
+                        <span class="material-symbols-outlined text-sm mr-2">check_circle</span>
+                        Aceptar y Dar Visto Bueno
+                    </button>
                 `;
             }
+        }
 
-            // Resaltar la fila seleccionada
-            document.querySelectorAll('.document-card').forEach(row => {
-                row.classList.remove('selected');
+        // Resto del código (renderKeys, seleccionarKey, showKeyUploadForm, viewDocument, signDocument, acceptDocument, mostrarMensaje) 
+        // Renderizar las llaves RSA
+        function renderKeys(keys, container) {
+            container.innerHTML = '';
+
+            if (!keys || keys.length === 0) {
+                container.innerHTML = '<p class="text-secondary text-center py-4">No tienes llaves registradas todavía.</p>';
+                return;
+            }
+
+            keys.forEach(k => {
+                const card = document.createElement('div');
+                card.className = `key-card ${k.selected ? 'selected' : ''}`;
+                card.setAttribute('data-idkey', k.idKey);
+
+                const header = document.createElement('div');
+                header.className = 'flex justify-between items-center mb-2';
+
+                const title = document.createElement('div');
+                title.innerHTML = `<strong class="text-sm text-primary">${k.owner}</strong><div class="text-xs text-secondary">${k.subjectUniqueId}</div>`;
+
+                const badge = document.createElement('div');
+                badge.className = 'badge';
+                badge.textContent = (new Date(k.expiration) < new Date()) ? 'Expirada' : 'Vigente';
+
+                header.appendChild(title);
+                header.appendChild(badge);
+
+                const details = document.createElement('div');
+                details.className = 'text-xs text-secondary mb-2';
+                details.innerHTML = `
+                    <div>Certificado: ${k.nameCer}</div>
+                    <div>Llave: ${k.nameKey}</div>
+                    <div>Expira: ${new Date(k.expiration).toLocaleDateString('es-MX')}</div>
+                `;
+
+                const actions = document.createElement('div');
+
+                if (k.selected) {
+                    const sel = document.createElement('span'); 
+                    sel.className = 'badge badge-sign'; 
+                    sel.textContent = 'Seleccionada'; 
+                    actions.appendChild(sel);
+                } else {
+                    const btn = document.createElement('button'); 
+                    btn.className = 'text-xs py-1 px-2 rounded bg-blue-600 hover:bg-blue-700 text-white'; 
+                    btn.textContent = 'Seleccionar';
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        seleccionarKey(k.idKey, btn);
+                    });
+                    actions.appendChild(btn);
+                }
+
+                card.appendChild(header);
+                card.appendChild(details);
+                card.appendChild(actions);
+
+                container.appendChild(card);
             });
+        }
+
+        // Seleccionar una llave
+        async function seleccionarKey(idKey, btn) {
+            btn.disabled = true; 
+            const orig = btn.textContent; 
+            btn.textContent = 'Seleccionando...';
             
-            // Como solo hay una fila, seleccionarla directamente
-            const selectedRow = document.querySelector('.document-card');
-            if (selectedRow) {
-                selectedRow.classList.add('selected');
+            try {
+                const r = await fetch('/updatek', { 
+                    method: 'POST', 
+                    credentials: 'include', 
+                    headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({ idKeyUpdate: idKey }) 
+                });
+                
+                if (!r.ok) throw new Error(await r.text());
+                
+                selectedKeyId = idKey;
+                
+                // Actualizar la UI localmente
+                userKeys.forEach(k => k.selected = (k.idKey === idKey));
+                const keysContainer = document.getElementById('sidebarKeys');
+                renderKeys(userKeys, keysContainer);
+                
+                mostrarMensaje('Llave seleccionada correctamente', 'success');
+                
+            } catch (err) {
+                console.error(err); 
+                mostrarMensaje('Error al seleccionar la llave: ' + err.message, 'error');
+                btn.disabled = false; 
+                btn.textContent = orig;
             }
         }
+        // permanece igual que en la versión anterior...
 
         // Renderizar las llaves RSA
         function renderKeys(keys, container) {
@@ -630,7 +966,10 @@
                             <label class="block text-sm text-secondary mb-1">Contraseña</label>
                             <input type="password" id="keyPassword" class="w-full p-2 bg-white/10 rounded text-sm text-primary">
                         </div>
-                        <button class="w-full py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" type="submit">Subir Llaves</button>
+                        <button class="futuristic-btn w-full" type="submit">
+                            <span class="material-symbols-outlined text-sm mr-2">cloud_upload</span>
+                            Subir Llaves
+                        </button>
                     </form>
                 </div>
             `;
@@ -669,9 +1008,9 @@
                 const result = await response.json();
                 console.log(result);
                 if (result.valid) {
-                    // Recargar la página para mostrar la nueva llave
-                    const urlParams = new URLSearchParams(window.location.search);
-                    loadInviteData(urlParams.get('idInvite'))
+                    // Recargar las llaves
+                    await loadUserKeys();
+                    mostrarMensaje('Llaves subidas correctamente', 'success');
                 } else {
                     alert('Error: ' + result.message);
                 }

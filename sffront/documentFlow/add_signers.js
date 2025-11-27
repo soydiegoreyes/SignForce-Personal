@@ -72,15 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 }
 
-// Se ejecuta automáticamente cuando el DOM está listo
-/*
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", loadTeams);
-} else {
-  loadTeams();
-}
-  */
-
   // ==============================
   // 🔹 CARGAR USUARIOS DE UN EQUIPO
   // ==============================
@@ -105,8 +96,6 @@ if (document.readyState === "loading") {
     users.forEach(u => {
       // Mostrar solo usuarios activos
       if (u.active !== "1") return;
-      // Si quieres filtrar por vivos, descomenta:
-      // if (u.hasOwnProperty("isAlive") && !u.isAlive) return;
 
       const opt = document.createElement("option");
       opt.value = u.id;
@@ -152,7 +141,7 @@ if (document.readyState === "loading") {
         <td class="px-4 py-2 w-[400px] text-primary text-sm font-normal">${rev.user}</td>
         <td class="px-4 py-2 w-60 text-sm font-normal">
           <button class="toggle-role bg-white/20 text-primary w-full rounded-lg h-8 hover:bg-white/30" data-index="${idx}">
-            ${rev.role}
+            ${rev.role === 1? "Signer":"Viewer"}
           </button>
         </td>
         <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">
@@ -232,7 +221,8 @@ if (document.readyState === "loading") {
       role: 1,
       due_date: today,
       team: team.value,
-      comment: comment.value
+      comment: comment.value,
+      positions: [] // Inicializar array vacío para posiciones
     });
 
     renderTable();
@@ -244,15 +234,45 @@ if (document.readyState === "loading") {
   // 🔹 GUARDAR Y PASAR AL SIGUIENTE DOCUMENTO
   // ==============================
   document.getElementById('uploadBtn').addEventListener('click', async () => {
+    // Guardar revisores en el documento actual
     currentDoc.reviewers = reviewers;
     folderData[currentDocId] = currentDoc;
     sessionStorage.setItem("folder", JSON.stringify(folderData));
 
     if (currentIndex + 1 < docIds.length) {
+      // Pasar al siguiente documento
       sessionStorage.setItem("currentIndex", currentIndex + 1);
       window.location.href = "/addSigners";
     } else {
+      // Todos los documentos tienen revisores, pasar a posicionamiento de firmas
       sessionStorage.removeItem("currentIndex");
+      
+      // Preparar datos para enviar al backend
+      const inviteRequest = {};
+      docIds.forEach(docId => {
+        const doc = folderData[docId];
+        inviteRequest[docId] = {
+          idfolder: doc.idFolder, // Asegúrate de que este campo existe
+          document: {
+            idDocument: docId,
+            activeDoc: doc.activeDoc,
+            authRoleStatus: doc.authRoleStatus,
+            authUseStatus: doc.authUseStatus,
+            createdAtDoc: doc.createdAtDoc,
+            documentExt: doc.documentExt,
+            documentHash: doc.documentHash,
+            documentName: doc.documentName,
+            documentPath: doc.documentPath,
+            documentFullName: `${doc.documentName}.${doc.documentExt}`,
+            abstract: doc.abstractDoc,
+            lastModifiedDoc: doc.lastModifiedDoc
+          },
+          reviewers: doc.reviewers || []
+        };
+      });
+
+      // Guardar en sessionStorage para usar en add_signs.js
+      sessionStorage.setItem("inviteRequest", JSON.stringify(inviteRequest));
       window.location.href = "/addSignatures";
     }
   });

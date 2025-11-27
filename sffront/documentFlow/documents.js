@@ -134,6 +134,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalDocs = 0;
     // Cargar documentos desde la API
     async function loadDocumentsData(tab, page = 1) {
+        // --- FIX: limpiar antes de cargar (previene páginas congeladas) ---
+        const tableBody = document.getElementById('documentsTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="10" class="text-center py-6 text-secondary">
+                        Cargando documentos...
+                    </td>
+                </tr>
+            `;
+        }
+
+        // --- FIX: bloquear peticiones mientras una ya está en curso ---
+        if (window.loadingDocuments) return;
+        window.loadingDocuments = true;
         try {
             const requestBody = {
                 page: page,
@@ -172,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </tr>
             `;
         }
+        window.loadingDocuments = false;
     }
 
     // Poblar la tabla con los documentos
@@ -211,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 : 'N/A';
 
             const statusText = doc.activeDoc === "1" ? "Activo" : "Inactivo";
-            const statusClass = doc.activeDoc === "1" ? "status-completed" : "status-in-progress";
 
             const row = document.createElement('tr');
             row.addEventListener('click', (e) => {
@@ -238,7 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td class="px-6 py-4 text-sm text-primary">${doc.documentExt || 'N/A'}</td>
-                <td class="px-6 py-4 text-sm text-secondary">${doc.abstractDoc || 'Sin descripción'}</td>
+                <td class="px-6 py-4 text-sm text-secondary">
+                    ${formatBytes(doc.sizeB)}
+                </td>
                 <td class="px-6 py-4">${statusText}</td>
             `;
 
@@ -299,8 +316,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Actualizar la información del documento en el sidebar
         document.getElementById('sidebarName').textContent = documentData.documentName || `Documento ${docId}`;
-        //document.getElementById('sidebarOwner').textContent = documentData.documentHash ? `Hash: ${documentData.documentHash.substring(0, 20)}...` : '-';
+        const sidebarState = document.getElementById('sidebarState');
+        if (sidebarState) {
+            const isActive = documentData.activeDoc === "1";
+            const color = isActive ? 'bg-green-500' : 'bg-yellow-500';
+            const text = isActive ? 'Activo' : 'Inactivo';
 
+            sidebarState.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full ${color}"></span>
+                    <span class="text-primary text-sm">${text}</span>
+                </div>
+            `;
+        }
         const uploadDate = documentData.createdAtDoc ?
             new Date(documentData.createdAtDoc).toLocaleDateString('es-MX', {
                 year: 'numeric',
@@ -351,14 +379,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="text-sm text-secondary">Extensión:</p>
                     <p class="text-sm text-primary">${documentData.documentExt || 'N/A'}</p>
                 </div>
-                <div>
-                    <p class="text-sm text-secondary">Estado:</p>
-                    <p class="text-sm text-primary">${documentData.activeDoc === "1" ? 'Activo' : 'Inactivo'}</p>
-                </div>
-                <div class="col-span-2">
-                    <p class="text-sm text-secondary">Ruta del archivo:</p>
-                    <p class="text-sm text-primary break-all">${documentData.documentPath || 'N/A'}</p>
-                </div>
                 <div class="col-span-2">
                     <p class="text-sm text-secondary">Última modificación:</p>
                     <p class="text-sm text-primary">${modifiedDate}</p>
@@ -367,10 +387,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="text-sm text-secondary">Hash del documento:</p>
                     <p class="text-sm text-primary break-all">${documentData.documentHash || 'N/A'}</p>
                 </div>
-                ${documentData.abstractDoc ? `<div class="col-span-2">
-                    <p class="text-sm text-secondary">Descripción:</p>
-                    <p class="text-sm text-primary">${documentData.abstractDoc}</p>
-                </div>` : ''}
+                ${documentData.abstractDoc ? `
+                    <div class="col-span-2">
+                        <p class="text-sm text-secondary mb-1">Descripción:</p>
+                        <div class="text-sm text-primary bg-white/5 p-2 rounded-lg"
+                            style="max-height: 150px; overflow-y: auto; scrollbar-width: thin;">
+                            ${documentData.abstractDoc}
+                        </div>
+                    </div>` : ''}
                 ${deletedInfo}
             </div>
         `;
@@ -616,6 +640,7 @@ async function createSignFolder() {
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const result = await resp.json();
 
+        // Guardar en sessionStorage para usar en add_signers.js
         sessionStorage.setItem("folder", JSON.stringify(result));
 
         if (result.redirect_url) {
@@ -686,4 +711,14 @@ function viewHistory(docId) {
     mostrarMensaje('Abriendo historial...', 'info');
     // Aquí podrías abrir un modal o navegar a /document/:id/history
     // window.location.href = `/document/${docId}/history`;
+}
+
+function formatBytes(bytes) {
+    bytes = Number(bytes);
+    if (isNaN(bytes)) return "N/A";
+
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = bytes === 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024));
+    const value = (bytes / Math.pow(1024, i)).toFixed(2);
+    return `${value} ${sizes[i]}`;
 }

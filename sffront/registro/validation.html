@@ -8,12 +8,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap" rel="stylesheet">
     <style>
         /* Variables del sistema de colores del index.css */
+        
+        .bg {
+        background: 
+            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        }
+
         :root {
             --color-background: #000;
             --color-card: rgba(255, 255, 255, 0.05);
             --color-text-primary: #ffffff;
             --color-text-secondary: rgba(255, 255, 255, 0.7);
-            --color-accent: rgb(255, 255, 255, 0.5);
+            --color-accent: rgba(255, 255, 255, 0.5);
             --color-shadow: rgba(0, 0, 0, 0.3);
             --color-blue-dark: #1e2c4b;
             --color-blue-light: #93bde5;
@@ -35,24 +43,24 @@
             --color-shadow: rgba(0, 0, 0, 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
         body {
-            background: linear-gradient(
-                180deg,
-                #2a2e35,
-                #7b8fa1,
-                #e4e9ec
-            );
+            background: var(--color-background);
             min-height: 100vh;
             background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             color: var(--color-text-primary);
-            transition: all 0.3s ease;
+        }
+
+        .bg {
+        background: 
+            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: "Michroma", sans-serif;
+            color: var(--color-text-primary);
         }
 
         body.light-theme {
@@ -77,27 +85,27 @@
 
         /* Barra superior mejorada - 25% más grande */
         .glass-header {
-        position: fixed;
-        top: 25px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 70%;
-        height: 62.5px; /* 25% más grande que 50px */
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border-radius: 50px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 
-            0 8px 32px 0 rgba(255, 255, 255, 0.1),
-            0 0 10px 1px rgba(200, 90, 255, 0.4);
-        z-index: 1000;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 25px;
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow: hidden;
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 62.5px; /* 25% más grande que 50px */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px 0 rgba(255, 255, 255, 0.1),
+                0 0 10px 1px rgba(200, 90, 255, 0.4);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
         }
 
         /* Efecto liquid glass al pasar el mouse */
@@ -337,7 +345,7 @@
         }
 
         .btn-guardar:hover {
-            background: var(--color-blue-dark);
+            background: var(--primary-color);
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(147, 189, 229, 0.4);
         }
@@ -400,6 +408,11 @@
         }
 
         .form-group {
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            gap: 4rem;
+            width: 90%;
             margin-bottom: 1.5rem;
             position: relative;
         }
@@ -525,66 +538,68 @@
         </button>
       </div>
     </header>
-
-    <div class="main-content">
-        <div class="container">
-            <h1 class="fade-in">Validación de Documentos</h1>
-            <div id="messageContainer"></div>
-            <div class="empresa-info glass-card fade-in delay-1" id="empresaInfo">
-                <!-- Información de la empresa se llenará con JS -->
-            </div>
-            
-            <div class="form-container glass-panel fade-in delay-1">
-                <div class="form-tabs">
-                    <h3>Documentos Requeridos</h3>
-                    <div class="documentos-list">
-                        <div class="documento-item">
-                            <span>Acta Constitutiva</span>
-                            <div class="file-info" id="infoActa"></div>
-                            <div>
-                                <span class="status status-pendiente" id="statusActa">Pendiente</span>
-                                <div class="file-input-container">
-                                    <label id="btnActa" for="fileActa" class="btn btn-upload">Subir</label>
-                                    <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+    
+    <div class="bg">
+        <div class="main-content">
+            <div class="container">
+                <h1 class="fade-in">Validación de Documentos</h1>
+                <div id="messageContainer"></div>
+                <div class="empresa-info glass-card fade-in delay-1" id="empresaInfo">
+                    <!-- Información de la empresa se llenará con JS -->
+                </div>
+                
+                <div class="form-container glass-panel fade-in delay-1">
+                    <div class="form-tabs">
+                        <h3>Documentos Requeridos</h3>
+                        <div class="documentos-list">
+                            <div class="documento-item">
+                                <span>Acta Constitutiva</span>
+                                <div class="file-info" id="infoActa"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusActa">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnActa" for="fileActa" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Poder Notarial</span>
+                                <div class="file-info" id="infoPoder"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusPoder">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnPoder" for="filePoder" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Identificación Oficial</span>
+                                <div class="file-info" id="infoIdentificacion"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnIdentificacion" for="fileIdentificacion" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Comprobante de Domicilio</span>
+                                <div class="file-info" id="infoDomicilio"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnDomicilio" for="fileDomicilio" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="documento-item">
-                            <span>Poder Notarial</span>
-                            <div class="file-info" id="infoPoder"></div>
-                            <div>
-                                <span class="status status-pendiente" id="statusPoder">Pendiente</span>
-                                <div class="file-input-container">
-                                    <label id="btnPoder" for="filePoder" class="btn btn-upload">Subir</label>
-                                    <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                </div>
-                            </div>
+                        <div class="actions">
+                            <button class="btn btn-completar" id="btnCompletar" disabled>Completar Validación</button>
                         </div>
-                        <div class="documento-item">
-                            <span>Identificación Oficial</span>
-                            <div class="file-info" id="infoIdentificacion"></div>
-                            <div>
-                                <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
-                                <div class="file-input-container">
-                                    <label id="btnIdentificacion" for="fileIdentificacion" class="btn btn-upload">Subir</label>
-                                    <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="documento-item">
-                            <span>Comprobante de Domicilio</span>
-                            <div class="file-info" id="infoDomicilio"></div>
-                            <div>
-                                <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
-                                <div class="file-input-container">
-                                    <label id="btnDomicilio" for="fileDomicilio" class="btn btn-upload">Subir</label>
-                                    <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button class="btn btn-completar" id="btnCompletar" disabled>Completar Validación</button>
                     </div>
                 </div>
             </div>

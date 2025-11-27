@@ -9,140 +9,107 @@
     <style>
         /* Variables del sistema de colores del index.css */
         :root {
-            --color-background: #000;
+            --color-background: #0b0220;
             --color-card: rgba(255, 255, 255, 0.05);
             --color-text-primary: #ffffff;
             --color-text-secondary: rgba(255, 255, 255, 0.7);
-            --color-accent: rgb(255, 255, 255, 0.5);
+            --color-accent: rgba(255, 255, 255, 0.5);
             --color-shadow: rgba(0, 0, 0, 0.3);
             --color-blue-dark: #1e2c4b;
             --color-blue-light: #93bde5;
             --color-gold: #e5b019;
             --color-red-wine: #74273a;
-            
-            --primary-color: #c643ee;
-            --secondary-color: #7b37c9;
-            --success-color: #4cc9f0;
-            --warning-color: #f72585;
-        }
-
-        [data-theme="light"] {
-            --color-background: #f8fafc;
-            --color-card: rgba(255, 255, 255, 0.8);
-            --color-text-primary: #1e293b;
-            --color-text-secondary: #64748b;
-            --color-accent: rgba(0, 0, 0, 0.1);
-            --color-shadow: rgba(0, 0, 0, 0.1);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(
-                180deg,
-                #2a2e35,
-                #7b8fa1,
-                #e4e9ec
-            );
+            background: var(--color-background);
             min-height: 100vh;
             background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             color: var(--color-text-primary);
-            transition: all 0.3s ease;
         }
 
-        body.light-theme {
-            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        .bg {
+            background: 
+                radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+                radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+                radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
         }
-            body.light-theme .glass-panel,
-            body.light-theme .glass-card,
-            body.light-theme .glass-header {
-            background: rgba(255, 255, 255, 0.7);
-            color: #1e293b;
-        }
-            body.light-theme .text-primary { color: #1e293b; }
-            body.light-theme .text-secondary { color: #64748b; }
 
-            .main-content { margin-top: 120px; }
-            .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+        h1, h2, h3, h4 {
+            font-family: "Michroma", sans-serif;
+            color: var(--color-text-primary);
         }
 
         /* Barra superior mejorada - 25% más grande */
         .glass-header {
         position: fixed;
-        top: 25px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 70%;
-        height: 62.5px; /* 25% más grande que 50px */
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border-radius: 50px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 
-            0 8px 32px 0 rgba(255, 255, 255, 0.1),
-            0 0 10px 1px rgba(200, 90, 255, 0.4);
-        z-index: 1000;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 25px;
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow: hidden;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 62.5px; /* 25% más grande que 50px */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px 0 rgba(255, 255, 255, 0.1),
+                0 0 10px 1px rgba(200, 90, 255, 0.4);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
         }
 
         /* Efecto liquid glass al pasar el mouse */
         .glass-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(0, 0, 0, 0.1),
-            transparent
-        );
-        transition: 0.5s;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 0, 0, 0.1),
+                transparent
+            );
+            transition: 0.5s;
         }
 
         .glass-header:hover::before {
-        left: 100%;
+            left: 100%;
         }
 
         /* Burbuja liquid glass */
         .liquid-bubble {
-        position: fixed;
-        width: 120px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: -1;
-        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+            position: fixed;
+            width: 120px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: -1;
+            box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
         }
         
         /* Efecto hover para los items del menú */
         .nav-item {
-        position: relative;
-        padding: 8px 16px;
-        transition: color 0.3s ease;
+            position: relative;
+            padding: 8px 16px;
+            transition: color 0.3s ease;
         }
 
         .nav-item:hover {
-        color: rgb(255, 255, 255) !important;
+            color: rgb(255, 255, 255) !important;
         }
 
         .theme-toggle {
@@ -325,31 +292,12 @@
             animation-delay: 0.2s;
         }
 
-        /* Estilos para el área de drag & drop */
-        .drop-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 3rem 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            margin-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-        }
-
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: var(--primary-color);
-            background: rgba(198, 67, 238, 0.1);
-            transform: translateY(-5px);
-            box-shadow: 0 0 15px rgba(198, 67, 238, 0.3);
-        }
-
         /* PLANES Y PRECIOS */
         .plans-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
+            gap: 4rem;
+            margin: 3rem;
         }
 
         .plan-card {
@@ -505,7 +453,7 @@
 
         .form-control {
             width: 100%;
-            padding: 0.9rem 1rem;
+            padding: 0.5rem;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             font-size: 1rem;
@@ -521,11 +469,11 @@
 
         .form-row {
             display: flex;
-            gap: 1rem;
+            gap: 4rem;
         }
 
         .form-row .form-group {
-            flex: 1;
+            flex: 2;
         }
 
         .payment-summary {
@@ -629,15 +577,14 @@
         </button>
       </div>
     </header>
-
     <div class="main-content">
-        <div class="container">
+        <div class="bg">
             <h1 class="fade-in">Planes y Precios</h1>
             <div id="messageContainer"></div>
             
             <div class="plans-container fade-in delay-1">
                 <!-- Plan Básico -->
-                <div class="plan-card">
+                <div class="plan-card featured">
                     <div class="plan-name">Básico</div>
                     <div class="plan-price">$9<span>/mes</span></div>
                     <ul class="plan-features">
@@ -665,7 +612,7 @@
                 </div>
                 
                 <!-- Plan Empresarial -->
-                <div class="plan-card">
+                <div class="plan-card featured">
                     <div class="plan-name">Empresarial</div>
                     <div class="plan-price">$49<span>/mes</span></div>
                     <ul class="plan-features">
@@ -680,6 +627,7 @@
             </div>
         </div>
     </div>
+    
 
     <!-- Modal de Pago -->
     <div class="modal-overlay" id="paymentModal">
@@ -977,7 +925,7 @@
                     successDiv.style.display = 'block';
                     
                     mostrarMensaje(`Plan activado: ${data.plan}, vence ${data.expiration}`, 'success');
-                    window.location.href = "/myKeys";
+                    window.location.href = "/mykeys";
                 } else {
                     throw "Error";
                 }
