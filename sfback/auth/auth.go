@@ -36,7 +36,6 @@ func AddUser(id string, user *objects.User) {
 func GetUser(id string) (*objects.User, bool) {
 	mu.Lock()
 	defer mu.Unlock()
-
 	activeUser, exists := activeUsers[id]
 	if !exists || time.Now().After(activeUser.ExpiresAt) {
 		return nil, false
@@ -67,6 +66,7 @@ func GetUserFromRequest(request *http.Request) (*objects.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("token inválido")
 	}
+
 	// jwt-> {"uid": "id_user", "expires": "time"}
 	uid, ok := claims["uid"].(string)
 	if !ok {

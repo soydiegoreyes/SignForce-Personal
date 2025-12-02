@@ -31,7 +31,7 @@ func GetHash(input interface{}, config configs.HashConfig) (string, error) {
 	// Procesar input según el tipo
 	switch v := input.(type) {
 	case []byte:
-		return hashBytes(v, hasher, config.Encoding)
+		return HashBytes(v, hasher, config.Encoding)
 	case string:
 		return hashFile(v, hasher, config.Encoding, config.ChunkSize)
 	default:
@@ -40,7 +40,7 @@ func GetHash(input interface{}, config configs.HashConfig) (string, error) {
 }
 
 // hashBytes procesa datos en memoria recomendable no mayor a 200 MB
-func hashBytes(data []byte, hasher hash.Hash, encoding string) (string, error) {
+func HashBytes(data []byte, hasher hash.Hash, encoding string) (string, error) {
 	_, err := hasher.Write(data)
 	if err != nil {
 		return "", err
@@ -134,7 +134,6 @@ func ConvertKeyToPem(rutaKey, password string) (string, error) {
 		// si no existe dara error y se crea uno nuevo
 		if err != nil {
 			passin := "pass:" + password
-			fmt.Println("openssl", "pkcs8", "-inform", "DER", "-in", rutaKey, "-out", rutaPem, "-passin", passin)
 			cmd := exec.Command("openssl", "pkcs8", "-inform", "DER", "-in", rutaKey, "-out", rutaPem, "-passin", passin)
 			err = cmd.Run()
 			if err != nil {

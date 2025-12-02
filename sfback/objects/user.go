@@ -84,13 +84,16 @@ func NewUser(idUser string, password string) (*User, error) {
 		return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
 	}
 	fmt.Printf("Propietario: %s, Exp: %s \n", valKeysResp.Owner, valKeysResp.Expiration)
-	validPobUid := user.PobID == user.Keys.CertMap["SubjectSerialNumber"]
-	validTaxUid := user.TaxNum == user.Keys.CertMap["SubjectUniqueId"]
+	// comparacion de POBID y TAXNUM que es para validar si el usuario tiene completos esos datos
+	/*
+		validPobUid := user.PobID == user.Keys.CertMap["SubjectSerialNumber"]
+		validTaxUid := user.TaxNum == user.Keys.CertMap["SubjectUniqueId"]
 
-	if !validPobUid && !validTaxUid {
-		user.Keys.ValidKeys = false
-		return nil, errors.New("el certificado no coincide con el propietario registrado")
-	}
+		if !validPobUid && !validTaxUid {
+			user.Keys.ValidKeys = false
+			return nil, errors.New("el certificado no coincide con el propietario registrado")
+		}
+	*/
 	fmt.Printf("Usuario logueado: %s %s %s\n", user.Uid, user.Name, user.LastName)
 	return user, nil
 }

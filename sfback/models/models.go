@@ -1,16 +1,22 @@
 package models
 
+type Document struct {
+	IdDocument   string `json:"idDocument"`
+	DocumentHash string `json:"documentHash"`
+}
+
 // ==================== REQUESTS ======================//
 type GetUserRequest struct {
 	IdUser string   `json:"iduser"`
 	Fields []string `json:"fields"`
 }
 
-type UserSignRequest struct {
-	IdUser        string `json:"iduser"`
-	Password      string `json:"password"`
-	HashedMessage string `json:"hash"`
-	SignType      string `json:"signtype"`
+type SignDocRequest struct {
+	Aut       string     `json:"aut"`
+	IdInvite  string     `json:"inviteId"`
+	IdKey     string     `json:"keyId"`
+	IdFolder  string     `json:"folderId"`
+	Documents []Document `json:"signDocuments"`
 }
 
 // Decodifica cuerpo de hashDataB64

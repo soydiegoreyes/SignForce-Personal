@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/sha512"
@@ -84,7 +85,7 @@ func (k *Keys) loadCertificate(certPath string) error {
 		return err
 	}
 	k.CertMap = certMap
-	fmt.Println(certMap)
+
 	return nil
 }
 
@@ -192,30 +193,29 @@ func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error)
 }
 
 // SignData genera una firma con la clave privada
-func (k *Keys) SignData(digestMethod string, data []byte) ([]byte, error) {
+// data puede ser string (el dato a firmar o el hash en b64) o puede ser bytes (el dato a firmar o el hash en bytes)
+// ejemplo de uso: SignData("hola me llamo juan", "sha256", true) -> el dato
+
+func (k *Keys) SignHash(hashed []byte, digestMethod string) ([]byte, error) {
 	if k.privateKey == nil {
 		return nil, errors.New("clave privada no disponible")
 	}
 
-	var hashed []byte
 	var digestAlgo crypto.Hash
+	var err error
+
+	// hay que hashear el dato ya que entra el dato crudo
 
 	switch digestMethod {
 	case "sha256":
-		hashed_ := sha256.Sum256(data)
-		hashed = hashed_[:]
 		digestAlgo = crypto.SHA256
 	case "sha512":
-		hashed_ := sha512.Sum512(data)
-		hashed = hashed_[:]
 		digestAlgo = crypto.SHA512
 	default:
-		hashed_ := sha256.Sum256(data)
-		hashed = hashed_[:]
 		digestAlgo = crypto.SHA256
 	}
 
-	signature, err := rsa.SignPKCS1v15(nil, k.privateKey, digestAlgo, hashed)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, k.privateKey, digestAlgo, hashed)
 	if err != nil {
 		return nil, fmt.Errorf("error al firmar los datos: %v", err)
 	}

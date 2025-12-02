@@ -12,6 +12,7 @@ import (
 	"sfback/models"
 	"sfback/objects"
 	"sfback/utilities"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -46,8 +47,7 @@ func main() {
 	// Rutas
 	http.HandleFunc("/login", loginUser)
 	http.HandleFunc("/getuser", getUserData)
-	http.HandleFunc("/usersignature", signUser)
-	http.HandleFunc("/newinvitation", newInvitation)
+	http.HandleFunc("/signdocument", signDocument)
 	http.HandleFunc("/hashdatab64", hashDataB64)
 	http.HandleFunc("/uploadKeys", uploadKeys)
 	http.HandleFunc("/logout", logoutUser)
@@ -94,7 +94,7 @@ func loginUser(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		// Guarda el usuario en activos (opcional, si necesitas tracking)
+		// Guarda el usuario en activos (opcional, si se necesita tracking)
 		auth.AddUser(user.Uid, user)
 
 		// Genera el token JWT y lo evuelve
@@ -244,38 +244,143 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(valResp)
 }
 
-func signUser(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != "POST" {
+func signDocument(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// ===== Autenticación =====
 	user, err := auth.GetUserFromRequest(request)
 	if err != nil {
-		http.Error(respWriter, "Usuario no encontrado en usuarios activos", http.StatusNotFound)
+		http.Error(respWriter, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	var req models.UserSignRequest
+	// ===== Parseo del body =====
+	var req models.SignDocRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		http.Error(respWriter, "Datos inválidos", http.StatusBadRequest)
 		return
 	}
 
-	var signBytes []byte
-	signBytes, err = user.Keys.SignData("sha256", utilities.Decode_b64(req.HashedMessage))
-	if err != nil {
-		http.Error(respWriter, "Usuario no encontrado en usuarios activos", http.StatusNotImplemented)
+	if req.IdInvite == "" || req.IdKey == "" || req.IdFolder == "" || len(req.Documents) == 0 {
+		http.Error(respWriter, "Datos incompletos", http.StatusBadRequest)
+		return
+	}
+	// ============= Validar que no exista firma previa ==========================
+	attrs := []string{"idInvite_fk", "idUserKeys_fk", "digestValueSign", "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"}
+	wheres := map[string][]string{
+		"idInvite_fk": {req.IdInvite},
+	}
+	signatureData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres) // devuelve map[string]map[string]string
+	if err == nil {
+		for _, s := range signatureData {
+			if s["idUserKeys_fk"] != "" || s["signatureValueSign"] != "" {
+				http.Error(respWriter, "Ya existe una firma registrada", http.StatusBadRequest)
+				return
+			}
+		}
+	} else {
+		http.Error(respWriter, "No se pudo acceder a datos de firma", http.StatusInternalServerError)
 		return
 	}
 
-	signature := utilities.Encode_b64(signBytes)
-	fmt.Println("signature: ", signature)
-	json.NewEncoder(respWriter).Encode(models.SignatureResponse{Operation: "abcd", Signature: signature, Check: true})
-}
+	// ============= Cargar documentos desde DB ==============================
+	docIds := []string{}
+	for _, d := range req.Documents {
+		docIds = append(docIds, d.IdDocument)
+	}
 
-func newInvitation(respWriter http.ResponseWriter, request *http.Request) {
+	docAttrs := []string{"documentHash", "documentPath", "documentName", "documentExt", "activeDoc"}
+	docWhere := map[string][]string{"idDocument": docIds}
 
+	docData, err := db.DB_con.GenericSelect("documents", "idDocument", docAttrs, docWhere)
+	if err != nil {
+		http.Error(respWriter, "Error cargando documentos", http.StatusInternalServerError)
+		return
+	}
+
+	// ============= Procesar cada documento ==============================
+	signaturesXML := make(map[string]string)
+
+	for _, docReq := range req.Documents {
+
+		stored, ok := docData[docReq.IdDocument]
+		if !ok {
+			http.Error(respWriter, "Documento no encontrado", http.StatusBadRequest)
+			return
+		}
+
+		// Validar hash enviado vs BD
+		if stored["documentHash"] != docReq.DocumentHash {
+			http.Error(respWriter, "El hash del documento no coincide con la base de datos", http.StatusBadRequest)
+			return
+		}
+
+		// Cargar archivo subido
+		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), stored["documentPath"], stored["documentName"], stored["documentExt"])
+		fileBytes, err := os.ReadFile(fileName)
+		if err != nil {
+			http.Error(respWriter, "No se pudo leer el archivo real", http.StatusInternalServerError)
+			return
+		}
+
+		// Obtener hash de original para comparación
+		realHash, err := utilities.GetHash(fileBytes, configs.HashConf)
+		if err != nil {
+			http.Error(respWriter, "No se pudo obtener hash del archivo real", http.StatusInternalServerError)
+			return
+		}
+		if realHash != stored["documentHash"] {
+			http.Error(respWriter, "El archivo ha sido alterado (hash mismatch)", http.StatusBadRequest)
+			return
+		}
+
+		// Generar firma XAdES
+		xmlData, err := user.Keys.GenerarFirmaXades(utilities.Decode_b64(realHash))
+		if err != nil {
+			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
+			return
+		}
+
+		// se añade a la respuesta
+		signaturesXML[docReq.IdDocument] = xmlData["xmlPath"]
+
+		// ======================= Actualizar datos de firmas ========================================
+		// "idUser_fk", "idInvite_fk", "idUserKeys_fk", "digestValueSign",  "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"
+		var idSign string
+		for idS, s := range signatureData {
+			if s["digestValueSign"] == stored["documentHash"] {
+				idSign = idS
+				break
+			}
+		}
+		updates := map[string]map[string]interface{}{
+			idSign: {
+				"idUserKeys_fk":      req.IdKey,
+				"signatureValueSign": xmlData["signatureValueSign"],
+				"genTimeSign":        strings.ReplaceAll(xmlData["genTimeSign"], "Z", ""),
+				"pathSign":           xmlData["xmlPath"],
+				"typeSign_fk":        xmlData["typeSign"],
+				"nonceSign":          xmlData["nonceSign"],
+			},
+		}
+		fmt.Println("updates: ", updates)
+		err = db.DB_con.GenericBatchUpdate("signatures", "idSignature", updates)
+		if err != nil {
+			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
+			return
+		}
+
+	}
+
+	//=============================================================================================
+	respWriter.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(respWriter).Encode(map[string]interface{}{
+		"message": "OK",
+		"signed":  signaturesXML,
+	})
 }
 
 // logout handler para desloguear
