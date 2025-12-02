@@ -1,9 +1,4 @@
 // ====== Estado y utilidades ======
-    const LS_KEYS = {
-      ONBOARDING_DONE: 'sf_onboarding_done',
-      CREDS_META: 'sf_creds_meta'
-    };
-
     function $(sel, root = document) { return root.querySelector(sel); }
     function $all(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
 
@@ -11,12 +6,6 @@
       const d = new Date();
       return d.toISOString().slice(0, 10);
     }
-    /*
-    function setOnboardingDone(meta) {
-      localStorage.setItem(LS_KEYS.ONBOARDING_DONE, '1');
-      if (meta) localStorage.setItem(LS_KEYS.CREDS_META, JSON.stringify(meta));
-    }
-    */
 
     // ====== Simulación de endpoint /statusk ======
     async function fetchKeysStatus() {

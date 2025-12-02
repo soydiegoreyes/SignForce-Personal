@@ -334,7 +334,7 @@
         let currentInvite = null;
         let currentFolder = null;
         let selectedInviteId = null;
-
+        let aut = sessionStorage.getItem('aut');
         document.addEventListener('DOMContentLoaded', async () => {
             // Efecto liquid glass para la burbuja del menú
             const liquidBubble = document.getElementById('liquidBubble');
@@ -735,7 +735,7 @@
             if (hasDocumentsToSign) {
                 if (userKeys.length > 0) {
                     sidebarActions.innerHTML = `
-                        <button class="futuristic-btn w-full" onclick="signDocument('${invite.idInvite}', '${folder.idFolder}')">
+                        <button class="futuristic-btn w-full" onclick='signDocument(${JSON.stringify(invite)}, "${folder.idFolder}")'">
                             <span class="material-symbols-outlined text-sm mr-2">edit</span>
                             Firmar Documento
                         </button>
@@ -750,7 +750,7 @@
                 }
             } else {
                 sidebarActions.innerHTML = `
-                    <button class="futuristic-btn w-full" onclick="acceptDocument('${invite.idInvite}', '${folder.idFolder}')">
+                    <button class="futuristic-btn w-full" onclick="acceptDocument('${invite}', '${folder.idFolder}')">
                         <span class="material-symbols-outlined text-sm mr-2">check_circle</span>
                         Aceptar y Dar Visto Bueno
                     </button>
@@ -1073,7 +1073,7 @@
         }
 
         // Firmar documento
-        async function signDocument(inviteId, folderId) {
+        async function signDocument(invite, folderId) {
             if (!selectedKeyId && userKeys.length > 0) { 
                 mostrarMensaje('Por favor selecciona una llave', 'error'); 
                 return; 
@@ -1082,18 +1082,32 @@
             if (currentInvite.aliveProof) {
                 if (!confirm('Esta invitación requiere prueba de vida. ¿Deseas continuar?')) return;
             }
-
-            mostrarMensaje('Firmando documento...', 'info');
             
+            const signDocs = [];
+
+            invite.invitedocs.forEach(invitedoc => {
+                const doc = invitedoc.document;
+                signDocs.push({
+                    idDocument: doc.idDocument,
+                    documentHash: doc.documentHash
+                });
+            });
+            mostrarMensaje('Firmando documento...', 'info');
+
             try {
-                const res = await fetch('/signDocument', { 
-                    method: 'POST', 
-                    headers: {'Content-Type':'application/json'}, 
-                    body: JSON.stringify({ 
-                        inviteId: inviteId, 
-                        keyId: selectedKeyId, 
-                        folderId: folderId 
-                    }) 
+                const body = {
+                    aut,
+                    inviteId: invite.idInvite,
+                    keyId: selectedKeyId,
+                    folderId: currentFolder.idFolder,
+                    signDocuments: signDocs
+                };
+
+                const res = await fetch('/signDocument', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                    credentials: 'include'
                 });
                 
                 if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
