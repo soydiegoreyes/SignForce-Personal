@@ -266,11 +266,11 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
+			defer resp.Body.Close()
 
 			if strings.Contains(resp.Status, "200 OK") {
 				registerResp.Check = true
 			}
-			resp.Body.Close()
 
 		} else {
 			registerResp.Error = "Ya tiene un registro para su numero de empresa. Revisar estatus de su registro."

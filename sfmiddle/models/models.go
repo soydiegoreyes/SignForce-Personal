@@ -85,7 +85,7 @@ type DocRev struct {
 
 type InviteRequest map[string]DocRev
 
-type SignByInviteRequest struct {
+type GetByInviteRequest struct {
 	IdInvite string `json:"idInvite"`
 }
 
@@ -105,6 +105,14 @@ type FolderRequest struct {
 type LLMrequest struct {
 	Path   string `json:"path"`
 	Action int    `json:"action"`
+}
+
+type SignDoc struct {
+	Aut       string     `json:"aut"`
+	IdInvite  string     `json:"inviteId"`
+	IdKey     string     `json:"keyId"`
+	IdFolder  string     `json:"folderId"`
+	Documents []Document `json:"signDocuments"`
 }
 
 // ==================== RESPONSES ====================//
@@ -208,6 +216,10 @@ type InviteInfoResp struct {
 	Folder FolderInvite `json:"folder"`
 }
 
+type SignResponse struct {
+	Message string            `json:"message"`
+	Signed  map[string]string `json:"signed"`
+}
 type FolderListResp struct {
 	Page        int                    `json:"page"`
 	PageSize    int                    `json:"page_size"`

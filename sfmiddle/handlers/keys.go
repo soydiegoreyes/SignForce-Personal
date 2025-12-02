@@ -110,7 +110,7 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	var Check bool
 
 	defer func() {
-		if Check {
+		if !Check {
 			os.RemoveAll(basePath)
 		}
 	}()

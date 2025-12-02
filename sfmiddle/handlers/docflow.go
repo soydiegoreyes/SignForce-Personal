@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -208,49 +209,6 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Leer y parsear el JSON =====
-	/* InviteRequest model
-		{
-			Doc1:
-				data1...
-				Rev1:
-					User
-					Role
-					DueDate
-					Team
-					Comment
-					Pos1, Pos2, Pos3
-				Rev2:
-					datauser...
-					[Pos4, Pos5]
-			Doc2:
-				data2...
-				Rev1:
-					datauser...
-					Pos6, Pos7
-				Rev3:
-					datauser...
-					Pos8
-			Doc3:
-				data3...
-				Rev1:
-					datauser...
-					Pos9, Pos10, Pos11
-				Rev3:
-					datauser...
-					Pos12, Pos13
-				Rev4:
-					datauser...
-					Pos14, Pos15, Pos16
-		}
-
-		type InviteRequest map[string]DocRev
-
-		type DocRev struct {
-		idFolder string `json:"idfolder"`
-		Document  Document   `json:"document"`
-		Reviewers []Reviewer `json:"reviewers"`
-	}
-	*/
 	var requestData models.InviteRequest
 	if err := json.NewDecoder(request.Body).Decode(&requestData); err != nil {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
@@ -262,55 +220,14 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	// se obtienen los datos para la invitacion por email del reviewer
 	// una invitacion por usuario y cada invitacion tiene un link, al entrar al link debe tener los documentos del folder que el usuario va a firmar solamente
 	// doc tiene datos del documento como hash, ruta, id
-	/*
-			type Reviewer struct {
-				User          string         `json:"user"`      -> idUser
-				Role          int            `json:"role"`      -> firmante o revisor
-				DueDate       string         `json:"due_date"`  -> fecha limite
-				Team          string         `json:"team"`      -> idTeam
-				Comment       string         `json:"comment"`   -> Comentario del remitente al revisor
-				SignPositions []SignPosition `json:"positions"` -> Posiciones de firma solo del documento correspondiente
-			}
-
-			Invites map[string]Invite -> (un invite por usuario con el id del usuario)
-
-			type Invite struct {
-				IdInvite   string      `json:"idInvite"`
-				UserDest   Reviewer    `json:"userDest"`
-				AliveProof bool        `json:"aliveProof"`
-				SentAt     string      `json:"sentAt"`
-				InviteDocs []InviteDoc `json:"invitedocs"`
-			}
-
-			type InviteDoc struct {
-				Doc       Document `json:"document"`
-				ForSign   bool     `json:"forSign"`
-				ExpiresAt string   `json:"expirationDate"`
-				Comment   string   `json:"comment"`
-			}
-			type Document struct {
-				IdDocument       string `json:"idDocument"`
-				ActiveDoc        string `json:"activeDoc"`
-				AuthRoleStatus   string `json:"authRoleStatus"`
-				AuthUseStatus    string `json:"authUseStatus"`
-				CreatedAtDoc     string `json:"createdAtDoc"`
-				DocumentExt      string `json:"documentExt"`
-				DocumentHash     string `json:"documentHash"`
-				DocumentName     string `json:"documentName"`
-				DocumentPath     string `json:"documentPath"`
-				DocumentClass    string `json:"documentClass"`
-				DocumentFullName string `json:"documentFullName"`
-				Abstract         string `json:"abstract"`
-				LastModifiedDoc  string `json:"lastModifiedDoc"`
-			}
-		}
-	*/
 
 	// lista de invitaciones que serán identificadas cada una por el id del usuario
 	invites := make(map[string]*models.Invite)
 	invitesMails := make(map[string]models.InviteMail) // cada usuario tiene su invite mail y se deben de enviar como lista
-	for _, docrev := range requestData {               // -> por cada documento dentro del request
-
+	var numSigners, numReviewers int
+	var idFolder string
+	for _, docrev := range requestData { // -> por cada documento dentro del request
+		idFolder = docrev.IdFolder
 		for i, reviewer := range docrev.Reviewers { // -> por cada revisor dentro del documento
 			// si dentro de la lista de invitaciones NO esta el idUser entonces se crea una nueva invitación
 			if _, ok := invites[reviewer.User]; !ok {
@@ -326,7 +243,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 				inviteAttrs := []interface{}{
 					invites[reviewer.User].IdInvite, // idInvite
-					docrev.IdFolder,                 //idFolder
+					idFolder,                        //idFolder
 					idUser,                          // idUserOwnner
 					reviewer.User,                   // idUserDest_fk
 					reviewer.DueDate,                // expirationDate
@@ -455,7 +372,24 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				}
 				invitesMails[reviewer.User] = inviteEmail
 			}
+			if reviewer.Role == 1 {
+				numSigners += 1
+			} else {
+				numReviewers += 1
+			}
 		}
+
+		updates := map[string]map[string]interface{}{
+			idFolder: {
+				"numSigners":   numSigners,
+				"numReceivers": numReviewers,
+			},
+		}
+		err := db.DB_con.GenericBatchUpdate("folders", "idFolder", updates)
+		if err != nil {
+			http.Error(respWriter, "Error actualizando folder", http.StatusInternalServerError)
+		}
+
 		imails := []models.InviteMail{}
 		for _, invs := range invitesMails {
 			imails = append(imails, invs)
@@ -487,8 +421,29 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	_, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
 	// Decodificar request
-	var req models.SignByInviteRequest
+	var req models.GetByInviteRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		respWriter.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(respWriter).Encode(map[string]string{
@@ -515,9 +470,154 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 		})
 		return
 	}
+	if idUser != inviteInfo.Folder.Invites[0].UserDest.User {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
 
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(inviteInfo)
+}
+
+// firma de documento mediante invitacion
+func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
+	// Validar método
+	if request.Method != http.MethodPost {
+		respWriter.WriteHeader(http.StatusMethodNotAllowed)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "Método no permitido",
+		})
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	_, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// Decodificar request
+	var reqdoc models.SignDoc
+	if err := json.NewDecoder(request.Body).Decode(&reqdoc); err != nil {
+		respWriter.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "Request inválido",
+		})
+		return
+	}
+
+	// Validar que idInvite no esté vacío
+	if reqdoc.IdInvite == "" || reqdoc.IdFolder == "" || reqdoc.IdKey == "" || len(reqdoc.Documents) == 0 {
+		respWriter.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(respWriter).Encode(map[string]string{
+			"error": "Datos faltantes para completar la operación",
+		})
+		return
+	}
+
+	// ============= Validar que el usuario coincide con la invitación =============
+	// Cargar información de la invitación
+	inviteInfo, err := documentflow.LoadInviteInfo(reqdoc.IdInvite)
+	if err != nil {
+		http.Error(respWriter, "Invitación no encontrada", http.StatusBadRequest)
+		return
+	}
+
+	if idUser != inviteInfo.Folder.Invites[0].UserDest.User {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// ============= Validar que la llave pertenezca al usuario =======================
+	attrs := []string{"activeUser", "idKeysUser_fk", "isAliveUser"}
+	wheres := map[string][]string{
+		"idUser": {idUser},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil || len(userData) == 0 {
+		http.Error(respWriter, "Error al obtener institución del usuario: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if userData[idUser]["activeUser"] != "1" {
+		http.Error(respWriter, "Usuario no se encuentra activo", http.StatusUnauthorized)
+		return
+	}
+	if userData[idUser]["isAliveUser"] != "1" {
+		http.Error(respWriter, "Se necesita prueba de vida", http.StatusUnauthorized)
+		return
+	}
+	if userData[idUser]["idKeysUser_fk"] != reqdoc.IdKey {
+		http.Error(respWriter, "La llave no pertenece al usuario autenticado", http.StatusUnauthorized)
+		return
+	}
+	//=====================================================================
+	whereMap := map[string][]string{
+		"nameApp": {"sfback"},
+	}
+	appdata, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return
+	}
+
+	var host, port string
+	for _, v := range appdata {
+		host = v["domainApp"]
+		port = v["portApp"]
+		break
+	}
+
+	jsonPayload, err := json.Marshal(reqdoc) // se envia tal cual llegó la peticion
+	if err != nil {
+		fmt.Println("Error al convertir a JSON:", err)
+		return
+	}
+
+	reqsign, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/signdocument", host, port), bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Printf("%s", err)
+		return
+	}
+	reqsign.Header.Set("Content-Type", "application/json")
+	reqsign.Header.Set("Authorization", "Bearer "+reqdoc.Aut)
+	// Ejecutar petición
+	client := &http.Client{}
+	resp, err := client.Do(reqsign)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	var signResult models.SignResponse
+
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("TODO OK")
+		err = json.NewDecoder(resp.Body).Decode(&signResult)
+		if err != nil {
+			fmt.Println("Error decodificando:", err)
+		}
+	}
+
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(&signResult)
 }

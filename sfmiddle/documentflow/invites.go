@@ -73,7 +73,7 @@ func GenerateInvites(invites []models.InviteMail) error {
 			return err
 		}
 
-		if strings.Contains(resp.Status, "200 OK") {
+		if resp.StatusCode == http.StatusOK {
 			fmt.Println("TODO OK")
 		}
 		resp.Body.Close()
@@ -93,7 +93,6 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo datos de invitación: %v", err)
 	}
-
 	if len(inviteData) == 0 {
 		return nil, fmt.Errorf("invitación no encontrada")
 	}
@@ -291,6 +290,7 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	return inviteInfo, nil
 }
 
+// Funcion para mandar emails a los invitados
 type InviteUser struct {
 	IdGuest string
 	Email   string
@@ -366,7 +366,7 @@ func InviteNewUser(newInvite InviteUser) {
 		return
 	}
 
-	if strings.Contains(resp.Status, "200 OK") {
+	if resp.StatusCode == http.StatusOK {
 		fmt.Println("TODO OK")
 	}
 	resp.Body.Close()
