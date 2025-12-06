@@ -12,46 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/documentflow/add_signers.css">
-    <style>
-        /* Estilos adicionales para las sugerencias */
-        .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
-            margin-top: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .suggestion-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #e2e8f0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .suggestion-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .suggestion-item strong {
-            color: #fff;
-        }
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body class="font-display text-gray-800 dark:text-gray-200">
     <!-- Barra superior -->
@@ -128,7 +88,7 @@
         <!-- Panel principal -->
         <main class="flex-1">
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-primary fade-in">Configurar Documento</h2>
+                <h2 class="text-3xl font-bold text-primary fade-in">Subir un Documento</h2>
             </div>
 
             <div class="glass-panel">
@@ -170,22 +130,15 @@
                     </div>
                     
                     <!-- Columna derecha: previsualización PDF -->
-                    <div id="preview-container" class="glass-card flex flex-col items-center justify-center rounded-xl overflow-hidden relative w-[50%] h-[500px] bg-white/5">
-                        
-                        <!-- Spinner de carga (Visible por defecto) -->
-                        <div id="loading-spinner" class="flex flex-col items-center gap-4 text-secondary">
-                            <span class="material-symbols-outlined text-5xl animate-spin text-blue-500">progress_activity</span>
-                            <p class="text-lg font-medium text-white/80">Cargando vista previa...</p>
+                    <div id="preview-container" class="glass-card flex items-center justify-center rounded-xl overflow-hidden cursor-pointer w-[50%] h-[500px]">
+                        <div class="flex-wrap">
+                            <!-- Mensaje inicial -->
+                            <div id="drop-message" class="flex-wrap text-center">
+                                <span class="material-symbols-outlined text-6xl text-secondary mb-4">cloud_upload</span>
+                                <p class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Arrastra un documento aquí</p>
+                                <p class="text-secondary text-sm font-normal leading-normal">Archivos PDF únicamente. Máx 100MB</p>
+                            </div>
                         </div>
-
-                        <!-- Iframe del PDF (Oculto por defecto) -->
-                        <iframe id="pdf-frame" class="w-full h-full hidden border-none" src=""></iframe>
-
-                        <!-- Botón flotante para ver completo -->
-                        <button id="preview-overlay" class="hidden absolute bottom-4 right-4 bg-black/60 text-white px-4 py-2 rounded-lg text-xs font-medium cursor-pointer hover:bg-black/80 backdrop-blur-sm transition-all flex items-center gap-2">
-                            Ver completo <span class="material-symbols-outlined text-sm">open_in_new</span>
-                        </button>
-
                     </div>
                 </div>
 
@@ -196,10 +149,10 @@
                 <table id="reviewersTable" class="w-full">
                     <thead>
                     <tr class="border-b border-gray-200 dark:border-gray-800">
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Usuario / Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Usuario</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Rol</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Fecha Límite</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Equipo</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Comentario Personal</th>
                         <th class="px-6 py-3"></th>
                     </tr>
@@ -210,61 +163,34 @@
                 </table>
                 </div>
 
-                <!-- Formulario para buscar y añadir firmante -->
+                <!-- Formulario para añadir firmante -->
                 <h3 class="text-xl font-bold text-primary mb-4">Añadir Firmante</h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    
-                    <!-- Panel de Configuración de Búsqueda -->
-                    <div class="flex flex-col gap-4">
-                        <div class="flex justify-between items-end">
-                            <label class="flex flex-col flex-1 mr-4">
-                                <p class="text-primary text-base font-medium leading-normal pb-2">Buscar por:</p>
-                                <select id="searchType" class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal">
-                                    <option value="nameUser">Nombre</option>
-                                    <option value="lastNameUser">Apellido</option>
-                                    <option value="aliasUser">Alias</option>
-                                    <option value="emailUser">Email</option>
-                                    <option value="phoneUser">Teléfono</option>
-                                </select>
-                            </label>
-                        </div>
-                        
-                        <!-- Opciones de Checkbox -->
-                        <div class="flex gap-6 mt-2">
-                             <label class="checkbox-wrapper text-secondary text-sm">
-                                <input type="checkbox" id="checkExact" class="form-checkbox rounded bg-white/10 border-white/20 text-blue-500 focus:ring-0">
-                                <span>Búsqueda Exacta</span>
-                            </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Selector de equipos -->
+                <label class="flex flex-col">
+                    <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Equipo</p>
+                    <select
+                    id="teamSelect"
+                    class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl 
+                            focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                    >
+                    <option value="">Cargando equipos...</option>
+                    </select>
+                </label>
 
-                            <label class="checkbox-wrapper text-secondary text-sm">
-                                <input type="checkbox" id="checkGuest" class="form-checkbox rounded bg-white/10 border-white/20 text-purple-500 focus:ring-0">
-                                <span>Invitado Externo</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Input de Búsqueda y Sugerencias -->
-                    <div class="flex flex-col relative">
-                        <label class="flex flex-col w-full relative">
-                            <p class="text-primary text-base font-medium leading-normal pb-2" id="searchLabel">Escribe para buscar usuario</p>
-                            <input
-                                id="searchInput"
-                                placeholder="Escribe al menos 3 caracteres..."
-                                autocomplete="off"
-                                class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
-                            />
-                            <!-- Lista de sugerencias (oculta por defecto) -->
-                            <div id="suggestionsList" class="suggestions-list hidden"></div>
-                        </label>
-                        <!-- Usuario seleccionado visualmente (oculto por defecto) -->
-                        <div id="selectedUserDisplay" class="hidden mt-2 p-3 bg-blue-500/20 border border-blue-500/40 rounded-lg flex justify-between items-center">
-                            <span class="text-blue-100 text-sm font-medium" id="selectedUserName">Usuario Seleccionado</span>
-                            <button id="clearSelectionBtn" class="text-blue-300 hover:text-white">
-                                <span class="material-symbols-outlined text-sm">close</span>
-                            </button>
-                        </div>
-                    </div>
+                <!-- Selector de usuarios -->
+                <label class="flex flex-col">
+                    <p class="text-primary text-base font-medium leading-normal pb-2">Selecciona un Usuario</p>
+                    <select
+                    id="userSelect"
+                    class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl 
+                            focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                    disabled
+                    >
+                    <option value="">Selecciona primero un equipo</option>
+                    </select>
+                </label>
                 </div>
 
                 <!-- Comentario -->

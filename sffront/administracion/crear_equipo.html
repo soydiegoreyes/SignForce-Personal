@@ -1,274 +1,672 @@
 <!DOCTYPE html>
 <html class="dark" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crear Nuevo Equipo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Dashboard de Equipos - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Estilos Base y Scrollbar */
+        .keys-list {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(33, 150, 243, 0.3) transparent;
+            padding-right: 5px;
+        }
+        
+        .keys-list::-webkit-scrollbar { width: 4px; }
+        .keys-list::-webkit-scrollbar-track { background: transparent; }
+        .keys-list::-webkit-scrollbar-thumb {
+            background-color: rgba(33, 150, 243, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Tarjetas Estilo "Invitación" reutilizadas para Equipos */
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Estilo específico para Miembros del Equipo */
+        .member-card-item {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .member-card-item:hover {
+            border-color: rgba(33, 150, 243, 0.4);
+            background: rgba(33, 150, 243, 0.05);
+        }
+
+        /* Badges Neon */
+        .badge-neon {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-team-active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.2);
+        }
+
+        .badge-team-inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .badge-role-admin {
+            background: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .badge-role-user {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Botón Futurista Mejorado */
+        .btn-cyber {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cyber:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .btn-upload {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-upload:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Header Info Panel */
+        .header-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        /* Animaciones */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.3s ease-out;
+        }
+
+        .logo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
-<body>
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <div class="size-4">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
+
+    <header class="header-panel fixed top-0 w-full z-50 h-16">
+        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Gestión</h2>
+                <h1 class="text-xl font-bold tracking-tight text-white">Equipos - SignForce <span class="text-xs font-normal text-gray-400 ml-1">v2.0</span></h1>
             </div>
-            <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="./../dashboards/dashboard_root.html" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="create">Crear Equipo</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-xs font-medium">Conectado</span>
+                </div>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                </button>
             </div>
-        </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <div class="user-info flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-                </svg>
-                <span id="nombreUsuario">Usuario ROOT</span>
-            </div>
-            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
         </div>
     </header>
 
-    <div class="main-container">
-        <aside class="sidebar glass-panel">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Crear Equipo</h1>
-            </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="./../dashboards/dashboard_root.html">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    <span>Volver al Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
-                    <span class="material-symbols-outlined">group_add</span>
-                    <span>Crear Equipo</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Configuración</span>
-                </a>
-            </nav>
-        </aside>
+    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1920px] mx-auto w-full grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
         
-        <main class="content">
-            <div class="glass-panel p-6">
-                <h1 class="text-3xl font-bold text-primary mb-6">Crear Nuevo Equipo</h1>
-                
-                <form id="formCrearEquipo">
-                    <div class="form-group">
-                        <label for="nombreEquipo">Nombre del Equipo</label>
-                        <input type="text" id="nombreEquipo" required>
-                        <div class="error text-red-400 mt-1" id="errorNombre"></div>
+        <main class="flex flex-col gap-8">
+            
+            <div>
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-400">groups</span>
+                        Mis Equipos
+                    </h3>
+                    <div class="h-px flex-1 bg-white/10 ml-6"></div>
+                </div>
+
+                <div id="teamsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-full py-12 flex flex-col items-center justify-center text-gray-500">
+                        <div class="spinner border-4 border-blue-500 border-t-transparent rounded-full w-10 h-10 animate-spin mb-4"></div>
+                        <p>Cargando equipos...</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="descripcion">Descripción</label>
-                        <textarea id="descripcion" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div id="createTeamSection" class="tech-card p-6">
+                <div class="flex items-center gap-3 mb-6" onclick="showFormTeam()">
+                    <div class="p-3 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg">
+                        <span class="material-symbols-outlined text-blue-400">group_add</span>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="responsable">Responsable Inicial (Usuario Admin)</label>
-                        <input type="text" id="responsable" required placeholder="Nombre del responsable">
-                        <div class="error text-red-400 mt-1" id="errorResponsable"></div>
+                    <h2 class="text-2xl font-bold text-white">Crear Nuevo Equipo</h2>
+                </div>
+
+                <form id="teamForm" class="space-y-6" style="display: none;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block info-label mb-2">Nombre del Equipo</label>
+                                <input type="text" id="nameTeam" 
+                                    class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                                    placeholder="Ej: Equipo de Desarrollo"
+                                    required>
+                            </div>
+                            
+                            <div>
+                                <label class="block info-label mb-2">Descripción</label>
+                                <textarea id="description" 
+                                    class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all min-h-[120px]"
+                                    placeholder="Describe el propósito y funciones de este equipo..."
+                                    required></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block info-label mb-2">Logo del Equipo</label>
+                                <div class="file-input-container">
+                                    <input type="file" id="logoInput" accept=".jpg,.jpeg,.png" style="display: none;">
+                                    <label for="logoInput" class="btn-upload">
+                                        <span class="material-symbols-outlined text-3xl text-gray-400">cloud_upload</span>
+                                        <span class="text-sm">Seleccionar logo</span>
+                                        <span class="text-xs text-gray-500">JPG, PNG (max 5MB)</span>
+                                    </label>
+                                </div>
+                                <div id="logoPreview" class="mt-4 hidden">
+                                    <img id="previewImage" class="logo-preview">
+                                    <button type="button" onclick="removeLogo()" class="text-xs text-red-400 hover:text-red-300 mt-2 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="text-xs text-gray-500 mt-2">
+                                <p class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">info</span>
+                                    El logo debe ser cuadrado y se mostrará en las tarjetas del equipo.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="emailResponsable">Email del Responsable</label>
-                        <input type="email" id="emailResponsable" required>
-                        <div class="error text-red-400 mt-1" id="errorEmail"></div>
-                    </div>
-                    
-                    <div class="actions flex justify-end gap-4 mt-6">
-                        <button type="button" class="btn-secondary" onclick="window.location.href='./../dashboards/dashboard_root.html'">Cancelar</button>
-                        <button type="submit" class="btn-primary">Crear Equipo</button>
+
+                    <div class="pt-4 border-t border-white/10">
+                        <button type="submit" id="btnCreateTeam" 
+                            class="btn-cyber w-full py-3 rounded-xl text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20">
+                            <span class="material-symbols-outlined">add</span>
+                            Crear Equipo
+                        </button>
                     </div>
                 </form>
             </div>
         </main>
+
+        <aside class="flex flex-col gap-6">
+            
+            <div class="tech-card p-6 h-full max-h-[calc(100vh-120px)] sticky top-24">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-white flex items-center gap-2">
+                        <span class="material-symbols-outlined text-yellow-500">person</span>
+                        Miembros del Equipo
+                    </h3>
+                    <span class="text-xs text-gray-400" id="selectedTeamName">Ninguno seleccionado</span>
+                </div>
+
+                <div id="messageContainer" class="mb-4 text-xs font-medium empty:hidden"></div>
+
+                <div class="keys-list flex-1 mb-6" id="teamMembers">
+                    <div class="text-center py-8">
+                        <span class="material-symbols-outlined text-gray-600 text-4xl mb-3">group</span>
+                        <p class="text-sm text-gray-400">Selecciona un equipo para ver sus miembros</p>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-white/10">
+                    <h4 class="text-sm font-semibold text-gray-400 mb-3">Información del Equipo</h4>
+                    <div id="teamInfo" class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Firmantes Máx:</span>
+                            <span class="text-xs font-medium" id="infoLimitSigners">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Usuarios Máx:</span>
+                            <span class="text-xs font-medium" id="infoLimitUsers">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-xs text-gray-500">Creado por:</span>
+                            <span class="text-xs font-medium truncate w-32 text-right" id="infoCreator">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
     </div>
 
     <script>
-        // Cargar información del usuario
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+        // --- Variables Globales ---
+        let teams = [];
+        let selectedTeamId = null;
+        let logoFile = null;
 
-        /*if (!currentUser || currentUser.tipo !== 'root') {
-            console.log("No es root o no hay current user")
-            //window.location.href = './../registro/login.html';
-        }*/
-        // Cargar información de los equipos
-        let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
-        
-        // Cargar información de los usuarios
-        let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Usuario ROOT';
-        
-        // Efecto liquid glass para la burbuja del menú
-        const liquidBubble = document.getElementById('liquidBubble');
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        const itemPositions = {};
-        
-        function calculatePositions() {
-            navItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                
-                itemPositions[item.dataset.item] = {
-                    left: rect.left - headerRect.left,
-                    width: rect.width
-                };
-            });
-            
-            moveBubble('create');
-        }
-        
-        function moveBubble(itemName) {
-            const item = itemPositions[itemName];
-            if (item && liquidBubble) {
-                liquidBubble.style.left = `${item.left - 10}px`;
-                liquidBubble.style.width = `${item.width + 20}px`;
-            }
-        }
-        
-        navItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                moveBubble(item.dataset.item);
-            });
+        // --- Inicialización ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTeams();
+            setupEventListeners();
         });
 
-        window.addEventListener('load', calculatePositions);
-        window.addEventListener('resize', calculatePositions);
+        // --- Funciones de Datos ---
 
-        // Toggle de tema claro/oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
+        async function loadTeams() {
+            try {
+                const response = await fetch("/instteams", {
+                    method: "GET",
+                    credentials: "include",
+                });
                 
-                const icon = themeToggle.querySelector('i');
-                if (document.body.classList.contains('light-theme')) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
+                if (!response.ok) throw new Error('Error cargando equipos');
+                
+                teams = await response.json();
+                renderTeamsGrid(teams);
+                
+            } catch (err) {
+                console.error(err);
+                mostrarMensaje('Error cargando equipos: ' + err.message, 'error');
+                document.getElementById('teamsGrid').innerHTML = `
+                    <div class="col-span-full text-center text-red-400 py-8">
+                        <span class="material-symbols-outlined text-4xl mb-3">error</span>
+                        <p>Error al cargar equipos</p>
+                    </div>`;
+            }
+        }
+
+        async function loadTeamMembers(teamId) {
+            try {
+                const response = await fetch("/teamusers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        idteam: teamId,
+                        fields: []
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Error cargando miembros');
+                
+                const members = await response.json();
+                renderTeamMembers(members);
+                
+            } catch (err) {
+                console.error(err);
+                mostrarMensaje('Error cargando miembros: ' + err.message, 'error');
+            }
+        }
+
+        // --- Funciones de Renderizado ---
+
+        function renderTeamsGrid(teams) {
+            const grid = document.getElementById('teamsGrid');
+            grid.innerHTML = '';
+
+            if (!teams || teams.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center text-gray-500 py-12">
+                        <span class="material-symbols-outlined text-4xl mb-3">group_work</span>
+                        <p>No hay equipos creados</p>
+                        <p class="text-sm mt-2">Crea tu primer equipo usando el formulario</p>
+                    </div>`;
+                return;
+            }
+
+            teams.forEach(team => {
+                const isActive = !team.deletedAt;
+                const card = document.createElement('div');
+                card.className = 'tech-card p-5 cursor-pointer group animate-fade-in';
+                card.onclick = () => selectTeam(team);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-white/5 rounded-lg group-hover:bg-white/10 transition-colors">
+                            <span class="material-symbols-outlined text-gray-400 text-2xl">${team.logourl ? 'image' : 'groups'}</span>
+                        </div>
+                        ${isActive 
+                            ? `<span class="badge-neon badge-team-active"><span class="material-symbols-outlined text-[10px]">check_circle</span> Activo</span>`
+                            : `<span class="badge-neon badge-team-inactive"><span class="material-symbols-outlined text-[10px]">block</span> Inactivo</span>`
+                        }
+                    </div>
+                    
+                    <h4 class="text-lg font-semibold text-white mb-2 line-clamp-2" title="${team.name}">${team.name}</h4>
+                    
+                    <div class="text-sm text-gray-400 mb-4 h-10 overflow-hidden relative">
+                        ${team.description || 'Sin descripción disponible.'}
+                        <div class="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[#151c2d] to-transparent"></div>
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                        <div class="text-xs text-gray-500">
+                            <div class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">person</span>
+                                Firmantes: ${team.limitsigners==="-1"?"ilimitado": team.limitsigners|| '0'}
+                            </div>
+                        </div>
+                        <button onclick="event.stopPropagation(); viewTeamDetails('${team.id}')" class="text-sm text-blue-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
+                            Ver detalles <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderTeamMembers(members) {
+            const container = document.getElementById('teamMembers');
+            container.innerHTML = '';
+
+            if (!members || members.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6">
+                        <span class="material-symbols-outlined text-gray-600 text-3xl mb-2">person_off</span>
+                        <p class="text-sm text-gray-400">No hay miembros en este equipo</p>
+                    </div>`;
+                return;
+            }
+
+            members.forEach(member => {
+                const isActive = member.active;
+                const role = member.role || 'user';
+                
+                const div = document.createElement('div');
+                div.className = 'member-card-item animate-fade-in';
+                
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="size-10 rounded-full bg-gradient-to-br ${isActive ? 'from-green-500/20 to-green-700/20' : 'from-gray-700/20 to-gray-800/20'} flex items-center justify-center text-sm font-bold ${isActive ? 'text-green-400' : 'text-gray-500'}">
+                            ${member.name ? member.name.charAt(0) : '?'}
+                        </div>
+                        <div class="overflow-hidden flex-1">
+                            <div class="flex justify-between items-center">
+                                <p class="text-sm font-bold text-gray-200 truncate">${member.name || 'Sin nombre'} ${member.lastname || ''}</p>
+                                <span class="badge-neon ${role === 'admin' ? 'badge-role-admin' : 'badge-role-user'}">
+                                    ${role === 'admin' ? 'Admin' : 'Usuario'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">${member.email || 'Sin email'}</p>
+                            <p class="text-[10px] ${isActive ? 'text-green-400' : 'text-red-400'} font-medium mt-1">
+                                ${isActive ? '● Activo' : '● Inactivo'}
+                            </p>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // --- Lógica de Negocio ---
+
+        function selectTeam(team) {
+            selectedTeamId = team.id;
+            
+            // Actualizar UI
+            document.querySelectorAll('.tech-card').forEach(card => {
+                card.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500/20');
+            });
+            event.currentTarget.classList.add('border-blue-500', 'ring-2', 'ring-blue-500/20');
+            
+            // Actualizar sidebar
+            document.getElementById('selectedTeamName').textContent = team.name;
+            document.getElementById('infoLimitSigners').textContent = team.limitsigners==="-1"?"ilimitados":team.limitsigners || '0';
+            document.getElementById('infoLimitUsers').textContent = team.limitusers==="-1"?"ilimitados":team.limitusers || '0';
+            document.getElementById('infoCreator').textContent = team.creator || '--';
+            
+            // Cargar miembros
+            loadTeamMembers(team.id);
+        }
+        function showFormTeam() {
+            let shown = document.getElementById("teamForm").style.display;
+            if (shown === "none") {
+                document.getElementById("teamForm").style.display = "block";
+            } else {
+                document.getElementById("teamForm").style.display = "none";
+            }
+            
+        }
+        async function createTeam() {
+            const nameTeam = document.getElementById('nameTeam').value;
+            const description = document.getElementById('description').value;
+            const btnCreate = document.getElementById('btnCreateTeam');
+            
+            if (!nameTeam || !description) {
+                mostrarMensaje('Nombre y descripción son requeridos', 'error');
+                return;
+            }
+
+            btnCreate.disabled = true;
+            btnCreate.innerHTML = `<div class="spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Creando...`;
+
+            try {
+                // Primero subir el logo si existe
+                let logoUrl = null;
+                if (logoFile) {
+                    const formData = new FormData();
+                    formData.append('document', logoFile);
+                    formData.append('documentType', 'logoinst');
+                    
+                    const uploadResponse = await fetch('/uploadDocs', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    if (uploadResponse.ok) {
+                        const uploadData = await uploadResponse.json();
+                        logoUrl = uploadData.path; // Ajustar según la respuesta real
+                    }
+                }
+
+                // Luego crear el equipo
+                const createResponse = await fetch('/newteam', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        nameTeam: nameTeam,
+                        description: description,
+                        logoTeam: logoUrl
+                    })
+                });
+
+                const data = await createResponse.json();
+
+                if (createResponse.ok) {
+                    mostrarMensaje('Equipo creado exitosamente', 'success');
+                    
+                    // Limpiar formulario
+                    document.getElementById('teamForm').reset();
+                    document.getElementById('logoPreview').classList.add('hidden');
+                    logoFile = null;
+                    
+                    // Recargar lista de equipos
+                    await loadTeams();
+                    
                 } else {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
+                    throw new Error(data.message || 'Error al crear equipo');
+                }
+
+            } catch (err) {
+                console.error(err);
+                mostrarMensaje('Error: ' + err.message, 'error');
+            } finally {
+                btnCreate.disabled = false;
+                btnCreate.innerHTML = `<span class="material-symbols-outlined">add</span> Crear Equipo`;
+            }
+        }
+
+        // --- Utilidades ---
+
+        function setupEventListeners() {
+            // Formulario de creación de equipo
+            document.getElementById('teamForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createTeam();
+            });
+
+            // Input de logo
+            document.getElementById('logoInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) { // 5MB
+                        mostrarMensaje('El archivo es muy grande (máx 5MB)', 'error');
+                        return;
+                    }
+                    
+                    logoFile = file;
+                    const preview = document.getElementById('previewImage');
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        document.getElementById('logoPreview').classList.remove('hidden');
+                    }
+                    
+                    reader.readAsDataURL(file);
                 }
             });
+
+            // Toggle de tema
+            document.getElementById('themeToggle').addEventListener('click', function() {
+                const html = document.documentElement;
+                const isDark = html.classList.contains('dark');
+                html.classList.toggle('dark', !isDark);
+                this.innerHTML = `<span class="material-symbols-outlined text-sm">${isDark ? 'light_mode' : 'dark_mode'}</span>`;
+            });
         }
-        
-        document.getElementById('formCrearEquipo').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Validación
-            let valid = true;
-            
-            if (!document.getElementById('nombreEquipo').value) {
-                document.getElementById('errorNombre').textContent = 'El nombre del equipo es requerido';
-                valid = false;
-            } else {
-                document.getElementById('errorNombre').textContent = '';
-            }
-            
-            if (!document.getElementById('responsable').value) {
-                document.getElementById('errorResponsable').textContent = 'El nombre del responsable es requerido';
-                valid = false;
-            } else {
-                document.getElementById('errorResponsable').textContent = '';
-            }
-            
-            if (!document.getElementById('emailResponsable').value) {
-                document.getElementById('errorEmail').textContent = 'El email del responsable es requerido';
-                valid = false;
-            } else {
-                document.getElementById('errorEmail').textContent = '';
-            }
-            
-            if (valid) {
-                // Crear equipo
-                // En un caso real sería un fetch a la API
-                /*
-                fetch('/api/equipos', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        nombre: document.getElementById('nombreEquipo').value,
-                        descripcion: document.getElementById('descripcion').value,
-                        empresaId: currentUser.empresaId,
-                        responsable: document.getElementById('responsable').value,
-                        emailResponsable: document.getElementById('emailResponsable').value
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Manejar respuesta
-                });
-                */
 
-                // Crear equipo en memoria
-                const nuevoEquipo = {
-                    id: `equ_${Date.now()}`,
-                    nombre: document.getElementById('nombreEquipo').value,
-                    descripcion: document.getElementById('descripcion').value,
-                    empresaId: currentUser.empresaId,
-                    fechaCreacion: new Date().toISOString(),
-                    miembros: []
-                };
-                
-                equipos.push(nuevoEquipo);
+        function removeLogo() {
+            logoFile = null;
+            document.getElementById('logoInput').value = '';
+            document.getElementById('logoPreview').classList.add('hidden');
+        }
 
-                // Crear usuario maestro para el equipo
-                const usuarioMaestro = {
-                    id: `usr_${Date.now()}`,
-                    empresaId: currentUser.empresaId,
-                    equipoId: nuevoEquipo.id,
-                    email: document.getElementById('emailResponsable').value,
-                    password: 'tempPass' + Math.random().toString(36).substring(2, 8),
-                    tipo: 'admin_equipo',
-                    nombre: document.getElementById('responsable').value
-                };
-                
-                usuarios.push(usuarioMaestro);
-                
-                // Agregar usuario maestro como miembro del equipo
-                nuevoEquipo.miembros.push({
-                    usuarioId: usuarioMaestro.id,
-                    rol: 'admin',
-                    fechaUnion: new Date().toISOString()
-                });
-                
-                // Guardar referencia al usuario maestro en el equipo
-                nuevoEquipo.usuarioMaestroEmail = usuarioMaestro.email
-                
-                sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
-                sessionStorage.setItem('equipos', JSON.stringify(equipos));
+        function viewTeamDetails(teamId) {
+            // Aquí puedes implementar la navegación a una vista detallada
+            console.log('Ver detalles del equipo:', teamId);
+            // Por ejemplo: window.location.href = `/team.html?id=${teamId}`;
+        }
 
-                // Mostrar mensaje con credenciales
-                alert(`Equipo creado exitosamente!\n\nSe ha creado el usuario maestro para este equipo:\n\nEmail: ${usuarioMaestro.email}\nContraseña temporal: ${usuarioMaestro.password}\n\nEstas credenciales han sido enviadas al correo del responsable.`);
-                
-                // Redirigir al dashboard
-                window.location.href = './../dashboards/dashboard_root.html';
-            }
-        });
-
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = '/login';
+        function mostrarMensaje(msg, type) {
+            const container = document.getElementById('messageContainer');
+            const colors = {
+                error: 'bg-red-500/10 border-red-500/50 text-red-400',
+                success: 'bg-green-500/10 border-green-500/50 text-green-400',
+                info: 'bg-blue-500/10 border-blue-500/50 text-blue-400'
+            };
+            
+            container.className = `mb-4 px-4 py-3 rounded-lg border text-xs font-medium flex items-center gap-2 ${colors[type] || colors.info} animate-fade-in`;
+            container.innerHTML = `
+                <span class="material-symbols-outlined text-base">${type === 'success' ? 'check_circle' : 'info'}</span>
+                ${msg}
+            `;
+            container.style.display = 'flex';
+            
+            setTimeout(() => {
+                container.style.display = 'none';
+            }, 5000);
         }
     </script>
 </body>

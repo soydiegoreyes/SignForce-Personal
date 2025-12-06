@@ -18,116 +18,213 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("docName").value = `${currentDoc.documentName}.${currentDoc.documentExt}`;
 
   // ==============================
-  // 🔹 VARIABLES Y FUNCIONES GLOBALES
+  // 🔹 VARIABLES GLOBALES
   // ==============================
-  const reviewers = [];
-  const teamSelect = document.getElementById("teamSelect");
-  const userSelect = document.getElementById("userSelect");
+  // Cargamos revisores existentes si los hay (para persistencia al navegar)
+  let reviewers = currentDoc.reviewers || [];
+  
+  // Elementos DOM para búsqueda
+  const searchInput = document.getElementById('searchInput');
+  const searchTypeSelect = document.getElementById('searchType');
+  const checkExact = document.getElementById('checkExact');
+  const checkGuest = document.getElementById('checkGuest');
+  const suggestionsList = document.getElementById('suggestionsList');
+  const selectedUserDisplay = document.getElementById('selectedUserDisplay');
+  const selectedUserName = document.getElementById('selectedUserName');
+  const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+  const searchLabel = document.getElementById('searchLabel');
 
-  async function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  }
+  // Estado de búsqueda
+  let cachedUsers = []; 
+  let selectedUserObj = null; 
+  let debounceTimer = null; 
 
   // ==============================
-  // 🔹 CARGAR EQUIPOS DE LA INSTITUCIÓN
+  // 🔹 LOGICA DE BÚSQUEDA DE USUARIOS
   // ==============================
-  async function loadTeams() {
-  try {
-    console.log("Cargando equipos...");
-    const response = await fetch("/instteams", {
-      method: "GET",
-      credentials: "include",
-    });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const teams = await response.json();
-
-    const teamSelect = document.getElementById("teamSelect");
-    if (!teamSelect) {
-      console.warn("⚠️ No se encontró el select de equipos.");
-      return;
+  checkGuest.addEventListener('change', () => {
+    if (checkGuest.checked) {
+      searchTypeSelect.disabled = true;
+      checkExact.disabled = true;
+      searchLabel.innerText = "Ingresa el email del invitado";
+      searchInput.placeholder = "ejemplo@correo.com";
+      searchInput.value = "";
+      clearSelection();
+      suggestionsList.classList.add('hidden');
+    } else {
+      searchTypeSelect.disabled = false;
+      checkExact.disabled = false;
+      searchLabel.innerText = "Escribe para buscar usuario";
+      searchInput.placeholder = "Escribe al menos 3 caracteres...";
+      searchInput.value = "";
+      clearSelection();
     }
-
-    if (!Array.isArray(teams) || teams.length === 0) {
-      teamSelect.innerHTML = `<option value="">No hay equipos disponibles</option>`;
-      return;
-    }
-
-    teamSelect.innerHTML = `<option value="">Selecciona un equipo...</option>`;
-    teams.forEach(team => {
-      if (team.deletedAt && team.deletedAt.trim() !== "") return;
-      const opt = document.createElement("option");
-      opt.value = team.id;
-      opt.textContent = `${team.name} (Límite: ${team.limitusers || "-"} usuarios / ${team.limitsigners || "-"} firmantes)`;
-      teamSelect.appendChild(opt);
-    });
-    console.log("Equipos cargados correctamente:", teams);
-  } catch (err) {
-    console.error("Error al cargar equipos:", err);
-  }
-}
-
-  // ==============================
-  // 🔹 CARGAR USUARIOS DE UN EQUIPO
-  // ==============================
-  async function loadUsers(idTeam) {
-  try {
-    const response = await fetch("/teamusers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        idteam: idTeam,
-        fields: []
-      })
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const users = await response.json();
-    console.log("Usuarios recibidos:", users);
-
-    userSelect.innerHTML = `<option value="">Selecciona un usuario...</option>`;
-
-    users.forEach(u => {
-      // Mostrar solo usuarios activos
-      if (u.active !== "1") return;
-
-      const opt = document.createElement("option");
-      opt.value = u.id;
-      opt.textContent = `${(u.name && u.lastname) ? (u.name + " " + u.lastname) : (u.alias || "Sin nombre")} - ${u.email || "sin correo"}`;
-      userSelect.appendChild(opt);
-    });
-
-    // Habilitar el select una vez cargado
-    userSelect.disabled = false;
-
-  } catch (err) {
-    console.error("Error al cargar usuarios:", err);
-    userSelect.innerHTML = `<option value="">Error al cargar usuarios</option>`;
-  }
-}
-  // ==============================
-  // 🔹 EVENTO CAMBIO DE EQUIPO
-  // ==============================
-  teamSelect.addEventListener("change", async () => {
-    const idTeam = teamSelect.value;
-    if (!idTeam) {
-      userSelect.innerHTML = `<option value="">Selecciona un usuario...</option>`;
-      return;
-    }
-    await loadUsers(idTeam);
   });
 
-  // Inicializar carga de equipos al entrar
-  loadTeams();
+  async function executeSearch(term) {
+    if (term.length === 0) {
+      cachedUsers = [];
+      renderSuggestions([]);
+      suggestionsList.classList.add('hidden');
+      return;
+    }
+
+    if (!checkExact.checked) {
+        if (term.length >= 3) {
+            if (cachedUsers.length > 0 && term.length > 3) {
+                filterLocalSuggestions(term);
+            } else {
+                await fetchUsers(term);
+            }
+        } else {
+            suggestionsList.classList.add('hidden');
+        }
+    } else {
+        if (term.length >= 3) {
+            await fetchUsers(term);
+        }
+    }
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    const term = e.target.value.trim();
+    if (checkGuest.checked) return;
+
+    if (term.length === 0) {
+      clearTimeout(debounceTimer);
+      executeSearch("");
+      return;
+    }
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        executeSearch(term);
+    }, 600); 
+  });
+
+  searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !checkGuest.checked) {
+          e.preventDefault(); 
+          clearTimeout(debounceTimer); 
+          const term = searchInput.value.trim();
+          executeSearch(term); 
+      }
+  });
+
+  async function fetchUsers(term) {
+    try {
+      const searchType = searchTypeSelect.value;
+      const isRegex = !checkExact.checked; 
+
+      const payload = {
+        params: [term],
+        type: searchType,
+        likeop: isRegex
+      };
+
+      const response = await fetch('/findUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('Error en búsqueda');
+      
+      const data = await response.json();
+      
+      cachedUsers = Object.entries(data).map(([id, userData]) => ({
+        id: id,
+        ...userData
+      }));
+
+      renderSuggestions(cachedUsers);
+
+    } catch (err) {
+      console.error("Error buscando usuarios:", err);
+      cachedUsers = []; 
+      renderSuggestions([]); 
+    }
+  }
+
+  function filterLocalSuggestions(term) {
+    const searchField = getSearchFieldFromType(searchTypeSelect.value);
+    const lowerTerm = term.toLowerCase();
+
+    const filtered = cachedUsers.filter(u => {
+      const value = u[searchField];
+      return value && value.toString().toLowerCase().includes(lowerTerm);
+    });
+
+    renderSuggestions(filtered);
+  }
+
+  function getSearchFieldFromType(type) {
+    switch (type) {
+      case 'nameUser': return 'Name';
+      case 'lastNameUser': return 'LastName';
+      case 'aliasUser': return 'Alias';
+      case 'emailUser': return 'Email';
+      case 'phoneUser': return 'Phone'; 
+      default: return 'Name';
+    }
+  }
+
+  function renderSuggestions(users) {
+    suggestionsList.innerHTML = '';
+    
+    if (!users || users.length === 0) {
+      suggestionsList.classList.add('hidden');
+      return;
+    }
+
+    users.forEach(u => {
+      const div = document.createElement('div');
+      div.className = 'suggestion-item';
+      
+      const displayName = u.name && u.lastname ? `${u.name} ${u.lastname}` : (u.alias || "Usuario");
+      const displayEmail = u.email || "Sin email";
+
+      div.innerHTML = `
+        <div class="flex justify-between items-center">
+            <span class="font-bold text-sm">${displayName}</span>
+            <span class="text-xs text-secondary opacity-70">${u.Role || 'User'}</span>
+        </div>
+        <div class="text-xs text-secondary">${displayEmail}</div>
+      `;
+
+      div.addEventListener('click', () => {
+        selectUser(u);
+      });
+
+      suggestionsList.appendChild(div);
+    });
+
+    suggestionsList.classList.remove('hidden');
+  }
+
+  function selectUser(user) {
+    selectedUserObj = user;
+    searchInput.value = ''; 
+    suggestionsList.classList.add('hidden'); 
+    
+    const displayName = user.name && user.lastname ? `${user.name} ${user.lastname}` : (user.alias || user.email);
+    selectedUserName.textContent = displayName;
+    selectedUserDisplay.classList.remove('hidden');
+    searchInput.disabled = true; 
+  }
+
+  function clearSelection() {
+    selectedUserObj = null;
+    selectedUserDisplay.classList.add('hidden');
+    searchInput.disabled = false;
+    searchInput.focus();
+  }
+
+  clearSelectionBtn.addEventListener('click', clearSelection);
 
   // ==============================
-  // 🔹 RENDERIZAR TABLA
+  // 🔹 RENDERIZAR TABLA DE FIRMANTES
   // ==============================
   function renderTable() {
     const tbody = document.getElementById('reviewersTableBody');
@@ -137,25 +234,50 @@ document.addEventListener('DOMContentLoaded', () => {
       const tr = document.createElement('tr');
       tr.classList.add("border-t", "border-t-white/10");
 
+      const roleClass = rev.role === 1 
+          ? "bg-green-500/20 text-green-300 border border-green-500/30" 
+          : "bg-blue-500/20 text-blue-300 border border-blue-500/30";
+
+      // Nota: rev.external mapea a IsExternal del struct Go
+      const typeLabel = rev.external 
+          ? '<span class="text-purple-400 text-xs border border-purple-500/30 px-2 py-0.5 rounded-full">Externo</span>' 
+          : '<span class="text-blue-400 text-xs border border-blue-500/30 px-2 py-0.5 rounded-full">Interno</span>';
+
       tr.innerHTML = `
-        <td class="px-4 py-2 w-[400px] text-primary text-sm font-normal">${rev.user}</td>
-        <td class="px-4 py-2 w-60 text-sm font-normal">
-          <button class="toggle-role bg-white/20 text-primary w-full rounded-lg h-8 hover:bg-white/30" data-index="${idx}">
-            ${rev.role === 1? "Signer":"Viewer"}
+        <td class="px-4 py-2 w-[350px] text-primary text-sm font-normal">
+            <div class="flex flex-col">
+                <span class="font-bold">${rev.displayName}</span>
+                <span class="text-xs text-secondary">${rev.displayEmail}</span>
+            </div>
+        </td>
+        <td class="px-4 py-2 w-40 text-sm font-normal">
+          <button class="toggle-role w-full rounded-lg px-3 py-1 text-xs font-bold transition-all ${roleClass}" data-index="${idx}">
+            ${rev.role === 1 ? "Firmante" : "Visor"}
           </button>
         </td>
-        <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">
-          <span class="editable-date" data-index="${idx}">${rev.due_date}</span>
+        <td class="px-4 py-2 w-[200px] text-secondary text-sm font-normal">
+          <span class="editable-date cursor-pointer hover:text-white border-b border-dashed border-white/20 pb-0.5" data-index="${idx}">
+            ${rev.due_date}
+          </span>
         </td>
-        <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">${rev.team}</td>
-        <td class="px-4 py-2 w-[400px] text-secondary text-sm font-normal">
-          <span class="editable-comment" data-index="${idx}">${rev.comment}</span>
+        <td class="px-4 py-2 w-[150px] text-secondary text-sm font-normal">
+            ${typeLabel}
+        </td>
+        <td class="px-4 py-2 text-secondary text-sm font-normal">
+          <span class="editable-comment cursor-pointer hover:text-white" data-index="${idx}">
+            ${rev.comment || '<span class="italic opacity-50">Sin comentario...</span>'}
+          </span>
+        </td>
+        <td class="px-4 py-2 w-10">
+            <button class="delete-reviewer text-red-400 hover:text-red-300 transition-colors" data-index="${idx}">
+                <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
         </td>
       `;
       tbody.appendChild(tr);
     });
 
-    // cambiar rol firmante/visor
+    // Listeners de tabla
     document.querySelectorAll('.toggle-role').forEach(btn => {
       btn.addEventListener('click', () => {
         const idx = btn.dataset.index;
@@ -164,19 +286,28 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // editar fecha
+    document.querySelectorAll('.delete-reviewer').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = btn.dataset.index;
+        reviewers.splice(idx, 1);
+        renderTable();
+      });
+    });
+
     document.querySelectorAll('.editable-date').forEach(span => {
       span.addEventListener('click', () => {
         const idx = span.dataset.index;
         const input = document.createElement('input');
         input.type = 'date';
         input.value = reviewers[idx].due_date;
-        input.className = "bg-transparent text-sm text-secondary";
+        input.className = "bg-slate-800 text-white text-sm border border-slate-600 rounded p-1";
 
-        input.addEventListener('blur', () => {
-          reviewers[idx].due_date = input.value;
-          renderTable();
-        });
+        const saveDate = () => {
+             if(input.value) reviewers[idx].due_date = input.value;
+             renderTable();
+        };
+
+        input.addEventListener('blur', saveDate);
         input.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') input.blur();
         });
@@ -185,17 +316,19 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // editar comentarios
     document.querySelectorAll('.editable-comment').forEach(span => {
       span.addEventListener('click', () => {
         const idx = span.dataset.index;
         const textarea = document.createElement('textarea');
         textarea.value = reviewers[idx].comment || '';
-        textarea.className = "bg-transparent text-sm text-secondary w-full h-20 p-2 resize-none";
-        textarea.addEventListener('blur', () => {
+        textarea.className = "bg-slate-800 text-white text-sm w-full h-16 p-2 rounded resize-none border border-slate-600";
+        
+        const saveComment = () => {
           reviewers[idx].comment = textarea.value;
           renderTable();
-        });
+        };
+
+        textarea.addEventListener('blur', saveComment);
         textarea.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' && e.ctrlKey) textarea.blur();
         });
@@ -205,54 +338,106 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Inicializar tabla si hay datos previos
+  renderTable();
+
   // ==============================
   // 🔹 EVENTO AÑADIR REVISOR
   // ==============================
   document.getElementById('addReviewerBtn').addEventListener('click', () => {
-    const user = document.getElementById('userSelect');
-    const team = document.getElementById('teamSelect');
     const comment = document.getElementById('userComment');
     const today = new Date().toISOString().split('T')[0];
+    
+    let newReviewer = null;
 
-    if (!user.value || !team.value) return alert("Selecciona usuario y equipo.");
+    if (checkGuest.checked) {
+        // --- CASO EXTERNO (INVITADO) ---
+        const guestEmail = searchInput.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!guestEmail || !emailRegex.test(guestEmail)) {
+            alert("Por favor, introduce un correo electrónico válido para el invitado.");
+            return;
+        }
 
-    reviewers.push({
-      user: user.value,
-      role: 1,
-      due_date: today,
-      team: team.value,
-      comment: comment.value,
-      positions: [] // Inicializar array vacío para posiciones
-    });
+        newReviewer = {
+            // Campos requeridos por el Struct GO
+            external: true,    // json:"external"
+            user: "-1",  // json:"user"
+            role: 1,           // json:"role"
+            due_date: today,   // json:"due_date"
+            comment: comment.value, // json:"comment"
+            positions: [],     // json:"positions"
+            
+            // Campos auxiliares para UI (se ignoran en backend si no están en struct)
+            displayName: "Invitado Externo",
+            displayEmail: guestEmail
+        };
 
+    } else {
+        // --- CASO INTERNO ---
+        if (!selectedUserObj) {
+            alert("Por favor, busca y selecciona un usuario de la lista.");
+            return;
+        }
+
+        newReviewer = {
+            // Campos requeridos por el Struct GO
+            external: false,          // json:"external"
+            user: selectedUserObj.id, // json:"user" (Aquí va el ID para internos)
+            role: 1,                  // json:"role"
+            due_date: today,          // json:"due_date"
+            comment: comment.value,   // json:"comment"
+            positions: [],            // json:"positions"
+
+            // Campos auxiliares para UI
+            displayName: (selectedUserObj.name && selectedUserObj.lastname) ? `${selectedUserObj.name} ${selectedUserObj.lastname}` : selectedUserObj.alias,
+            displayEmail: selectedUserObj.email
+        };
+    }
+
+    // Evitar duplicados (por user/id)
+    const exists = reviewers.some(r => r.user === newReviewer.user);
+    if (exists) {
+        alert("Este usuario ya ha sido añadido a la lista.");
+        return;
+    }
+
+    reviewers.push(newReviewer);
     renderTable();
-    user.value = '';
+    
+    // Limpiar campos
     comment.value = '';
+    if (checkGuest.checked) {
+        searchInput.value = '';
+    } else {
+        clearSelection();
+    }
   });
 
   // ==============================
-  // 🔹 GUARDAR Y PASAR AL SIGUIENTE DOCUMENTO
+  // 🔹 GUARDAR Y FINALIZAR
   // ==============================
   document.getElementById('uploadBtn').addEventListener('click', async () => {
-    // Guardar revisores en el documento actual
+    if (reviewers.length === 0) {
+        if(!confirm("No has añadido ningún firmante. ¿Deseas continuar de todas formas?")) return;
+    }
+
     currentDoc.reviewers = reviewers;
     folderData[currentDocId] = currentDoc;
     sessionStorage.setItem("folder", JSON.stringify(folderData));
 
     if (currentIndex + 1 < docIds.length) {
-      // Pasar al siguiente documento
       sessionStorage.setItem("currentIndex", currentIndex + 1);
       window.location.href = "/addSigners";
     } else {
-      // Todos los documentos tienen revisores, pasar a posicionamiento de firmas
       sessionStorage.removeItem("currentIndex");
       
-      // Preparar datos para enviar al backend
       const inviteRequest = {};
       docIds.forEach(docId => {
         const doc = folderData[docId];
         inviteRequest[docId] = {
-          idfolder: doc.idFolder, // Asegúrate de que este campo existe
+          idfolder: doc.idFolder, 
           document: {
             idDocument: docId,
             activeDoc: doc.activeDoc,
@@ -267,12 +452,14 @@ document.addEventListener('DOMContentLoaded', () => {
             abstract: doc.abstractDoc,
             lastModifiedDoc: doc.lastModifiedDoc
           },
+          // El array de reviewers ahora contiene objetos con la estructura correcta
+          // (external, user, role, due_date, comment, positions)
           reviewers: doc.reviewers || []
         };
       });
 
-      // Guardar en sessionStorage para usar en add_signs.js
       sessionStorage.setItem("inviteRequest", JSON.stringify(inviteRequest));
+      sessionStorage.removeItem("folder");
       window.location.href = "/addSignatures";
     }
   });
@@ -280,51 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================
   // 🔹 PREVISUALIZACIÓN DEL DOCUMENTO PDF
   // ==============================
-  const previewContainer = document.getElementById('preview-container');
-  const dropMessage = document.getElementById('drop-message');
-  if (dropMessage) dropMessage.style.display = 'none';
-
-  const wrapper = document.createElement('div');
-  wrapper.className = 'pdf-wrapper';
-  wrapper.style.position = 'relative';
-  wrapper.style.width = '100%';
-  wrapper.style.height = '100%';
-
-  const iframe = document.createElement('iframe');
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
-  iframe.style.display = 'none';
-
-  const loading = document.createElement('div');
-  loading.className = "flex justify-center items-center h-full text-secondary";
-  loading.innerHTML = `
-      <div class="flex flex-col items-center gap-2">
-          <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
-          <p>Cargando documento...</p>
-      </div>
-  `;
-
-  const overlay = document.createElement('div');
-  overlay.innerText = 'Ver completo';
-  overlay.style.position = 'absolute';
-  overlay.style.bottom = '10px';
-  overlay.style.right = '10px';
-  overlay.style.background = 'rgba(0,0,0,0.6)';
-  overlay.style.color = '#fff';
-  overlay.style.padding = '6px 10px';
-  overlay.style.borderRadius = '8px';
-  overlay.style.cursor = 'pointer';
-  overlay.style.fontSize = '12px';
-  overlay.style.zIndex = '10';
-  overlay.style.display = 'none'; // se muestra cuando el documento cargue
-
-  wrapper.appendChild(loading);
-  wrapper.appendChild(iframe);
-  wrapper.appendChild(overlay);
-  previewContainer.appendChild(wrapper);
-
-  // Descargar el documento desde el backend
+  const loadingSpinner = document.getElementById('loading-spinner');
+  const pdfFrame = document.getElementById('pdf-frame');
+  const previewOverlay = document.getElementById('preview-overlay');
+  
   (async () => {
     try {
       const response = await fetch('/downloadDoc', {
@@ -341,16 +487,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
-      iframe.src = url;
-      iframe.style.display = 'block';
-      loading.style.display = 'none';
-      overlay.style.display = 'block';
+      
+      pdfFrame.src = url;
+      
+      loadingSpinner.classList.add('hidden');
+      pdfFrame.classList.remove('hidden');
+      previewOverlay.classList.remove('hidden');
+      previewOverlay.classList.add('flex');
 
-      // abrir en pestaña nueva al pulsar "Ver completo"
-      overlay.onclick = () => window.open(url, '_blank');
+      previewOverlay.onclick = () => window.open(url, '_blank');
+      
     } catch (err) {
       console.error('Error al cargar documento:', err);
-      loading.innerHTML = `
+      loadingSpinner.innerHTML = `
         <div class="text-red-400 text-center">
           <span class="material-symbols-outlined text-4xl mb-2">error</span>
           <p>Error al cargar el documento.</p>

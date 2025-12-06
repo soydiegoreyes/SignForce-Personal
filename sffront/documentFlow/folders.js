@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const titles = {
                 'user': 'Mis Folders',
-                'team': 'Folders del Equipo',
                 'shared': 'Folders Compartidos conmigo'
             };
             
@@ -136,9 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
             switch(folderType) {
                 case 'user':
                     requestBody.OnlyUser = true;
-                    break;
-                case 'team':
-                    requestBody.OnlyTeam = true;
                     break;
                 case 'shared':
                     requestBody.OnlyShared = true;
@@ -234,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const emisorName =
                 folder.userEmisor?.nameUserEmisor ||
-                folder.userEmisor?.nameTeamEmisor ||
                 folder.userEmisor?.nameInstEmisor ||
                 'Usuario desconocido';
 

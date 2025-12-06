@@ -188,7 +188,6 @@ function updateApprovalTable(reviewers) {
         row.draggable = true;
         row.innerHTML = `
             <td class="px-4 py-2 text-primary text-sm">${rev.user}</td>
-            <td class="px-4 py-2 text-secondary text-sm">${rev.team}</td>
             <td class="px-4 py-2 text-secondary text-sm">${rev.role === 1 ? "Firmante" : "Revisor"}</td>
         `;
         row.addEventListener('dragstart', e => {
