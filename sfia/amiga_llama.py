@@ -120,14 +120,15 @@ async def chat(data: dict = Body(...)):
         doc = fitz.open(data["path"])
         for page in doc.pages():
             msj += page.get_text()
+        
         resp = LLMsession.ask(msj)
         
         if resp:
-            resp["response"]
             return {"status":resp["done"], "message":clean_text(resp["response"]), "date": resp["created_at"]}
         else:
             return {"status":"error","message": "Error al generar respuesta", "response": None}
     else:
+        print("No se encontró el documento")
         return {"status":"error","message": "No existe el documento", "date": dt.now().isoformat()}
 
 if __name__ == "__main__":

@@ -257,7 +257,7 @@ func mailServ(w http.ResponseWriter, r *http.Request) {
 	// se obtiene el nombre de la app y si esta activa
 	appAttributes := []string{"isActive", "domainApp", "portApp", "currPathApp", "nameApp"}
 	var wheres = map[string][]string{
-		"idapp": []string{token},
+		"idapp": {token},
 	}
 	appValues, err := db.DB_con.GenericSelect("microapps", "idapp", appAttributes, wheres)
 	if err != nil {
