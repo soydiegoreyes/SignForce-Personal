@@ -10,7 +10,7 @@ import (
 )
 
 // Genera un token JWT para el usuario
-func GenerateJWT(idUser, idTeam, roleApp, idInst, authStatusInst string) (string, error) {
+func GenerateJWT(idUser, roleApp, idInst, authStatusInst string) (string, error) {
 	var jwt_exp int
 	var err error
 	jwt_exp, err = strconv.Atoi(os.Getenv("JWT_EXP"))
@@ -25,9 +25,9 @@ func GenerateJWT(idUser, idTeam, roleApp, idInst, authStatusInst string) (string
 		"uid":      idUser,
 		"iid":      idInst,
 		"authInst": authStatusInst,
-		"team":     idTeam,
-		"role":     roleApp,
-		"exp":      expirationUnix,
+		//"team":     idTeam,
+		"role": roleApp,
+		"exp":  expirationUnix,
 	})
 
 	ss, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))

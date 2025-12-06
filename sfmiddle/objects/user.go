@@ -14,7 +14,7 @@ type User struct{}
 
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
 // NewUser crea una nueva instancia de User
-func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, passHash string) (string, error) {
+func RegisterUser(registerReq *models.RegisterRequest, idInst, passHash string) (string, error) {
 	idInstHash, err := utilities.GetHash([]byte(idInst), configs.HashConf)
 	if err != nil {
 		return "", err
@@ -29,7 +29,7 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, pa
 		"activeUser",
 		"roleAppUser_fk",
 		"appPassHash",
-		"idTeam_fk",
+		//"idTeam_fk",
 		"idInstitution_fk",
 	}
 	values := []interface{}{
@@ -42,7 +42,7 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, pa
 		"1",
 		"1",
 		passHash,
-		idTeam,
+		//idTeam, // TEAMOBJECT
 		idInst,
 	}
 	idUser, err := db.DB_con.GenericInsert("users", columns, values)
@@ -65,11 +65,25 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst string, idTeam, pa
 	return idUser, nil
 }
 
+// TEAMOBJECT
+/*
 func UserInstTeam(idUser string) map[string]string {
-	query := fmt.Sprintf(`SELECT users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, teams.nameTeam
-		FROM users INNER JOIN institutions ON institutions.idInstitution = users.idInstitution_fk INNER JOIN teams ON teams.idTeam = users.idTeam_fk 
+	query := fmt.Sprintf(`SELECT users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, users.aliasUser, teams.nameTeam
+		FROM users INNER JOIN institutions ON institutions.idInstitution = users.idInstitution_fk INNER JOIN teams ON teams.idTeam = users.idTeam_fk
 		WHERE users.idUser = %s;`, idUser)
 	userData, err := db.DB_con.ExecuteSelect(query)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return nil
+	}
+	return userData[idUser]
+}
+*/
+func UserInstJoin(idUser string) map[string]string {
+	attrs1 := []string{"idUser", "nameUser", "lastNameUser", "emailUser", "aliasUser"}
+	attrs2 := []string{"legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst"}
+	userData, err := db.DB_con.GenericJoinSelect("users", "institutions", "users.idInstitution_fk = institutions.idInstitution", "idUser", []string{idUser}, attrs1, attrs2)
+	//userData, err := db.DB_con.ExecuteSelect(query)
 	if err != nil {
 		fmt.Printf("%s", err)
 		return nil

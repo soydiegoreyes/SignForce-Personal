@@ -17,6 +17,8 @@ import (
 	"strings"
 
 	"sfmiddle/utilities"
+
+	"github.com/google/uuid"
 )
 
 // =====================================================================================
@@ -51,11 +53,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	idTeam, ok := claims["team"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
+	//idTeam, ok := claims["team"].(string)
 
 	// Validar Content-Type
 	contentType := request.Header.Get("Content-Type")
@@ -88,11 +86,11 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	var docIds []string
 
 	if request.MultipartForm.File != nil {
-		var docType string
+		var docType string = request.MultipartForm.Value["documentType"][0]
 
-		if docTypeVal, exists := request.MultipartForm.Value["documentExt"]; exists && len(docTypeVal) > 0 {
+		/*if docTypeVal, exists := request.MultipartForm.Value["documentExt"]; exists && len(docTypeVal) > 0 {
 			docType = docTypeVal[0]
-		}
+		}*/
 
 		// Buscar el archivo en el campo "document"
 		if files, exists := request.MultipartForm.File["document"]; exists && len(files) > 0 {
@@ -123,8 +121,11 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				switch docType {
 				case "template":
 					docData.Path = fmt.Sprintf("%s/%s/%s/templates/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
+				case "logoinst":
+					docData.Path = fmt.Sprintf("%s/%s/logos/", os.Getenv("GENERIC_DOC_PATH"), idInst)
+					fileHeader.Filename = uuid.NewString() + "_" + fileHeader.Filename
 				default:
-					docData.Path = fmt.Sprintf("%s/%s/%s/%s/", os.Getenv("GENERIC_DOC_PATH"), idInst, idTeam, idUser)
+					docData.Path = fmt.Sprintf("%s/%s/%s/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
 				}
 
 				file, err = fileHeader.Open()
@@ -135,7 +136,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				defer file.Close()
 
 				var filePath string
-				// Guardar el archivo y obtener la ruta /ruta_general/idInst/idTeam/idUser/midoc.pdf
+				// Guardar el archivo y obtener la ruta /ruta_general/idInst/idUser/midoc.pdf
 				filePath, err = utilities.GuardarArchivo(
 					file, // archivo completo
 					docData.Path,
@@ -158,8 +159,8 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 				}
 
 				// Actualizar datos en la base de datos
-				cols := []string{"documentHash", "ownerInstDoc_fk", "ownerTeamDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
-				vals := []interface{}{docData.Hash, idInst, idTeam, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
+				cols := []string{"documentHash", "ownerInstDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
+				vals := []interface{}{docData.Hash, idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
 				idDoc, err := db.DB_con.GenericInsert("documents", cols, vals)
 				if err != nil {
 					fmt.Printf("Error actualizando datos en DB: %v\n", err)
@@ -212,9 +213,9 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
+	//idTeam, ok3 := claims["team"].(string)
 
-	if !ok1 || !ok2 || !ok3 {
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -238,7 +239,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"idUser":           {idUser},
 		"idInstitution_fk": {idInst},
-		"idTeam_fk":        {idTeam},
+		//"idTeam_fk":        {idTeam},
 	}
 	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser"}, wheres)
 	if err != nil {
@@ -355,7 +356,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Verificar permisos adicionales (opcional)
 	// Puedes agregar lógica adicional aquí para verificar si el usuario tiene permisos
-	// basándose en ownerInstDoc_fk, ownerTeamDoc_fk, creatorUserDoc_fk, etc.
+	// basándose en ownerInstDoc_fk, creatorUserDoc_fk, etc.
 
 	// Construir la ruta completa del archivo
 	var filePath string = fmt.Sprintf("./%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
@@ -430,8 +431,8 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -475,7 +476,7 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"creatorUserDoc_fk": {idUser},
 		"ownerInstDoc_fk":   {idInst},
-		"ownerTeamDoc_fk":   {idTeam},
+		//"ownerTeamDoc_fk":   {idTeam},
 	}
 
 	logic := ""
@@ -483,26 +484,31 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	// Si hay filtros por id, tipo o path -> se priorizan
 	switch {
 	case len(req.IdDocs) != 0:
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND idDocument"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND idDocument"
+		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND idDocument"
 		wheres["idDocument"] = req.IdDocs
 
 	case len(req.PathDocs) != 0:
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentPath"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentPath"
+		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentPath"
 		wheres["documentPath"] = req.PathDocs
 
 	case req.Type != "":
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentExt"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentExt"
+		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentExt"
 		wheres["documentExt"] = []string{req.Type}
 
 	case req.DateFrom != "" && req.DateTo != "":
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
+		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
 		wheres["createdAtDoc"] = []string{req.DateFrom, req.DateTo}
 		wheres["idDocument"] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 
 	default:
 		// Caso general: sin filtros, solo paginación
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk ORDER BY " + orderBy
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk ORDER BY " + orderBy
+		logic = "creatorUserDoc_fk AND ownerInstDoc_fk ORDER BY " + orderBy
 		wheres["idDocument"] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 	}
@@ -515,8 +521,7 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Obtener total de documentos =====
-	baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s' AND ownerTeamDoc_fk = '%s'",
-		idUser, idInst, idTeam)
+	baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s'", idUser, idInst)
 
 	query := fmt.Sprintf("SELECT COUNT(*) FROM documents WHERE %s;", baseWhere)
 	var total int

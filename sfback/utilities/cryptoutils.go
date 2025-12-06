@@ -147,7 +147,7 @@ func ConvertKeyToPem(rutaKey, password string) (string, error) {
 			fmt.Println("Llave PEM ya existe")
 		}
 	} else {
-		fmt.Println("Llave PEM ya existe")
+		fmt.Println("Llave PEM fue proporcionado")
 	}
 	return rutaPem, err
 }

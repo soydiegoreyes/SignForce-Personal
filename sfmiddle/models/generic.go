@@ -2,14 +2,14 @@ package models
 
 // Estructura para metadatos de archivo
 type FileMetadata struct {
-	Id      int
-	DocType string
-	Name    string
-	Ext     string
-	Size    int64
-	Hash    string
-	Path    string
-	Ok      bool
+	Id      int    `json:"id"`
+	DocType string `json:"documentType"`
+	Name    string `json:"name"`
+	Ext     string `json:"ext"`
+	Size    int64  `json:"size"`
+	Hash    string `json:"hash"`
+	Path    string `json:"path"`
+	Ok      bool   `json:"check"`
 }
 
 // Estructura para metadatos de llaves enviadas al back
@@ -35,10 +35,10 @@ type SignPosition struct {
 
 // Reviewer representa un firmante o revisor del documento
 type Reviewer struct {
+	IsExternal    bool           `json:"external"`
 	User          string         `json:"user"`
 	Role          int            `json:"role"`
 	DueDate       string         `json:"due_date"`
-	Team          string         `json:"team"`
 	Comment       string         `json:"comment"`
 	SignPositions []SignPosition `json:"positions"`
 }
@@ -102,14 +102,14 @@ type Folder struct {
 type UserInfo struct {
 	NameInstEmisor string `json:"nameInstEmisor"`
 	NameUserEmisor string `json:"nameUserEmisor"`
-	NameTeamEmisor string `json:"nameTeamEmisor"`
+	//NameTeamEmisor string `json:"nameTeamEmisor"`
 }
 
 type UserDestInfo struct {
-	NameInstDest string        `json:"nameInstDest"`
-	NameUserDest string        `json:"nameUserDest"`
-	NameTeamDest string        `json:"nameTeamDest"`
-	Keys         []*KeysStatus `json:"keys"`
+	NameInstDest string `json:"nameInstDest"`
+	NameUserDest string `json:"nameUserDest"`
+	//NameTeamDest string        `json:"nameTeamDest"`
+	Keys []*KeysStatus `json:"keys"`
 }
 
 type Invite struct {
@@ -126,4 +126,10 @@ type InviteDoc struct {
 	ExpiresAt string   `json:"expirationDate"`
 	Order     int      `json:"order"`
 	Comment   string   `json:"comment"`
+}
+
+type InviteUser struct {
+	IdUserDest string `json:"idInvitado,omitempty"`
+	EmailDest  string `json:"emailInvitado,omitempty"`
+	//IdTeamInv  string `json:"teamInvitado,omitempty"`
 }

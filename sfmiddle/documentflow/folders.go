@@ -6,7 +6,7 @@ import (
 	"sfmiddle/models"
 )
 
-func LoadFolderInfos(idFolder, idTeam, idUser string, onlyShared, onlyTeam, onlyUser bool, page, pageSize int, orderBy, orderDir string) (*models.FolderListResp, error) {
+func LoadFolderInfos(idFolder, idUser string, onlyShared, onlyUser bool, page, pageSize int, orderBy, orderDir string) (*models.FolderListResp, error) {
 
 	// Configuración de paginación
 	if page <= 0 {
@@ -48,10 +48,10 @@ func LoadFolderInfos(idFolder, idTeam, idUser string, onlyShared, onlyTeam, only
 
 		logic = "idFolder"
 
-	} else if onlyTeam {
+		/*} else if onlyTeam {
 		wheres["ownerTeam_fk"] = []string{idTeam}
 		logic = "ownerTeam_fk"
-
+		*/
 	} else if onlyUser {
 		wheres["creatorUser_fk"] = []string{idUser}
 		logic = "creatorUser_fk"
@@ -99,7 +99,7 @@ func LoadFolderInfos(idFolder, idTeam, idUser string, onlyShared, onlyTeam, only
 	}, nil
 }
 
-func LoadFolderInfo(idFolder, idTeam, idUser string, onlyShared, onlyTeam, onlyUser bool, page, pageSize int, orderBy, orderDir string) (*models.FolderListResp, error) {
+func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pageSize int, orderBy, orderDir string) (*models.FolderListResp, error) {
 
 	// Configuración de paginación
 	if page <= 0 {
@@ -147,10 +147,10 @@ func LoadFolderInfo(idFolder, idTeam, idUser string, onlyShared, onlyTeam, onlyU
 		}
 		logic = "idFolder"
 
-	} else if onlyTeam {
+		/*} else if onlyTeam {
 		wheres["ownerTeam_fk"] = []string{idTeam}
 		logic = "ownerTeam_fk"
-
+		*/
 	} else if onlyUser {
 		wheres["creatorUser_fk"] = []string{idUser}
 		logic = "creatorUser_fk"

@@ -4,8 +4,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-
 	"sfback/configs"
+	"sfback/db"
+	"strings"
 	"time"
 
 	"sfback/utilities"
@@ -31,12 +32,31 @@ const (
 // pdfHash: El hash SHA256 del archivo PDF que quieres firmar
 // certPEM: Los bytes del certificado público (archivo .crt o .pem)
 // k: Tus llaves para firmar
-func (k *Keys) GenerarFirmaXades(pdfHash []byte) (map[string]string, error) {
-	fmt.Println("entrando a generarfirmaXades")
+func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string]string, error) {
+	// se sacan los datos de la invitación, firma y usuarios involucrados
+	signInvData, err := db.DB_con.GenericJoinSelect("signatures", "invites", "signatures.idInvite_fk = invites.idInvite", "idSignature", []string{signatureId}, []string{"idUser_fk"}, []string{"idInvite", "idFolder", "idUserOwnner_fk"})
+	//signData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
+	if err != nil {
+		return nil, err
+	}
+	idInvite := signInvData[signatureId]["idInvite"]
+	idFolder := signInvData[signatureId]["idFolder"]
+	idUserOwnner := signInvData[signatureId]["idUserOwnner_fk"]
+	idUserDest := signInvData[signatureId]["idUser_fk"]
+	//attrs := []string{"nameUser", "lastNameUser", "emailUser", "idTeam_fk", "idInstitution_fk", "activeUser"}
+	attrs := []string{"nameUser", "lastNameUser", "emailUser", "idInstitution_fk", "activeUser"}
+	wheres := map[string][]string{
+		"idUser": {idUserOwnner, idUserDest},
+	}
+	usersData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil {
+		return nil, err
+	}
+	invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), usersData[idUserDest]["idInstitution_fk"], idFolder, idInvite)
+
 	// Identificadores únicos para enlazar las referencias
-	signatureId := uuid.NewString() // Podrías usar UUID
+	//signatureId := uuid.NewString() // Podrías usar UUID
 	signedPropsId := "SignedProperties-" + uuid.NewString()
-	//objectId := "Object-" + uuid.NewString()
 
 	// Convertir el hash del PDF a Base64 para ponerlo en el XML
 	pdfHashB64 := base64.StdEncoding.EncodeToString(pdfHash)
@@ -219,28 +239,29 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte) (map[string]string, error) {
 		return nil, err
 	}
 
-	fmt.Println("todo bien")
 	// crear xml
-	xmlPath := "./temp/" + signatureId + ".xml"
-	if err := os.MkdirAll("./temp", 0755); err != nil {
+	xmlPath := invitePath + signatureId + ".xml"
+	if err := os.MkdirAll(invitePath, 0755); err != nil {
+		fmt.Println("error al crear el folder")
 		return nil, err
 	}
-
 	// Crear archivo solo si NO existe (modo seguro)
 	f, err := os.OpenFile(xmlPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
+		fmt.Println("el archivo ya existe: ", xmlPath, err)
 		return nil, fmt.Errorf("el archivo %s ya existe", xmlPath)
 	}
 	defer f.Close()
 
 	// Escribir XML
 	if _, err := f.Write([]byte(xmlString)); err != nil {
+		fmt.Println("error al escriir el archivo")
 		return nil, err
 	}
 
 	// Respuesta de firma
 	signData := map[string]string{
-		"xmlPath":            xmlPath,
+		"xmlPath":            strings.ReplaceAll(xmlPath, os.Getenv("BASE_DIR")+"/", ""),
 		"signedInfoHash":     signedInfoHash,
 		"signatureValueSign": signatureValueB64,
 		"genTimeSign":        gentime,

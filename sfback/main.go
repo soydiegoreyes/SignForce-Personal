@@ -68,6 +68,7 @@ body:{
 	password: "mipass"
 }
 */
+//====================================================================================================
 // Handler HTTP para loguear a un usuario por un ID de usuario y un arreglo de atributos a adquirir
 func loginUser(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
@@ -88,6 +89,7 @@ func loginUser(respWriter http.ResponseWriter, request *http.Request) {
 
 	_, isActive := auth.GetUser(loginReq.IdUser)
 	if !isActive {
+		fmt.Println("Usuario no está activo")
 		user, err = objects.NewUser(loginReq.IdUser, loginReq.Password)
 		if err != nil {
 			json.NewEncoder(respWriter).Encode(models.LoginResponse{Token: "", Error: "Credenciales inválidas"})
@@ -109,6 +111,7 @@ func loginUser(respWriter http.ResponseWriter, request *http.Request) {
 	}
 }
 
+// ====================================================================================================
 // Handler HTTP para obtener datos de un usuario por un ID de usuario y un arreglo de atributos a adquirir
 func getUserData(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
@@ -139,6 +142,7 @@ func getUserData(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(response)
 }
 
+// ====================================================================================================
 // hash data in b64 by chunks
 func hashDataB64(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
@@ -159,6 +163,7 @@ func hashDataB64(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(models.HashDataResponse{Operation: "abcd", HashedMessage: hash_b64, Check: true})
 }
 
+// ====================================================================================================
 // recibe solicitud desde cualquier endpoint para validar llaves que ya estan almacenadas
 func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != "POST" {
@@ -244,6 +249,9 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(respWriter).Encode(valResp)
 }
 
+//====================================================================================================
+
+// =================================== FIRMA DE DOCUMENTO ==============================================
 func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -268,13 +276,14 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Datos incompletos", http.StatusBadRequest)
 		return
 	}
-	// ============= Validar que no exista firma previa ==========================
-	attrs := []string{"idInvite_fk", "idUserKeys_fk", "digestValueSign", "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"}
+	//  Validar que no exista firma previa ==========================
+	attrs := []string{"idInvite_fk", "idUserKeys_fk", "digestValueSign", "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign", "notifyCreatorSign"}
 	wheres := map[string][]string{
 		"idInvite_fk": {req.IdInvite},
 	}
 	signatureData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres) // devuelve map[string]map[string]string
 	if err == nil {
+		// Recorre todas las firmas de la invitacion (del usuario)
 		for _, s := range signatureData {
 			if s["idUserKeys_fk"] != "" || s["signatureValueSign"] != "" {
 				http.Error(respWriter, "Ya existe una firma registrada", http.StatusBadRequest)
@@ -286,7 +295,7 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// ============= Cargar documentos desde DB ==============================
+	// Cargar documentos desde DB ==============================
 	docIds := []string{}
 	for _, d := range req.Documents {
 		docIds = append(docIds, d.IdDocument)
@@ -301,7 +310,7 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// ============= Procesar cada documento ==============================
+	// Procesar cada documento ==============================
 	signaturesXML := make(map[string]string)
 
 	for _, docReq := range req.Documents {
@@ -337,25 +346,28 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 
+		// Actualizar datos de firmas ========================================
+		// "idUser_fk", "idInvite_fk", "idUserKeys_fk", "digestValueSign",  "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"
+
+		var idSign string
+		for idS, s := range signatureData {
+			if s["digestValueSign"] == stored["documentHash"] {
+				idSign = idS
+				s["digestValueSign"] = s["digestValueSign"] + "."
+				break
+			}
+		}
+
 		// Generar firma XAdES
-		xmlData, err := user.Keys.GenerarFirmaXades(utilities.Decode_b64(realHash))
+		xmlData, err := user.Keys.GenerarFirmaXades(utilities.Decode_b64(realHash), idSign)
 		if err != nil {
 			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
 			return
 		}
 
 		// se añade a la respuesta
-		signaturesXML[docReq.IdDocument] = xmlData["xmlPath"]
+		signaturesXML[idSign] = xmlData["xmlPath"]
 
-		// ======================= Actualizar datos de firmas ========================================
-		// "idUser_fk", "idInvite_fk", "idUserKeys_fk", "digestValueSign",  "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"
-		var idSign string
-		for idS, s := range signatureData {
-			if s["digestValueSign"] == stored["documentHash"] {
-				idSign = idS
-				break
-			}
-		}
 		updates := map[string]map[string]interface{}{
 			idSign: {
 				"idUserKeys_fk":      req.IdKey,
@@ -366,13 +378,12 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 				"nonceSign":          xmlData["nonceSign"],
 			},
 		}
-		fmt.Println("updates: ", updates)
+		fmt.Println(updates)
 		err = db.DB_con.GenericBatchUpdate("signatures", "idSignature", updates)
 		if err != nil {
 			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
 			return
 		}
-
 	}
 
 	//=============================================================================================
@@ -383,15 +394,26 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 	})
 }
 
+// ====================================================================================================
+// =================================== LOGOUT DE USUARIO ==============================================
 // logout handler para desloguear
 func logoutUser(respWriter http.ResponseWriter, request *http.Request) {
-	user, err := auth.GetUserFromRequest(request)
+	//user, err := auth.GetUserFromRequest(request)
+	type idUserReq struct {
+		IdUser string `json:"iduser"`
+		IdKey  string `json:"idkey"`
+	}
+	var logoutReq *idUserReq
+	err := json.NewDecoder(request.Body).Decode(&logoutReq)
 	if err != nil {
 		http.Error(respWriter, err.Error(), http.StatusUnauthorized)
 		return
 	}
-
-	auth.DeleteUser(user.Uid)
+	userData, _ := db.DB_con.GenericSelect("users", "idUser", []string{"idKeysUser_fk"}, map[string][]string{"idUser": {logoutReq.IdUser}})
+	if userData[logoutReq.IdUser]["idKeysUser_fk"] != logoutReq.IdKey {
+		fmt.Println("Advertencia: las llaves en uso no corresponden a las llaves recibidas")
+	}
+	auth.DeleteUser(logoutReq.IdUser)
 	respWriter.WriteHeader(http.StatusOK)
 	respWriter.Write([]byte("Sesión cerrada"))
 }

@@ -37,8 +37,8 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -65,7 +65,7 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		"idDocument":        {},
 		"creatorUserDoc_fk": {idUser},
 		"ownerInstDoc_fk":   {idInst},
-		"ownerTeamDoc_fk":   {idTeam},
+		//"ownerTeamDoc_fk":   {idTeam},
 	}
 
 	for _, d := range req {
@@ -86,10 +86,14 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// se crea el nuevo folder
-	folderPath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idTeam, idUser)
+	folderPath := fmt.Sprintf("%s/folders/%s/%s/", os.Getenv("BASE_DIR"), idInst, idUser)
+	if err := os.MkdirAll(folderPath, 0755); err != nil {
+		fmt.Println("error al crear el folder")
+		return
+	}
 	expiration := time.Now().AddDate(0, 0, 3).Format("2006-01-02 15:04:05")
-	columns := []string{"ownerInst_fk", "ownerTeam_fk", "creatorUser_fk", "pathSerialized", "expirationDate", "numDocs"}
-	values := []interface{}{idInst, idTeam, idUser, folderPath, expiration, len(docData)}
+	columns := []string{"ownerInst_fk", "creatorUser_fk", "pathSerialized", "expirationDate", "numDocs"}
+	values := []interface{}{idInst, idUser, folderPath, expiration, len(docData)}
 
 	idFolder, err := db.DB_con.GenericInsert("folders", columns, values)
 	if err != nil {
@@ -134,8 +138,8 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -155,10 +159,10 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Llamar a la función principal =====
 	folderData, err := documentflow.LoadFolderInfo(
 		req.IdFolder,
-		idTeam,
+		//idTeam,
 		idUser,
 		req.OnlyShared,
-		req.OnlyTeam,
+		//req.OnlyTeam,
 		req.OnlyUser,
 		req.Page,
 		req.PageSize,
@@ -201,9 +205,9 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	idUser, ok1 := claims["uid"].(string)
-	_, ok2 := claims["iid"].(string)
-	_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	idInst, ok2 := claims["iid"].(string)
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -256,6 +260,13 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
 					return
 				}
+
+				// se crea la carpeta de la invitacion dentro del folder
+				invitePath := fmt.Sprintf("%s/folders/%s/%s/%s", os.Getenv("BASE_DIR"), idInst, idFolder, invites[reviewer.User].IdInvite)
+				if err := os.MkdirAll(invitePath, 0755); err != nil {
+					http.Error(respWriter, "Error al crear folder de invite: "+err.Error(), http.StatusInternalServerError)
+					return
+				}
 			}
 			// se inserta en InviteDocs los datos del documento que hay que firmar (uno por documento)
 			var invdoc = models.InviteDoc{
@@ -294,18 +305,20 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 
+			idSignature := uuid.NewString()
 			// ===== INSERT en tabla signatures =====
 			signatureCols := []string{
-				"idInvite_fk", "digestValueSign", "idUser_fk",
+				"idSignature", "idInvite_fk", "digestValueSign", "idUser_fk",
 			}
 
 			signatureAttrs := []interface{}{
+				idSignature,
 				invites[reviewer.User].IdInvite, // idInvite_fk
 				docrev.Document.DocumentHash,    // digestValueSign
 				reviewer.User,                   // idUser_fk
 			}
 
-			idSignature, err := db.DB_con.GenericInsert("signatures", signatureCols, signatureAttrs)
+			_, err = db.DB_con.GenericInsert("signatures", signatureCols, signatureAttrs)
 			if err != nil {
 				http.Error(respWriter, "Error al insertar signature: "+err.Error(), http.StatusInternalServerError)
 				return
@@ -412,7 +425,6 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
-	// Validar método
 	if request.Method != http.MethodPost {
 		respWriter.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(respWriter).Encode(map[string]string{
@@ -436,8 +448,8 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	//_, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -483,7 +495,6 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 // firma de documento mediante invitacion
 func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
-	// Validar método
 	if request.Method != http.MethodPost {
 		respWriter.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(respWriter).Encode(map[string]string{
@@ -507,8 +518,8 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	//_, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
@@ -609,12 +620,12 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 	var signResult models.SignResponse
 
 	if resp.StatusCode == http.StatusOK {
-		fmt.Println("TODO OK")
 		err = json.NewDecoder(resp.Body).Decode(&signResult)
 		if err != nil {
 			fmt.Println("Error decodificando:", err)
 		}
 	}
+	fmt.Println("Firma realizada con éxito")
 
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")

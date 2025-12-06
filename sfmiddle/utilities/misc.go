@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"mime/multipart"
+	"net"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -107,4 +109,24 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 	}
 
 	return filePath, nil
+}
+
+func GetClientIP(r *http.Request) string {
+	// X-Forwarded-For puede traer varias IPs: client, proxy1, proxy2...
+	forwarded := r.Header.Get("X-Forwarded-For")
+	if forwarded != "" {
+		// La primera IP es la real
+		parts := strings.Split(forwarded, ",")
+		return strings.TrimSpace(parts[0])
+	}
+
+	// Otro header común
+	realIP := r.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+
+	// Si no viene en headers, usamos la IP directa
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
 }

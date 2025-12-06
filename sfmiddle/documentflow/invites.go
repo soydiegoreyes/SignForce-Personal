@@ -72,11 +72,11 @@ func GenerateInvites(invites []models.InviteMail) error {
 			fmt.Printf("%s", err)
 			return err
 		}
-
+		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusOK {
 			fmt.Println("TODO OK")
 		}
-		resp.Body.Close()
+
 	}
 	return nil
 }
@@ -98,7 +98,7 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	// Obtener datos del folder
-	attrs = []string{"secuentialSign", "expirationDate", "creatorUser_fk", "ownerInst_fk", "ownerTeam_fk"}
+	attrs = []string{"secuentialSign", "expirationDate", "creatorUser_fk", "ownerInst_fk"}
 	wheres = map[string][]string{
 		"idFolder": {inviteData[idInvite]["idFolder"]},
 	}
@@ -114,7 +114,7 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	idFolder := inviteData[idInvite]["idFolder"]
 
 	// Obtener datos del usuario destinatario
-	attrs = []string{"activeUser", "idKeysUser_fk", "nameUser", "lastNameUser", "emailUser", "idInstitution_fk", "idTeam_fk"}
+	attrs = []string{"activeUser", "idKeysUser_fk", "nameUser", "lastNameUser", "emailUser", "idInstitution_fk"}
 	wheres = map[string][]string{
 		"idUser": {inviteData[idInvite]["idUserDest_fk"]},
 	}
@@ -148,14 +148,16 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	// Obtener datos del equipo del emisor
-	attrs = []string{"nameTeam"}
-	wheres = map[string][]string{
-		"idTeam": {folderData[idFolder]["ownerTeam_fk"]},
-	}
-	teamData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
-	if err != nil {
-		return nil, fmt.Errorf("error obteniendo datos del equipo: %v", err)
-	}
+	/*
+		attrs = []string{"nameTeam"}
+		wheres = map[string][]string{
+			"idTeam": {folderData[idFolder]["ownerTeam_fk"]},
+		}
+		teamData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo datos del equipo: %v", err)
+		}
+	*/
 
 	// Obtener los documentos de la invitación específica
 	attrs = []string{"idfolderdocument"}
@@ -205,12 +207,13 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 
 	// Construir UserInfo del emisor
 	userEmisor := models.UserInfo{
-		NameInstEmisor: fmt.Sprintf("%s (%s)", instData[folderData[idFolder]["ownerInst_fk"]]["legalNameInst"],
+		NameInstEmisor: fmt.Sprintf("%s (%s)",
+			instData[folderData[idFolder]["ownerInst_fk"]]["legalNameInst"],
 			instData[folderData[idFolder]["ownerInst_fk"]]["aliasNameInst"]),
 		NameUserEmisor: fmt.Sprintf("%s %s",
 			ownerUserData[inviteData[idInvite]["idUserOwnner_fk"]]["nameUser"],
 			ownerUserData[inviteData[idInvite]["idUserOwnner_fk"]]["lastNameUser"]),
-		NameTeamEmisor: teamData[folderData[idFolder]["ownerTeam_fk"]]["name"],
+		//NameTeamEmisor: teamData[folderData[idFolder]["ownerTeam_fk"]]["name"],
 	}
 
 	// Construir UserDestInfo del destinatario
@@ -290,18 +293,10 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	return inviteInfo, nil
 }
 
-// Funcion para mandar emails a los invitados
-type InviteUser struct {
-	IdGuest string
-	Email   string
-	Alias   string
-	IdInst  string
-	IdUser  string
-	IdTeam  string
-}
-
-func InviteNewUser(newInvite InviteUser) {
-	userData := objects.UserInstTeam(newInvite.IdUser)
+// REAHACER FUNCION PARA QUE NO DEPENDA DE LOS teams
+func InviteNewUser(idUserDest, emailDest, idUser string) {
+	userData := objects.UserInstJoin(idUserDest)
+	guestData := objects.UserInstJoin(idUser)
 	whereMap := map[string][]string{
 		"nameApp": {"emailServ"},
 	}
@@ -311,29 +306,32 @@ func InviteNewUser(newInvite InviteUser) {
 		fmt.Printf("%s", err)
 		return
 	}
-
-	binDoc, err := os.ReadFile("./templates/invite_team.html")
+	/*
+		idTeamInvite, err := db.DB_con.GenericInsert("teaminvites", []string{}, []interface{}{})
+		fmt.Println(idTeamInvite)
+	*/
+	binDoc, err := os.ReadFile("./templates/invite_user.html")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
 	hostFullName := fmt.Sprintf("%s %s", userData["nameUser"], userData["lastNameUser"])
-	hostTeamName := userData["nameTeam"]
+	//hostTeamName := userData["nameTeam"]
 	body := string(binDoc)
-	body = strings.ReplaceAll(body, "{GUEST_ALIAS}", newInvite.Alias)
-	body = strings.ReplaceAll(body, "{GUEST_EMAIL}", newInvite.Email)
+	body = strings.ReplaceAll(body, "{GUEST_ALIAS}", guestData["aliasUser"])
+	body = strings.ReplaceAll(body, "{GUEST_EMAIL}", guestData["emailUser"])
 	body = strings.ReplaceAll(body, "{HOST_INSTNAME}", userData["legalNameInst"])
 	body = strings.ReplaceAll(body, "{HOST_INSTALIAS}", userData["aliasNameInst"])
 	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
-	body = strings.ReplaceAll(body, "{GUEST_TEAMNAME}", userData["nameTeam"])
+	//body = strings.ReplaceAll(body, "{GUEST_TEAMNAME}", guestData["nameTeam"])
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(5*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinvite", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 	payload := models.EmailRequest{
-		IdUser:   newInvite.IdUser,
-		Subject:  fmt.Sprintf("¡Tienes una invitación! El equipo %s quiere que te unas a ellos.", hostTeamName),
+		IdUser:   idUserDest,
+		Subject:  fmt.Sprintf("¡Tienes una invitación! %s quiere que te unas a SIGNFORCE.", guestData["nameUser"]),
 		Body:     body,
-		Dest:     []string{newInvite.Email},
+		Dest:     []string{emailDest},
 		MimeType: "html",
 	}
 

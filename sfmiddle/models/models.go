@@ -92,14 +92,14 @@ type GetByInviteRequest struct {
 type FolderRequest struct {
 	IdFolder   string `json:"idFolder,omitempty"`
 	OnlyShared bool   `json:"onlyShared,omitempty"`
-	OnlyTeam   bool   `json:"onlyTeam,omitempty"`
-	OnlyUser   bool   `json:"onlyUser,omitempty"`
-	DateFrom   string `json:"dateFrom,omitempty"`
-	DateTo     string `json:"dateTo,omitempty"`
-	Page       int    `json:"page,omitempty"`
-	PageSize   int    `json:"pageSize,omitempty"`
-	OrderBy    string `json:"orderBy,omitempty"`
-	OrderDir   string `json:"orderDir,omitempty"`
+	//OnlyTeam   bool   `json:"onlyTeam,omitempty"`
+	OnlyUser bool   `json:"onlyUser,omitempty"`
+	DateFrom string `json:"dateFrom,omitempty"`
+	DateTo   string `json:"dateTo,omitempty"`
+	Page     int    `json:"page,omitempty"`
+	PageSize int    `json:"pageSize,omitempty"`
+	OrderBy  string `json:"orderBy,omitempty"`
+	OrderDir string `json:"orderDir,omitempty"`
 }
 
 type LLMrequest struct {
@@ -197,9 +197,9 @@ type UserDataResp struct {
 	Phone    string `json:"phone"`
 	Active   string `json:"active"`
 	Role     string `json:"role"`
-	Team     string `json:"team"`
-	Kyc      string `json:"kyc"`
-	IsAlive  bool   `json:"isAlive"`
+	//Team     string `json:"team"`
+	Kyc     string `json:"kyc"`
+	IsAlive bool   `json:"isAlive"`
 }
 
 type TeamDataResp struct {

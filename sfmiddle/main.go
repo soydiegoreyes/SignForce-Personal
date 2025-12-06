@@ -103,11 +103,13 @@ func main() {
 	mux.HandleFunc("/uploadk", handlers.Uploadk)                       // subir llaves
 	mux.HandleFunc("/statusk", handlers.GetKeysData)                   // obtener datos de llaves de usuario
 	mux.HandleFunc("/updatek", handlers.UpdateKeysData)                // actualizar datos de llaves de usuario
+	mux.HandleFunc("/logink", handlers.Logink)                         // login para firma
+	mux.HandleFunc("/logoutk", handlers.Logoutk)                       // login para firma
 	mux.HandleFunc("/getvaldata", handlers.GetValidationData)          // validar estatus de usuario en registro
 	mux.HandleFunc("/updatevaldata", handlers.UpdateValidationData)    // actualizar estatus de usuario en registro
 	mux.HandleFunc("/completevalidation", handlers.CompleteValidation) // completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", handlers.ProcessPayment)         // procesar pago de plan
-	mux.HandleFunc("/checkUserStatus", handlers.CheckUserStatus)       // obtener datos de un usuario
+	mux.HandleFunc("/findUser", handlers.CheckUserStatus)              // obtener datos de un usuario
 	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
 	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
@@ -115,9 +117,11 @@ func main() {
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
 	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
-	mux.HandleFunc("/inviteteam", handlers.InviteUserTeam)             // manda una invitacion a un usuario para formar parte de un equipo
-	mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
-	mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
+	//mux.HandleFunc("/inviteteam", handlers.InviteUserTeam)             // manda una invitacion a un usuario para formar parte de un equipo
+	//mux.HandleFunc("/acceptinviteteam", handlers.AcceptInviteTeam)     // se acepta la invitacion para unirse a un equipo
+	//mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
+	//mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
+	//mux.HandleFunc("/newteam", handlers.NewTeam)                       // crea un equipo dentro de una institucion por un usuario master o root
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -134,6 +138,7 @@ func main() {
 	mux.HandleFunc("/viewinvite", viewInvite)
 
 	mux.HandleFunc("/myfolders", myFolders)
+	mux.HandleFunc("/myteams", myTeams)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -289,6 +294,13 @@ func myFolders(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/folders.html")
 }
+func myTeams(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/administracion/crear_equipo.html")
+}
 
 // =======================================================================
 // pagina de login
@@ -327,7 +339,7 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 		"idUser":           {idUser},
 		"idInstitution_fk": {idInst},
 	}
-	data, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "roleAppUser_fk", "idTeam_fk", "idInstitution_fk"}, wheres)
+	data, err := db.DB_con.GenericSelect("users", "idUser", []string{"activeUser", "roleAppUser_fk", "idInstitution_fk"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener datos del usuario.", http.StatusInternalServerError)
 		return
@@ -416,9 +428,21 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	nh, err := utilities.GetHash([]byte(loginReq.Password), configs.HashConf)
+	if err != nil {
+		loginResp.Error = "Error: No se pudo verificar el password"
+		json.NewEncoder(respWriter).Encode(loginResp)
+		return
+	}
+
 	// se obtienen los datos de validacion del usuario
-	var attrs = []string{"emailUser", "appPassHash", "activeUser", "idTeam_fk", "roleAppUser_fk", "idInstitution_fk"}
-	dataUser, err := db.DB_con.GenericSelect("users", "idUser", attrs, map[string][]string{"emailUser": {loginReq.Account}})
+	//var attrs = []string{"emailUser", "appPassHash", "activeUser", "idTeam_fk", "roleAppUser_fk", "idInstitution_fk"}
+	var attrs = []string{"emailUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk"}
+	var wheres = map[string][]string{
+		"emailUser":   {loginReq.Account},
+		"appPassHash": {nh},
+	}
+	dataUser, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 	if err != nil {
 		loginResp.Error = fmt.Sprintf("%s", err)
 		json.NewEncoder(respWriter).Encode(loginResp)
@@ -441,13 +465,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	var idUser string
 	for idU, v := range dataUser {
 		idUser = idU
-		nh, err := utilities.GetHash([]byte(loginReq.Password), configs.HashConf)
-		if err != nil {
-			loginResp.Error = "Error: No se pudo verificar el password"
-			json.NewEncoder(respWriter).Encode(loginResp)
-			return
-		}
-		if !(v["appPassHash"] == nh && v["activeUser"] == "1") {
+		if v["activeUser"] != "1" {
 			loginResp.Error = "Error: Usuario no autorizado. Verificar Password o verifique el estado de su cuenta."
 			json.NewEncoder(respWriter).Encode(loginResp)
 			return
@@ -468,7 +486,8 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Generar JWT
-	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
+	//token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
+	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
 	if err != nil {
 		http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
 		return

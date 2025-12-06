@@ -8,7 +8,6 @@ import (
 	"os"
 	"sfmiddle/db"
 	"sfmiddle/models"
-	"strings"
 )
 
 func GetAbstractDoc(idDoc string) {
@@ -66,8 +65,9 @@ func GetAbstractDoc(idDoc string) {
 				fmt.Println("Error en respuesta: ", err)
 				return
 			}
+			defer resp.Body.Close()
 
-			if strings.Contains(resp.Status, "200 OK") {
+			if resp.StatusCode == http.StatusOK {
 				var llamaresp = models.LLMresp{}
 				err := json.NewDecoder(resp.Body).Decode(&llamaresp)
 				if err != nil {
@@ -87,7 +87,6 @@ func GetAbstractDoc(idDoc string) {
 					return
 				}
 			}
-			resp.Body.Close()
 		}
 	} else {
 		fmt.Println("Error en obtener datos de documentos o no hay información")

@@ -37,9 +37,9 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
+	//idTeam, ok3 := claims["team"].(string)
 	authInst, ok4 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 || !ok4 {
+	if !ok1 || !ok2 || !ok4 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -51,7 +51,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// borrar cuando ya no se requiera
-	fmt.Println(idUser, idInst, idTeam, authInst)
+	fmt.Println(idUser, idInst, authInst)
 
 	attrs := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "nameOwner"}
 	wheres := map[string][]string{"idInstitution": {idInst}}
@@ -184,10 +184,13 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
-			idTeam := objects.CreateTeam(lastId, "1", "mainteam_"+lastId, "Primer equipo de "+lastId)
+
+			// TEAMOBJECT
+			//idTeam := objects.CreateTeam(lastId, "1", "mainteam_"+lastId, "Primer equipo de "+lastId)
 
 			// se registra el usuario root
-			userId, err := objects.RegisterUser(&registerReq, lastId, idTeam, passHash)
+			//userId, err := objects.RegisterUser(&registerReq, lastId, idTeam, passHash) // TEAMOBJECT
+			userId, err := objects.RegisterUser(&registerReq, lastId, passHash)
 			if err != nil {
 				fmt.Println(err)
 				registerResp.Error = fmt.Sprintf("%s", err)
