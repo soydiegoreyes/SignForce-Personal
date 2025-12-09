@@ -62,7 +62,7 @@ class OllamaSession:
         return self.client.generate(model=self.model, prompt=prompt)
 
 
-LLMsession = OllamaSession("llama3.2")
+LLMsession = OllamaSession("deepseek-r1:8b")
 #PROMPTS--------------------------------------------------------------------------------------
 #=================================================================================
 prompts = dict(enumerate([
@@ -111,11 +111,32 @@ async def chat(data: dict = Body(...)):
     else:
         return {"status":False, "message": "Error al generar respuesta", "date": dt.now().isoformat()}
 
-@app.post("/resume")
-async def chat(data: dict = Body(...)):
+@app.post("/actions")
+async def actions(data: dict = Body(...)):
     if os.path.exists(data["path"]):
         if data["action"] != "":
             msj = prompts[data["action"]]
+        msj += prompts[0]
+        doc = fitz.open(data["path"])
+        for page in doc.pages():
+            msj += page.get_text()
+        
+        resp = LLMsession.ask(msj)
+        
+        if resp:
+            return {"status":resp["done"], "message":clean_text(resp["response"]), "date": resp["created_at"]}
+        else:
+            return {"status":"error","message": "Error al generar respuesta", "response": None}
+    else:
+        print("No se encontró el documento")
+        return {"status":"error","message": "No existe el documento", "date": dt.now().isoformat()}
+
+@app.post("/interact")
+async def interact(data: dict = Body(...)):
+    # esta funcion se puede optimizar con memoria de conversacion con redis
+    if os.path.exists(data["path"]):
+        if data["query"] != "":
+            msj = data["query"]
         msj += prompts[0]
         doc = fitz.open(data["path"])
         for page in doc.pages():
