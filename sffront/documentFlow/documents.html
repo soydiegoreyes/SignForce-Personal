@@ -12,6 +12,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/documentflow/documents.css">
+    <style>
+        /* Estilos personalizados para el scrollbar del chat en el sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
 </head>
 <body class="font-display text-gray-800 dark:text-gray-200">
     <!-- Barra superior -->
@@ -43,11 +59,13 @@
     </header>
 
     <div class="bg flex min-h-screen pt-24 pb-8 px-8">
-        <aside class="w-64 glass-panel mr-6 flex flex-col">
-            <div class="p-6">
+        <aside class="w-64 glass-panel mr-6 flex flex-col max-h-[calc(100vh-8rem)]">
+            <div class="p-6 pb-2">
                 <h1 class="text-2xl font-bold text-primary">Visor de Documentos</h1>
             </div>
-            <nav class="flex-1 px-4 py-2">
+            
+            <!-- Navegación principal -->
+            <nav class="flex-none px-4 py-2">
                 <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="uploaded">
                     <span class="material-symbols-outlined">upload</span>
                     <span>Subidos</span>
@@ -65,7 +83,55 @@
                     <span>Finalizados/Cancelados</span>
                 </a>
             </nav>
+
+            <!-- Separador -->
+            <div class="my-2 border-t border-white/10 mx-4"></div>
+
+            <!-- Sección de Chat Integrada en Sidebar -->
+            <div class="flex-1 flex flex-col px-4 pb-4 overflow-hidden">
+                
+                <!-- Botón activador (oculto por defecto hasta seleccionar doc) -->
+                <div id="consultDocBtnContainer" class="hidden mb-2">
+                    <button id="btnConsultarDoc" onclick="openDocChat()" 
+                        class="w-full py-2 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+                        <span class="material-symbols-outlined text-lg">chat</span>
+                        Consultar Documento
+                    </button>
+                </div>
+
+                <!-- Contenedor del Chat (oculto por defecto) -->
+                <div id="leftSidebarChat" class="flex-1 flex flex-col bg-black/20 rounded-lg overflow-hidden border border-white/10 hidden transition-all">
+                    <!-- Cabecera del chat -->
+                    <div class="px-3 py-2 bg-white/5 border-b border-white/10 flex justify-between items-center shrink-0">
+                        <span class="text-xs font-bold text-primary truncate max-w-[120px]" id="chatDocTitle">Chat</span>
+                        <button onclick="closeDocChat()" class="text-secondary hover:text-red-400">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+
+                    <!-- Mensajes -->
+                    <div id="docChatMessages" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar text-sm">
+                        <!-- Mensajes dinámicos -->
+                        <div class="text-center text-xs text-secondary mt-2">
+                            Haz una pregunta sobre el documento seleccionado.
+                        </div>
+                    </div>
+
+                    <!-- Input -->
+                    <div class="p-2 border-t border-white/10 bg-white/5 shrink-0">
+                        <div class="relative">
+                            <input id="docChatInput" type="text" 
+                                placeholder="Escribe..." 
+                                class="w-full bg-black/40 text-primary text-xs rounded px-2 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-purple-500 border border-white/10">
+                            <button onclick="sendDocChatMessage()" class="absolute right-1 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-300">
+                                <span class="material-symbols-outlined text-sm">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </aside>
+
         <main class="flex-1">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-3xl font-bold text-primary fade-in" id="sectionTitle">Documentos en Proceso de Firma</h2>
@@ -134,7 +200,7 @@
                                     <p class="text-secondary text-center py-4">No hay firmas registradas</p>
                                 </div>
                                 <div class="mt-auto pt-6 flex gap-2" id="sidebarActions" style="display: none;">
-                                    <!-- El botón de firma se cargará dinámicamente aquí -->
+                                    <!-- Botones de acción normales -->
                                 </div>
                             </div>
                         </div>

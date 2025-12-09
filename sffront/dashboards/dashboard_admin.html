@@ -1,15 +1,403 @@
 <!DOCTYPE html>
 <html class="dark" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Administrador de Equipo</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_styles.css">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Admin Dashboard - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-background: #000;
+            --color-card: rgba(255, 255, 255, 0.05);
+            --color-text-primary: #ffffff;
+            --color-text-secondary: rgba(255, 255, 255, 0.7);
+            --color-accent: rgba(255, 255, 255, 0.5);
+            --color-shadow: rgba(0, 0, 0, 0.3);
+            --color-blue-dark: #1e2c4b;
+            --color-blue-light: #93bde5;
+            --color-gold: #e5b019;
+            --color-red-wine: #74273a;
+        }
+
+        body {
+            background: var(--color-background);
+            min-height: 100vh;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .bg {
+            background: 
+                radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+                radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+                radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: "Michroma", sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+
+        /* Clases para secciones */
+        .active-section {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .hidden-section {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .glass-panel {
+            background: rgba(1, 0, 28, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 0px 20px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .text-primary {
+            color: #ffffff;
+        }
+
+        .text-secondary {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Header glass */
+        .glass-header {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 62.5px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+            0 8px 32px 0 rgba(255, 255, 255, 0.1),
+            0 0 10px 1px rgba(200, 90, 255, 0.4);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        .liquid-bubble {
+            position: fixed;
+            width: 120px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: -1;
+            box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+        }
+
+        .nav-item {
+            position: relative;
+            padding: 8px 16px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-item:hover {
+            color: rgb(255, 255, 255) !important;
+        }
+
+        /* Botones */
+        .btn-primary {
+            background: linear-gradient(#faf9f6, #dcd7ce, #aca69a);
+            color: black;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 204, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Input fields */
+        .input-field {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Select personalizado */
+        .custom-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+
+        .custom-select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: rgba(1, 0, 28, 0.9);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: white;
+        }
+
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Badges para estados */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .badge-inactive {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .badge-pending {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+
+        .badge-suspended {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #ffffff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-header {
+                width: 95%;
+                padding: 0 15px;
+            }
+            
+            .bg {
+                padding: 1rem;
+            }
+            
+            .glass-panel {
+                padding: 1.5rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Estilos adicionales para las sugerencias de búsqueda */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .suggestion-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .suggestion-item strong {
+            color: #fff;
+        }
+        
+        /* Estilos para las tarjetas de estadísticas */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #ffffff;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
+<body class="font-display text-gray-800 dark:text-gray-200">
     <!-- Barra superior -->
     <header class="glass-header" id="mainHeader">
         <div class="flex items-center gap-8 relative">
@@ -21,111 +409,382 @@
                         <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
                     </svg>
                 </div>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Gestión</h2>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce Admin</h2>
             </div>
             <div class="flex items-center gap-9">
                 <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="./../administracion/gestion_usuarios.html" data-item="users">Usuarios</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="users">Gestión Usuarios</a>
                 <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="teams">Equipos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="reports">Reportes</a>
             </div>
         </div>
         <div class="flex flex-1 justify-end gap-8">
-            <div class="user-info flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-                </svg>
-                <span id="nombreUsuario">Administrador de Equipo</span>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-secondary">Admin Master</span>
+                <button id="logoutBtn" class="btn-secondary flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 text-sm font-bold leading-normal tracking-[0.015em]">
+                    <span class="material-symbols-outlined mr-2 text-sm">logout</span>
+                    Salir
+                </button>
             </div>
-            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
         </div>
     </header>
 
-    <div class="main-container">
-        <aside class="sidebar glass-panel">
+    <!-- Contenido principal -->
+    <div class="bg flex min-h-screen pt-24 pb-8 px-8">
+        <!-- Panel izquierdo -->
+        <aside class="w-64 glass-panel mr-6 flex flex-col">
             <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Dashboard Admin</h1>
+                <h1 class="text-2xl font-bold text-primary">Panel Admin</h1>
+                <p class="text-secondary text-sm mt-1">Usuario Master</p>
             </div>
             <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
+                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-tab="dashboard">
                     <span class="material-symbols-outlined">dashboard</span>
                     <span>Dashboard</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="./../administracion/gestion_usuarios.html">
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="user-management">
                     <span class="material-symbols-outlined">group</span>
-                    <span>Gestionar Usuarios</span>
+                    <span>Gestión Usuarios</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="document-stats">
+                    <span class="material-symbols-outlined">description</span>
+                    <span>Estadísticas Docs</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="activity-logs">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>Logs Actividad</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="system-settings">
                     <span class="material-symbols-outlined">settings</span>
                     <span>Configuración</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">description</span>
-                    <span>Documentos</span>
-                </a>
             </nav>
+            <div class="p-4 mt-auto border-t border-white/10">
+                <div class="text-xs text-secondary">
+                    <p>Versión: 2.1.0</p>
+                    <p class="mt-1">Usuarios activos: <span id="activeUsersCount" class="text-green-400 font-bold">0</span></p>
+                </div>
+            </div>
         </aside>
-        
-        <main class="content">
-            <div class="welcome glass-panel p-6 mb-6 fade-in">
-                <h1 id="tituloBienvenida" class="text-3xl font-bold text-primary mb-2">Bienvenido, Administrador de Equipo</h1>
-                <p class="text-secondary">Gestiona los miembros y actividades de tu equipo.</p>
-            </div>
-            
-            <div class="equipo-info glass-panel p-6 mb-6" id="infoEquipo">
-                <!-- Información del equipo se cargará dinámicamente -->
-                <div class="loading">
-                    <div class="spinner"></div>
+
+        <!-- Contenido principal dinámico -->
+        <main class="flex-1">
+            <!-- Sección del Dashboard -->
+            <section id="dashboard-section" class="active-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-primary fade-in">Dashboard Administrador</h2>
+                    <div class="text-secondary text-sm">
+                        <span id="currentDate"></span>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="actions-grid">
-                <div class="action-card" onclick="window.location.href='./../administracion/gestion_usuarios.html'">
-                    <h3>Gestionar Usuarios</h3>
-                    <p>Agrega, edita o elimina usuarios de tu equipo y asigna roles administrativos.</p>
-                    <a href="./../administracion/gestion_usuarios.html" class="btn-primary text-center">Gestionar Usuarios</a>
+
+                <!-- Estadísticas generales -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="glass-card stat-card p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-secondary text-sm">Usuarios Totales</p>
+                                <h3 class="text-3xl font-bold text-primary mt-2" id="totalUsers">0</h3>
+                                <p class="text-green-400 text-xs mt-1 flex items-center">
+                                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                                    <span id="usersGrowth">0%</span> este mes
+                                </p>
+                            </div>
+                            <div class="bg-blue-500/20 p-3 rounded-full">
+                                <span class="material-symbols-outlined text-blue-400">group</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card stat-card p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-secondary text-sm">Documentos Firmados</p>
+                                <h3 class="text-3xl font-bold text-primary mt-2" id="signedDocs">0</h3>
+                                <p class="text-green-400 text-xs mt-1 flex items-center">
+                                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                                    <span id="docsGrowth">0%</span> este mes
+                                </p>
+                            </div>
+                            <div class="bg-green-500/20 p-3 rounded-full">
+                                <span class="material-symbols-outlined text-green-400">description</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card stat-card p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-secondary text-sm">Pendientes</p>
+                                <h3 class="text-3xl font-bold text-primary mt-2" id="pendingDocs">0</h3>
+                                <p class="text-yellow-400 text-xs mt-1 flex items-center">
+                                    <span class="material-symbols-outlined text-xs mr-1">pending</span>
+                                    Necesitan acción
+                                </p>
+                            </div>
+                            <div class="bg-yellow-500/20 p-3 rounded-full">
+                                <span class="material-symbols-outlined text-yellow-400">schedule</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card stat-card p-6">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-secondary text-sm">Invitaciones</p>
+                                <h3 class="text-3xl font-bold text-primary mt-2" id="pendingInvites">0</h3>
+                                <p class="text-purple-400 text-xs mt-1 flex items-center">
+                                    <span class="material-symbols-outlined text-xs mr-1">mail</span>
+                                    Pendientes de aceptar
+                                </p>
+                            </div>
+                            <div class="bg-purple-500/20 p-3 rounded-full">
+                                <span class="material-symbols-outlined text-purple-400">send</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="action-card" onclick="window.location.href='#'">
-                    <h3>Configuración del Equipo</h3>
-                    <p>Actualiza la información y configuración de tu equipo.</p>
-                    <a href="#" class="btn-secondary text-center">Configurar</a>
-                </div>
-                <div class="action-card" onclick="window.location.href='#'">
-                    <h3>Documentos del Equipo</h3>
-                    <p>Consulta documentos y estadísticas de tu equipo.</p>
-                    <a href="#" class="btn-secondary text-center">Ver Documentos</a>
-                </div>
-            </div>
-            
-            <div class="miembros-list glass-panel p-6">
-                <h2 class="text-2xl font-bold text-primary mb-4">Miembros del Equipo</h2>
-                <div id="listaMiembros">
-                    <!-- Los miembros se cargarán dinámicamente -->
-                    <div class="loading">
+
+                <!-- Gráfico de actividad reciente -->
+                <div class="glass-panel mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-primary">Actividad Reciente</h3>
+                        <select class="input-field custom-select w-48 h-10">
+                            <option>Últimas 24 horas</option>
+                            <option>Última semana</option>
+                            <option>Último mes</option>
+                        </select>
+                    </div>
+                    <div class="h-64 flex items-center justify-center text-secondary" id="activityChart">
+                        <!-- Gráfico se cargará aquí -->
                         <div class="spinner"></div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Usuarios recientes -->
+                <div class="glass-panel">
+                    <h3 class="text-xl font-bold text-primary mb-6">Usuarios Recientes</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-white/10">
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Usuario</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Email</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Rol</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Fecha Registro</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Estado</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentUsersTable">
+                                <!-- Datos se cargarán dinámicamente -->
+                                <tr>
+                                    <td colspan="6" class="px-4 py-8 text-center text-secondary">
+                                        <div class="spinner mx-auto"></div>
+                                        <p class="mt-2">Cargando usuarios...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección de Gestión de Usuarios -->
+            <section id="user-management-section" class="hidden-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-primary fade-in">Gestión de Usuarios</h2>
+                    <button id="addUserBtn" class="btn-primary flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]">
+                        <span class="material-symbols-outlined mr-2">person_add</span>
+                        Invitar Usuario
+                    </button>
+                </div>
+
+                <!-- Barra de búsqueda de usuarios -->
+                <div class="glass-panel mb-8">
+                    <h3 class="text-xl font-bold text-primary mb-4">Buscar Usuario</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col">
+                            <label class="flex flex-col">
+                                <p class="text-primary text-base font-medium leading-normal pb-2">Buscar por:</p>
+                                <select id="userSearchType" class="input-field custom-select flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal">
+                                    <option value="nameUser">Nombre</option>
+                                    <option value="lastNameUser">Apellido</option>
+                                    <option value="aliasUser">Alias</option>
+                                    <option value="emailUser">Email</option>
+                                    <option value="phoneUser">Teléfono</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="flex flex-col relative">
+                            <label class="flex flex-col w-full relative">
+                                <p class="text-primary text-base font-medium leading-normal pb-2">Término de búsqueda</p>
+                                <input
+                                    id="userSearchInput"
+                                    placeholder="Escribe al menos 3 caracteres..."
+                                    autocomplete="off"
+                                    class="input-field flex w-full resize-none overflow-hidden rounded-xl focus:outline-0 focus:ring-0 focus:border-white/40 h-14 p-[15px] text-base font-normal leading-normal"
+                                />
+                                <!-- Lista de sugerencias -->
+                                <div id="userSuggestionsList" class="suggestions-list hidden"></div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 mt-4">
+                        <button id="searchUserBtn" class="btn-secondary flex cursor-pointer items-center justify-center rounded-xl h-10 px-6 text-sm font-bold">
+                            <span class="material-symbols-outlined mr-2">search</span>
+                            Buscar
+                        </button>
+                        <button id="clearSearchBtn" class="btn-secondary flex cursor-pointer items-center justify-center rounded-xl h-10 px-6 text-sm font-bold">
+                            <span class="material-symbols-outlined mr-2">clear</span>
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resultados de búsqueda y lista de usuarios -->
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-primary">Usuarios del Sistema</h3>
+                        <div class="text-secondary text-sm">
+                            Mostrando <span id="usersCount">0</span> usuarios
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-white/10">
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">ID</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Nombre</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Email</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Rol</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Estado</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Últ. Actividad</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Datos se cargarán dinámicamente -->
+                                <tr>
+                                    <td colspan="7" class="px-4 py-8 text-center text-secondary">
+                                        <div class="spinner mx-auto"></div>
+                                        <p class="mt-2">Cargando lista de usuarios...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-between items-center mt-6 pt-6 border-t border-white/10">
+                        <div class="text-secondary text-sm">
+                            Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="prevPageBtn" class="btn-secondary h-10 px-4 rounded-lg" disabled>
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <button id="nextPageBtn" class="btn-secondary h-10 px-4 rounded-lg" disabled>
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Otras secciones se implementarían de manera similar -->
         </main>
     </div>
 
-    <script>
-        // Cargar información del usuario
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-        // Cargar información de los equipos
-        let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
-        // Cargar información de los usuarios
-        let usuarios= JSON.parse(sessionStorage.getItem('usuarios')) || [];
+    <!-- Modal para Invitar Usuario -->
+    <div id="inviteUserModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-primary">Invitar Nuevo Usuario</h3>
+                <span class="close-modal text-2xl cursor-pointer">&times;</span>
+            </div>
+            
+            <form id="inviteUserForm">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-primary text-sm font-medium mb-2" for="inviteEmail">
+                            Email del usuario
+                        </label>
+                        <input
+                            type="email"
+                            id="inviteEmail"
+                            name="email"
+                            required
+                            placeholder="ejemplo@correo.com"
+                            class="input-field w-full h-12 px-4"
+                        />
+                        <p class="text-secondary text-xs mt-2">
+                            Se enviará una invitación por correo electrónico para que se registre en la plataforma.
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-primary text-sm font-medium mb-2" for="inviteRole">
+                            Rol asignado
+                        </label>
+                        <select
+                            id="inviteRole"
+                            name="role"
+                            class="input-field custom-select w-full h-12 px-4"
+                        >
+                            <option value="user">Usuario Regular</option>
+                            <option value="reviewer">Revisor</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-primary text-sm font-medium mb-2" for="inviteMessage">
+                            Mensaje personal (opcional)
+                        </label>
+                        <textarea
+                            id="inviteMessage"
+                            name="message"
+                            placeholder="Añade un mensaje personal para la invitación..."
+                            rows="3"
+                            class="input-field w-full px-4 py-3 resize-none"
+                        ></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 mt-8">
+                    <button type="button" class="btn-secondary flex-1 h-12 close-modal">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="sendInviteBtn" class="btn-primary flex-1 h-12">
+                        <span id="inviteBtnText">Enviar Invitación</span>
+                        <span id="inviteLoading" class="hidden">
+                            <div class="spinner inline-block mx-2"></div>
+                            Enviando...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        /*if (!currentUser || currentUser.tipo !== 'admin_equipo') {
-            window.location.href = './../registro/login.html';
-        }*/
-        
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
-        
+    <!-- Modal para Detalles de Usuario -->
+    <div id="userDetailsModal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-primary">Detalles del Usuario</h3>
+                <span class="close-modal text-2xl cursor-pointer">&times;</span>
+            </div>
+            
+            <div id="userDetailsContent">
+                <!-- Contenido cargado dinámicamente -->
+                <div class="text-center py-8">
+                    <div class="spinner mx-auto"></div>
+                    <p class="mt-2 text-secondary">Cargando detalles...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
         // Efecto liquid glass para la burbuja del menú
         const liquidBubble = document.getElementById('liquidBubble');
         const navItems = document.querySelectorAll('.nav-item');
@@ -148,7 +807,7 @@
         
         function moveBubble(itemName) {
             const item = itemPositions[itemName];
-            if (item && liquidBubble) {
+            if (item) {
                 liquidBubble.style.left = `${item.left - 10}px`;
                 liquidBubble.style.width = `${item.width + 20}px`;
             }
@@ -158,124 +817,1067 @@
             item.addEventListener('mouseenter', () => {
                 moveBubble(item.dataset.item);
             });
+            
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveBubble(item.dataset.item);
+                // Aquí iría la lógica para cambiar secciones
+            });
         });
-
-        window.addEventListener('load', calculatePositions);
+        
+        // Actualizar fecha actual
+        function updateCurrentDate() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            document.getElementById('currentDate').textContent = 
+                now.toLocaleDateString('es-ES', options);
+        }
+        
+        window.addEventListener('load', () => {
+            calculatePositions();
+            updateCurrentDate();
+        });
         window.addEventListener('resize', calculatePositions);
 
-        // Toggle de tema claro/oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                
-                const icon = themeToggle.querySelector('i');
-                if (document.body.classList.contains('light-theme')) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                } else {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
-                }
-            });
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+        // ==============================
+        // 🔹 VARIABLES GLOBALES
+        // ==============================
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalUsers = 0;
+        let cachedUsers = [];
+        let selectedUserObj = null;
+        let debounceTimer = null;
 
-        // Intersection Observer para animaciones
-        const observerOptions = {
-            threshold: 0.1
-        };
+        // ==============================
+        // 🔹 NAVEGACIÓN ENTRE SECCIONES
+        // ==============================
+        const navLinks = document.querySelectorAll('[data-tab]');
+        const sections = document.querySelectorAll('section[id$="-section"]');
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('fade-in');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach(element => {
-            observer.observe(element);
-        });
-        
-        // Cargar información del equipo y miembros
-        function cargarEquipoYMiembros() {
-            // Simular carga de equipo
-            // En un caso real sería un fetch a la API
-            /*
-            fetch(`/api/equipos/${currentUser.equipoId}`)
-            .then(response => response.json())
-            .then(equipo => {
-                // Mostrar información del equipo
-            });
-            */
-            // Buscar equipo en memoria
-            const equipo = equipos.find(e => e.id === currentUser.equipoId);
-            
-            if (equipo) {
-                document.getElementById('infoEquipo').innerHTML = `
-                    <h2 class="text-2xl font-bold text-primary mb-2">${equipo.nombre}</h2>
-                    <p class="text-secondary mb-2">${equipo.descripcion || 'Sin descripción'}</p>
-                    <p class="text-secondary"><strong>Creado el:</strong> ${new Date(equipo.fechaCreacion).toLocaleDateString()}</p>
-                `;
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = link.dataset.tab;
                 
-                document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Administrador'} - ${equipo.nombre}`;
+                // Actualizar clases activas
+                navLinks.forEach(l => l.classList.remove('bg-gradient-to-r', 'from-blue-500', 'to-purple-600', 'text-white'));
+                navLinks.forEach(l => l.classList.add('text-secondary', 'hover:bg-white/10'));
                 
-                // Cargar miembros del equipo
-                cargarMiembros(equipo);
-            } else {
-                document.getElementById('infoEquipo').innerHTML = '<p class="text-secondary">No se encontró información del equipo</p>';
-            }
-        }
-        
-        function cargarMiembros(equipo) {
-            // Simular carga de miembros
-            // En un caso real sería un fetch a la API
-            /*
-            fetch(`/api/equipos/${equipo.id}/miembros`)
-            .then(response => response.json())
-            .then(miembros => {
-                // Mostrar miembros
-            });
-            */
-            
-            if (equipo.miembros && equipo.miembros.length > 0 && usuarios.length > 0) {
-                let html = '';
+                link.classList.remove('text-secondary', 'hover:bg-white/10');
+                link.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-purple-600', 'text-white');
                 
-                equipo.miembros.forEach(miembroEquipo => {
-                    // Buscar información del usuario
-                    const usuario = usuarios.find(u => u.id === miembroEquipo.usuarioId);
-                    
-                    if (usuario) {
-                        const rolClass = miembroEquipo.rol === 'admin' ? 'rol-admin' : 
-                                        miembroEquipo.rol === 'miembro' ? 'rol-miembro' : '';
-                        
-                        html += `
-                            <div class="miembro-item fade-in">
-                                <div>
-                                    <h3 class="text-primary font-semibold">${usuario.nombre}</h3>
-                                    <p class="text-secondary">${usuario.email}</p>
-                                </div>
-                                <div>
-                                    <span class="miembro-rol ${rolClass}">${miembroEquipo.rol.toUpperCase()}</span>
-                                </div>
-                            </div>
-                        `;
-                    }
+                // Mostrar sección correspondiente
+                sections.forEach(section => {
+                    section.classList.remove('active-section');
+                    section.classList.add('hidden-section');
                 });
                 
-                document.getElementById('listaMiembros').innerHTML = html;
-            } else {
-                document.getElementById('listaMiembros').innerHTML = '<p class="text-secondary text-center py-4">No hay miembros en este equipo aún.</p>';
+                const targetSection = document.getElementById(`${targetTab}-section`);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden-section');
+                    targetSection.classList.add('active-section');
+                    
+                    // Cargar datos específicos de la sección
+                    switch(targetTab) {
+                        case 'dashboard':
+                            loadDashboardData();
+                            break;
+                        case 'user-management':
+                            loadUsersList();
+                            break;
+                        case 'document-stats':
+                            loadDocumentStats();
+                            break;
+                        // Agregar más casos según sea necesario
+                    }
+                }
+            });
+        });
+
+        // ==============================
+        // 🔹 FUNCIONES DE DATOS DEL DASHBOARD
+        // ==============================
+        async function loadDashboardData() {
+            try {
+                // Cargar estadísticas generales
+                const stats = await fetchAdminStats();
+                updateDashboardStats(stats);
+                
+                // Cargar usuarios recientes
+                await loadRecentUsers();
+                
+                // Cargar actividad reciente (simulada)
+                simulateActivityChart();
+                
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+                showToast('Error al cargar datos del dashboard', 'error');
             }
         }
-        
-        cargarEquipoYMiembros();
-        
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = '/login';
+
+        // Función ficticia para obtener estadísticas del admin
+        async function fetchAdminStats() {
+            // NOTA: Esta es una función ficticia que simula la respuesta del backend
+            // En producción, reemplazar con fetch real a tu API
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        totalUsers: 154,
+                        usersGrowth: 12.5,
+                        signedDocs: 1287,
+                        docsGrowth: 8.3,
+                        pendingDocs: 42,
+                        pendingInvites: 7,
+                        activeUsers: 89
+                    });
+                }, 500);
+            });
         }
+
+        function updateDashboardStats(stats) {
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('usersGrowth').textContent = `${stats.usersGrowth}%`;
+            document.getElementById('signedDocs').textContent = stats.signedDocs.toLocaleString();
+            document.getElementById('docsGrowth').textContent = `${stats.docsGrowth}%`;
+            document.getElementById('pendingDocs').textContent = stats.pendingDocs;
+            document.getElementById('pendingInvites').textContent = stats.pendingInvites;
+            document.getElementById('activeUsersCount').textContent = stats.activeUsers;
+        }
+
+        async function loadRecentUsers() {
+            try {
+                // Simular carga de usuarios recientes
+                const users = await fetchRecentUsers();
+                renderRecentUsersTable(users);
+                
+            } catch (error) {
+                console.error('Error cargando usuarios recientes:', error);
+            }
+        }
+
+        // Función ficticia para obtener usuarios recientes
+        async function fetchRecentUsers() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve([
+                        {
+                            id: "USR001",
+                            name: "Juan Pérez",
+                            email: "juan.perez@empresa.com",
+                            role: "Administrador",
+                            joinDate: "2024-01-15",
+                            status: "active"
+                        },
+                        {
+                            id: "USR002",
+                            name: "María González",
+                            email: "maria.gonzalez@empresa.com",
+                            role: "Usuario",
+                            joinDate: "2024-01-10",
+                            status: "active"
+                        },
+                        {
+                            id: "USR003",
+                            name: "Carlos López",
+                            email: "carlos.lopez@empresa.com",
+                            role: "Revisor",
+                            joinDate: "2024-01-05",
+                            status: "pending"
+                        },
+                        {
+                            id: "USR004",
+                            name: "Ana Martínez",
+                            email: "ana.martinez@empresa.com",
+                            role: "Usuario",
+                            joinDate: "2024-01-02",
+                            status: "active"
+                        },
+                        {
+                            id: "USR005",
+                            name: "Pedro Sánchez",
+                            email: "pedro.sanchez@empresa.com",
+                            role: "Usuario",
+                            joinDate: "2023-12-28",
+                            status: "inactive"
+                        }
+                    ]);
+                }, 300);
+            });
+        }
+
+        function renderRecentUsersTable(users) {
+            const tbody = document.getElementById('recentUsersTable');
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const statusClass = getStatusClass(user.status);
+                const statusText = getStatusText(user.status);
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5 hover:bg-white/5';
+                tr.innerHTML = `
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                <span class="text-sm font-bold">${user.name.charAt(0)}</span>
+                            </div>
+                            <span class="font-medium">${user.name}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-secondary">${user.email}</td>
+                    <td class="px-4 py-3">
+                        <span class="badge badge-active">${user.role}</span>
+                    </td>
+                    <td class="px-4 py-3 text-secondary">${formatDate(user.joinDate)}</td>
+                    <td class="px-4 py-3">
+                        <span class="badge ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <button class="text-blue-400 hover:text-blue-300 transition-colors view-user-btn" data-id="${user.id}">
+                            <span class="material-symbols-outlined text-sm">visibility</span>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Agregar event listeners para botones de vista
+            document.querySelectorAll('.view-user-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.currentTarget.dataset.id;
+                    showUserDetails(userId);
+                });
+            });
+        }
+
+        function simulateActivityChart() {
+            const chartContainer = document.getElementById('activityChart');
+            // En producción, aquí se integraría una librería como Chart.js
+            chartContainer.innerHTML = `
+                <div class="text-center">
+                    <div class="text-lg font-bold text-primary mb-2">Actividad de usuarios</div>
+                    <div class="text-secondary text-sm mb-6">Últimas 24 horas</div>
+                    <div class="flex items-end justify-center gap-2 h-32">
+                        ${[65, 80, 45, 90, 70, 85, 60].map((height, i) => `
+                            <div class="flex flex-col items-center">
+                                <div class="w-6 bg-gradient-to-t from-blue-500 to-purple-600 rounded-t" style="height: ${height}%"></div>
+                                <span class="text-xs text-secondary mt-2">${['00', '04', '08', '12', '16', '20', '24'][i]}:00</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==============================
+        // 🔹 GESTIÓN DE USUARIOS - BÚSQUEDA
+        // ==============================
+        const userSearchInput = document.getElementById('userSearchInput');
+        const userSearchType = document.getElementById('userSearchType');
+        const searchUserBtn = document.getElementById('searchUserBtn');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const userSuggestionsList = document.getElementById('userSuggestionsList');
+        const addUserBtn = document.getElementById('addUserBtn');
+
+        // Búsqueda en tiempo real
+        userSearchInput.addEventListener('input', (e) => {
+            const term = e.target.value.trim();
+            
+            if (term.length === 0) {
+                clearTimeout(debounceTimer);
+                userSuggestionsList.classList.add('hidden');
+                cachedUsers = [];
+                return;
+            }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                if (term.length >= 3) {
+                    searchUsers(term);
+                }
+            }, 500);
+        });
+
+        // Búsqueda manual con botón
+        searchUserBtn.addEventListener('click', async () => {
+            const term = userSearchInput.value.trim();
+            if (term.length >= 3) {
+                await searchUsers(term, true);
+            } else {
+                showToast('Ingresa al menos 3 caracteres para buscar', 'warning');
+            }
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            userSearchInput.value = '';
+            userSuggestionsList.classList.add('hidden');
+            cachedUsers = [];
+            selectedUserObj = null;
+            loadUsersList(); // Recargar lista completa
+        });
+
+        // Función de búsqueda de usuarios (similar a add_signers.js)
+        async function searchUsers(term, showResults = false) {
+            try {
+                const searchType = userSearchType.value;
+                
+                // NOTA: Esta es la misma estructura que en add_signers.js
+                // En producción, usar el mismo endpoint /findUser
+                const payload = {
+                    params: [term],
+                    type: searchType,
+                    likeop: true // Búsqueda flexible por defecto
+                };
+
+                // Simular respuesta del servidor
+                const mockResponse = {
+                    "USR001": { name: "Juan", lastname: "Pérez", email: "juan.perez@empresa.com", alias: "juanp", role: "Admin" },
+                    "USR002": { name: "María", lastname: "González", email: "maria.gonzalez@empresa.com", alias: "mariag", role: "User" },
+                    "USR003": { name: "Carlos", lastname: "López", email: "carlos.lopez@empresa.com", alias: "carlosl", role: "Reviewer" }
+                };
+
+                // En producción, descomentar esto:
+                /*
+                const response = await fetch('/findUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) throw new Error('Error en búsqueda');
+                const data = await response.json();
+                */
+
+                const data = mockResponse; // Usar mock para demo
+                
+                cachedUsers = Object.entries(data).map(([id, userData]) => ({
+                    id: id,
+                    ...userData
+                }));
+
+                if (showResults) {
+                    // Si es búsqueda manual, mostrar resultados en tabla
+                    renderUsersTable(cachedUsers);
+                } else {
+                    // Si es búsqueda en tiempo real, mostrar sugerencias
+                    renderUserSuggestions(cachedUsers);
+                }
+
+            } catch (err) {
+                console.error("Error buscando usuarios:", err);
+                showToast('Error al buscar usuarios', 'error');
+                cachedUsers = [];
+                userSuggestionsList.classList.add('hidden');
+            }
+        }
+
+        function renderUserSuggestions(users) {
+            userSuggestionsList.innerHTML = '';
+            
+            if (!users || users.length === 0) {
+                userSuggestionsList.classList.add('hidden');
+                return;
+            }
+
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                
+                const displayName = u.name && u.lastname ? `${u.name} ${u.lastname}` : (u.alias || "Usuario");
+                const displayEmail = u.email || "Sin email";
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm">${displayName}</span>
+                        <span class="text-xs text-secondary opacity-70">${u.role || 'User'}</span>
+                    </div>
+                    <div class="text-xs text-secondary">${displayEmail}</div>
+                `;
+
+                div.addEventListener('click', () => {
+                    selectUserForManagement(u);
+                });
+
+                userSuggestionsList.appendChild(div);
+            });
+
+            userSuggestionsList.classList.remove('hidden');
+        }
+
+        function selectUserForManagement(user) {
+            selectedUserObj = user;
+            userSearchInput.value = user.email;
+            userSuggestionsList.classList.add('hidden');
+            
+            // Mostrar detalles del usuario seleccionado
+            showUserDetails(user.id);
+        }
+
+        // ==============================
+        // 🔹 CARGA Y RENDERIZADO DE LISTA DE USUARIOS
+        // ==============================
+        async function loadUsersList() {
+            try {
+                showLoading('usersTableBody');
+                
+                // NOTA: Esta función es ficticia - en producción implementar endpoint real
+                const users = await fetchAllUsers(currentPage, pageSize);
+                totalUsers = users.total || users.length;
+                
+                renderUsersTable(users.data || users);
+                updatePaginationControls();
+                document.getElementById('usersCount').textContent = totalUsers;
+                
+            } catch (error) {
+                console.error('Error cargando lista de usuarios:', error);
+                showToast('Error al cargar usuarios', 'error');
+                showError('usersTableBody', 'No se pudo cargar la lista de usuarios');
+            }
+        }
+
+        // Función ficticia para obtener todos los usuarios
+        async function fetchAllUsers(page = 1, limit = 10) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Generar usuarios de ejemplo
+                    const users = Array.from({ length: 50 }, (_, i) => ({
+                        id: `USR${String(i + 1).padStart(3, '0')}`,
+                        name: `Usuario ${i + 1}`,
+                        email: `usuario${i + 1}@empresa.com`,
+                        role: i === 0 ? 'Admin' : (i % 3 === 0 ? 'Reviewer' : 'User'),
+                        status: i % 10 === 0 ? 'inactive' : 'active',
+                        lastActivity: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        joinDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString()
+                    }));
+                    
+                    // Paginación simulada
+                    const start = (page - 1) * limit;
+                    const end = start + limit;
+                    const paginatedUsers = users.slice(start, end);
+                    
+                    resolve({
+                        data: paginatedUsers,
+                        total: users.length,
+                        page: page,
+                        pageSize: limit,
+                        totalPages: Math.ceil(users.length / limit)
+                    });
+                }, 800);
+            });
+        }
+
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-secondary">
+                            <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+                            <p>No se encontraron usuarios</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            users.forEach(user => {
+                const statusClass = getStatusClass(user.status);
+                const statusText = getStatusText(user.status);
+                const lastActivity = formatRelativeTime(user.lastActivity);
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-secondary text-sm">${user.id}</td>
+                    <td class="px-4 py-3 font-medium">${user.name}</td>
+                    <td class="px-4 py-3 text-secondary">${user.email}</td>
+                    <td class="px-4 py-3">
+                        <span class="badge ${user.role === 'Admin' ? 'badge-active' : 'badge-pending'}">${user.role}</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <span class="badge ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-4 py-3 text-secondary text-sm">${lastActivity}</td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-2">
+                            <button class="text-blue-400 hover:text-blue-300 transition-colors view-user-btn" data-id="${user.id}" title="Ver detalles">
+                                <span class="material-symbols-outlined text-sm">visibility</span>
+                            </button>
+                            <button class="text-green-400 hover:text-green-300 transition-colors edit-user-btn" data-id="${user.id}" title="Editar">
+                                <span class="material-symbols-outlined text-sm">edit</span>
+                            </button>
+                            <button class="text-red-400 hover:text-red-300 transition-colors delete-user-btn" data-id="${user.id}" title="Eliminar">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // Agregar event listeners
+            document.querySelectorAll('.view-user-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.currentTarget.dataset.id;
+                    showUserDetails(userId);
+                });
+            });
+            
+            document.querySelectorAll('.edit-user-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.currentTarget.dataset.id;
+                    editUser(userId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const userId = e.currentTarget.dataset.id;
+                    deleteUser(userId);
+                });
+            });
+        }
+
+        // ==============================
+        // 🔹 PAGINACIÓN
+        // ==============================
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const currentPageSpan = document.getElementById('currentPage');
+        const totalPagesSpan = document.getElementById('totalPages');
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                loadUsersList();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(totalUsers / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadUsersList();
+            }
+        });
+
+        function updatePaginationControls() {
+            const totalPages = Math.ceil(totalUsers / pageSize);
+            
+            currentPageSpan.textContent = currentPage;
+            totalPagesSpan.textContent = totalPages;
+            
+            prevPageBtn.disabled = currentPage <= 1;
+            nextPageBtn.disabled = currentPage >= totalPages;
+            
+            // Actualizar clases de estilo
+            prevPageBtn.classList.toggle('opacity-50', currentPage <= 1);
+            nextPageBtn.classList.toggle('opacity-50', currentPage >= totalPages);
+        }
+
+        // ==============================
+        // 🔹 INVITACIÓN DE USUARIOS POR EMAIL
+        // ==============================
+        const inviteUserModal = document.getElementById('inviteUserModal');
+        const inviteUserForm = document.getElementById('inviteUserForm');
+        const sendInviteBtn = document.getElementById('sendInviteBtn');
+        const inviteBtnText = document.getElementById('inviteBtnText');
+        const inviteLoading = document.getElementById('inviteLoading');
+
+        // Abrir modal para invitar usuario
+        addUserBtn.addEventListener('click', () => {
+            inviteUserForm.reset();
+            inviteUserModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Cerrar modales
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                inviteUserModal.style.display = 'none';
+                document.getElementById('userDetailsModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+        });
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', (e) => {
+            if (e.target === inviteUserModal) {
+                inviteUserModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            
+            const userDetailsModal = document.getElementById('userDetailsModal');
+            if (e.target === userDetailsModal) {
+                userDetailsModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Enviar invitación por email
+        inviteUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('inviteEmail').value.trim();
+            const role = document.getElementById('inviteRole').value;
+            const message = document.getElementById('inviteMessage').value.trim();
+            
+            if (!email || !validateEmail(email)) {
+                showToast('Por favor ingresa un email válido', 'warning');
+                return;
+            }
+            
+            // Mostrar estado de carga
+            inviteBtnText.classList.add('hidden');
+            inviteLoading.classList.remove('hidden');
+            sendInviteBtn.disabled = true;
+            
+            try {
+                // NOTA: Esta es la estructura que mencionaste para el endpoint /inviteuser
+                const inviteData = {
+                    idInvitado: "", // Vacío como mencionaste
+                    emailInvitado: email,
+                    // teamInvitado: "" // Opcional si tienes equipos
+                };
+                
+                // Simular envío de invitación
+                const response = await sendInvitation(inviteData);
+                
+                if (response.message === "OK") {
+                    showToast(`Invitación enviada a ${email}`, 'success');
+                    inviteUserModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    
+                    // Actualizar contador de invitaciones pendientes
+                    updatePendingInvitesCount();
+                    
+                    // Opcional: Registrar en logs de actividad
+                    logActivity(`Invitación enviada a ${email}`, 'invitation');
+                    
+                } else {
+                    throw new Error(response.message || 'Error al enviar invitación');
+                }
+                
+            } catch (error) {
+                console.error('Error enviando invitación:', error);
+                showToast(`Error: ${error.message}`, 'error');
+                
+            } finally {
+                // Restaurar botón
+                inviteBtnText.classList.remove('hidden');
+                inviteLoading.classList.add('hidden');
+                sendInviteBtn.disabled = false;
+            }
+        });
+
+        // Función ficticia para enviar invitación
+        async function sendInvitation(inviteData) {
+            // NOTA: En producción, reemplazar con fetch real
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simular éxito o error aleatorio para demo
+                    const success = Math.random() > 0.2; // 80% de éxito
+                    
+                    if (success) {
+                        resolve({
+                            message: "OK",
+                            inviteId: `INV${Date.now()}`,
+                            timestamp: new Date().toISOString()
+                        });
+                    } else {
+                        reject(new Error("El usuario ya tiene una invitación pendiente"));
+                    }
+                }, 1500);
+            });
+        }
+
+        // ==============================
+        // 🔹 DETALLES DEL USUARIO
+        // ==============================
+        async function showUserDetails(userId) {
+            const modal = document.getElementById('userDetailsModal');
+            const content = document.getElementById('userDetailsContent');
+            
+            try {
+                // Mostrar loading
+                content.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="spinner mx-auto"></div>
+                        <p class="mt-2 text-secondary">Cargando detalles del usuario...</p>
+                    </div>
+                `;
+                
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+                // Obtener datos del usuario
+                const userData = await fetchUserDetails(userId);
+                renderUserDetails(userData);
+                
+            } catch (error) {
+                console.error('Error cargando detalles:', error);
+                content.innerHTML = `
+                    <div class="text-center py-8 text-red-400">
+                        <span class="material-symbols-outlined text-4xl mb-2">error</span>
+                        <p>Error al cargar detalles del usuario</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Función ficticia para obtener detalles del usuario
+        async function fetchUserDetails(userId) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        id: userId,
+                        name: "Juan Pérez",
+                        email: "juan.perez@empresa.com",
+                        role: "Administrador",
+                        status: "active",
+                        joinDate: "2024-01-15T10:30:00Z",
+                        lastLogin: "2024-01-20T14:45:00Z",
+                        documentsSigned: 45,
+                        documentsPending: 3,
+                        teams: ["Equipo Directivo", "Equipo Proyecto A"],
+                        permissions: ["admin", "write", "read", "delete"]
+                    });
+                }, 800);
+            });
+        }
+
+        function renderUserDetails(user) {
+            const content = document.getElementById('userDetailsContent');
+            const statusClass = getStatusClass(user.status);
+            const statusText = getStatusText(user.status);
+            
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <!-- Header con avatar -->
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold">
+                            ${user.name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold">${user.name}</h4>
+                            <p class="text-secondary">${user.email}</p>
+                        </div>
+                        <div class="ml-auto">
+                            <span class="badge ${statusClass} text-sm">${statusText}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Información básica -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="glass-card p-4">
+                            <p class="text-secondary text-sm">Rol</p>
+                            <p class="font-medium">${user.role}</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <p class="text-secondary text-sm">Fecha de registro</p>
+                            <p class="font-medium">${formatDate(user.joinDate)}</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <p class="text-secondary text-sm">Último acceso</p>
+                            <p class="font-medium">${formatRelativeTime(user.lastLogin)}</p>
+                        </div>
+                        <div class="glass-card p-4">
+                            <p class="text-secondary text-sm">ID Usuario</p>
+                            <p class="font-medium text-sm">${user.id}</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Estadísticas -->
+                    <div class="glass-card p-6">
+                        <h5 class="font-bold mb-4">Estadísticas</h5>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-primary">${user.documentsSigned}</div>
+                                <p class="text-secondary text-sm">Docs firmados</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-yellow-400">${user.documentsPending}</div>
+                                <p class="text-secondary text-sm">Docs pendientes</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-400">${user.teams.length}</div>
+                                <p class="text-secondary text-sm">Equipos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Equipos -->
+                    <div>
+                        <h5 class="font-bold mb-2">Equipos</h5>
+                        <div class="flex flex-wrap gap-2">
+                            ${user.teams.map(team => `
+                                <span class="badge badge-pending">${team}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Permisos -->
+                    <div>
+                        <h5 class="font-bold mb-2">Permisos</h5>
+                        <div class="flex flex-wrap gap-2">
+                            ${user.permissions.map(perm => `
+                                <span class="badge badge-active">${perm}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones -->
+                    <div class="flex gap-4 pt-4 border-t border-white/10">
+                        <button class="btn-secondary flex-1 h-10" onclick="resendInvitation('${user.email}')">
+                            <span class="material-symbols-outlined mr-2 text-sm">send</span>
+                            Reenviar invitación
+                        </button>
+                        <button class="btn-primary flex-1 h-10">
+                            <span class="material-symbols-outlined mr-2 text-sm">edit</span>
+                            Editar usuario
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==============================
+        // 🔹 FUNCIONES AUXILIARES
+        // ==============================
+        function getStatusClass(status) {
+            switch(status) {
+                case 'active': return 'badge-active';
+                case 'inactive': return 'badge-inactive';
+                case 'pending': return 'badge-pending';
+                case 'suspended': return 'badge-suspended';
+                default: return 'badge-inactive';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'active': return 'Activo';
+                case 'inactive': return 'Inactivo';
+                case 'pending': return 'Pendiente';
+                case 'suspended': return 'Suspendido';
+                default: return status;
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function formatRelativeTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffMins < 60) {
+                return `Hace ${diffMins} min`;
+            } else if (diffHours < 24) {
+                return `Hace ${diffHours} horas`;
+            } else if (diffDays === 1) {
+                return 'Ayer';
+            } else if (diffDays < 7) {
+                return `Hace ${diffDays} días`;
+            } else {
+                return formatDate(dateString);
+            }
+        }
+
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-secondary">
+                            <div class="spinner mx-auto"></div>
+                            <p class="mt-2">Cargando...</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-4 py-8 text-center text-secondary">
+                            <span class="material-symbols-outlined text-4xl mb-2 text-red-400">error</span>
+                            <p>${message}</p>
+                            <button class="btn-secondary mt-4 px-4 py-2 text-sm" onclick="loadUsersList()">
+                                Reintentar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            // Crear elemento toast
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full`;
+            
+            switch(type) {
+                case 'success':
+                    toast.classList.add('bg-green-500/20', 'border', 'border-green-500/30', 'text-green-300');
+                    break;
+                case 'error':
+                    toast.classList.add('bg-red-500/20', 'border', 'border-red-500/30', 'text-red-300');
+                    break;
+                case 'warning':
+                    toast.classList.add('bg-yellow-500/20', 'border', 'border-yellow-500/30', 'text-yellow-300');
+                    break;
+                default:
+                    toast.classList.add('bg-blue-500/20', 'border', 'border-blue-500/30', 'text-blue-300');
+            }
+            
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined">
+                        ${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}
+                    </span>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animación de entrada
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+                toast.classList.add('translate-x-0');
+            }, 10);
+            
+            // Eliminar después de 5 segundos
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0');
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 5000);
+        }
+
+        // ==============================
+        // 🔹 FUNCIONES DE ESTADÍSTICAS DE DOCUMENTOS (Placeholder)
+        // ==============================
+        async function loadDocumentStats() {
+            // Implementar cuando se cargue la sección de estadísticas
+            console.log('Cargando estadísticas de documentos...');
+        }
+
+        function logActivity(action, type = 'info') {
+            // Registrar actividad en consola (en producción, enviar a backend)
+            console.log(`[${type.toUpperCase()}] ${new Date().toISOString()} - ${action}`);
+        }
+
+        function updatePendingInvitesCount() {
+            // Actualizar contador de invitaciones pendientes
+            const current = parseInt(document.getElementById('pendingInvites').textContent);
+            document.getElementById('pendingInvites').textContent = current + 1;
+        }
+
+        // Función global para reenviar invitación
+        window.resendInvitation = async function(email) {
+            if (!confirm(`¿Reenviar invitación a ${email}?`)) return;
+            
+            try {
+                showToast(`Reenviando invitación a ${email}...`, 'info');
+                
+                // Lógica de reenvío similar a sendInvitation
+                const inviteData = {
+                    idInvitado: "",
+                    emailInvitado: email
+                };
+                
+                const response = await sendInvitation(inviteData);
+                
+                if (response.message === "OK") {
+                    showToast(`Invitación reenviada a ${email}`, 'success');
+                    logActivity(`Invitación reenviada a ${email}`, 'invitation');
+                }
+                
+            } catch (error) {
+                showToast(`Error: ${error.message}`, 'error');
+            }
+        };
+
+        // Función para editar usuario (placeholder)
+        window.editUser = function(userId) {
+            showToast(`Editando usuario ${userId}...`, 'info');
+            // Implementar lógica de edición
+        };
+
+        // Función para eliminar usuario (placeholder)
+        window.deleteUser = function(userId) {
+            if (confirm(`¿Estás seguro de eliminar al usuario ${userId}? Esta acción no se puede deshacer.`)) {
+                showToast(`Eliminando usuario ${userId}...`, 'warning');
+                // Implementar lógica de eliminación
+                setTimeout(() => {
+                    showToast(`Usuario ${userId} eliminado`, 'success');
+                    loadUsersList(); // Recargar lista
+                }, 1000);
+            }
+        };
+
+        // ==============================
+        // 🔹 INICIALIZACIÓN
+        // ==============================
+        function init() {
+            // Cargar datos iniciales del dashboard
+            loadDashboardData();
+            
+            // Configurar logout
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                if (confirm('¿Cerrar sesión como administrador?')) {
+                    window.location.href = '/logout';
+                }
+            });
+            
+            // Configurar tema oscuro/claro si es necesario
+            const themeToggle = document.getElementById('themeToggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', () => {
+                    document.documentElement.classList.toggle('dark');
+                    document.documentElement.classList.toggle('light');
+                    localStorage.setItem('theme', 
+                        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+                    );
+                });
+            }
+        }
+
+        // Inicializar aplicación
+        init();
+    });
     </script>
 </body>
 </html>

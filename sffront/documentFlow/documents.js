@@ -8,11 +8,24 @@ let currentData = {};
 let selectedDocuments = {};
 let currentTab = 'uploaded';
 
+// Chat globals
+let chatHistory = [];
+let chatDocId = null;
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Variables globales
-    let currentData = {};
+    // Variables globales locales al scope
     let selectedDocumentId = null;
-    let currentTab = 'uploaded';
+
+    // Configuración del input del chat para enviar con Enter
+    const chatInput = document.getElementById('docChatInput');
+    if (chatInput) {
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendDocChatMessage();
+            }
+        });
+    }
 
     // Efecto liquid glass para la burbuja del menú
     const liquidBubble = document.getElementById('liquidBubble');
@@ -113,6 +126,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.getElementById('sectionTitle').textContent = titles[tabName] || 'Documentos';
             
+            // Ocultar botón de consulta y chat al cambiar de pestaña
+            document.getElementById('consultDocBtnContainer').classList.add('hidden');
+            document.getElementById('leftSidebarChat').classList.add('hidden');
+
             // Cargar documentos de la pestaña seleccionada
             loadDocumentsData(tabName);
         });
@@ -128,13 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
             messageContainer.innerHTML = '';
         }, 5000);
     }
+
     // cargar documentos
     let currentPage = 1;
     let pageSize = 10;
     let totalDocs = 0;
+
     // Cargar documentos desde la API
     async function loadDocumentsData(tab, page = 1) {
-        // --- FIX: limpiar antes de cargar (previene páginas congeladas) ---
         const tableBody = document.getElementById('documentsTableBody');
         if (tableBody) {
             tableBody.innerHTML = `
@@ -146,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }
 
-        // --- FIX: bloquear peticiones mientras una ya está en curso ---
         if (window.loadingDocuments) return;
         window.loadingDocuments = true;
         try {
@@ -190,9 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.loadingDocuments = false;
     }
 
-    // Poblar la tabla con los documentos
-    // --------------------
-    // --- dentro de populateTable ---
     function populateTable(data, tab) {
         const tableBody = document.getElementById('documentsTableBody');
         tableBody.innerHTML = '';
@@ -266,16 +280,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Escuchar cambios de checkboxes
         document.querySelectorAll('.doc-checkbox').forEach(chk => {
             chk.addEventListener('change', (e) => {
                 const id = e.target.dataset.id;
                 const hash = e.target.dataset.hash || null;
 
                 if (e.target.checked) {
-                    selectedDocuments[id] = hash;  // añade o actualiza
+                    selectedDocuments[id] = hash;
                 } else {
-                    delete selectedDocuments[id];  // elimina si se desmarca
+                    delete selectedDocuments[id];
                 }
 
                 toggleGlobalSignButton();
@@ -306,15 +319,38 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             btnContainer.innerHTML = '';
         }
-        if (document.getElementById('createFolderSignSidebar')) selectDocument(selectedDocumentId, currentData[selectedDocumentId]);
     }
+
     // --------------------
-    // Reemplazo: selectDocument
+    // FUNCIÓN PRINCIPAL DE SELECCIÓN
     // --------------------
     function selectDocument(docId, documentData) {
+        
+        // 1. Verificar cambio de documento para reiniciar chat
+        if (chatDocId !== docId) {
+            chatDocId = docId;
+            chatHistory = []; // Limpiar historial
+            
+            // Limpiar UI del chat
+            const chatMessages = document.getElementById('docChatMessages');
+            chatMessages.innerHTML = `
+                <div class="text-center text-xs text-secondary mt-2">
+                    Haz una pregunta sobre "${documentData.documentName || 'el documento'}".
+                </div>
+            `;
+            
+            // Cerrar el chat si estaba abierto con otro doc y mostrar solo el botón
+            document.getElementById('leftSidebarChat').classList.add('hidden');
+            document.getElementById('consultDocBtnContainer').classList.remove('hidden');
+            
+            // Actualizar título del chat
+            const chatTitle = document.getElementById('chatDocTitle');
+            if(chatTitle) chatTitle.textContent = documentData.documentName || 'Chat';
+        }
+
         selectedDocumentId = docId;
 
-        // Actualizar la información del documento en el sidebar
+        // Actualizar la información del documento en el sidebar DERECHO
         document.getElementById('sidebarName').textContent = documentData.documentName || `Documento ${docId}`;
         const sidebarState = document.getElementById('sidebarState');
         if (sidebarState) {
@@ -340,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('sidebarDate').textContent = `Subido: ${uploadDate}`;
 
-        // Barra de progreso para pestañas que la requieran
         if (currentTab === 'inprocess') {
             const percent = documentData.progressPercent ? Math.min(100, Math.max(0, Number(documentData.progressPercent))) : 0;
             document.getElementById('progressFill').style.width = `${percent}%`;
@@ -350,9 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('progressText').textContent = currentTab === 'uploaded' ? 'Documento subido' : (currentTab === 'finished' ? 'Proceso finalizado' : 'Disponible para firmar');
         }
 
-        // Actualizar detalles del documento
         const detailsContainer = document.getElementById('sidebarDetailsContent');
-
         const modifiedDate = documentData.lastModifiedDoc ?
             new Date(documentData.lastModifiedDoc).toLocaleDateString('es-MX', {
                 year: 'numeric',
@@ -399,7 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
 
-        // Historial/simple mensaje según pestaña
         const signaturesContainer = document.getElementById('sidebarSignatures');
         if (currentTab === 'finished') {
             signaturesContainer.innerHTML = '<p class="text-secondary text-center py-4">Proceso finalizado. Ver historial para más detalles.</p>';
@@ -411,17 +443,12 @@ document.addEventListener('DOMContentLoaded', () => {
             signaturesContainer.innerHTML = '<p class="text-secondary text-center py-4">Este es un documento subido sin proceso de firma</p>';
         }
 
-        // Sidebar actions dinámicas (ahora SÓLO en el sidebar)
         const sidebarActions = document.getElementById('sidebarActions');
-        sidebarActions.innerHTML = ''; // limpiar
+        sidebarActions.innerHTML = ''; 
 
-        // Determinar si el usuario es propietario (ajusta según tu API; si el campo no existe asumimos false)
-        const isOwner = !!documentData.isOwner || !!documentData.ownerIsMe;
-
-        // Construir botones según la pestaña
+        // Botones según pestaña
         if (currentTab === 'uploaded') {
             sidebarActions.style.display = 'flex';
-
             const count = Object.keys(selectedDocuments).length;
             const disabled = count === 0 ? 'disabled' : '';
 
@@ -432,8 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     Iniciar Proceso de Firma ${count > 0 ? `(${count})` : ''}
                 </button>
             `;
-
-            // Escuchar clic en el botón (crea el folder con todos los documentos seleccionados)
             const startBtn = document.getElementById('createFolderSignSidebar');
             startBtn.addEventListener('click', async () => {
                 if (Object.keys(selectedDocuments).length === 0) {
@@ -463,6 +488,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             sidebarActions.style.display = 'none';
         }
+        
+        // NOTA: El botón de chat se maneja en el sidebar izquierdo ahora, 
+        // ya no lo añadimos aquí a sidebarActions.
     }
 
     function renderPagination() {
@@ -487,12 +515,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return btn;
         };
 
-        // Botón anterior
         container.appendChild(createButton('←', currentPage - 1, currentPage === 1));
 
-        // Botones numéricos
         for (let i = 1; i <= totalPages; i++) {
-            // Solo mostrar los primeros, últimos y cercanos a la página actual
             if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                 container.appendChild(createButton(i, i, false, i === currentPage));
             } else if (i === currentPage - 2 || i === currentPage + 2) {
@@ -502,12 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(dots);
             }
         }
-
-        // Botón siguiente
         container.appendChild(createButton('→', currentPage + 1, currentPage === totalPages));
     }
-
-    
 
     // Ver documento en modal
     async function viewDocument(name, docId) {
@@ -522,8 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'block';
         
         try {
-            // Descargar el documento usando el endpoint /downloadDoc
-            // Descargar el documento
             const response = await fetch('/downloadDoc', {
                 method: 'POST',
                 headers: {
@@ -541,11 +560,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
             
-            // Crear un blob a partir de la respuesta
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             
-            // Mostrar el documento en el iframe
             documentViewer.src = url;
             modalLoading.style.display = 'none';
             documentViewer.style.display = 'block';
@@ -561,7 +578,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Descargar documento
     async function downloadDocument(path, name, docId) {
         try {
             const response = await fetch('/downloadDoc', {
@@ -583,7 +599,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             
-            // Crear un enlace temporal para descargar el archivo
             const a = document.createElement('a');
             a.href = url;
             a.download = name || 'documento';
@@ -598,32 +613,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Hacer las funciones globales para que puedan ser llamadas desde los botones
     window.viewDocument = viewDocument;
     window.downloadDocument = downloadDocument;
 
-    // Cerrar modal
     document.querySelector('.close-modal').addEventListener('click', () => {
         document.getElementById('documentModal').style.display = 'none';
     });
 
-    // Cerrar modal al hacer clic fuera del contenido
     window.addEventListener('click', (event) => {
         const modal = document.getElementById('documentModal');
         if (event.target === modal) {
             modal.style.display = 'none';
         }
     });
-
-    // Botones de acción - Eliminados ya que no aplican para documentos subidos
-    // Si en el futuro necesitas estos botones para otras pestañas, puedes restaurarlos
-
-    // Cargar los datos al iniciar (documentos subidos por defecto)
-    //loadDocumentsData('uploaded');
 });
 
 // Acciones: stubs / llamadas al backend
-// --------------------
 async function createSignFolder() {
     const docs = Object.entries(selectedDocuments).map(([id, hash]) => ({
         idDoc: id,
@@ -640,13 +645,12 @@ async function createSignFolder() {
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const result = await resp.json();
 
-        // Guardar en sessionStorage para usar en add_signers.js
         sessionStorage.setItem("folder", JSON.stringify(result));
 
         if (result.redirect_url) {
             window.location.href = result.redirect_url;
         } else {
-            window.location.href = "/addSigners"; // ruta por defecto si no hay redirect_url
+            window.location.href = "/addSigners"; 
         }
     } catch (err) {
         console.error('Error creando el proceso:', err);
@@ -655,7 +659,9 @@ async function createSignFolder() {
 }
 
 async function signDocument(docId) {
-    mostrarMensaje('Firmando documento...', 'info');
+    // mostrarMensaje es local en DOMContentLoaded, aquí usaremos alert o una global si es necesario
+    // Para simplificar, asumiremos que existe o usamos alert
+    alert('Firmando documento...');
     try {
         const resp = await fetch('/signDoc', {
             method: 'POST',
@@ -663,17 +669,18 @@ async function signDocument(docId) {
             body: JSON.stringify({ id: docId })
         });
         if (!resp.ok) throw new Error('Error al firmar');
-        mostrarMensaje('Documento firmado correctamente', 'success');
-        loadDocumentsData(currentTab, currentPage || 1);
+        alert('Documento firmado correctamente');
+        // Necesitaríamos recargar, pero loadDocumentsData está dentro del scope. 
+        // Idealmente refactorizar para que loadDocumentsData sea global, o recargar página.
+        window.location.reload(); 
     } catch (err) {
         console.error(err);
-        mostrarMensaje('Error al firmar el documento', 'error');
+        alert('Error al firmar el documento');
     }
 }
 
 async function cancelProcess(docId) {
     if (!confirm('¿Estás seguro que deseas cancelar el proceso de firma?')) return;
-    mostrarMensaje('Cancelando proceso...', 'info');
     try {
         const resp = await fetch('/cancelProcess', {
             method: 'POST',
@@ -681,16 +688,15 @@ async function cancelProcess(docId) {
             body: JSON.stringify({ id: docId })
         });
         if (!resp.ok) throw new Error('Error al cancelar');
-        mostrarMensaje('Proceso cancelado', 'success');
-        loadDocumentsData(currentTab, currentPage || 1);
+        alert('Proceso cancelado');
+        window.location.reload();
     } catch (err) {
         console.error(err);
-        mostrarMensaje('No se pudo cancelar el proceso', 'error');
+        alert('No se pudo cancelar el proceso');
     }
 }
 
 async function acceptShared(docId) {
-    mostrarMensaje('Aceptando documento compartido...', 'info');
     try {
         const resp = await fetch('/acceptShared', {
             method: 'POST',
@@ -698,19 +704,16 @@ async function acceptShared(docId) {
             body: JSON.stringify({ id: docId })
         });
         if (!resp.ok) throw new Error('Error al aceptar');
-        mostrarMensaje('Documento aceptado para firma', 'success');
-        loadDocumentsData(currentTab, currentPage || 1);
+        alert('Documento aceptado para firma');
+        window.location.reload();
     } catch (err) {
         console.error(err);
-        mostrarMensaje('No se pudo aceptar el documento', 'error');
+        alert('No se pudo aceptar el documento');
     }
 }
 
 function viewHistory(docId) {
-    // Mostrar modal o ir a ruta de historial
-    mostrarMensaje('Abriendo historial...', 'info');
-    // Aquí podrías abrir un modal o navegar a /document/:id/history
-    // window.location.href = `/document/${docId}/history`;
+    alert('Abriendo historial...');
 }
 
 function formatBytes(bytes) {
@@ -721,4 +724,91 @@ function formatBytes(bytes) {
     const i = bytes === 0 ? 0 : Math.floor(Math.log(bytes) / Math.log(1024));
     const value = (bytes / Math.pow(1024, i)).toFixed(2);
     return `${value} ${sizes[i]}`;
+}
+
+// ---------------------------
+// LÓGICA DEL CHAT ACTUALIZADA
+// ---------------------------
+
+// Abre el chat en el sidebar izquierdo y oculta el botón grande
+window.openDocChat = function() {
+    if (!chatDocId) return;
+    document.getElementById('consultDocBtnContainer').classList.add('hidden');
+    document.getElementById('leftSidebarChat').classList.remove('hidden');
+    document.getElementById('docChatInput').focus();
+};
+
+// Cierra el chat y muestra de nuevo el botón
+window.closeDocChat = function() {
+    document.getElementById('leftSidebarChat').classList.add('hidden');
+    document.getElementById('consultDocBtnContainer').classList.remove('hidden');
+};
+
+window.sendDocChatMessage = async function() {
+    const input = document.getElementById('docChatInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    input.value = "";
+
+    // Agregar mensaje del usuario a la vista
+    chatHistory.push({ role: "user", text: question });
+    renderChatMessages();
+
+    try {
+        // Llamar backend
+        const response = await fetch('/interactDoc', {
+            method: 'POST',
+            credentials: "include",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                idDocument: chatDocId,
+                query: question,
+                history: chatHistory    // opcional si tu backend lo soporta
+            })
+        });
+
+        const data = await response.json();
+
+        // Agregar respuesta del servidor
+        chatHistory.push({
+            role: "assistant",
+            text: data.message || "Sin respuesta."
+        });
+
+        renderChatMessages();
+    } catch (error) {
+        console.error("Error chat:", error);
+        chatHistory.push({
+            role: "assistant",
+            text: "Error de conexión con el asistente."
+        });
+        renderChatMessages();
+    }
+};
+
+function renderChatMessages() {
+    const container = document.getElementById('docChatMessages');
+    container.innerHTML = "";
+
+    chatHistory.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = msg.role === "user"
+            ? "text-right"
+            : "text-left";
+
+        div.innerHTML = `
+            <div class="inline-block px-2 py-1.5 rounded-lg mb-1 max-w-[90%] break-words
+                ${msg.role === "user"
+                ? "bg-purple-600 text-white"
+                : "bg-white/10 text-primary border border-gray-600"}">
+                ${msg.text}
+            </div>
+        `;
+
+        container.appendChild(div);
+    });
+
+    // Scroll al final
+    container.scrollTop = container.scrollHeight;
 }
