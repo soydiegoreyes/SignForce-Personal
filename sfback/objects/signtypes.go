@@ -258,7 +258,12 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 		fmt.Println("error al escriir el archivo")
 		return nil, err
 	}
+	// crear qrcode con link
+	qrPath := invitePath + signatureId + "png."
 
+	if !utilities.GenerateQR(fmt.Sprintf("%sviewSignature?id=%s", os.Getenv("QR_URL_BASE"), signatureId), qrPath) {
+		return nil, fmt.Errorf("no se pudo crear qr de firma %s", qrPath)
+	}
 	// Respuesta de firma
 	signData := map[string]string{
 		"xmlPath":            strings.ReplaceAll(xmlPath, os.Getenv("BASE_DIR")+"/", ""),

@@ -6,8 +6,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/skip2/go-qrcode"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
 )
@@ -75,4 +77,20 @@ func GetClientIP(r *http.Request) string {
 	// Si no viene en headers, usamos la IP directa
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return ip
+}
+
+func GenerateQR(url, fullpath string) bool {
+	qrCode, _ := qrcode.New(url, qrcode.Medium)
+	err := qrCode.WriteFile(256, fullpath)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	if _, err := os.Stat(fullpath); err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+
+	fmt.Printf("QR code generated and saved as %s.png", fullpath)
+	return true
 }
