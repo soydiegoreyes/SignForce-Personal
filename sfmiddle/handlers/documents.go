@@ -281,15 +281,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		docWheres = map[string][]string{
 			"idDocument": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
 		}
-	/*
-		case "template":
-			tableName = "templates"
-			attrs = append(attrs, "idTemplate", "templatePath", "templateName", "templateExt", "templateHash", "authUseStatus", "authRoleStatus", "activeTemplate", "sizeB", "abstractTemplate")
-			idColMain = "idTemplate"
-			docWheres = map[string][]string{
-				"idTemplate": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
-			}
-	*/
+
 	default:
 		http.Error(respWriter, "Tipo de documento no válido", http.StatusBadRequest)
 		return
@@ -359,7 +351,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	// basándose en ownerInstDoc_fk, creatorUserDoc_fk, etc.
 
 	// Construir la ruta completa del archivo
-	var filePath string = fmt.Sprintf("./%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
+	var filePath string = fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
 	fmt.Println(filePath)
 	// Verificar si el archivo existe
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -537,7 +529,56 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 		"total":     total,
 		"data":      docData,
 	}
-
 	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(resp)
+}
+
+func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
+
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	_, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Estructura de entrada =====
+	type docQuery struct {
+		IdDocument string `json:"idDocument"`
+		Query      string `json:"query"`
+	}
+	var dq docQuery
+	err = json.NewDecoder(request.Body).Decode(&dq)
+	if err != nil {
+		http.Error(respWriter, "Error al decodificar json", http.StatusBadRequest)
+	}
+	resp := iapackage.InteractDoc(dq.IdDocument, dq.Query)
+	if resp == nil {
+		http.Error(respWriter, "Error en iafunctions al obtener respuesta llm", http.StatusInternalServerError)
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(resp)
 }

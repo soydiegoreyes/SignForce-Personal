@@ -13,7 +13,6 @@ import (
 type User struct{}
 
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
-// NewUser crea una nueva instancia de User
 func RegisterUser(registerReq *models.RegisterRequest, idInst, passHash string) (string, error) {
 	idInstHash, err := utilities.GetHash([]byte(idInst), configs.HashConf)
 	if err != nil {
@@ -65,23 +64,9 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst, passHash string) 
 	return idUser, nil
 }
 
-// TEAMOBJECT
-/*
-func UserInstTeam(idUser string) map[string]string {
-	query := fmt.Sprintf(`SELECT users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, users.aliasUser, teams.nameTeam
-		FROM users INNER JOIN institutions ON institutions.idInstitution = users.idInstitution_fk INNER JOIN teams ON teams.idTeam = users.idTeam_fk
-		WHERE users.idUser = %s;`, idUser)
-	userData, err := db.DB_con.ExecuteSelect(query)
-	if err != nil {
-		fmt.Printf("%s", err)
-		return nil
-	}
-	return userData[idUser]
-}
-*/
 func UserInstJoin(idUser string) map[string]string {
-	attrs1 := []string{"idUser", "nameUser", "lastNameUser", "emailUser", "aliasUser"}
-	attrs2 := []string{"legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst"}
+	attrs1 := []string{"idUser", "nameUser", "lastNameUser", "emailUser", "aliasUser", "activeUser"}
+	attrs2 := []string{"idInstitution", "legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst", "activeInst"}
 	userData, err := db.DB_con.GenericJoinSelect("users", "institutions", "users.idInstitution_fk = institutions.idInstitution", "idUser", []string{idUser}, attrs1, attrs2)
 	//userData, err := db.DB_con.ExecuteSelect(query)
 	if err != nil {

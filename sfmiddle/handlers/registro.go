@@ -185,11 +185,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			// TEAMOBJECT
-			//idTeam := objects.CreateTeam(lastId, "1", "mainteam_"+lastId, "Primer equipo de "+lastId)
-
 			// se registra el usuario root
-			//userId, err := objects.RegisterUser(&registerReq, lastId, idTeam, passHash) // TEAMOBJECT
 			userId, err := objects.RegisterUser(&registerReq, lastId, passHash)
 			if err != nil {
 				fmt.Println(err)

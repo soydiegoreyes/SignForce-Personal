@@ -100,6 +100,7 @@ func main() {
 	mux.HandleFunc("/uploadDocs", handlers.UploadDocs)                 // subir cualquier tipo de documento
 	mux.HandleFunc("/downloadDoc", handlers.DownloadDoc)               // obtener datos de cualquier tipo de documento
 	mux.HandleFunc("/statusDocs", handlers.StatusDocs)                 // obtener datos de cualquier tipo de documento
+	mux.HandleFunc("/interactDoc", handlers.InteractDoc)               // obtener datos de cualquier tipo de documento
 	mux.HandleFunc("/uploadk", handlers.Uploadk)                       // subir llaves
 	mux.HandleFunc("/statusk", handlers.GetKeysData)                   // obtener datos de llaves de usuario
 	mux.HandleFunc("/updatek", handlers.UpdateKeysData)                // actualizar datos de llaves de usuario
@@ -117,8 +118,9 @@ func main() {
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
 	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
-	//mux.HandleFunc("/inviteteam", handlers.InviteUserTeam)             // manda una invitacion a un usuario para formar parte de un equipo
-	//mux.HandleFunc("/acceptinviteteam", handlers.AcceptInviteTeam)     // se acepta la invitacion para unirse a un equipo
+	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
+	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
+	mux.HandleFunc("/createuserate", handlers.CreateUser)              // crea un usuario nuevo dentro de una institucion
 	//mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
 	//mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
 	//mux.HandleFunc("/newteam", handlers.NewTeam)                       // crea un equipo dentro de una institucion por un usuario master o root
@@ -136,9 +138,9 @@ func main() {
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
 	mux.HandleFunc("/viewinvite", viewInvite)
-
+	mux.HandleFunc("/viewinviteuser", viewInviteUser)
 	mux.HandleFunc("/myfolders", myFolders)
-	mux.HandleFunc("/myteams", myTeams)
+	mux.HandleFunc("/dashboard/users", usersDash)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -294,12 +296,12 @@ func myFolders(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/folders.html")
 }
-func myTeams(respWriter http.ResponseWriter, request *http.Request) {
+func usersDash(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/administracion/crear_equipo.html")
+	http.ServeFile(respWriter, request, "./../sffront/dashboards/dashboard_admin.html")
 }
 
 // =======================================================================
@@ -405,6 +407,16 @@ func viewInvite(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/view_invite.html")
+}
+
+// ==========================================================================================================
+// sirve la pagina para ver una invitacion de usuario nuevo
+func viewInviteUser(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/registro/invite_user.html")
 }
 
 // =======================================================================

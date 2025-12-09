@@ -9,6 +9,7 @@ import (
 	"sfmiddle/documentflow"
 	"sfmiddle/models"
 	"sfmiddle/objects"
+	"time"
 	//"sfmiddle/objects"
 )
 
@@ -156,7 +157,11 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-
+	userInst := objects.UserInstJoin(idUser)
+	if userInst["activeUser"] != "1" || userInst["activeInst"] != "1" {
+		http.Error(respWriter, "Usuario o institucion no estan activas.", http.StatusInternalServerError)
+		return
+	}
 	var invite models.InviteUser
 	if err := json.NewDecoder(request.Body).Decode(&invite); err != nil {
 		http.Error(respWriter, "Error decodificando json", http.StatusInternalServerError)
@@ -175,21 +180,23 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// se rellenan los campos del destinatario
-	var userData map[string]string
-	for id, data := range invUser {
-		if invite.IdUserDest == "" {
-			invite.IdUserDest = id
-		} else {
-			invite.EmailDest = data["emailUser"]
+	if len(invUser) > 0 {
+		// se rellenan los campos del destinatario
+		var userData map[string]string
+		for id, data := range invUser {
+			if invite.IdUserDest == "" {
+				invite.IdUserDest = id
+			} else {
+				invite.EmailDest = data["emailUser"]
+			}
+			userData = data
+			break
 		}
-		userData = data
-		break
-	}
 
-	if userData["activeUser"] != "1" {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
+		if userData["activeUser"] != "1" {
+			http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+			return
+		}
 	}
 
 	documentflow.InviteNewUser(invite.IdUserDest, invite.EmailDest, idUser)
@@ -413,17 +420,53 @@ func NewTeam(respWriter http.ResponseWriter, request *http.Request) {
 	}
 }
 
-func AcceptInviteTeam(respWriter http.ResponseWriter, request *http.Request) {
+func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
 
 	qParams := request.URL.Query()
-	idInvite := qParams.Get("idInvite")
+	idInvite := qParams.Get("id")
 	if idInvite == "" {
 		http.Error(respWriter, "No tiene id Invitacion", http.StatusBadRequest)
 		return
 	}
 
+	attrs := []string{"emailDest", "idUser", "createdAt", "expirationDate"}
+	wheres := map[string][]string{
+		"idUserInvite": {idInvite},
+	}
+	invData, err := db.DB_con.GenericSelect("userinvites", "idUserInvite", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener invitación", http.StatusInternalServerError)
+		return
+	}
+	if exptime, _ := time.Parse(invData[idInvite]["expirationDate"], "2006-01-02T15:04:05Z"); exptime.Before(time.Now()) {
+		http.Error(respWriter, "Error invitación expirada", http.StatusForbidden)
+		return
+	}
+	// users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, users.aliasUser, teams.nameTeam
+	ownnerData := objects.UserInstJoin(invData[idInvite]["idUser"])
+	invData["host"] = ownnerData
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(respWriter).Encode(invData); err != nil {
+		fmt.Println("Error al codificar JSON:", err)
+	}
+}
+
+func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	var req models.UserDataReq
+	err := json.NewDecoder(request.Body).Decode(&req)
+	if err != nil {
+
+	}
+	idNewUser, err := db.DB_con.GenericInsert("users", []string{}, []interface{}{})
+	fmt.Println(idNewUser)
 }

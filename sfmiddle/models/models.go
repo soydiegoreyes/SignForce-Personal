@@ -17,6 +17,17 @@ type RegisterRequest struct {
 	Country                string `json:"country"`
 }
 
+type UserDataReq struct {
+	IdInvite string `json:"idInvite"`
+	Name     string `json:"name"`
+	LastName string `json:"lastname"`
+	Alias    string `json:"alias"`
+	Email    string `json:"email"`
+	Phone    string `json:"phone"`
+	TaxNum   string `json:"rfc"`
+	PobUid   string `json:"curp"`
+}
+
 type GetUserRequest struct {
 	IdUser string   `json:"iduser"`
 	Fields []string `json:"fields"`
@@ -104,7 +115,8 @@ type FolderRequest struct {
 
 type LLMrequest struct {
 	Path   string `json:"path"`
-	Action int    `json:"action"`
+	Action int    `json:"action,omitempty"`
+	Query  string `json:"query,omitempty"`
 }
 
 type SignDoc struct {

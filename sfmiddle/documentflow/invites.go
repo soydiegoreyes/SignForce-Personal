@@ -13,6 +13,8 @@ import (
 	"sfmiddle/utilities"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func GenerateInvites(invites []models.InviteMail) error {
@@ -295,8 +297,6 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 
 // REAHACER FUNCION PARA QUE NO DEPENDA DE LOS teams
 func InviteNewUser(idUserDest, emailDest, idUser string) {
-	userData := objects.UserInstJoin(idUserDest)
-	guestData := objects.UserInstJoin(idUser)
 	whereMap := map[string][]string{
 		"nameApp": {"emailServ"},
 	}
@@ -306,14 +306,29 @@ func InviteNewUser(idUserDest, emailDest, idUser string) {
 		fmt.Printf("%s", err)
 		return
 	}
-	/*
-		idTeamInvite, err := db.DB_con.GenericInsert("teaminvites", []string{}, []interface{}{})
-		fmt.Println(idTeamInvite)
-	*/
+
+	userData := objects.UserInstJoin(idUser) // info del usuario que invita
+	var guestData map[string]string
 	binDoc, err := os.ReadFile("./templates/invite_user.html")
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
+
+	if idUserDest == "" {
+		idUserDest = idUser
+		guestData = map[string]string{
+			"nameUser":      emailDest,
+			"aliasUser":     emailDest,
+			"lastNameUser":  "",
+			"legalNameInst": userData["legalNameInst"],
+			"aliasNameInst": userData["aliasNameInst"],
+			"emailUser":     emailDest,
+		}
+	} else {
+		guestData = objects.UserInstJoin(idUserDest)
+	}
+
+	idInviteUser := uuid.NewString()
 	hostFullName := fmt.Sprintf("%s %s", userData["nameUser"], userData["lastNameUser"])
 	//hostTeamName := userData["nameTeam"]
 	body := string(binDoc)
@@ -322,10 +337,9 @@ func InviteNewUser(idUserDest, emailDest, idUser string) {
 	body = strings.ReplaceAll(body, "{HOST_INSTNAME}", userData["legalNameInst"])
 	body = strings.ReplaceAll(body, "{HOST_INSTALIAS}", userData["aliasNameInst"])
 	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
-	//body = strings.ReplaceAll(body, "{GUEST_TEAMNAME}", guestData["nameTeam"])
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(5*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinvite", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
 
 	payload := models.EmailRequest{
 		IdUser:   idUserDest,
@@ -350,8 +364,12 @@ func InviteNewUser(idUserDest, emailDest, idUser string) {
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		fmt.Printf("%s", err)
-
 		return
+	}
+	cols := []string{"idUserInvite", "idUser", "emailDest"}
+	_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest})
+	if err != nil {
+		fmt.Printf("%s", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
