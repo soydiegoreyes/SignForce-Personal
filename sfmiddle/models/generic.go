@@ -131,5 +131,5 @@ type InviteDoc struct {
 type InviteUser struct {
 	IdUserDest string `json:"idInvitado,omitempty"`
 	EmailDest  string `json:"emailInvitado,omitempty"`
-	//IdTeamInv  string `json:"teamInvitado,omitempty"`
+	RoleApp    string `json:"role,omitempty"`
 }

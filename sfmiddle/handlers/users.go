@@ -5,16 +5,19 @@ import (
 	"fmt"
 	"net/http"
 	"sfmiddle/auth"
+	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/documentflow"
 	"sfmiddle/models"
 	"sfmiddle/objects"
+	"sfmiddle/utilities"
+	"strconv"
 	"time"
 	//"sfmiddle/objects"
 )
 
 // ==========================================================================================================
-// funcion que devuelve datos publicos del usuario
+// funcion que devuelve datos publicos de usuarios
 func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -31,10 +34,8 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	//fmt.Println(claims)
-	// Extraer datos del JWT
 
-	idUser, ok1 := claims["uid"].(string)
+	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	//idTeam, ok3 := claims["team"].(string)
 	//authInst, ok4 := claims["authInst"].(string)
@@ -42,6 +43,7 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
+
 	// se busca una lista de parametros dentro de una columna por ejemplo ["Juan", "Pedro", "Luis"], type: "nameUser" o "aliasUser"
 	// otro ejemplo ["2", "43", "31"], type: "idUser" o ["correo@dominio.com", "mi_email@yahoo.com"] type: "emailUser" o ["fulanito"] type
 	type usersSearch struct {
@@ -58,38 +60,50 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	// parametros de busqueda
 	wheres := map[string][]string{
 		"idInstitution_fk": {idInst},
-		US.ParamType:       US.Params,
 	}
-	if US.Regex {
-		wheres["LOGIC"] = []string{"idInstitution_fk AND REGEXP " + US.ParamType}
+	if len(US.Params) > 0 {
+		wheres[US.ParamType] = US.Params
+		if US.Regex {
+			wheres["LOGIC"] = []string{"idInstitution_fk AND REGEXP " + US.ParamType}
+		}
 	}
-	userData, err := db.DB_con.GenericSelect("users", "idUser", []string{"idUser", "nameUser", "lastNameUser", "aliasUser", "emailUser", "activeUser", "roleAppUser_fk", "kycUser_fk"}, wheres)
+
+	attrs := []string{"idUser", "nameUser", "lastNameUser", "aliasUser", "emailUser", "phoneUser", "countryPhoneCode", "activeUser", "roleAppUser_fk", "createdAtUser", "lastModifiedUser", "deletedAtUser", "kycUser_fk"}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener informacion de usuario", http.StatusInternalServerError)
 		return
 	}
 
+	var ids string
 	USData := make(map[string]*models.UserDataResp)
 	for idUS, us := range userData {
-		if us["activeUser"] != "1" {
-			http.Error(respWriter, "No autorizado. Usuario inactivo", http.StatusUnauthorized)
-			return
-		}
-
+		ids = ids + idUS + ","
 		userD := &models.UserDataResp{
-			Id:       userData[idUser]["idUser"],
-			Name:     userData[idUser]["nameUser"],
-			LastName: userData[idUser]["lastNameUser"],
-			Alias:    userData[idUser]["aliasUser"],
-			Email:    userData[idUser]["emailUser"],
-			Active:   userData[idUser]["activeUser"],
-			Role:     userData[idUser]["roleAppUser_fk"],
-			//Team:     userData[idUser]["idTeam_fk"],
-			Kyc: userData[idUser]["kycUser_fk"],
+			Id:           us["idUser"],
+			Name:         us["nameUser"],
+			LastName:     us["lastNameUser"],
+			Alias:        us["aliasUser"],
+			Email:        us["emailUser"],
+			Phone:        us["countryPhoneCode"] + us["phoneUser"],
+			Active:       us["activeUser"],
+			Role:         us["roleAppUser_fk"],
+			Kyc:          us["kycUser_fk"],
+			CreatedAt:    us["createdAtUser"],
+			DeletedAt:    us["deletedAtUser"],
+			LastModified: us["lastModifiedUser"],
 		}
 		USData[idUS] = userD
 	}
-
+	query := "SELECT idUser_fk, COUNT(*) AS total_signs, SUM(CASE WHEN signatureValueSign IS NOT NULL THEN 1 ELSE 0 END) AS finished FROM signatures WHERE idUser_fk IN (%s) GROUP BY idUser_fk;"
+	if len(ids) > 0 {
+		ids = ids[:len(ids)-1]
+	}
+	signsData, _ := db.DB_con.ExecuteSelect(fmt.Sprintf(query, ids))
+	for idus, sData := range signsData {
+		USData[idus].TotalSigns, _ = strconv.Atoi(sData["total_signs"])
+		USData[idus].SignedDocs, _ = strconv.Atoi(sData["finished"])
+	}
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
@@ -199,7 +213,7 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		}
 	}
 
-	documentflow.InviteNewUser(invite.IdUserDest, invite.EmailDest, idUser)
+	documentflow.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser)
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
@@ -433,7 +447,7 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	attrs := []string{"emailDest", "idUser", "createdAt", "expirationDate"}
+	attrs := []string{"emailDest", "idUser", "createdAt", "expirationDate", "roleApp"}
 	wheres := map[string][]string{
 		"idUserInvite": {idInvite},
 	}
@@ -442,11 +456,11 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener invitación", http.StatusInternalServerError)
 		return
 	}
-	if exptime, _ := time.Parse(invData[idInvite]["expirationDate"], "2006-01-02T15:04:05Z"); exptime.Before(time.Now()) {
+	if exptime, _ := time.Parse(invData[idInvite]["expirationDate"], "2006-01-02T15:04:05Z"); exptime.After(time.Now()) {
 		http.Error(respWriter, "Error invitación expirada", http.StatusForbidden)
 		return
 	}
-	// users.idUser, institutions.legalNameInst, institutions.aliasNameInst, users.nameUser, users.lastNameUser, users.emailUser, users.aliasUser, teams.nameTeam
+
 	ownnerData := objects.UserInstJoin(invData[idInvite]["idUser"])
 	invData["host"] = ownnerData
 	respWriter.Header().Set("Content-Type", "application/json")
@@ -465,8 +479,34 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	var req models.UserDataReq
 	err := json.NewDecoder(request.Body).Decode(&req)
 	if err != nil {
-
+		fmt.Println(err)
 	}
-	idNewUser, err := db.DB_con.GenericInsert("users", []string{}, []interface{}{})
+	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{req.IdInvite}, []string{"acceptedAt"}, []string{"idInstitution_fk"})
+	if err != nil {
+		fmt.Println("error al buscar invitacion")
+		return
+	}
+	if uinv[req.IdInvite]["acceptedAt"] != "" {
+		fmt.Println("Usuario ya acepto la invitación")
+		return
+	}
+	tempPass := utilities.PassGenerator(12)
+	fmt.Println("pasa: ", tempPass)
+	hashed, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk"}
+	values := []interface{}{req.Name, req.LastName, req.TaxNum, req.PobUid, req.Alias, req.Email, req.Phone, hashed, 1, req.Role, uinv[req.IdInvite]["idInstitution_fk"]}
+	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(idNewUser)
+
+	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{req.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
+		fmt.Println(err)
+		return
+	}
 }

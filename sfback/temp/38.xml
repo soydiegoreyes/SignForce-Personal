@@ -1,0 +1,48 @@
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" Id="38">
+  <ds:SignedInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+    <ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></ds:CanonicalizationMethod>
+    <ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha256"></ds:SignatureMethod>
+    <ds:Reference URI="">
+      <ds:Transforms>
+        <ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"></ds:Transform>
+      </ds:Transforms>
+      <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod>
+      <ds:DigestValue>Vax1zu3RSN2+VzGSunUd2u40lvHmHHBcT1bX40GXumw=</ds:DigestValue>
+    </ds:Reference>
+    <ds:Reference Type="http://uri.etsi.org/01903#SignedProperties" URI="#SignedProperties-17e9055c-079c-48cc-951a-e33c11641144">
+      <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod>
+      <ds:DigestValue>DwxDP7uk4FtQaTomX9ZGT1TVR9XbxP04AWVneSOftrw=</ds:DigestValue>
+    </ds:Reference>
+  </ds:SignedInfo>
+  <ds:SignatureValue Id="value-38">EtxVDAqBDjbcONnj2An/hnQGQys2keIhulyiFDZrO+UuqXh+eHVqyJcGKpEGpQaduouJCFz5AEpLVl6V0VyociYZpzFX21IEEB1/n6OXSJfFLykeKTHRAu84iImm6UZ5fFRy2LJQv7t7XpySY8FpqeKcNOYAMWPq4ABiMYJvFroy2BLYsVgcL6ifYff+fQ79QiEMDAMCfjjlUp34DiFtIWLSnPA5HpWt19EGcCa1KTXdSg+sasvL55f+2Uxdv88SI8odKYJD2xMrDZN6r7inDvUn9K4iG6glAOMFKmXpHD9TFXgT4nnLrMQO72NAXjh70JUZ8r+xRk+vsmKArkNMEw==</ds:SignatureValue>
+  <ds:KeyInfo>
+    <ds:X509Data>
+      <ds:X509IssuerSerial>
+        <ds:X509IssuerName>CN=AUTORIDAD CERTIFICADORA,OU=SAT-IES Authority,O=SERVICIO DE ADMINISTRACION TRIBUTARIA,POSTALCODE=06300,STREET=AV. HIDALGO 77\, COL. GUERRERO,L=CUAUHTEMOC,ST=CIUDAD DE MEXICO,C=MX,1.2.840.113549.1.9.2=#134d726573706f6e7361626c653a2041444d494e495354524143494f4e2043454e5452414c20444520534552564943494f53205452494255544152494f5320414c20434f4e545249425559454e5445,2.5.4.45=#130c5341543937303730314e4e33,1.2.840.113549.1.9.1=#0c1b636f6e746163746f2e7465636e69636f407361742e676f622e6d78</ds:X509IssuerName>
+        <ds:X509SerialNumber>275106190557734483187066766829451947843446453046</ds:X509SerialNumber>
+      </ds:X509IssuerSerial>
+      <ds:X509Certificate>7QxTXq2pGr1uyGaEymEIkYUQVjH/ibfROiI/T5wC/7w=</ds:X509Certificate>
+    </ds:X509Data>
+  </ds:KeyInfo>
+  <ds:Object>
+    <xades:QualifyingProperties Target="#38">
+      <xades:SignedProperties xmlns:xades="http://uri.etsi.org/01903/v1.3.2#" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" Id="SignedProperties-17e9055c-079c-48cc-951a-e33c11641144">
+        <xades:SignedSignatureProperties>
+          <xades:SigningTime>2025-12-03T23:31:37Z</xades:SigningTime>
+          <xades:SigningCertificate>
+            <xades:Cert>
+              <xades:CertDigest>
+                <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"></ds:DigestMethod>
+                <ds:DigestValue>7QxTXq2pGr1uyGaEymEIkYUQVjH/ibfROiI/T5wC/7w=</ds:DigestValue>
+              </xades:CertDigest>
+              <xades:IssuerSerial>
+                <ds:X509IssuerName>CN=AUTORIDAD CERTIFICADORA,OU=SAT-IES Authority,O=SERVICIO DE ADMINISTRACION TRIBUTARIA,POSTALCODE=06300,STREET=AV. HIDALGO 77\, COL. GUERRERO,L=CUAUHTEMOC,ST=CIUDAD DE MEXICO,C=MX,1.2.840.113549.1.9.2=#134d726573706f6e7361626c653a2041444d494e495354524143494f4e2043454e5452414c20444520534552564943494f53205452494255544152494f5320414c20434f4e545249425559454e5445,2.5.4.45=#130c5341543937303730314e4e33,1.2.840.113549.1.9.1=#0c1b636f6e746163746f2e7465636e69636f407361742e676f622e6d78</ds:X509IssuerName>
+                <ds:X509SerialNumber>275106190557734483187066766829451947843446453046</ds:X509SerialNumber>
+              </xades:IssuerSerial>
+            </xades:Cert>
+          </xades:SigningCertificate>
+        </xades:SignedSignatureProperties>
+      </xades:SignedProperties>
+    </xades:QualifyingProperties>
+  </ds:Object>
+</ds:Signature>

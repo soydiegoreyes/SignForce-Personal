@@ -26,6 +26,7 @@ type UserDataReq struct {
 	Phone    string `json:"phone"`
 	TaxNum   string `json:"rfc"`
 	PobUid   string `json:"curp"`
+	Role     string `json:"role"`
 }
 
 type GetUserRequest struct {
@@ -201,17 +202,21 @@ type KeysStatus struct {
 }
 
 type UserDataResp struct {
-	Id       string `json:"id"`
-	Name     string `json:"name"`
-	LastName string `json:"lastname"`
-	Alias    string `json:"alias"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Active   string `json:"active"`
-	Role     string `json:"role"`
-	//Team     string `json:"team"`
-	Kyc     string `json:"kyc"`
-	IsAlive bool   `json:"isAlive"`
+	Id           string `json:"id"`
+	Name         string `json:"name"`
+	LastName     string `json:"lastname"`
+	Alias        string `json:"alias"`
+	Email        string `json:"email"`
+	Phone        string `json:"phone"`
+	Active       string `json:"active"`
+	Role         string `json:"role"`
+	SignedDocs   int    `json:"signed,omitempty"`
+	TotalSigns   int    `json:"totalsigns,omitempty"`
+	Kyc          string `json:"kyc,omitempty"`
+	IsAlive      bool   `json:"isAlive"`
+	CreatedAt    string `json:"createdat"`
+	DeletedAt    string `json:"deletedat"`
+	LastModified string `json:"lastmodified"`
 }
 
 type TeamDataResp struct {

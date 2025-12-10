@@ -296,7 +296,7 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 }
 
 // REAHACER FUNCION PARA QUE NO DEPENDA DE LOS teams
-func InviteNewUser(idUserDest, emailDest, idUser string) {
+func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) {
 	whereMap := map[string][]string{
 		"nameApp": {"emailServ"},
 	}
@@ -366,8 +366,9 @@ func InviteNewUser(idUserDest, emailDest, idUser string) {
 		fmt.Printf("%s", err)
 		return
 	}
-	cols := []string{"idUserInvite", "idUser", "emailDest"}
-	_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest})
+	texp := time.Now().Add(time.Hour * 24 * 7).Format("2006-01-02 15:04:05")
+	cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
+	_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, texp, roleApp})
 	if err != nil {
 		fmt.Printf("%s", err)
 	}

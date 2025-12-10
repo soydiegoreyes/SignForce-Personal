@@ -120,7 +120,7 @@ func main() {
 	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
-	mux.HandleFunc("/createuserate", handlers.CreateUser)              // crea un usuario nuevo dentro de una institucion
+	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
 	//mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
 	//mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
 	//mux.HandleFunc("/newteam", handlers.NewTeam)                       // crea un equipo dentro de una institucion por un usuario master o root

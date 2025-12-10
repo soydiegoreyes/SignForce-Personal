@@ -260,7 +260,7 @@ func (cnx *ConexionDB) GenericJoinSelect(
 
 func (cnx *ConexionDB) ExecuteSelect(query string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
-
+	fmt.Println(query)
 	// Ejecutar el SELECT
 	rows, err := cnx.DB.Query(query)
 	if err != nil {
