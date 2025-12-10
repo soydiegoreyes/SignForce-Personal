@@ -22,14 +22,20 @@
         .input-tech {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #e2e8f0;
-            transition: all 0.3s ease;
+            color: #000;                     /* <-- fuerza negro */
+            transition: background 0.3s ease,
+                        border-color 0.3s ease,
+                        box-shadow 0.3s ease;
         }
-
         .input-tech:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 2px rgba(59,130,246,.2);
             outline: none;
+            background-color: #2563eb66;
+        }
+        .input-tech::placeholder {
+            color: #555;
+            opacity: 1;
         }
 
         .btn-cyber {
@@ -97,6 +103,13 @@
                             <p class="text-sm text-gray-300 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-sm">event_busy</span>
                                 <span id="expireDate">--/--/----</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tipo</p>
+                            <p class="text-sm text-gray-300 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">category</span>
+                                <span id="roleApp">...</span>
                             </p>
                         </div>
                     </div>
@@ -205,9 +218,6 @@
 
                 const data = await response.json();
                 
-                // NOTA: Tu estructura JSON según Go es:
-                // { "host": {...}, "ID_INVITACION": { emailDest: "...", ... } }
-                
                 const hostData = data.host; // Datos del dueño (UserInstJoin)
                 const inviteData = data[id]; // Datos específicos de la invite
 
@@ -234,6 +244,11 @@
                 document.getElementById('expireDate').textContent = !isNaN(expDate) 
                     ? expDate.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) 
                     : 'Sin fecha';
+                
+                roletype = {1:"Root",2: "Admin", 3: "Usuario"};
+                const roleApp =  roletype[inviteData.roleApp]|| 'Sin rol';
+                document.getElementById('roleApp').textContent = roleApp;
+                document.getElementById('roleApp').value = inviteData.roleApp;
 
             } catch (err) {
                 console.error(err);
@@ -261,6 +276,7 @@
             // Estructura para Go (/createuser)
             // NOTA: Asumimos que PobUid (curp) es string en el JSON final,
             // aunque tu struct Go diga bool, para un registro se necesita el valor string.
+  
             const payload = {
                 idInvite: inviteId,
                 name: document.getElementById('nameUser').value.trim(),
@@ -269,9 +285,10 @@
                 email: inviteEmail, // Importante: usar el del invite, no uno nuevo
                 phone: document.getElementById('phoneUser').value.trim(),
                 rfc: rfc,
-                curp: curp // Enviamos string. Si Go falla, cambiar struct a String.
+                curp: curp, // Enviamos string. Si Go falla, cambiar struct a String.
+                role: document.getElementById('roleApp').value,
             };
-
+            console.log(payload);
             // UI Loading
             btn.disabled = true;
             btn.innerHTML = `<div class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> Procesando...`;

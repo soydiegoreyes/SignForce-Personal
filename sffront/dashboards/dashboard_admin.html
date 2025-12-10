@@ -14,10 +14,10 @@
     <style>
         :root {
             --color-background: #000;
-            --color-card: rgba(255, 255, 255, 0.05);
+            --color-card: rgb(222, 222, 222);
             --color-text-primary: #ffffff;
             --color-text-secondary: rgba(255, 255, 255, 0.7);
-            --color-accent: rgba(255, 255, 255, 0.5);
+            --color-accent: rgb(222, 222, 222);
             --color-shadow: rgba(0, 0, 0, 0.3);
             --color-blue-dark: #1e2c4b;
             --color-blue-light: #93bde5;
@@ -40,10 +40,13 @@
                 radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
         }
 
-        h1, h2, h3, h4 {
+        h1, h2, h3, h4, h5 {
+            color: var(--color-blue-light);
             font-family: "Michroma", sans-serif;
         }
-
+        p {
+            color:#e2e8f0;
+        }
         .material-symbols-outlined {
             font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
         }
@@ -90,7 +93,7 @@
         }
 
         .text-secondary {
-            color: rgba(255, 255, 255, 0.7);
+            color: rgb(222, 222, 222);
         }
 
         /* Header glass */
@@ -264,7 +267,7 @@
 
         th {
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 0.875rem;
         }
 
@@ -731,9 +734,9 @@
                             name="role"
                             class="input-field custom-select w-full h-12 px-4"
                         >
-                            <option value="user">Usuario Regular</option>
-                            <option value="reviewer">Revisor</option>
-                            <option value="admin">Administrador</option>
+                            <option value="3">Usuario Regular</option>
+                            <option value="2">Administrador</option>
+                            <option value="1">Root</option>
                         </select>
                     </div>
                     
@@ -1122,59 +1125,73 @@
             selectedUserObj = null;
             loadUsersList(); // Recargar lista completa
         });
-
-        // Función de búsqueda de usuarios (similar a add_signers.js)
+        function normalizeUserData(serverUser) {
+            // Mapeo de roles (ajusta según tus IDs reales: 1=Admin, 2=User, etc.)
+            const rolesMap = { "1": "Admin", "2": "Revisor", "3": "Usuario" };
+            
+            return {
+                id: serverUser.id,
+                // Unimos nombre y apellido si existen
+                name: `${serverUser.name} ${serverUser.lastname || ''}`.trim(),
+                email: serverUser.email,
+                alias: serverUser.alias,
+                // Convertimos el rol numérico a texto legible
+                role: rolesMap[serverUser.role] || `Rol ${serverUser.role}`,
+                // Convertimos "1"/"0" a "active"/"inactive" para que funcionen las badges CSS
+                status: serverUser.active === "1" ? "active" : "inactive",
+                // Formateamos fechas
+                joinDate: serverUser.createdat,
+                lastActivity: serverUser.lastmodified,
+                // Datos extra para el modal de detalles
+                phone: serverUser.phone,
+                signed: serverUser.signed,
+                totalSigns: serverUser.totalsigns
+            };
+        }
+        // ==============================
+        // 🔹 FUNCIÓN REAL: searchUsers
+        // ==============================
         async function searchUsers(term, showResults = false) {
             try {
-                const searchType = userSearchType.value;
+                const searchType = userSearchType.value; // ej: "emailUser", "nameUser"
                 
-                // NOTA: Esta es la misma estructura que en add_signers.js
-                // En producción, usar el mismo endpoint /findUser
+                // Construimos el payload según tu especificación
                 const payload = {
-                    params: [term],
-                    type: searchType,
-                    likeop: true // Búsqueda flexible por defecto
+                    params: [term], // Tu API espera un array de strings
+                    type: searchType
                 };
-
-                // Simular respuesta del servidor
-                const mockResponse = {
-                    "USR001": { name: "Juan", lastname: "Pérez", email: "juan.perez@empresa.com", alias: "juanp", role: "Admin" },
-                    "USR002": { name: "María", lastname: "González", email: "maria.gonzalez@empresa.com", alias: "mariag", role: "User" },
-                    "USR003": { name: "Carlos", lastname: "López", email: "carlos.lopez@empresa.com", alias: "carlosl", role: "Reviewer" }
-                };
-
-                // En producción, descomentar esto:
-                /*
+                
+                // Llamada real al endpoint
                 const response = await fetch('/findUser', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                if (!response.ok) throw new Error('Error en búsqueda');
-                const data = await response.json();
-                */
-
-                const data = mockResponse; // Usar mock para demo
+                if (!response.ok) throw new Error('Error en la petición al servidor');
                 
-                cachedUsers = Object.entries(data).map(([id, userData]) => ({
-                    id: id,
-                    ...userData
-                }));
+                const data = await response.json(); // Recibe: { "2": { ... }, "5": { ... } }
+                
+                // Transformamos el Objeto de objetos a un Array de usuarios normalizados
+                cachedUsers = Object.values(data).map(user => normalizeUserData(user));
 
                 if (showResults) {
-                    // Si es búsqueda manual, mostrar resultados en tabla
+                    // Búsqueda manual (botón): Renderizar en tabla
                     renderUsersTable(cachedUsers);
+                    document.getElementById('usersCount').textContent = cachedUsers.length;
                 } else {
-                    // Si es búsqueda en tiempo real, mostrar sugerencias
+                    // Búsqueda autocompletado: Renderizar sugerencias
                     renderUserSuggestions(cachedUsers);
                 }
 
             } catch (err) {
                 console.error("Error buscando usuarios:", err);
-                showToast('Error al buscar usuarios', 'error');
+                showToast('Error al buscar usuarios: ' + err.message, 'error');
                 cachedUsers = [];
                 userSuggestionsList.classList.add('hidden');
+                
+                // Si es búsqueda en tabla y falla, limpiar tabla
+                if(showResults) renderUsersTable([]); 
             }
         }
 
@@ -1223,22 +1240,51 @@
         // ==============================
         // 🔹 CARGA Y RENDERIZADO DE LISTA DE USUARIOS
         // ==============================
+        // ==============================
+        // 🔹 FUNCIÓN REAL: loadUsersList (Traer todos)
+        // ==============================
         async function loadUsersList() {
             try {
                 showLoading('usersTableBody');
                 
-                // NOTA: Esta función es ficticia - en producción implementar endpoint real
-                const users = await fetchAllUsers(currentPage, pageSize);
-                totalUsers = users.total || users.length;
+                // Payload SIN 'params' para obtener todos los usuarios de la institución
+                // Nota: Enviamos 'type' por si el backend requiere contexto, 
+                // o puedes enviar un objeto vacío {} si el backend lo prefiere.
+                const payload = { 
+                    type: "all" // Opcional, dependiendo de si tu backend valida que exista 'type'
+                }; 
                 
-                renderUsersTable(users.data || users);
+                const response = await fetch('/findUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error('Error cargando lista de usuarios');
+
+                const data = await response.json();
+                
+                // Transformar objeto {ID: User} a Array [User] y Normalizar
+                const allUsers = Object.values(data).map(user => normalizeUserData(user));
+                
+                // Actualizar variables globales
+                totalUsers = allUsers.length;
+                cachedUsers = allUsers; // Guardamos copia local
+
+                // Implementación simple de paginación en el lado del cliente 
+                // (ya que este endpoint devuelve TODOS los usuarios de golpe)
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                const paginatedUsers = allUsers.slice(start, end);
+
+                renderUsersTable(paginatedUsers);
                 updatePaginationControls();
                 document.getElementById('usersCount').textContent = totalUsers;
                 
             } catch (error) {
                 console.error('Error cargando lista de usuarios:', error);
-                showToast('Error al cargar usuarios', 'error');
-                showError('usersTableBody', 'No se pudo cargar la lista de usuarios');
+                showToast('Error de conexión', 'error');
+                showError('usersTableBody', 'No se pudo conectar con el servidor');
             }
         }
 
@@ -1273,41 +1319,32 @@
             });
         }
 
+        // ==============================
+        // 🔹 FUNCIÓN: renderUsersTable (ACTUALIZADA con Listeners al final)
+        // ==============================
         function renderUsersTable(users) {
-            const tbody = document.getElementById('usersTableBody');
-            
-            if (!users || users.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-secondary">
-                            <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
-                            <p>No se encontraron usuarios</p>
-                        </td>
-                    </tr>
-                `;
+            const tableBody = document.getElementById('usersTableBody');
+            tableBody.innerHTML = ''; // Limpiar la tabla
+
+            if (users.length === 0) {
+                showError('usersTableBody', 'No se encontraron usuarios.');
                 return;
             }
-            
-            tbody.innerHTML = '';
-            
+
             users.forEach(user => {
+                const row = document.createElement('tr');
                 const statusClass = getStatusClass(user.status);
                 const statusText = getStatusText(user.status);
-                const lastActivity = formatRelativeTime(user.lastActivity);
-                
-                const tr = document.createElement('tr');
-                tr.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
-                tr.innerHTML = `
-                    <td class="px-4 py-3 text-secondary text-sm">${user.id}</td>
-                    <td class="px-4 py-3 font-medium">${user.name}</td>
-                    <td class="px-4 py-3 text-secondary">${user.email}</td>
-                    <td class="px-4 py-3">
-                        <span class="badge ${user.role === 'Admin' ? 'badge-active' : 'badge-pending'}">${user.role}</span>
-                    </td>
-                    <td class="px-4 py-3">
+
+                // Contenido de la fila (Asegúrate que aquí SÍ tienes los data-id)
+                row.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap text-primary font-medium">${user.name}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-secondary">${user.email}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
                         <span class="badge ${statusClass}">${statusText}</span>
                     </td>
-                    <td class="px-4 py-3 text-secondary text-sm">${lastActivity}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-secondary">${user.role}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-secondary">${formatDate(user.joinDate)}</td>
                     <td class="px-4 py-3">
                         <div class="flex gap-2">
                             <button class="text-blue-400 hover:text-blue-300 transition-colors view-user-btn" data-id="${user.id}" title="Ver detalles">
@@ -1322,14 +1359,18 @@
                         </div>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                tableBody.appendChild(row);
             });
+
+            // 🚨 AÑADIR ESTE BLOQUE AL FINAL DE renderUsersTable 🚨
+            // 1. ELIMÍNALO de donde esté actualmente (probablemente tu función init)
+            // 2. CORRIGE el nombre de la función showUserDetails -> showUserDetailsModal
             
-            // Agregar event listeners
+            // Agregar event listeners (AHORA SÍ FUNCIONARÁN)
             document.querySelectorAll('.view-user-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const userId = e.currentTarget.dataset.id;
-                    showUserDetails(userId);
+                    showUserDetails(userId); // 👈 CORREGIDO
                 });
             });
             
@@ -1447,7 +1488,7 @@
                 const inviteData = {
                     idInvitado: "", // Vacío como mencionaste
                     emailInvitado: email,
-                    // teamInvitado: "" // Opcional si tienes equipos
+                    role: role,
                 };
                 
                 // Simular envío de invitación
@@ -1480,25 +1521,62 @@
             }
         });
 
-        // Función ficticia para enviar invitación
+        // ===================================
+        // 🔹 FUNCIÓN REAL: sendInvitation
+        // ===================================
         async function sendInvitation(inviteData) {
-            // NOTA: En producción, reemplazar con fetch real
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Simular éxito o error aleatorio para demo
-                    const success = Math.random() > 0.2; // 80% de éxito
-                    
-                    if (success) {
-                        resolve({
-                            message: "OK",
-                            inviteId: `INV${Date.now()}`,
-                            timestamp: new Date().toISOString()
-                        });
-                    } else {
-                        reject(new Error("El usuario ya tiene una invitación pendiente"));
+            try {
+                // Llamada real al endpoint
+                const response = await fetch('/inviteuser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(inviteData)
+                });
+                
+                // 1. Manejar errores de red (códigos HTTP 4xx o 5xx)
+                if (!response.ok) {
+                    // Intentamos leer el mensaje de error del cuerpo de la respuesta,
+                    // si el backend lo devuelve, o usamos un mensaje genérico.
+                    let errorText = 'Error desconocido al enviar la invitación.';
+                    try {
+                        const errorData = await response.json();
+                        // Si tu backend devuelve {"message": "ERROR"}, lo usamos.
+                        if (errorData.message === "ERROR") {
+                            errorText = `Error al invitar al usuario. Status: ${response.status}`;
+                        } else if (errorData.message) {
+                            // Si devuelve un mensaje más descriptivo
+                            errorText = errorData.message;
+                        }
+                    } catch (e) {
+                        // Falla al parsear el JSON de error
+                        errorText = `Error del servidor: ${response.status} ${response.statusText}`;
                     }
-                }, 1500);
-            });
+                    throw new Error(errorText);
+                }
+                
+                // 2. Procesar respuesta exitosa (código HTTP 2xx)
+                const data = await response.json(); // Esperamos {"message": "OK"}
+                
+                // Confirmación final del servidor
+                if (data && data.message === "OK") {
+                    showToast(`Invitación enviada exitosamente a ${inviteData.email}.`, 'success');
+                    // Opcional: Recargar la lista de usuarios si esperas verlo inmediatamente
+                    // loadUsersList(); 
+                } else {
+                    // Este caso es si response.ok es true (ej. 200), pero el mensaje no es "OK"
+                    throw new Error(data.message || "La invitación falló por una razón desconocida.");
+                }
+
+                return data; // Devuelve los datos (que solo serán el {message: "OK"})
+                
+            } catch (error){
+                console.error("Error en inviteuser:", error.message);
+                // Muestra el mensaje de error al usuario
+                showToast(error.message, 'error');
+                // Lanzamos el error para que cualquier función que llame a sendInvitation
+                // sepa que la operación no fue exitosa.
+                throw error;
+            }
         }
 
         // ==============================
@@ -1537,33 +1615,36 @@
 
         // Función ficticia para obtener detalles del usuario
         async function fetchUserDetails(userId) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        id: userId,
-                        name: "Juan Pérez",
-                        email: "juan.perez@empresa.com",
-                        role: "Administrador",
-                        status: "active",
-                        joinDate: "2024-01-15T10:30:00Z",
-                        lastLogin: "2024-01-20T14:45:00Z",
-                        documentsSigned: 45,
-                        documentsPending: 3,
-                        teams: ["Equipo Directivo", "Equipo Proyecto A"],
-                        permissions: ["admin", "write", "read", "delete"]
-                    });
-                }, 800);
-            });
+            // 1. Busca el usuario real dentro de cachedUsers con el ID proporcionado
+            const user = cachedUsers.find(u => u.id === userId);
+            
+            if (!user) {
+                console.error("Usuario con ID no encontrado en la caché:", userId);
+                // Si no lo encuentra, devolvemos un error para que la función que llama
+                // (ej. showUserDetailsModal) sepa que algo salió mal.
+                return Promise.reject(new Error(`Usuario ID ${userId} no encontrado.`));
+            }
+
+            // 2. Devuelve una Promesa que se resuelve INMEDIATAMENTE
+            // con el objeto de usuario REAL. Mantenemos el patrón Promise para
+            // compatibilidad con tu código (que probablemente usa await o .then()).
+            return Promise.resolve(user);
         }
 
+        // Reemplazar la función actual (aprox. línea 1058) con este nuevo código
         function renderUserDetails(user) {
             const content = document.getElementById('userDetailsContent');
             const statusClass = getStatusClass(user.status);
             const statusText = getStatusText(user.status);
             
+            // Lógica para Medios de Contacto
+            const cleanPhone = user.phone;
+            // Asegúrate de que el número incluya el código de país. 
+            // Si tu backend no lo incluye, es buena práctica agregarlo si es fijo.
+            const whatsappLink = cleanPhone ? `https://api.whatsapp.com/send?phone=${cleanPhone}` : '#';
+            
             content.innerHTML = `
                 <div class="space-y-6">
-                    <!-- Header con avatar -->
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold">
                             ${user.name.charAt(0)}
@@ -1577,7 +1658,6 @@
                         </div>
                     </div>
                     
-                    <!-- Información básica -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="glass-card p-4">
                             <p class="text-secondary text-sm">Rol</p>
@@ -1588,61 +1668,56 @@
                             <p class="font-medium">${formatDate(user.joinDate)}</p>
                         </div>
                         <div class="glass-card p-4">
-                            <p class="text-secondary text-sm">Último acceso</p>
-                            <p class="font-medium">${formatRelativeTime(user.lastLogin)}</p>
+                            <p class="text-secondary text-sm">Última modificación</p>
+                            <p class="font-medium">${formatRelativeTime(user.lastActivity)}</p>
                         </div>
                         <div class="glass-card p-4">
-                            <p class="text-secondary text-sm">ID Usuario</p>
-                            <p class="font-medium text-sm">${user.id}</p>
+                            <p class="text-secondary text-sm">Alias</p>
+                            <p class="font-medium text-sm truncate">${user.alias}</p>
                         </div>
                     </div>
                     
-                    <!-- Estadísticas -->
                     <div class="glass-card p-6">
-                        <h5 class="font-bold mb-4">Estadísticas</h5>
-                        <div class="grid grid-cols-3 gap-4">
+                        <h5 class="font-bold mb-4">Estadísticas de Firmas</h5>
+                        <div class="grid grid-cols-2 gap-4">
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-primary">${user.documentsSigned}</div>
-                                <p class="text-secondary text-sm">Docs firmados</p>
+                                <div class="text-2xl font-bold text-primary">${user.signed || 0}</div>
+                                <p class="text-secondary text-sm">Documentos firmados</p>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-yellow-400">${user.documentsPending}</div>
-                                <p class="text-secondary text-sm">Docs pendientes</p>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-2xl font-bold text-green-400">${user.teams.length}</div>
-                                <p class="text-secondary text-sm">Equipos</p>
+                                <div class="text-2xl font-bold text-blue-400">${user.totalSigns || 0}</div>
+                                <p class="text-secondary text-sm">Total de firmas registradas</p>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Equipos -->
                     <div>
-                        <h5 class="font-bold mb-2">Equipos</h5>
-                        <div class="flex flex-wrap gap-2">
-                            ${user.teams.map(team => `
-                                <span class="badge badge-pending">${team}</span>
-                            `).join('')}
+                        <h5 class="font-bold mb-2">Medios de Contacto</h5>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="mailto:${user.email}" target="_blank" class="badge badge-pending flex items-center transition-transform hover:scale-[1.02] cursor-pointer" title="Abrir correo a ${user.email}">
+                                <span class="material-symbols-outlined mr-1 text-sm">mail</span>
+                                ${user.email}
+                            </a>
+                            ${cleanPhone ? `
+                                <a href="${whatsappLink}" target="_blank" class="badge badge-active flex items-center transition-transform hover:scale-[1.02] cursor-pointer" title="Abrir WhatsApp a ${user.phone}">
+                                    <span class="material-symbols-outlined mr-1 text-sm">chat</span>
+                                    ${user.phone}
+                                </a>
+                            ` : `
+                                <span class="badge badge-inactive flex items-center">
+                                    <span class="material-symbols-outlined mr-1 text-sm">phone_disabled</span>
+                                    Teléfono no registrado
+                                </span>
+                            `}
                         </div>
                     </div>
                     
-                    <!-- Permisos -->
-                    <div>
-                        <h5 class="font-bold mb-2">Permisos</h5>
-                        <div class="flex flex-wrap gap-2">
-                            ${user.permissions.map(perm => `
-                                <span class="badge badge-active">${perm}</span>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <!-- Acciones -->
                     <div class="flex gap-4 pt-4 border-t border-white/10">
                         <button class="btn-secondary flex-1 h-10" onclick="resendInvitation('${user.email}')">
                             <span class="material-symbols-outlined mr-2 text-sm">send</span>
                             Reenviar invitación
                         </button>
-                        <button class="btn-primary flex-1 h-10">
+                        <button class="btn-primary flex-1 h-10" onclick="editUser('${user.id}')">
                             <span class="material-symbols-outlined mr-2 text-sm">edit</span>
                             Editar usuario
                         </button>
@@ -1815,7 +1890,8 @@
                 // Lógica de reenvío similar a sendInvitation
                 const inviteData = {
                     idInvitado: "",
-                    emailInvitado: email
+                    emailInvitado: email,
+                    role: document.getElementById('inviteRole').id,
                 };
                 
                 const response = await sendInvitation(inviteData);
