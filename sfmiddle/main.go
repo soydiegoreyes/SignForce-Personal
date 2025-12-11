@@ -117,11 +117,11 @@ func main() {
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
+	mux.HandleFunc("/viewSign", handlers.ViewSign)                     // obtiene los equipos de una institucion
 	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
-	//mux.HandleFunc("/instteams", handlers.InstTeams)                   // obtiene los equipos de una institucion
 	//mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
 	//mux.HandleFunc("/newteam", handlers.NewTeam)                       // crea un equipo dentro de una institucion por un usuario master o root
 
@@ -137,6 +137,7 @@ func main() {
 	mux.HandleFunc("/mydocs", myDocuments)
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
+	mux.HandleFunc("/viewSignature", viewSignature) // obtiene los equipos de una institucion
 	mux.HandleFunc("/viewinvite", viewInvite)
 	mux.HandleFunc("/viewinviteuser", viewInviteUser)
 	mux.HandleFunc("/myfolders", myFolders)
@@ -397,6 +398,14 @@ func addSignatures(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/add_signs.html")
+}
+
+func viewSignature(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/view_signature.html")
 }
 
 // ==========================================================================================================

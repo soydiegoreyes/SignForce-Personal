@@ -186,7 +186,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 
 			// se registra el usuario root
-			userId, err := objects.RegisterUser(&registerReq, lastId, passHash)
+			userId, err := objects.RegisterRootUser(&registerReq, lastId, passHash)
 			if err != nil {
 				fmt.Println(err)
 				registerResp.Error = fmt.Sprintf("%s", err)

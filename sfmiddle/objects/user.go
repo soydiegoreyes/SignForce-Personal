@@ -13,7 +13,7 @@ import (
 type User struct{}
 
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
-func RegisterUser(registerReq *models.RegisterRequest, idInst, passHash string) (string, error) {
+func RegisterRootUser(registerReq *models.RegisterRequest, idInst, passHash string) (string, error) {
 	idInstHash, err := utilities.GetHash([]byte(idInst), configs.HashConf)
 	if err != nil {
 		return "", err
@@ -41,7 +41,6 @@ func RegisterUser(registerReq *models.RegisterRequest, idInst, passHash string) 
 		"1",
 		"1",
 		passHash,
-		//idTeam, // TEAMOBJECT
 		idInst,
 	}
 	idUser, err := db.DB_con.GenericInsert("users", columns, values)

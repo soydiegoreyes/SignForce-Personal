@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sfmiddle/auth"
 	"sfmiddle/configs"
 	"sfmiddle/db"
@@ -12,6 +14,7 @@ import (
 	"sfmiddle/objects"
 	"sfmiddle/utilities"
 	"strconv"
+	"strings"
 	"time"
 	//"sfmiddle/objects"
 )
@@ -476,37 +479,104 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	var req models.UserDataReq
-	err := json.NewDecoder(request.Body).Decode(&req)
+	var reqUser models.UserDataReq
+	err := json.NewDecoder(request.Body).Decode(&reqUser)
 	if err != nil {
 		fmt.Println(err)
 	}
-	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{req.IdInvite}, []string{"acceptedAt"}, []string{"idInstitution_fk"})
+	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{reqUser.IdInvite}, []string{"acceptedAt"}, []string{"idInstitution_fk"})
 	if err != nil {
 		fmt.Println("error al buscar invitacion")
 		return
 	}
-	if uinv[req.IdInvite]["acceptedAt"] != "" {
+	if uinv[reqUser.IdInvite]["acceptedAt"] != "" {
 		fmt.Println("Usuario ya acepto la invitación")
 		return
 	}
+
 	tempPass := utilities.PassGenerator(12)
-	fmt.Println("pasa: ", tempPass)
 	hashed, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk"}
-	values := []interface{}{req.Name, req.LastName, req.TaxNum, req.PobUid, req.Alias, req.Email, req.Phone, hashed, 1, req.Role, uinv[req.IdInvite]["idInstitution_fk"]}
+	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
 	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(idNewUser)
 
-	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{req.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
+	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUser.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
 		fmt.Println(err)
 		return
+	}
+
+	// invitacion de usuario por email
+	registerResp := models.RegisterResponse{Check: false, InstId: "", Error: ""}
+	whereMap := map[string][]string{
+		"nameApp": {"emailServ"},
+	}
+
+	appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
+	if err != nil {
+		registerResp.Error = fmt.Sprintf("%s", err)
+		json.NewEncoder(respWriter).Encode(registerResp)
+		return
+	}
+
+	binDoc, err := os.ReadFile("./templates/welcome_register.html")
+	if err != nil {
+		registerResp.Error = fmt.Sprintf("%s", err)
+		json.NewEncoder(respWriter).Encode(registerResp)
+	}
+
+	body := string(binDoc)
+	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
+	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
+	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
+	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+
+	payload := models.EmailRequest{
+		IdUser:   "1",
+		Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", reqUser.Name),
+		Body:     body,
+		Dest:     []string{reqUser.Email},
+		MimeType: "html",
+	}
+
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Println("Error al convertir a JSON:", err)
+		return
+	}
+	var host, port string
+	for _, v := range appData {
+		host = v["domainApp"]
+		port = v["portApp"]
+		break
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		registerResp.Error = fmt.Sprintf("%s", err)
+		json.NewEncoder(respWriter).Encode(registerResp)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
+	// Ejecutar petición
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		registerResp.Error = fmt.Sprintf("%s", err)
+		json.NewEncoder(respWriter).Encode(registerResp)
+		return
+	}
+	defer resp.Body.Close()
+
+	if strings.Contains(resp.Status, "200 OK") {
+		registerResp.Check = true
 	}
 }

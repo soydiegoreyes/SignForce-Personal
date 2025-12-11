@@ -146,7 +146,26 @@ type LoginResponse struct {
 type UserResponse struct {
 	Name   string `json:"name"`
 	Email  string `json:"email"`
+	Phone  string `json:"phone"`
 	Active bool   `json:"active"`
+}
+
+type InstResponse struct {
+	LegalName           string `json:"legalName"`
+	AliasName           string `json:"aliasName"`
+	TaxNum              string `json:"taxNum"`
+	LegalSignupName     string `json:"legalSignupName"`
+	LegalSignupLastname string `json:"legalSignupLastname"`
+	StreetAddress       string `json:"streetAddress"`
+	PostalCode          string `json:"postalCode"`
+	Neighborhood        string `json:"neighborhood"`
+	Locality            string `json:"locality"`
+	State               string `json:"state"`
+	Country             string `json:"country"`
+	Phone               string `json:"phone"`
+	Email               string `json:"email"`
+	Logo                string `json:"logoUrl"`
+	IsActive            bool   `json:"isActive"`
 }
 
 type ValidationResponse struct {
@@ -197,6 +216,7 @@ type KeysStatus struct {
 	Expiration      string `json:"expiration"`
 	Owner           string `json:"owner"`
 	SubjectUniqueId string `json:"subjectUniqueId"`
+	IssuerRFC4514   string `json:"issuerData"`
 	UploadedAt      string `json:"uploadedAt"`
 	Selected        bool   `json:"selected"`
 }
@@ -234,8 +254,8 @@ type InviteInfoResp struct {
 }
 
 type SignResponse struct {
-	Message string            `json:"message"`
-	Signed  map[string]string `json:"signed"`
+	Message string                       `json:"message"`
+	Signed  map[string]map[string]string `json:"signed"`
 }
 type FolderListResp struct {
 	Page        int                    `json:"page"`

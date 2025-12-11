@@ -2,6 +2,7 @@ package utilities
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"time"
@@ -129,4 +131,46 @@ func GetClientIP(r *http.Request) string {
 	// Si no viene en headers, usamos la IP directa
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return ip
+}
+
+// AppendQRCodes invoca un script de Python para insertar imágenes en un PDF
+func AppendQRCodes(filePath string, SignsPositions map[string]map[string]string) error {
+
+	// 1. Aplanar el mapa a un Slice (Lista) de mapas para el JSON
+	// El mapa original tiene un ID como llave principal que no necesitamos enviar al script,
+	// solo necesitamos la lista de configuraciones.
+	var stampsList []map[string]string
+
+	for _, data := range SignsPositions {
+		stampsList = append(stampsList, data)
+	}
+
+	// 2. Convertir la lista a un string JSON
+	jsonData, err := json.Marshal(stampsList)
+	if err != nil {
+		fmt.Printf("Error al crear JSON para Python: %v\n", err)
+		return err
+	}
+
+	// 3. Preparar el comando para ejecutar Python
+	// Asegúrate de poner la ruta correcta donde guardaste 'insert_qr.py'
+	scriptPath := "./insert_qr.py"
+	fmt.Println(filePath, string(jsonData))
+	// Comando: python3 insert_qr.py [RutaPDF] [StringJSON]
+	cmd := exec.Command("python", scriptPath, filePath, string(jsonData))
+
+	// Capturar salida estándar y de error para debuggear si Python falla
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	fmt.Println(cmd.Stderr, cmd.Stdout)
+	// 4. Ejecutar el script
+	fmt.Println("Ejecutando script de Python para insertar QRs...")
+	err = cmd.Run()
+	if err != nil {
+		fmt.Printf("Error ejecutando script de Python: %v\n", err)
+		return err
+	}
+
+	fmt.Println("QRs insertados correctamente en:", filePath)
+	return nil
 }

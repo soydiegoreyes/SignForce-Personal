@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"sfmiddle/auth"
 	"sfmiddle/db"
 	"sfmiddle/documentflow"
 	"sfmiddle/models"
+	"sfmiddle/utilities"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -523,7 +526,15 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
-
+	/*
+		type SignDoc struct {
+			Aut       string     `json:"aut"`
+			IdInvite  string     `json:"inviteId"`
+			IdKey     string     `json:"keyId"`
+			IdFolder  string     `json:"folderId"`
+			Documents []Document `json:"signDocuments"`
+		}
+	*/
 	// Decodificar request
 	var reqdoc models.SignDoc
 	if err := json.NewDecoder(request.Body).Decode(&reqdoc); err != nil {
@@ -625,10 +636,160 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			fmt.Println("Error decodificando:", err)
 		}
 	}
-	fmt.Println("Firma realizada con éxito")
+	fmt.Println("Firmas realizadas con éxito")
+
+	// añadir los qr a los pdf firmados
+	// cada firma (idSignature) es un documento firmado por el mismo usuario y esa firma tiene varias posiciones dentro de ese documento
+	// para cada documento se manda el arreglo de coordenadas y paginas para que se meta en el mismo archivo
+	// los id de las firmas no importan solo importa que todas pertenecen al mismo documento hechas por el mismo usuario
+
+	for idSR, SData := range signResult.Signed {
+		wheres := map[string][]string{"idSignature_fk": {idSR}}
+		SStamp, err := db.DB_con.GenericSelect("signstamps", "idStamp", []string{"xSign", "ySign", "wSign", "hSign", "pageSign", "pathImg"}, wheres)
+		if err != nil {
+			fmt.Printf("%s", err)
+			return
+		}
+		var folderPath string
+		reg := regexp.MustCompile(`.*/folders/\d+/\d+/`)
+		if baseFolderPath := reg.FindAllString(SData["xmlPath"], 1); len(baseFolderPath) > 0 {
+			folderPath = baseFolderPath[0] + SData["idDocument"] + "_" + SData["hashDoc"] + ".pdf"
+			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
+				http.Error(respWriter, "Error no se encontró archivo entregable", http.StatusInternalServerError)
+				return
+			}
+			err = utilities.AppendQRCodes(folderPath, SStamp)
+			if err != nil {
+				fmt.Printf("%s", err)
+				return
+			}
+
+		} else {
+			http.Error(respWriter, "Error critico error en path para archivo entregable", http.StatusInternalServerError)
+			return
+		}
+
+	}
 
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(&signResult)
+}
+
+func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	qParams := request.URL.Query()
+	idSignature := qParams.Get("id")
+	if idSignature == "" {
+		http.Error(respWriter, "No tiene id Invitacion", http.StatusBadRequest)
+		return
+	}
+
+	// Cargar firma y documento desde DB ==============================
+	attrs1 := []string{"idSignature", "idUser_fk", "idUserKeys_fk", "digestValueSign", "digestAlgoSign_fk", "signatureAlgoSign_fk", "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign"}
+	attrs2 := []string{"idDocument", "createdAtDoc", "ownerInstDoc_fk", "creatorUserDoc_fk", "documentPath", "documentName", "documentExt", "sizeB", "abstractDoc", "activeDoc"}
+	signDoc, err := db.DB_con.GenericJoinSelect("signatures", "documents", "signatures.digestValueSign=documents.documentHash", "idSignature", []string{idSignature}, attrs1, attrs2)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de firma y documento", http.StatusInternalServerError)
+		return
+	}
+	// Cargar datos de firmante
+	attrs := []string{"nameUser", "lastNameUser", "emailUser", "phoneUser", "activeUser"}
+	wheres := map[string][]string{
+		"idUser": {signDoc[idSignature]["idUser_fk"], signDoc[idSignature]["creatorUserDoc_fk"]},
+	}
+	usersData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de firmante", http.StatusInternalServerError)
+		return
+	}
+	// signer data
+	var sigdata, ownnerdata models.UserResponse
+	sigdata.Name = usersData[signDoc[idSignature]["idUser_fk"]]["nameUser"] + " " + usersData[signDoc[idSignature]["idUser_fk"]]["lastNameUser"]
+	sigdata.Email = usersData[signDoc[idSignature]["idUser_fk"]]["emailUser"]
+	sigdata.Phone = usersData[signDoc[idSignature]["idUser_fk"]]["phoneUser"]
+	sigdata.Active = usersData[signDoc[idSignature]["idUser_fk"]]["activeUser"] == "1"
+	// ownner data
+	ownnerdata.Name = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["nameUser"] + " " + usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["lastNameUser"]
+	ownnerdata.Email = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["emailUser"]
+	ownnerdata.Phone = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["phoneUser"]
+	ownnerdata.Active = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["activeUser"] == "1"
+
+	// datos de la institucion propietaria
+	attrs = []string{"legalNameInst", "contactPhoneInst", "contactEmailInst", "activeInst", "legalSignupName", "legalSignupLastname"}
+	wheres = map[string][]string{
+		"idInstitution": {signDoc[idSignature]["ownerInstDoc_fk"]},
+	}
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de institución", http.StatusInternalServerError)
+		return
+	}
+	var instdata models.InstResponse
+	instdata.LegalName = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["legalNameInst"]
+	instdata.Phone = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["contactPhoneInst"]
+	instdata.Email = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["contactEmailInst"]
+	instdata.LegalSignupName = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["legalSignupName"]
+	instdata.LegalSignupLastname = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["legalSignupLastname"]
+	instdata.IsActive = instData[signDoc[idSignature]["ownerInstDoc_fk"]]["activeInst"] == "1"
+
+	// Cargar datos de llaves de firmante
+	attrs = []string{"keyFilePath", "certFilePath", "notValidAfter", "issuerRFC4514", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}
+	wheres = map[string][]string{
+		"idUserKeys": {signDoc[idSignature]["idUserKeys_fk"]},
+	}
+	keysData, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de firmante", http.StatusInternalServerError)
+		return
+	}
+	var ks models.KeysStatus
+	for idKey, key := range keysData {
+		ks.IdKey = idKey
+		ks.NameKey = key["keyFilePath"][strings.LastIndex(key["keyFilePath"], "/")+1:]
+		ks.NameCer = key["certFilePath"][strings.LastIndex(key["certFilePath"], "/")+1:]
+		ks.Expiration = key["notValidAfter"]
+		ks.Owner = key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")]
+		ks.SubjectUniqueId = key["subjectUniqueId"]
+		ks.IssuerRFC4514 = key["issuerRFC4514"]
+		ks.UploadedAt = key["createdAtKey"]
+		break
+	}
+	// completar esta estructura con los datos de arriba
+	type signatureResponse struct {
+		IdSignature string              `json:"idSignature"`
+		Signature   map[string]string   `json:"signature"` // attrs1
+		Document    map[string]string   `json:"document"`  // attrs2
+		Signer      models.UserResponse `json:"signer"`
+		Owner       models.UserResponse `json:"owner"`
+		Institution models.InstResponse `json:"institution"`
+		Keys        models.KeysStatus   `json:"keys"`
+	}
+	sdata := make(map[string]string)
+	ddata := make(map[string]string)
+	for _, attr := range attrs1 {
+		sdata[attr] = signDoc[idSignature][attr]
+	}
+	for _, attr := range attrs2 {
+		ddata[attr] = signDoc[idSignature][attr]
+	}
+	dataSig := signatureResponse{
+		IdSignature: idSignature,
+		Signature:   sdata, // attrs1 + attrs2 juntos (así lo devuelve GenericJoin)
+		Document:    ddata, // si quieres separarlos dímelo
+		Signer:      sigdata,
+		Owner:       ownnerdata,
+		Institution: instdata,
+		Keys:        ks,
+	}
+	//=============================================================================================
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(dataSig)
 }

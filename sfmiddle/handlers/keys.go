@@ -467,7 +467,7 @@ func GetKeysData(respWriter http.ResponseWriter, request *http.Request) {
 	wheres = map[string][]string{
 		"idUser_fk": {idUser},
 	}
-	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"keyFilePath", "certFilePath", "notValidAfter", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}, wheres)
+	keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"keyFilePath", "certFilePath", "notValidAfter", "issuerRFC4514", "subjectRFC4514", "subjectUniqueId", "createdAtKey"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
 		return
@@ -488,6 +488,7 @@ func GetKeysData(respWriter http.ResponseWriter, request *http.Request) {
 			Expiration:      key["notValidAfter"],
 			Owner:           key["subjectRFC4514"][strings.Index(key["subjectRFC4514"], "=")+1 : strings.Index(key["subjectRFC4514"], ",")],
 			SubjectUniqueId: key["subjectUniqueId"],
+			IssuerRFC4514:   key["issuerRFC4514"],
 			UploadedAt:      key["createdAtKey"],
 			Selected:        selected,
 		}
