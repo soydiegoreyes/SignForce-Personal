@@ -1,12 +1,10 @@
 package objects
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"sfback/configs"
 	"sfback/db"
-	"strings"
 	"time"
 
 	"sfback/utilities"
@@ -59,7 +57,8 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	signedPropsId := "SignedProperties-" + uuid.NewString()
 
 	// Convertir el hash del PDF a Base64 para ponerlo en el XML
-	pdfHashB64 := base64.StdEncoding.EncodeToString(pdfHash)
+	pdfHashB64 := utilities.Encode_b64(pdfHash)
+
 	// =========================================================================
 	// PASO 1: CONSTRUIR EL NODO SignedProperties (Propiedades firmadas)
 	// =========================================================================
@@ -259,14 +258,29 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 		return nil, err
 	}
 	// crear qrcode con link
-	qrPath := invitePath + signatureId + "png."
+	qrPath := invitePath + signatureId + ".png."
 
 	if !utilities.GenerateQR(fmt.Sprintf("%sviewSignature?id=%s", os.Getenv("QR_URL_BASE"), signatureId), qrPath) {
 		return nil, fmt.Errorf("no se pudo crear qr de firma %s", qrPath)
 	}
+
+	if ok := utilities.AddTextToQR(qrPath, fmt.Sprintf("%s %s - %s", usersData[idUserDest]["nameUser"], usersData[idUserDest]["lastNameUser"], gentime)); !ok {
+		fmt.Println("No se pudo añadir el nombre al QR")
+	}
+	updates := map[string]map[string]interface{}{
+		signatureId: {
+			"pathImg": qrPath,
+		},
+	}
+	err = db.DB_con.GenericBatchUpdate("signstamps", "idSignature_fk", updates)
+	if err != nil {
+		fmt.Println("error al actualizar qr de firma: ", err)
+	}
 	// Respuesta de firma
 	signData := map[string]string{
-		"xmlPath":            strings.ReplaceAll(xmlPath, os.Getenv("BASE_DIR")+"/", ""),
+
+		"xmlPath":            xmlPath,
+		"hashDoc":            pdfHashB64,
 		"signedInfoHash":     signedInfoHash,
 		"signatureValueSign": signatureValueB64,
 		"genTimeSign":        gentime,
@@ -277,35 +291,3 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 
 	return signData, nil
 }
-
-/*
-### Explicación de los Cambios Clave
-
-1.  **Uso de `etree` para todo**: Eliminé las estructuras `struct` manuales (`Signature`, `SignedInfo`, etc.) dentro de esta función para la *generación*. Es mucho más seguro usar `etree` para construir el XML dinámicamente porque te permite manipular atributos y namespaces con precisión antes de calcular hashes. Las `structs` son buenas para *leer* (unmarshal), pero para *escribir* y firmar XAdES (donde el orden importa para el hash), `etree` es superior.
-2.  **`SignHash` (Tu función)**: En el código hago:
-    ```go
-    // signedInfoBytes contiene el XML <SignedInfo>...</SignedInfo>
-    k.SignHash(signedInfoBytes, "sha256")
-    ```
-    Como tu función `SignHash` hace `sha256.Sum256(hashed)` (donde `hashed` es el input), esto funciona perfecto. El `rsa.SignPKCS1v15` firmará el hash del XML.
-3.  **`SigningCertificate`**: Agregué la lógica para parsear tu certificado PEM (`x509.ParseCertificate`). XAdES **exige** que pongas el hash del certificado y el número de serie dentro de `SignedProperties`. Si no pones esto, no es XAdES, es XMLDSig.
-4.  **Doble Referencia**: Fíjate en el bloque **PASO 3**. Hay dos `Reference`:
-    * Una apunta al PDF (con `pdfHashB64`).
-    * Otra apunta a `#SignedProperties` (con `spHashB64`).
-    Esto vincula criptográficamente la fecha de firma y el certificado con el documento.
-
-### ¿Cómo usarlo?
-
-```go
-// Supongamos que ya tienes:
-// pdfHashBytes: []byte del SHA256 del PDF
-// user.Keys: Tu struct con la llave privada cargada
-// certPemBytes: []byte del archivo .crt o .pem público
-
-xmlXades, err := signatures.GenerarFirmaXades(pdfHashBytes, certPemBytes, user.Keys)
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Println(xmlXades)
-
-*/

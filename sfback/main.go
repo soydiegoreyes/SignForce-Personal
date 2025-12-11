@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"sfback/auth"
 	"sfback/configs"
 	"sfback/db"
@@ -311,24 +312,24 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Procesar cada documento ==============================
-	signaturesXML := make(map[string]string)
+	signaturesXML := make(map[string]map[string]string)
 
 	for _, docReq := range req.Documents {
 
-		stored, ok := docData[docReq.IdDocument]
+		docInfo, ok := docData[docReq.IdDocument]
 		if !ok {
 			http.Error(respWriter, "Documento no encontrado", http.StatusBadRequest)
 			return
 		}
 
 		// Validar hash enviado vs BD
-		if stored["documentHash"] != docReq.DocumentHash {
+		if docInfo["documentHash"] != docReq.DocumentHash {
 			http.Error(respWriter, "El hash del documento no coincide con la base de datos", http.StatusBadRequest)
 			return
 		}
 
 		// Cargar archivo subido
-		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), stored["documentPath"], stored["documentName"], stored["documentExt"])
+		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
 		fileBytes, err := os.ReadFile(fileName)
 		if err != nil {
 			http.Error(respWriter, "No se pudo leer el archivo real", http.StatusInternalServerError)
@@ -341,7 +342,7 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, "No se pudo obtener hash del archivo real", http.StatusInternalServerError)
 			return
 		}
-		if realHash != stored["documentHash"] {
+		if realHash != docInfo["documentHash"] {
 			http.Error(respWriter, "El archivo ha sido alterado (hash mismatch)", http.StatusBadRequest)
 			return
 		}
@@ -351,7 +352,7 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 
 		var idSign string
 		for idS, s := range signatureData {
-			if s["digestValueSign"] == stored["documentHash"] {
+			if s["digestValueSign"] == docInfo["documentHash"] {
 				idSign = idS
 				s["digestValueSign"] = s["digestValueSign"] + "."
 				break
@@ -364,21 +365,40 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
 			return
 		}
+		xmlData["idDocument"] = docReq.IdDocument
+
+		// crear archivo para firmas qr (entregable)
+		var folderPath string
+		reg := regexp.MustCompile(`.*/folders/\d+/\d+/`)
+		if baseFolderPath := reg.FindAllString(xmlData["xmlPath"], 1); len(baseFolderPath) > 0 {
+			folderPath = baseFolderPath[0] + docReq.IdDocument + "_" + xmlData["hashDoc"] + ".pdf"
+			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
+				err = os.WriteFile(folderPath, fileBytes, 0644)
+				if err != nil {
+					http.Error(respWriter, "Error generando archivo entregable", http.StatusInternalServerError)
+					return
+				}
+			}
+
+		} else {
+			http.Error(respWriter, "Error critico error en path para archivo entregable", http.StatusInternalServerError)
+			return
+		}
 
 		// se añade a la respuesta
-		signaturesXML[idSign] = xmlData["xmlPath"]
+		signaturesXML[idSign] = xmlData
 
 		updates := map[string]map[string]interface{}{
 			idSign: {
 				"idUserKeys_fk":      req.IdKey,
 				"signatureValueSign": xmlData["signatureValueSign"],
 				"genTimeSign":        strings.ReplaceAll(xmlData["genTimeSign"], "Z", ""),
-				"pathSign":           xmlData["xmlPath"],
+				"pathSign":           strings.ReplaceAll(xmlData["xmlPath"], os.Getenv("BASE_DIR")+"/", ""),
 				"typeSign_fk":        xmlData["typeSign"],
 				"nonceSign":          xmlData["nonceSign"],
 			},
 		}
-		fmt.Println(updates)
+
 		err = db.DB_con.GenericBatchUpdate("signatures", "idSignature", updates)
 		if err != nil {
 			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
