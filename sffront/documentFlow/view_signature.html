@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Visor de Firma - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/documentflow/documents.css">
+    <style>
+        /* Estilos Base y Scrollbar */
+        .keys-list {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(33, 150, 243, 0.3) transparent;
+            padding-right: 5px;
+        }
+        
+        .keys-list::-webkit-scrollbar { width: 4px; }
+        .keys-list::-webkit-scrollbar-track { background: transparent; }
+        .keys-list::-webkit-scrollbar-thumb {
+            background-color: rgba(33, 150, 243, 0.3);
+            border-radius: 3px;
+        }
+
+        /* Tarjetas Estilo "Invitación" */
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Contenedores de datos de firma con resplandor */
+        .sig-data-item {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sig-data-item::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, 
+                rgba(59, 130, 246, 0.3), 
+                rgba(124, 58, 237, 0.3), 
+                rgba(59, 130, 246, 0.3));
+            border-radius: 14px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sig-data-item:hover::before {
+            opacity: 1;
+        }
+
+        .sig-data-item:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+            border-color: rgba(33, 150, 243, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Tarjeta de llave integrada */
+        .key-card-embedded {
+            background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(76, 29, 149, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key-card-embedded::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+        }
+        /* Estilo para resumen expandido */
+        .abstract-expanded {
+            height: 500px !important;
+            transition: height 0.3s ease;
+        }
+
+        .full-abstract {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            height: 100%;
+            overflow-y: auto;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .full-abstract::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .full-abstract::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .full-abstract::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 4px;
+        }
+
+        .full-abstract::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.7);
+        }
+
+        /* Mejorar el contenedor del resumen normal */
+        .sig-tech-data {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #abstractContainer {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+        }
+
+        #abstractContainer::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #abstractContainer::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #abstractContainer::-webkit-scrollbar-thumb {
+            background-color: rgba(59, 130, 246, 0.3);
+            border-radius: 3px;
+        }
+
+        #abstractContainer::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(59, 130, 246, 0.5);
+        }
+
+        /* Para textos largos */
+        #docAbstract {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+        /* Badges Neon */
+        .badge-neon {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(59, 130, 246, 0.7);
+        }
+
+        .badge-signature {
+            background: rgba(16, 185, 129, 0.15);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+        }
+
+        .badge-document {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Botones */
+        .btn-cyber {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cyber:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Header Panel */
+        .header-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        /* Estilo para datos técnicos */
+        .sig-tech-data {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 4px;
+            font-family: 'Inter', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .sig-tech-data::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .sig-tech-data::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sig-tech-data::-webkit-scrollbar-thumb {
+            background-color: rgba(59, 130, 246, 0.3);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
+
+    <header class="header-panel fixed top-0 w-full z-50 h-16">
+        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Visor de Firma</span></h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-xs font-medium">Conectado</span>
+                </div>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1400px] mx-auto w-full flex flex-col gap-8">
+        
+        <!-- Sección Principal - Información de la Firma -->
+        <div id="sigHero" class="tech-card p-8 animate-fade-in">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="badge-neon badge-signature">
+                        <span class="material-symbols-outlined text-[14px]">verified</span>
+                        Firma Electrónica
+                    </span>
+                    <span class="text-sm text-gray-400" id="sigIdDisplay">ID: ...</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Columna Izquierda: Información General -->
+                <div class="space-y-6">
+                    <!-- Institución -->
+                    <div class="sig-data-item">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-blue-400">business</span>
+                            Institución
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="info-label">Razón Social</p>
+                                <p class="info-value" id="instLegalName">Cargando...</p>
+                            </div>
+                            <div>
+                                <p class="info-label">Email</p>
+                                <div class="info-value" id="instEmailContainer">
+                                    <span class="text-gray-500">Cargando...</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="info-label">Representante</p>
+                                <p class="info-value" id="instRepresentative">Cargando...</p>
+                            </div>
+                            <div>
+                                <p class="info-label">Phone</p>
+                                <div class="info-value" id="instPhoneContainer">
+                                    <span class="text-gray-500">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Firmante -->
+                    <div class="sig-data-item">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-green-400">person</span>
+                            Firmante
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="info-label">Nombre</p>
+                                <p class="info-value" id="signerName">Cargando...</p>
+                            </div>
+                            <div>
+                                <p class="info-label">Email</p>
+                                <div class="info-value" id="signerEmailContainer">
+                                    <span class="text-gray-500">Cargando...</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="info-label">Phone</p>
+                                <div class="info-value" id="signerPhoneContainer">
+                                    <span class="text-gray-500">Cargando...</span>
+                                </div>
+                            </div>
+                            <div class="md:col-span-2">
+                                <p class="info-label">Estado</p>
+                                <p class="info-value" id="signerStatus">Cargando...</p>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Llave integrada -->
+                        <div id="keyCardContainer" class="key-card-embedded mt-4">
+                            <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-yellow-400">key</span>
+                                Llave de Firma Utilizada
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p class="info-label">Propietario</p>
+                                    <p class="info-value" id="keyOwner">Cargando...</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">ID Único</p>
+                                    <p class="info-value text-xs" id="keyUniqueId">Cargando...</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">Certificado</p>
+                                    <p class="info-value text-xs truncate" id="keyCertName">Cargando...</p>
+                                </div>
+                                <div>
+                                    <p class="info-label">Expiración</p>
+                                    <p class="info-value" id="keyExpiration">Cargando...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Documento y Propietario -->
+                <div class="space-y-6">
+                    <!-- Documento -->
+                    <div class="sig-data-item">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-400">description</span>
+                            Documento
+                        </h3>
+                        <div class="flex flex-col h-[calc(100%-3rem)]">
+                            <!-- Metadatos del documento -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="info-label">Nombre</p>
+                                        <div class="flex items-center gap-2">
+                                            <p class="info-value truncate" id="docName">Cargando...</p>
+                                            <span class="text-xs text-gray-500" id="docIdDisplay">(ID: ...)</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="info-label">Tipo</p>
+                                        <p class="info-value" id="docType">Cargando...</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div>
+                                        <p class="info-label">Tamaño</p>
+                                        <p class="info-value" id="docSize">Cargando...</p>
+                                    </div>
+                                    <div>
+                                        <p class="info-label">Creado</p>
+                                        <p class="info-value" id="docCreated">Cargando...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Propietario del Documento -->
+                            <div class="sig-data-item">
+                                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-orange-400">person_pin</span>
+                                    Propietario del Documento
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="info-label">Nombre</p>
+                                        <p class="info-value" id="ownerName">Cargando...</p>
+                                    </div>
+                                    <div>
+                                        <p class="info-label">Email</p>
+                                        <div class="info-value" id="ownerEmailContainer">
+                                            <span class="text-gray-500">Cargando...</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="info-label">Phone</p>
+                                        <div class="info-value" id="ownerPhoneContainer">
+                                            <span class="text-gray-500">Cargando...</span>
+                                        </div>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <p class="info-label">Estado</p>
+                                        <p class="info-value" id="ownerStatus">Cargando...</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Resumen con scroll -->
+                            <div class="flex-1 flex flex-col min-h-0">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="info-label">Resumen del Documento</p>
+                                </div>
+                                
+                                <div class="sig-tech-data flex-1 overflow-hidden">
+                                    <div class="h-full overflow-y-auto pr-2" id="abstractContainer">
+                                        <p class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words" id="docAbstract">
+                                            Cargando resumen del documento...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-3 p-4">
+                            <button onclick="viewDocument()" class="btn-cyber px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2">
+                                <span class="material-symbols-outlined text-blue-400 text-sm">download</span>
+                                Ver Documento
+                            </button>
+                            <button onclick="downloadDocument()" class="btn-cyber px-4 py-2 rounded-lg text-white font-medium flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">download</span>
+                                Descargar Documento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fecha de Firma -->
+            <div class="sig-data-item">
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-red-400">schedule</span>
+                    Fecha de Firma
+                </h3>
+                <div class="flex items-center justify-center py-4">
+                    <div class="text-center">
+                        <p class="info-label">Fecha y Hora de Firma</p>
+                        <p class="info-value text-2xl font-bold text-green-400" id="sigDate">Cargando...</p>
+                        <p class="text-sm text-gray-400 mt-2" id="sigTimeAgo"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Detalles Técnicos de la Firma -->
+        <div class="tech-card p-8 animate-fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-400">science</span>
+                    Detalles Técnicos de la Firma
+                </h3>
+                <div class="h-px flex-1 bg-white/10 ml-6"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Algoritmo de Firma -->
+                <div class="sig-data-item">
+                    <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-300">settings</span>
+                        Algoritmos
+                    </h4>
+                    <div>
+                        <p class="info-label">Tipo de Algoritmo</p>
+                        <p class="info-value text-lg" id="sigAlgo">Cargando...</p>
+                        <p class="info-label">Tipo de Firma</p>
+                        <p class="info-value" id="sigType">Cargando...</p>
+                    </div>
+                </div>
+
+                <!-- Digest -->
+                <div class="sig-data-item">
+                    <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-green-300">fingerprint</span>
+                        Digest
+                    </h4>
+                    <p class="info-label">Valor del Digest</p>
+                    <div class="sig-tech-data">
+                        <code class="text-xs" id="sigDigest">Cargando...</code>
+                    </div>
+                </div>
+
+                <!-- Nonce -->
+                <div class="sig-data-item">
+                    <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-purple-300">tag</span>
+                        Nonce
+                    </h4>
+                    <p class="info-label">Valor Nonce</p>
+                    <div class="sig-tech-data">
+                        <code class="text-xs" id="sigNonce">Cargando...</code>
+                    </div>
+                </div>
+
+                <!-- Valor de Firma -->
+                <div class="sig-data-item md:col-span-2 lg:col-span-3">
+                    <h4 class="font-bold text-white mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-red-300">signature</span>
+                        Valor de Firma
+                    </h4>
+                    <p class="info-label mb-2">Firma Digital Completa</p>
+                    <div class="sig-tech-data max-h-48">
+                        <code class="text-xs whitespace-pre-wrap break-words" id="sigValue">Cargando...</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver documento -->
+    <div id="documentModal" class="fixed inset-0 z-[100] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="absolute inset-4 md:inset-10 bg-[#1e293b] rounded-xl border border-white/10 shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
+            <div class="h-14 bg-black/40 flex items-center justify-between px-6 border-b border-white/5">
+                <h3 class="text-white font-medium flex items-center gap-2" id="modalTitle">
+                    <span class="material-symbols-outlined text-gray-400">description</span>
+                    Visualizando Documento
+                </h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 relative bg-gray-900">
+                <div id="modalLoading" class="absolute inset-0 flex items-center justify-center">
+                    <div class="spinner border-4 border-blue-500 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+                </div>
+                <iframe id="documentViewer" class="w-full h-full border-0 hidden"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentSignatureData = null;
+        let currentDocumentId = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const signatureId = urlParams.get('id');
+
+            if (!signatureId) {
+                showError('Error: No se encontró ID de firma en la URL');
+                return;
+            }
+
+            await loadSignatureData(signatureId);
+        });
+
+        // Cargar datos de la firma
+        async function loadSignatureData(signatureId) {
+            try {
+                const response = await fetch(`/viewSign?id=${encodeURIComponent(signatureId)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) throw new Error('Error al obtener datos de la firma');
+                
+                const data = await response.json();
+                currentSignatureData = data;
+                currentDocumentId = data.document?.idDocument;
+                
+                renderSignatureData(data);
+                
+            } catch (err) {
+                console.error(err);
+                showError('Error cargando datos de la firma: ' + err.message);
+            }
+        }
+
+        // Renderizar datos en la interfaz
+        function renderSignatureData(data) {
+            // ID de la firma
+            document.getElementById('sigIdDisplay').textContent = `ID: ${data.idSignature}`;
+
+            // Firmante - Email como enlace
+            const signer = data.signer || {};
+            document.getElementById('signerName').textContent = signer.name || 'Desconocido';
+            document.getElementById('signerStatus').textContent = signer.active ? 'Activo' : 'Inactivo';
+            document.getElementById('signerStatus').className = signer.active ? 'info-value text-green-400' : 'info-value text-red-400';
+            // Renderizar email del firmante como enlace
+            renderEmailLink('signerEmailContainer', signer.email, signer.name || 'Firmante');
+            renderWhatsLink('signerPhoneContainer', signer.phone, signer.name || 'Firmante');
+            
+            // Propietario - Email como enlace
+            const owner = data.owner || {};
+            document.getElementById('ownerName').textContent = owner.name || 'Desconocido';
+            document.getElementById('ownerStatus').textContent = owner.active ? 'Activo' : 'Inactivo';
+            document.getElementById('ownerStatus').className = owner.active ? 'info-value text-green-400' : 'info-value text-red-400';
+            // Renderizar email del propietario como enlace
+            renderEmailLink('ownerEmailContainer', owner.email, owner.name || 'Propietario');
+            renderWhatsLink('ownerPhoneContainer', owner.phone, owner.name || 'Propietario');
+
+            // Institución - Email como enlace
+            const inst = data.institution || {};
+            document.getElementById('instLegalName').textContent = inst.legalName || 'No especificado';
+            document.getElementById('instRepresentative').textContent = `${inst.legalSignupName || ''} ${inst.legalSignupLastname || ''}`.trim() || 'No especificado';
+            // Renderizar email de la institución como enlace
+            renderEmailLink('instEmailContainer', inst.email || inst.contactEmailInst, inst.legalName || 'Institución');
+            renderWhatsLink('instPhoneContainer', inst.phone, inst.legalName || 'Institución');
+
+            // Llave de firma
+            const keys = data.keys || {};
+            document.getElementById('keyOwner').textContent = keys.owner || 'Desconocido';
+            document.getElementById('keyUniqueId').textContent = keys.subjectUniqueId || 'No especificado';
+            document.getElementById('keyCertName').textContent = keys.nameCer || 'No especificado';
+            document.getElementById('keyExpiration').textContent = formatDate(keys.expiration);
+            const issuerdetails = document.createElement('div');
+            issuerdetails.className = 'key-details';
+            issuerdetails.innerHTML = formatIssuer(keys.issuerData);
+            document.getElementById('keyCardContainer').appendChild(issuerdetails);
+
+            // Documento
+            const doc = data.document || {};
+            document.getElementById('docName').textContent = doc.documentName || doc.documentFullName || 'Sin nombre';
+            document.getElementById('docIdDisplay').textContent = `(ID: ${doc.idDocument || 'N/A'})`;
+            document.getElementById('docType').textContent = (doc.documentExt || 'file').toUpperCase();
+            document.getElementById('docSize').textContent = formatFileSize(doc.sizeB);
+            document.getElementById('docCreated').textContent = formatDate(doc.createdAtDoc);
+            
+            const abstractText = doc.abstractDoc || 'No hay resumen disponible para este documento.';
+            document.getElementById('docAbstract').textContent = abstractText;
+            updateAbstractStats(abstractText);
+
+            // Fecha de firma
+            const sig = data.signature || {};
+            const sigDate = new Date(sig.genTimeSign);
+            document.getElementById('sigDate').textContent = formatDateTime(sigDate);
+            document.getElementById('sigTimeAgo').textContent = getTimeAgo(sigDate);
+
+            // Detalles técnicos
+            document.getElementById('sigAlgo').textContent = sig.signatureAlgoSign_fk || sig.digestAlgoSign_fk || 'N/A';
+            document.getElementById('sigDigest').textContent = sig.digestValueSign || 'N/A';
+            document.getElementById('sigNonce').textContent = sig.nonceSign || 'N/A';
+            document.getElementById('sigValue').textContent = sig.signatureValueSign || 'N/A';
+            //document.getElementById('sigPath').textContent = sig.pathSign || 'N/A';
+            document.getElementById('sigType').textContent = sig.typeSign_fk || 'N/A';
+        }
+
+        // Funciones de utilidad
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            if (isNaN(date)) return dateString;
+            return date.toLocaleDateString('es-MX', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function formatDateTime(date) {
+            if (!date || isNaN(date)) return 'N/A';
+            return date.toLocaleString('es-MX', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let size = Number(bytes);
+            let unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
+            return `${size.toFixed(2)} ${units[unitIndex]}`;
+        }
+
+        function formatIssuer(issuerRFC4514) {
+            if (!issuerRFC4514) {
+                return '';
+            }
+
+            // 1. Dividir el string por las comas que separan los atributos
+            const attributes = issuerRFC4514.split(',');
+            
+            // 2. Procesar cada atributo
+            const budgetsHTML = attributes.map(attribute => {
+                // Expresión Regular para encontrar y eliminar el prefijo
+                // El patrón es: cualquier cosa que no sea "=" (.[^=]*) seguida de "="
+                // y se usa replace para dejar solo el valor (la parte derecha del "=").
+                // También se limpia el espacio al inicio del valor si existe (como en ", O=...")
+                const value = attribute
+                    .replace(/^.[^=]*=/, '') // Elimina el prefijo como 'CN=' o 'OID.2.5.4.45='
+                    .trim(); // Elimina espacios en blanco al inicio o al final
+
+                // Opcionalmente, puedes obtener el nombre del atributo (el prefijo) para mostrarlo
+                const match = attribute.match(/^.[^=]*=/);
+                let name = '';
+                if (match) {
+                    // Limpia el '=' final y, en el caso de OIDs, solo deja OID
+                    name = match[0].replace('=', '').replace(/OID\..*/, 'OID').trim();
+                }
+
+                // 3. Crear el HTML para el "budget" (badge)
+                // Usamos una clase de Bootstrap para darle estilo
+                // Se puede personalizar la clase según tu necesidad (bg-primary, bg-success, etc.)
+                // Concatenamos el nombre del atributo y su valor para mayor contexto
+                return `<span class="badge badge-neon bg-secondary me-2 mb-1" title="${name}: ${value}">${value}</span>`;
+            }).join(''); // Unir todos los elementos en un solo string
+
+            // 4. Devolver el div contenedor con todos los budgets
+            // El 'd-flex flex-wrap' es útil para que se acomoden bien si hay muchos.
+            return `<div class="d-flex flex-wrap"><p class="info-label">Emisor de certificado</p>${budgetsHTML}</div>`;
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Hace unos segundos';
+            if (diffMins < 60) return `Hace ${diffMins} ${diffMins === 1 ? 'minuto' : 'minutos'}`;
+            if (diffHours < 24) return `Hace ${diffHours} ${diffHours === 1 ? 'hora' : 'horas'}`;
+            if (diffDays < 30) return `Hace ${diffDays} ${diffDays === 1 ? 'día' : 'días'}`;
+            return `Hace ${Math.floor(diffDays / 30)} ${Math.floor(diffDays / 30) === 1 ? 'mes' : 'meses'}`;
+        }
+        // Función auxiliar para renderizar emails como enlaces
+        function renderEmailLink(containerId, email, name) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Limpiar contenido
+            
+            if (email && email.trim() !== '') {
+                // Crear enlace de email con estilo
+                const emailLink = document.createElement('a');
+                emailLink.href = `mailto:${email}`;
+                emailLink.target = '_blank';
+                emailLink.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/30 text-blue-400 hover:text-blue-300 transition-all duration-200 hover:scale-[1.02] cursor-pointer group';
+                emailLink.title = `Enviar correo a ${name} (${email})`;
+                
+                emailLink.innerHTML = `
+                    <span class="material-symbols-outlined text-sm group-hover:animate-pulse">mail</span>
+                    <span class="text-sm font-medium truncate max-w-[200px]">${email}</span>
+                `;
+                
+                container.appendChild(emailLink);
+            } else {
+                // Mostrar texto si no hay email
+                container.innerHTML = '<span class="text-gray-500 italic">No especificado</span>';
+            }
+        }
+        function renderWhatsLink(containerId, phone, name) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; // Limpiar contenido
+            
+            if (phone && phone.trim() !== '') {
+                // Crear enlace de email con estilo
+                const phoneLink = document.createElement('a');
+                phoneLink.href = `https://api.whatsapp.com/send?phone=${phone}`;
+                phoneLink.target = '_blank';
+                phoneLink.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 hover:border-green-500/30 text-green-400 hover:text-green-300 transition-all duration-200 hover:scale-[1.02] cursor-pointer group';
+                phoneLink.title = `Enviar mensaje a ${name} (${phone})`;
+                
+                phoneLink.innerHTML = `
+                    <span class="material-symbols-outlined text-sm group-hover:animate-pulse">phone</span>
+                    <span class="text-sm font-medium truncate max-w-[200px]">${phone}</span>
+                `;
+                
+                container.appendChild(phoneLink);
+            } else {
+                // Mostrar texto si no hay email
+                container.innerHTML = '<span class="text-gray-500 italic">No especificado</span>';
+            }
+        }
+        // Funciones de acción
+        async function viewDocument() {
+            if (!currentDocumentId) {
+                showError('No hay documento disponible para visualizar');
+                return;
+            }
+
+            const modal = document.getElementById('documentModal');
+            const viewer = document.getElementById('documentViewer');
+            const loading = document.getElementById('modalLoading');
+            
+            modal.classList.remove('hidden');
+            viewer.classList.add('hidden');
+            loading.style.display = 'flex';
+
+            try {
+                const response = await fetch('/downloadDoc', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        id: currentDocumentId, 
+                        type: "uploaded", 
+                        path: "" 
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error descargando documento');
+                
+                const blob = await response.blob();
+                viewer.src = URL.createObjectURL(blob);
+                loading.style.display = 'none';
+                viewer.classList.remove('hidden');
+            } catch (err) {
+                loading.innerHTML = `<p class="text-red-400">Error cargando documento: ${err.message}</p>`;
+            }
+        }
+
+        async function downloadDocument() {
+            if (!currentDocumentId) {
+                showError('No hay documento disponible para descargar');
+                return;
+            }
+
+            try {
+                const response = await fetch('/downloadDoc', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        id: currentDocumentId, 
+                        type: "uploaded", 
+                        path: "" 
+                    })
+                });
+
+                if (!response.ok) throw new Error('Error descargando documento');
+                
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Obtener nombre del documento
+                const docName = currentSignatureData.document?.documentName || 
+                               currentSignatureData.document?.documentFullName || 
+                               'documento_firmado';
+                a.download = `${docName}.${currentSignatureData.document?.documentExt || 'pdf'}`;
+                
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                
+                showMessage('Documento descargado exitosamente', 'success');
+                
+            } catch (err) {
+                showError('Error al descargar documento: ' + err.message);
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('documentModal');
+            const viewer = document.getElementById('documentViewer');
+            
+            modal.classList.add('hidden');
+            viewer.src = '';
+            viewer.classList.add('hidden');
+        }
+
+        function updateAbstractStats(abstractText) {
+            if (!abstractText) return;
+            
+            const charCount = abstractText.length;
+            const lineCount = abstractText.split('\n').length;
+        }
+
+        // Funciones de mensajes
+        function showMessage(message, type = 'info') {
+            // Crear elemento de mensaje
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fixed top-24 right-6 z-50 px-6 py-3 rounded-lg border text-sm font-medium flex items-center gap-2 animate-fade-in ${
+                type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-400' :
+                type === 'error' ? 'bg-red-500/10 border-red-500/50 text-red-400' :
+                'bg-blue-500/10 border-blue-500/50 text-blue-400'
+            }`;
+            
+            messageDiv.innerHTML = `
+                <span class="material-symbols-outlined text-base">
+                    ${type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info'}
+                </span>
+                ${message}
+            `;
+            
+            // Agregar al body
+            document.body.appendChild(messageDiv);
+            
+            // Remover después de 5 segundos
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        // Toggle de tema (opcional, puedes implementarlo si lo necesitas)
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            html.classList.toggle('dark', !isDark);
+            html.classList.toggle('light', isDark);
+            
+            // Guardar preferencia
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        });
+    </script>
+</body>
+</html>

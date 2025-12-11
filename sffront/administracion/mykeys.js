@@ -7,7 +7,7 @@
       return d.toISOString().slice(0, 10);
     }
 
-    // ====== Simulación de endpoint /statusk ======
+    // ====== Petición de endpoint /statusk ======
     async function fetchKeysStatus() {
       // Simula latencia y respuesta desde /statusk
       // Enviar al endpoint de Go
@@ -76,6 +76,10 @@
           <p class="key-detail"><strong>Subido el:</strong> ${key.uploadedAt}</p>
         `;
         keyCard.appendChild(details);
+        const issuerdetails = document.createElement('div');
+        issuerdetails.className = 'key-details';
+        issuerdetails.innerHTML = formatIssuer(key.issuerData);
+        keyCard.appendChild(issuerdetails);
 
         list.appendChild(keyCard);
       });
@@ -88,7 +92,41 @@
         marcarSeleccionada(null); // ningún seleccionado
       }
     }
+    function formatIssuer(issuerRFC4514) {
+      if (!issuerRFC4514) {
+        return '';
+      }
 
+      // 1. Dividir el string por las comas que separan los atributos
+      const attributes = issuerRFC4514.split(',');
+      
+      // 2. Procesar cada atributo
+      const budgetsHTML = attributes.map(attribute => {
+        // Expresión Regular para encontrar y eliminar el prefijo
+        // El patrón es: cualquier cosa que no sea "=" (.[^=]*) seguida de "="
+        // y se usa replace para dejar solo el valor (la parte derecha del "=").
+        // También se limpia el espacio al inicio del valor si existe (como en ", O=...")
+        const value = attribute.replace(/^.[^=]*=/, '').trim();
+
+        // Opcionalmente, puedes obtener el nombre del atributo (el prefijo) para mostrarlo
+        const match = attribute.match(/^.[^=]*=/);
+        let name = '';
+        if (match) {
+          // Limpia el '=' final y, en el caso de OIDs, solo deja OID
+          name = match[0].replace('=', '').replace(/OID\..*/, 'OID').trim();
+        }
+
+        // 3. Crear el HTML para el "budget" (badge)
+        // Usamos una clase de Bootstrap para darle estilo
+        // Se puede personalizar la clase según tu necesidad (bg-primary, bg-success, etc.)
+        // Concatenamos el nombre del atributo y su valor para mayor contexto
+        return `<span class="badge bg-secondary me-2 mb-1" title="${name}: ${value}">${value}</span>`;
+      }).join(''); // Unir todos los elementos en un solo string
+
+      // 4. Devolver el div contenedor con todos los budgets
+      // El 'd-flex flex-wrap' es útil para que se acomoden bien si hay muchos.
+      return `<div class="d-flex flex-wrap"><p>Emisor de certificado</p>${budgetsHTML}</div>`;
+    }
     function marcarSeleccionada(idSeleccionada) {
       document.querySelectorAll('.key-card').forEach(card => {
         const cardId = card.getAttribute('data-idkey');
