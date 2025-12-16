@@ -65,23 +65,30 @@ func init() {
 // Middleware CORS
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Configurar headers CORS
 		origin := r.Header.Get("Origin")
-		if origin == "http://localhost:8000" || origin == "http://127.0.0.1:8000" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
+
+		allowedOrigins := map[string]bool{
+			"http://localhost:8000": true,
+			"http://127.0.0.1:8000": true,
+
+			// IMPORTANTE: agrega TU dominio de túnel
+			//"https://0153mh84-8000.usw3.devtunnels.ms/": true,
 		}
+
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Vary", "Origin")
 
-		// Manejar preflight request (OPTIONS)
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// Continuar con el handler siguiente
 		next.ServeHTTP(w, r)
 	})
 }
@@ -122,8 +129,6 @@ func main() {
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
-	//mux.HandleFunc("/teamusers", handlers.TeamUsers)                   // obtinene los usuarios de un equipo
-	//mux.HandleFunc("/newteam", handlers.NewTeam)                       // crea un equipo dentro de una institucion por un usuario master o root
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -537,7 +542,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			} else if dataInst[idInst]["statusInst_fk"] == "7" {
 				location = "/mydocs"
 			} else if dataInst[idInst]["statusInst_fk"] == "8" {
-				location = "/dashboard"
+				location = "/dashboard/users"
 			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
 				location = "/noAuthPage"
 			} else {

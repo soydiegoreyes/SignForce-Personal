@@ -149,60 +149,73 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 		return nil, fmt.Errorf("error obteniendo datos de la institución: %v", err)
 	}
 
-	// Obtener datos del equipo del emisor
-	/*
-		attrs = []string{"nameTeam"}
-		wheres = map[string][]string{
-			"idTeam": {folderData[idFolder]["ownerTeam_fk"]},
-		}
-		teamData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
-		if err != nil {
-			return nil, fmt.Errorf("error obteniendo datos del equipo: %v", err)
-		}
-	*/
-
 	// Obtener los documentos de la invitación específica
-	attrs = []string{"idfolderdocument"}
+	attrs = []string{"digestValueSign"}
 	wheres = map[string][]string{
-		"idInvite": {idInvite},
+		"idInvite_fk": {idInvite},
+		"idUser_fk":   {inviteData[idInvite]["idUserDest_fk"]},
 	}
 
-	inviteDocsData, err := db.DB_con.GenericSelect("invitesdetail", "idfolderdocument", attrs, wheres)
+	DocsData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo documentos de la invitación: %v", err)
 	}
 
-	if len(inviteDocsData) == 0 {
+	if len(DocsData) == 0 {
 		return nil, fmt.Errorf("no se encontraron documentos en la invitación")
 	}
 
-	// Obtener los idDocument de los folderdocuments
-	var docIds []string
-	for _, doc := range inviteDocsData {
-		wheres = map[string][]string{
-			"idfolderdocument": {doc["idfolderdocument"]},
-		}
-		folderDocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument",
-			[]string{"idDocument"}, wheres)
-		if err != nil {
-			return nil, fmt.Errorf("error obteniendo documentos del folder: %v", err)
-		}
-		for _, fd := range folderDocData {
-			docIds = append(docIds, fd["idDocument"])
-		}
+	var docHashes []string
+	for _, dD := range DocsData {
+		docHashes = append(docHashes, dD["digestValueSign"])
 	}
+
+	/*
+		// Obtener los documentos de la invitación específica
+		attrs = []string{"idfolderdocument"}
+		wheres = map[string][]string{
+			"idInvite": {idInvite},
+		}
+
+		inviteDocsData, err := db.DB_con.GenericSelect("invitesdetail", "idfolderdocument", attrs, wheres)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo documentos de la invitación: %v", err)
+		}
+
+		if len(inviteDocsData) == 0 {
+			return nil, fmt.Errorf("no se encontraron documentos en la invitación")
+		}
+
+		// Obtener los idDocument de los folderdocuments
+
+		var docIds []string
+
+		for _, doc := range inviteDocsData {
+			wheres = map[string][]string{
+				"idfolderdocument": {doc["idfolderdocument"]},
+			}
+			folderDocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument",
+				[]string{"idDocument"}, wheres)
+			if err != nil {
+				return nil, fmt.Errorf("error obteniendo documentos del folder: %v", err)
+			}
+			for _, fd := range folderDocData {
+				docIds = append(docIds, fd["idDocument"])
+			}
+		}
+	*/
 
 	// Obtener datos de los documentos
 	attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
 		"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
 	wheres = map[string][]string{
-		"idDocument": docIds,
+		"documentHash":      docHashes,
+		"creatorUserDoc_fk": {inviteData[idInvite]["idUserOwnner_fk"]},
 	}
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo datos del documento: %v", err)
 	}
-
 	if len(docData) == 0 {
 		return nil, fmt.Errorf("documentos no encontrados")
 	}
@@ -228,49 +241,48 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	fmt.Println(userDest)
 	// Construir la invitación con documentos
 	var inviteDocs []models.InviteDoc
-	for _, docId := range docIds {
-		if doc, exists := docData[docId]; exists {
-			if doc["activeDoc"] != "1" {
-				return nil, fmt.Errorf("documento %s ya no se encuentra activo", docId)
-			}
-
-			documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
-			filePath := fmt.Sprintf("./%s%s", doc["documentPath"], documentFullName)
-
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				return nil, fmt.Errorf("archivo no encontrado en el sistema: %s", filePath)
-			}
-
-			hash, err := utilities.GetHash(filePath, configs.HashConf)
-			if err != nil {
-				return nil, fmt.Errorf("error al obtener hash: %v", err)
-			}
-
-			if doc["documentHash"] != hash {
-				return nil, fmt.Errorf("hash no corresponde al archivo %s", documentFullName)
-			}
-
-			inviteDoc := models.InviteDoc{
-				Doc: models.Document{
-					IdDocument:       docId,
-					ActiveDoc:        doc["activeDoc"],
-					AuthRoleStatus:   doc["authRoleStatus"],
-					AuthUseStatus:    doc["authUseStatus"],
-					CreatedAtDoc:     doc["createdAtDoc"],
-					DocumentExt:      doc["documentExt"],
-					DocumentHash:     doc["documentHash"],
-					DocumentName:     doc["documentName"],
-					DocumentPath:     doc["documentPath"],
-					DocumentFullName: documentFullName,
-					Abstract:         doc["abstractDoc"],
-					LastModifiedDoc:  doc["lastModifiedDoc"],
-				},
-				ForSign:   true, // Esto debería venir de la base de datos según el rol del usuario
-				ExpiresAt: inviteData[idInvite]["expirationDate"],
-				Comment:   inviteData[idInvite]["descriptionText"],
-			}
-			inviteDocs = append(inviteDocs, inviteDoc)
+	for docId, doc := range docData {
+		if doc["activeDoc"] != "1" {
+			return nil, fmt.Errorf("documento %s ya no se encuentra activo", docId)
 		}
+
+		documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
+		filePath := fmt.Sprintf("./%s%s", doc["documentPath"], documentFullName)
+
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			return nil, fmt.Errorf("archivo no encontrado en el sistema: %s", filePath)
+		}
+
+		hash, err := utilities.GetHash(filePath, configs.HashConf)
+		if err != nil {
+			return nil, fmt.Errorf("error al obtener hash: %v", err)
+		}
+
+		if doc["documentHash"] != hash {
+			return nil, fmt.Errorf("hash no corresponde al archivo %s", documentFullName)
+		}
+
+		inviteDoc := models.InviteDoc{
+			Doc: models.Document{
+				IdDocument:       docId,
+				ActiveDoc:        doc["activeDoc"],
+				AuthRoleStatus:   doc["authRoleStatus"],
+				AuthUseStatus:    doc["authUseStatus"],
+				CreatedAtDoc:     doc["createdAtDoc"],
+				DocumentExt:      doc["documentExt"],
+				DocumentHash:     doc["documentHash"],
+				DocumentName:     doc["documentName"],
+				DocumentPath:     doc["documentPath"],
+				DocumentFullName: documentFullName,
+				Abstract:         doc["abstractDoc"],
+				LastModifiedDoc:  doc["lastModifiedDoc"],
+			},
+			ForSign:   true, // Esto debería venir de la base de datos según el rol del usuario
+			ExpiresAt: inviteData[idInvite]["expirationDate"],
+			Comment:   inviteData[idInvite]["descriptionText"],
+		}
+		inviteDocs = append(inviteDocs, inviteDoc)
+
 	}
 
 	// Construir la Invite completa

@@ -66,13 +66,14 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 
 	wheres := map[string][]string{
 		"idDocument":        {},
+		"documentHash":      {},
 		"creatorUserDoc_fk": {idUser},
 		"ownerInstDoc_fk":   {idInst},
-		//"ownerTeamDoc_fk":   {idTeam},
 	}
 
 	for _, d := range req {
 		wheres["idDocument"] = append(wheres["idDocument"], d.IdDoc)
+		wheres["documentHash"] = append(wheres["documentHash"], d.HashDoc)
 	}
 	// ===== Ejecutar SELECT =====
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
@@ -81,26 +82,19 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// validacion del hash del documento
-	for _, d := range req {
-		if docData[d.IdDoc]["documentHash"] != d.HashDoc {
-			docData[d.IdDoc]["activeDoc"] = "-1"
-		}
-	}
-
-	// se crea el nuevo folder
-	folderPath := fmt.Sprintf("%s/folders/%s/%s/", os.Getenv("BASE_DIR"), idInst, idUser)
-	if err := os.MkdirAll(folderPath, 0755); err != nil {
-		fmt.Println("error al crear el folder")
-		return
-	}
 	expiration := time.Now().AddDate(0, 0, 3).Format("2006-01-02 15:04:05")
-	columns := []string{"ownerInst_fk", "creatorUser_fk", "pathSerialized", "expirationDate", "numDocs"}
-	values := []interface{}{idInst, idUser, folderPath, expiration, len(docData)}
+	columns := []string{"ownerInst_fk", "creatorUser_fk", "expirationDate", "numDocs"}
+	values := []interface{}{idInst, idUser, expiration, len(docData)}
 
 	idFolder, err := db.DB_con.GenericInsert("folders", columns, values)
 	if err != nil {
 		http.Error(respWriter, "Error creando folder", http.StatusInternalServerError)
+	}
+	// se crea el nuevo folder
+	folderPath := fmt.Sprintf("%s/folders/%s/%s", os.Getenv("BASE_DIR"), idInst, idFolder)
+	if err := os.MkdirAll(folderPath, 0755); err != nil {
+		fmt.Println("error al crear el folder")
+		return
 	}
 
 	// se asocian los documentos enviados al folder creado
@@ -233,8 +227,15 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	invitesMails := make(map[string]models.InviteMail) // cada usuario tiene su invite mail y se deben de enviar como lista
 	var numSigners, numReviewers int
 	var idFolder string
-	for _, docrev := range requestData { // -> por cada documento dentro del request
+	for idDoc, docrev := range requestData { // -> por cada documento dentro del request
 		idFolder = docrev.IdFolder
+		// se crea la carpeta de la invitacion dentro del folder
+		invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/META-INF", os.Getenv("BASE_DIR"), idInst, idFolder, idDoc)
+		if err := os.MkdirAll(invitePath, 0755); err != nil {
+			http.Error(respWriter, "Error al crear folder de invite: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		for i, reviewer := range docrev.Reviewers { // -> por cada revisor dentro del documento
 			// si dentro de la lista de invitaciones NO esta el idUser entonces se crea una nueva invitación
 			if _, ok := invites[reviewer.User]; !ok {
@@ -261,13 +262,6 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				_, err = db.DB_con.GenericInsert("invites", inviteCols, inviteAttrs)
 				if err != nil {
 					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				// se crea la carpeta de la invitacion dentro del folder
-				invitePath := fmt.Sprintf("%s/folders/%s/%s/%s", os.Getenv("BASE_DIR"), idInst, idFolder, invites[reviewer.User].IdInvite)
-				if err := os.MkdirAll(invitePath, 0755); err != nil {
-					http.Error(respWriter, "Error al crear folder de invite: "+err.Error(), http.StatusInternalServerError)
 					return
 				}
 			}
@@ -405,15 +399,14 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			http.Error(respWriter, "Error actualizando folder", http.StatusInternalServerError)
 		}
-
-		imails := []models.InviteMail{}
-		for _, invs := range invitesMails {
-			imails = append(imails, invs)
-		}
-		err = documentflow.GenerateInvites(imails)
-		if err != nil {
-			http.Error(respWriter, "Error al generar invite: "+err.Error(), http.StatusInternalServerError)
-		}
+	}
+	imails := []models.InviteMail{}
+	for _, invs := range invitesMails {
+		imails = append(imails, invs)
+	}
+	err = documentflow.GenerateInvites(imails)
+	if err != nil {
+		http.Error(respWriter, "Error al generar invite: "+err.Error(), http.StatusInternalServerError)
 	}
 
 	// ===== Respuesta exitosa =====
@@ -634,8 +627,10 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		err = json.NewDecoder(resp.Body).Decode(&signResult)
 		if err != nil {
 			fmt.Println("Error decodificando:", err)
+			http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		}
 	}
+	fmt.Println(signResult)
 	fmt.Println("Firmas realizadas con éxito")
 
 	// añadir los qr a los pdf firmados
@@ -650,10 +645,11 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			fmt.Printf("%s", err)
 			return
 		}
+		fmt.Println("SData path: ", SData["xmlPath"])
 		var folderPath string
-		reg := regexp.MustCompile(`.*/folders/\d+/\d+/`)
+		reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`) // se toma el idInst y el idFolder ya que dentro del folder está la lista de usuarios
 		if baseFolderPath := reg.FindAllString(SData["xmlPath"], 1); len(baseFolderPath) > 0 {
-			folderPath = baseFolderPath[0] + SData["idDocument"] + "_" + SData["hashDoc"] + ".pdf"
+			folderPath = baseFolderPath[0] + SData["idDocument"] + "_" + SData["nameDocument"]
 			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
 				http.Error(respWriter, "Error no se encontró archivo entregable", http.StatusInternalServerError)
 				return

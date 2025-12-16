@@ -500,13 +500,13 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk"}
-	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
+	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "isAliveUser", "roleAppUser_fk", "idInstitution_fk"}
+	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, 1, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
 	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(idNewUser)
+	fmt.Println("Nuevo usuario: ", idNewUser)
 
 	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUser.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
 		fmt.Println(err)

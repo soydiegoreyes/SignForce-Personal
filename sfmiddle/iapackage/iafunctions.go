@@ -26,7 +26,7 @@ func GetAbstractDoc(idDoc string) {
 		} else {
 
 			wheres = map[string][]string{
-				"nameApp": {"llmServ"},
+				"nameApp": {"iaServ"},
 			}
 
 			appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, wheres)
@@ -109,7 +109,7 @@ func InteractDoc(idDoc, query string) *models.LLMresp {
 		} else {
 
 			wheres = map[string][]string{
-				"nameApp": {"llmServ"},
+				"nameApp": {"iaServ"},
 			}
 
 			appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, wheres)

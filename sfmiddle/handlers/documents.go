@@ -254,25 +254,26 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	// Determinar la tabla y ruta base según el tipo
 	var tableName string
 	var idColMain string
-	var basePath string
 	var attrs []string
 	var docWheres map[string][]string
 	switch docRequest.Type {
 	case "kyc":
-		splitted := strings.Split(docRequest.PathDoc, "@")
-		hash := splitted[0]
-		pathDoc := splitted[1]
-		basePath = pathDoc[:strings.LastIndex(pathDoc, "/")+1]
-		fll, _ := strings.CutPrefix(pathDoc, basePath)
-		fullname := strings.Split(fll, ".")
+		t := docRequest.PathDoc
+		hash := t[:strings.Index(t, "@")]
+		pathDoc, _ := strings.CutPrefix(t, hash+"@")
+		lif := strings.LastIndex(pathDoc, "/")
+		lip := strings.LastIndex(pathDoc, ".")
+		basePath := pathDoc[:lif+1]
+		ext := pathDoc[lip+1:]
+		nameDoc := pathDoc[lif+1 : lip]
 		tableName = "kyc"
 		attrs = append(attrs, "documentHash", "documentPath", "documentName", "documentExt")
 		idColMain = "documentHash"
 		docWheres = map[string][]string{
 			"documentHash": {hash}, // Ajusta el nombre de la columna según tu esquema
 			"documentPath": {basePath},
-			"documentName": {fullname[0]},
-			"documentExt":  {fullname[1]},
+			"documentName": {nameDoc},
+			"documentExt":  {ext},
 		}
 	case "uploaded":
 		tableName = "documents"

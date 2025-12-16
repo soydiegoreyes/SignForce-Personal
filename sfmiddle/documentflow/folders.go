@@ -28,7 +28,7 @@ func LoadFolderInfos(idFolder, idUser string, onlyShared, onlyUser bool, page, p
 
 	// obtenemos datos del folder (compartidos con usuario, solo del equipo, solo creados por usuario)
 	attrs := []string{"ownerInst_fk", "ownerInst_fk", "creatorUser_fk", "creationAt", "lastModified", "deletedAt", "deletedReason", "purpose", "description",
-		"closedAt", "secuentialSign", "pathSerialized", "expirationDate", "numDocs", "numDocsSign", "numSigners", "numReceivers", "completedAt"}
+		"closedAt", "secuentialSign", "folderBasePath", "expirationDate", "numDocs", "numDocsSign", "numSigners", "numReceivers", "completedAt"}
 
 	wheres := map[string][]string{}
 
@@ -122,7 +122,7 @@ func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pa
 	// Obtenemos datos del folder
 	attrs := []string{"ownerInst_fk", "creatorUser_fk", "creationAt", "lastModified",
 		"deletedAt", "deletedReason", "purpose", "description",
-		"closedAt", "secuentialSign", "pathSerialized", "expirationDate",
+		"closedAt", "secuentialSign", "folderBasePath", "expirationDate",
 		"numDocs", "numDocsSign", "numSigners", "numReceivers", "completedAt"}
 
 	wheres := map[string][]string{}
@@ -223,7 +223,7 @@ func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pa
 			NumDocsSign:    folderData["numDocsSign"],
 			NumReceivers:   folderData["numReceivers"],
 			NumSigners:     folderData["numSigners"],
-			Path:           folderData["pathSerialized"],
+			Path:           folderData["folderBasePath"],
 			Purpose:        folderData["purpose"],
 			Documents:      docsByFolder[folderID],
 		}
