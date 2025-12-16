@@ -101,7 +101,7 @@
       const attributes = issuerRFC4514.split(',');
       
       // 2. Procesar cada atributo
-      const budgetsHTML = attributes.map(attribute => {
+      const badgesHTML = attributes.map(attribute => {
         // Expresión Regular para encontrar y eliminar el prefijo
         // El patrón es: cualquier cosa que no sea "=" (.[^=]*) seguida de "="
         // y se usa replace para dejar solo el valor (la parte derecha del "=").
@@ -116,16 +116,17 @@
           name = match[0].replace('=', '').replace(/OID\..*/, 'OID').trim();
         }
 
-        // 3. Crear el HTML para el "budget" (badge)
+        // 3. Crear el HTML para el badge
         // Usamos una clase de Bootstrap para darle estilo
         // Se puede personalizar la clase según tu necesidad (bg-primary, bg-success, etc.)
         // Concatenamos el nombre del atributo y su valor para mayor contexto
-        return `<span class="badge bg-secondary me-2 mb-1" title="${name}: ${value}">${value}</span>`;
+        return `<span class="badge-neon" title="${name}: ${value}">${value}</span>`;
       }).join(''); // Unir todos los elementos en un solo string
 
       // 4. Devolver el div contenedor con todos los budgets
       // El 'd-flex flex-wrap' es útil para que se acomoden bien si hay muchos.
-      return `<div class="d-flex flex-wrap"><p>Emisor de certificado</p>${budgetsHTML}</div>`;
+
+      return `<div class="glass-panel"><h4 class="lead">Emisor de certificado</h4><div class="glass-card">${badgesHTML}</div></div>`;
     }
     function marcarSeleccionada(idSeleccionada) {
       document.querySelectorAll('.key-card').forEach(card => {
@@ -246,17 +247,7 @@
 
           const result = await response.json();
           console.log(result);
-          if (result.valid) {
-            /*
-            // Guardar metadata localmente
-            const meta = {
-              keyName: keyFile.name,
-              certName: certFile.name,
-              uploadedAt: new Date().toISOString()
-            };
-            setOnboardingDone(meta);
-            */
-            
+          if (result.valid) { 
             // Recargar la página para mostrar la nueva llave
             location.reload();
           } else {

@@ -146,11 +146,25 @@ h1, h2, h3, h4 {
       border-radius: 16px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+      display: inline-flex;        /* agrupa los elementos internos */
+      flex-wrap: wrap;      /* si no caben, bajan de línea */
+      gap: 2px;             /* espacio entre elementos */
+      width: 100%;          /* ocupa todo el ancho del contenedor padre */
+      padding: 2px;        /* aire interno opcional */
+      margin: 5px;
+      justify-content: space-evenly;
     }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(38, 0, 88, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+
+      display: inline-flex;        /* agrupa los elementos internos */
+      flex-wrap: wrap;      /* si no caben, bajan de línea */
+      gap: 2px;             /* espacio entre elementos */
+      width: 100%;          /* ocupa todo el ancho del contenedor padre */
+      padding: 2px;        /* aire interno opcional */
     }
 
     .p-block { padding: 16px; }
@@ -244,7 +258,7 @@ h1, h2, h3, h4 {
     }
     .key-title { margin: 0; font-size: 1.2rem; }
 
-    .key-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .key-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 1rem; }
     .key-detail { margin: 0; }
     .key-detail strong { display: block; font-size: 0.8rem; color: var(--color-text-secondary); }
 
@@ -254,7 +268,18 @@ h1, h2, h3, h4 {
       font-size: 12px;
       border: 1px solid rgba(255,255,255,.2);
     }
-
+    .badge-neon {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(59, 130, 246, 0.7);
+    }
     /* ===== Modal ===== */
     .modal {
       border: none;
