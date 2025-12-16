@@ -198,7 +198,7 @@ func (cnx *ConexionDB) GenericJoinSelect(
 		idColName,
 		whereList,
 	)
-
+	fmt.Println(query)
 	rows, err := cnx.DB.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("error al ejecutar la consulta: %s -> %v", query, err)

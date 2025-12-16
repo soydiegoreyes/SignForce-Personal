@@ -98,7 +98,7 @@ func GenerateQR(url, fullpath string) bool {
 		return false
 	}
 
-	fmt.Printf("QR code generated and saved as %s.png", fullpath)
+	fmt.Printf("QR code generated and saved as %s\n", fullpath)
 	return true
 }
 

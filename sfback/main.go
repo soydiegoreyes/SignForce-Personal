@@ -32,6 +32,42 @@ func init() {
 	db.DB_con = db.NewConn()
 }
 
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+
+		allowedOrigins := map[string]bool{
+			"http://localhost:8000": true,
+			"http://127.0.0.1:8000": true,
+			"http://localhost:8001": true,
+			"http://127.0.0.1:8001": true,
+			"http://localhost:8002": true,
+			"http://127.0.0.1:8002": true,
+			"http://localhost:4999": true,
+			"http://127.0.0.1:4999": true,
+
+			// IMPORTANTE: agrega TU dominio de túnel
+			//"https://0153mh84-8000.usw3.devtunnels.ms/": true,
+		}
+
+		if allowedOrigins[origin] {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Vary", "Origin")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 /*
 	USER AND SIGNATURE CENTER
 	-- Este modulo es para que un usuario pueda firmar y realizar operaciones criptográficas
@@ -48,7 +84,7 @@ func main() {
 	// Rutas
 	http.HandleFunc("/login", loginUser)
 	http.HandleFunc("/getuser", getUserData)
-	http.HandleFunc("/signdocument", signDocument)
+	http.HandleFunc("/signdocument", signFolderUser)
 	http.HandleFunc("/hashdatab64", hashDataB64)
 	http.HandleFunc("/uploadKeys", uploadKeys)
 	http.HandleFunc("/logout", logoutUser)
@@ -253,7 +289,8 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 //====================================================================================================
 
 // =================================== FIRMA DE DOCUMENTO ==============================================
-func signDocument(respWriter http.ResponseWriter, request *http.Request) {
+// Recibe el id del folder y los documentos que solo el usuario puede firmar y los hace en secuencia
+func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
@@ -283,17 +320,18 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		"idInvite_fk": {req.IdInvite},
 	}
 	signatureData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres) // devuelve map[string]map[string]string
-	if err == nil {
-		// Recorre todas las firmas de la invitacion (del usuario)
-		for _, s := range signatureData {
-			if s["idUserKeys_fk"] != "" || s["signatureValueSign"] != "" {
-				http.Error(respWriter, "Ya existe una firma registrada", http.StatusBadRequest)
-				return
-			}
-		}
-	} else {
+	if err != nil {
 		http.Error(respWriter, "No se pudo acceder a datos de firma", http.StatusInternalServerError)
 		return
+	}
+
+	// REVISAR ESTA SECCION YA QUE PUEDE TENER PROBLEMAS AL FIRMAR SELECTIVAMENTE
+	// Recorre todas las firmas de la invitacion (del usuario)
+	for _, s := range signatureData {
+		if s["idUserKeys_fk"] != "" || s["signatureValueSign"] != "" {
+			http.Error(respWriter, "Ya existe una firma registrada", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Cargar documentos desde DB ==============================
@@ -315,17 +353,16 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 	signaturesXML := make(map[string]map[string]string)
 
 	for _, docReq := range req.Documents {
-
 		docInfo, ok := docData[docReq.IdDocument]
 		if !ok {
-			http.Error(respWriter, "Documento no encontrado", http.StatusBadRequest)
-			return
+			fmt.Println("Documento no encontrado: ", docReq.IdDocument)
+			continue
 		}
 
 		// Validar hash enviado vs BD
 		if docInfo["documentHash"] != docReq.DocumentHash {
-			http.Error(respWriter, "El hash del documento no coincide con la base de datos", http.StatusBadRequest)
-			return
+			fmt.Println("El hash del documento no coincide con la base de datos", docReq.IdDocument)
+			continue
 		}
 
 		// Cargar archivo subido
@@ -360,24 +397,27 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		}
 
 		// Generar firma XAdES
-		xmlData, err := user.Keys.GenerarFirmaXades(utilities.Decode_b64(realHash), idSign)
+		docName := docInfo["documentName"] + "." + docInfo["documentExt"]
+
+		xmlData, err := user.Keys.GenerarFirmaXades(utilities.Decode_b64(realHash), idSign, docName, docReq.IdDocument)
 		if err != nil {
 			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
 			return
 		}
 		xmlData["idDocument"] = docReq.IdDocument
-
+		xmlData["nameDocument"] = docName
 		// crear archivo para firmas qr (entregable)
 		var folderPath string
-		reg := regexp.MustCompile(`.*/folders/\d+/\d+/`)
+		reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`)
 		if baseFolderPath := reg.FindAllString(xmlData["xmlPath"], 1); len(baseFolderPath) > 0 {
-			folderPath = baseFolderPath[0] + docReq.IdDocument + "_" + xmlData["hashDoc"] + ".pdf"
+			folderPath = baseFolderPath[0] + docReq.IdDocument + "_" + docName
 			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
 				err = os.WriteFile(folderPath, fileBytes, 0644)
 				if err != nil {
-					http.Error(respWriter, "Error generando archivo entregable", http.StatusInternalServerError)
-					return
+					fmt.Println("Error generando archivo entregable: ", err)
 				}
+			} else {
+				fmt.Println("El documento ya existe: ", err)
 			}
 
 		} else {
@@ -388,6 +428,7 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 		// se añade a la respuesta
 		signaturesXML[idSign] = xmlData
 
+		fmt.Println("resultado signatures: ", signaturesXML)
 		updates := map[string]map[string]interface{}{
 			idSign: {
 				"idUserKeys_fk":      req.IdKey,
@@ -401,9 +442,10 @@ func signDocument(respWriter http.ResponseWriter, request *http.Request) {
 
 		err = db.DB_con.GenericBatchUpdate("signatures", "idSignature", updates)
 		if err != nil {
-			http.Error(respWriter, "Error generando firma XAdES", http.StatusInternalServerError)
-			return
+			fmt.Println("Error en update firma:", idSign)
+			continue
 		}
+
 	}
 
 	//=============================================================================================

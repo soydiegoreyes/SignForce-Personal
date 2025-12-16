@@ -23,6 +23,7 @@ const (
 	AlgRSA_SHA256   = "http://www.w3.org/2000/09/xmldsig#rsa-sha256"
 	AlgC14N         = "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
 	AlgEnvSig       = "http://www.w3.org/2000/09/xmldsig#enveloped-signature"
+	AlgDetSig       = "http://www.w3.org/2000/09/xmldsig#detached-signature"
 	TypeSignedProps = "http://uri.etsi.org/01903#SignedProperties"
 )
 
@@ -30,18 +31,18 @@ const (
 // pdfHash: El hash SHA256 del archivo PDF que quieres firmar
 // certPEM: Los bytes del certificado público (archivo .crt o .pem)
 // k: Tus llaves para firmar
-func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string]string, error) {
+func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId, docName, idDocument string) (map[string]string, error) {
 	// se sacan los datos de la invitación, firma y usuarios involucrados
 	signInvData, err := db.DB_con.GenericJoinSelect("signatures", "invites", "signatures.idInvite_fk = invites.idInvite", "idSignature", []string{signatureId}, []string{"idUser_fk"}, []string{"idInvite", "idFolder", "idUserOwnner_fk"})
 	//signData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
 	if err != nil {
 		return nil, err
 	}
-	idInvite := signInvData[signatureId]["idInvite"]
+
 	idFolder := signInvData[signatureId]["idFolder"]
 	idUserOwnner := signInvData[signatureId]["idUserOwnner_fk"]
 	idUserDest := signInvData[signatureId]["idUser_fk"]
-	//attrs := []string{"nameUser", "lastNameUser", "emailUser", "idTeam_fk", "idInstitution_fk", "activeUser"}
+
 	attrs := []string{"nameUser", "lastNameUser", "emailUser", "idInstitution_fk", "activeUser"}
 	wheres := map[string][]string{
 		"idUser": {idUserOwnner, idUserDest},
@@ -50,10 +51,14 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	if err != nil {
 		return nil, err
 	}
-	invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), usersData[idUserDest]["idInstitution_fk"], idFolder, idInvite)
-
+	invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/META-INF/", os.Getenv("BASE_DIR"), usersData[idUserDest]["idInstitution_fk"], idFolder, idDocument)
+	fmt.Println("invitePath completo: ", invitePath)
+	err = CreateManifest(docName, invitePath)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	// Identificadores únicos para enlazar las referencias
-	//signatureId := uuid.NewString() // Podrías usar UUID
 	signedPropsId := "SignedProperties-" + uuid.NewString()
 
 	// Convertir el hash del PDF a Base64 para ponerlo en el XML
@@ -133,7 +138,7 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 
 	// --- Referencia 1: El Documento (PDF) ---
 	refDoc := siRoot.CreateElement("ds:Reference")
-	refDoc.CreateAttr("URI", "") // URI vacía o ID del objeto si fuera enveloped
+	refDoc.CreateAttr("URI", docName) // URI vacía o ID del objeto si fuera enveloped
 	// Si es detached (el pdf está fuera), URI suele ser el nombre del archivo o vacío si es todo el contexto
 	// En tu ejemplo anterior usabas un ID específico. Ajustar según necesites.
 	// refDoc.CreateAttr("URI", "#PSCNotaria...")
@@ -141,7 +146,7 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	// Transform (opcional, pero común en enveloped)
 	trans := refDoc.CreateElement("ds:Transforms")
 	t1 := trans.CreateElement("ds:Transform")
-	t1.CreateAttr("Algorithm", AlgEnvSig)
+	t1.CreateAttr("Algorithm", AlgDetSig)
 
 	rdm := refDoc.CreateElement("ds:DigestMethod")
 	rdm.CreateAttr("Algorithm", AlgSHA256)
@@ -190,7 +195,7 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	sigRoot := finalDoc.CreateElement("ds:Signature")
 	sigRoot.CreateAttr("xmlns:ds", NsXMLDSig)
 	sigRoot.CreateAttr("xmlns:xades", NsXAdES) // Definimos ambos globales para limpieza
-	sigRoot.CreateAttr("Id", signatureId)
+	sigRoot.CreateAttr("Id", "Id-"+signatureId)
 
 	// 5.1 Agregar SignedInfo (Tal cual lo generamos)
 	sigRoot.AddChild(siRoot)
@@ -248,17 +253,17 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	f, err := os.OpenFile(xmlPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
 	if err != nil {
 		fmt.Println("el archivo ya existe: ", xmlPath, err)
-		return nil, fmt.Errorf("el archivo %s ya existe", xmlPath)
+	} else {
+		// Escribir XML
+		if _, err := f.Write([]byte(xmlString)); err != nil {
+			fmt.Println("error al escribir el archivo")
+			return nil, err
+		}
 	}
 	defer f.Close()
 
-	// Escribir XML
-	if _, err := f.Write([]byte(xmlString)); err != nil {
-		fmt.Println("error al escriir el archivo")
-		return nil, err
-	}
 	// crear qrcode con link
-	qrPath := invitePath + signatureId + ".png."
+	qrPath := invitePath + signatureId + ".png"
 
 	if !utilities.GenerateQR(fmt.Sprintf("%sviewSignature?id=%s", os.Getenv("QR_URL_BASE"), signatureId), qrPath) {
 		return nil, fmt.Errorf("no se pudo crear qr de firma %s", qrPath)
@@ -290,4 +295,47 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId string) (map[string
 	}
 
 	return signData, nil
+}
+
+func CreateManifest(docName, folderPath string) error {
+	// crear xml
+	xmlPath := folderPath + "manifest.xml"
+
+	// Crear archivo solo si NO existe (modo seguro)
+	f, err := os.OpenFile(xmlPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+	if err != nil {
+		fmt.Println("el archivo ya existe: ", xmlPath, err)
+		return nil
+	}
+	defer f.Close()
+
+	const manifestVersion string = "urn:oasis:names:tc:opendocument:xmlns:manifest:1.0"
+	manifest := etree.NewDocument()
+	manRoot := manifest.CreateElement("manifest:manifest")
+	manRoot.CreateAttr("xmlns:manifest", manifestVersion)
+	fileEntry := manRoot.CreateElement("manifest:file-entry")
+	fileEntry.CreateAttr("manifest:full-path", "/")
+	fileEntry.CreateAttr("manifest:media-type", "application/vnd.etsi.asic-e+zip")
+	docEntry := manRoot.CreateElement("manifest:file-entry")
+	docEntry.CreateAttr("manifest:full-path", docName)
+	docEntry.CreateAttr("manifest:media-type", "application/pdf")
+	// =========================================================================
+	// RESULTADO FINAL
+	// =========================================================================
+	manifest.WriteSettings.CanonicalEndTags = true
+	manifest.Indent(2) // Indentación para que se vea bonito (pretty print)
+	// Nota: La indentación del XML final no rompe la firma PORQUE SignedInfo
+	// se procesó y firmó internamente sin indentación.
+
+	xmlString, err := manifest.WriteToString()
+	if err != nil {
+		return err
+	}
+
+	// Escribir XML
+	if _, err := f.Write([]byte(xmlString)); err != nil {
+		fmt.Println("error al escribir el archivo")
+		return err
+	}
+	return nil
 }
