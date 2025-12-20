@@ -661,6 +661,7 @@
             }
         }
 
+
         // Renderizar datos en la interfaz
         function renderSignatureData(data) {
             // ID de la firma
@@ -906,16 +907,28 @@
                 showError('No hay documento disponible para descargar');
                 return;
             }
-
+            if (!currentSignatureData) {
+                showError('no hay datos de la firma');
+                return 
+            }
+            const sig = currentSignatureData.signature || {};
+            const spl = sig.pathSign.split("/");
+            let idInst = 0;
+            let idFolder=0;
+            let idDoc=0;
+            let hash = "";
+            if (spl[0] === "folders") {
+                idInst = spl[1];
+                idFolder = spl[2]; 
+                idDoc=spl[3];
+                hashD = sig.digestValueSign;
+            }
+            
             try {
-                const response = await fetch('/downloadDoc', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ 
-                        id: currentDocumentId, 
-                        type: "uploaded", 
-                        path: "" 
-                    })
+                const query = `/getAsice?i=${encodeURIComponent(idInst)}&f=${encodeURIComponent(idFolder)}&d=${encodeURIComponent(idDoc)}&h=${encodeURIComponent(hashD)}`;
+                const response = await fetch(query, {
+                    method: 'GET',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) throw new Error('Error descargando documento');
@@ -929,7 +942,7 @@
                 const docName = currentSignatureData.document?.documentName || 
                                currentSignatureData.document?.documentFullName || 
                                'documento_firmado';
-                a.download = `${docName}.${currentSignatureData.document?.documentExt || 'pdf'}`;
+                a.download = `${docName}.zip`;
                 
                 document.body.appendChild(a);
                 a.click();
