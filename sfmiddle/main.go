@@ -125,6 +125,7 @@ func main() {
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
 	mux.HandleFunc("/viewSign", handlers.ViewSign)                     // obtiene los equipos de una institucion
+	mux.HandleFunc("/getAsice", handlers.BuildAsice)                   // obtiene los equipos de una institucion
 	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion

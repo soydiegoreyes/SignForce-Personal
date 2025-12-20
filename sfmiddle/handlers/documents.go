@@ -353,7 +353,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Construir la ruta completa del archivo
 	var filePath string = fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
-	fmt.Println(filePath)
+
 	// Verificar si el archivo existe
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		http.Error(respWriter, "Archivo no encontrado en el sistema", http.StatusNotFound)

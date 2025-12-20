@@ -11,6 +11,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/golang/freetype"
@@ -193,4 +194,22 @@ func AddTextToQR(qrPath string, text string) bool {
 	}
 
 	return true
+}
+
+func GetHashC14N(xmlFull string, idNode string, algo string) (string, error) {
+	scriptPath := "./utilities/c14n.py"
+
+	// Pasamos los argumentos. Ojo: si el XML es muy grande,
+	// algunos SO pueden tener límites en el tamaño de los argumentos.
+	cmd := exec.Command("python", scriptPath, xmlFull, idNode, algo)
+
+	// Capturamos la salida (stdout)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("python error: %v, output: %s", err, string(out))
+	}
+
+	// El resultado es el string en Base64
+	hashBase64 := strings.TrimSpace(string(out))
+	return hashBase64, nil
 }

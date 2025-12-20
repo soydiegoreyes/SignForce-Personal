@@ -154,7 +154,7 @@ func AppendQRCodes(filePath string, SignsPositions map[string]map[string]string)
 
 	// 3. Preparar el comando para ejecutar Python
 	// Asegúrate de poner la ruta correcta donde guardaste 'insert_qr.py'
-	scriptPath := "./insert_qr.py"
+	scriptPath := "./utilities/insert_qr.py"
 	fmt.Println(filePath, string(jsonData))
 	// Comando: python3 insert_qr.py [RutaPDF] [StringJSON]
 	cmd := exec.Command("python", scriptPath, filePath, string(jsonData))
@@ -173,4 +173,20 @@ func AppendQRCodes(filePath string, SignsPositions map[string]map[string]string)
 
 	fmt.Println("QRs insertados correctamente en:", filePath)
 	return nil
+}
+
+func CompressZip(pathSource, pathDest string) bool {
+	//"7z a pathDest.zip pathSource/*"
+	fmt.Println("Comprimiendo datos...")
+	cmd := exec.Command("7z", "a", pathDest, pathSource)
+	// Capturar salida estándar y de error para debuggear si Python falla
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("Error ejecutando script de Python: %v\n", err)
+		return false
+	}
+	fmt.Println(cmd.Stderr)
+	return true
 }

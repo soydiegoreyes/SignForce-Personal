@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"sfmiddle/auth"
+	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/documentflow"
 	"sfmiddle/models"
@@ -788,4 +790,124 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(dataSig)
+}
+
+// getAsice?i={inst}&f={folder}&d={document}&h={hash}
+func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	q := request.URL.Query()
+	idInstitution := q.Get("i")
+	idFolder := q.Get("f")
+	idDocument := q.Get("d")
+	hashDoc := q.Get("h")
+
+	if idInstitution == "" || idFolder == "" || idDocument == "" || hashDoc == "" {
+		http.Error(respWriter, "Parámetros incompletos", http.StatusBadRequest)
+		return
+	}
+
+	basePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), idInstitution, idFolder, idDocument)
+
+	if _, err := os.Stat(basePath); err != nil {
+		http.Error(respWriter, "No existe el folder solicitado", http.StatusBadRequest)
+		return
+	}
+
+	// ===== Obtener datos del documento =====
+	attrs := []string{"documentPath", "documentName", "documentExt"}
+	wheres := map[string][]string{
+		"idDocument":   {idDocument},
+		"documentHash": {hashDoc},
+	}
+
+	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de documento", http.StatusInternalServerError)
+		return
+	}
+
+	doc := docData[idDocument]
+
+	sourcePath := fmt.Sprintf(
+		"%s/%s%s.%s",
+		os.Getenv("BASE_DIR"),
+		doc["documentPath"],
+		doc["documentName"],
+		doc["documentExt"],
+	)
+
+	// ===== Validar archivo original =====
+	if _, err := os.Stat(sourcePath); err != nil {
+		http.Error(respWriter, "El archivo original no existe", http.StatusNotFound)
+		return
+	}
+
+	// ===== Validar hash =====
+	if h, err := utilities.GetHash(sourcePath, configs.HashConf); err != nil || h != hashDoc {
+		http.Error(respWriter, "El hash del archivo no coincide", http.StatusBadRequest)
+		return
+	}
+
+	// ===== Copiar archivo al contenedor ASiC-E =====
+	srcFile, err := os.Open(sourcePath)
+	if err != nil {
+		srcFile.Close()
+		http.Error(respWriter, "Error abriendo archivo original", http.StatusInternalServerError)
+		return
+	}
+
+	destPath := fmt.Sprintf("%s%s.%s", basePath, doc["documentName"], doc["documentExt"])
+
+	dstFile, err := os.Create(destPath)
+	if err != nil {
+		http.Error(respWriter, "Error creando archivo en ASiC-E", http.StatusInternalServerError)
+		return
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		dstFile.Close()
+		http.Error(respWriter, "Error copiando archivo al ASiC-E", http.StatusInternalServerError)
+		return
+	}
+	// cerrar archivos antes de que los use 7z
+	dstFile.Close()
+	srcFile.Close()
+	// ===== Comprimir folder =====
+	zipPath := fmt.Sprintf("%s%s", basePath, doc["documentName"]+".zip")
+
+	if !utilities.CompressZip(basePath+"*", zipPath) {
+		http.Error(respWriter, "Error comprimiendo ASiC-E", http.StatusInternalServerError)
+		return
+	}
+
+	// ===== Enviar ZIP =====
+	zipFile, err := os.Open(zipPath)
+	if err != nil {
+		http.Error(respWriter, "Error abriendo ZIP", http.StatusInternalServerError)
+		return
+	}
+	defer os.Remove(zipPath)
+	defer zipFile.Close()
+
+	zipInfo, err := zipFile.Stat()
+	if err != nil {
+		http.Error(respWriter, "Error leyendo ZIP", http.StatusInternalServerError)
+		return
+	}
+
+	respWriter.Header().Set("Content-Type", "application/zip")
+	respWriter.Header().Set("Content-Length", fmt.Sprintf("%d", zipInfo.Size()))
+	respWriter.Header().Set(
+		"Content-Disposition",
+		fmt.Sprintf("attachment; filename=\"%s.zip\"", doc["documentName"]),
+	)
+
+	respWriter.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(respWriter, zipFile)
 }
