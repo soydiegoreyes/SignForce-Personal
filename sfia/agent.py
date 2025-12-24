@@ -9,48 +9,52 @@ import re
 import json
 import subprocess
 
-def create_template(ruta_salida: str, contenido: dict):
+# recibe una ruta donde se guarda el template y el contenido que ira en cada sección del documento.
+# ej. output_path = "C:/USERS/USER/Desktop/mi_plantilla.docx"
+# ej. data = {"header": "Contrato de compraventa {TITULO_CONTRATO}", "body": "Esto es un contrato entre {COMPRADOR} y {VENDEDOR}.", "footer": "Pie de pagina"}
+# devuelve una lista de {PLACEHOLDERS} que se extrae del texto ya que es texto generado con IA y no se pasa directamente
+def create_template(output_path: str, data: dict) -> list:
     """
     Crea un archivo .docx base con placeholders para ser usado como plantilla.
     contenido: {'header': '...', 'body': '...', 'footer': '...', 'images': ['./path.png']}
     """
-    print("FUNC: create_template", ruta_salida, contenido)
+    print("FUNC: create_template", output_path, data)
     try:
         doc = Document()
         placeholders=list()
         # 1. Configurar Header
-        if 'header' in contenido:
+        if 'header' in data:
             section = doc.sections[0]
             header = section.header
-            header.paragraphs[0].text = contenido['header']
-            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', contenido['header'])]
+            header.paragraphs[0].text = data['header']
+            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', data['header'])]
             
         # 2. Configurar Body
-        if 'body' in contenido:
-            doc.add_paragraph(contenido['body'])
-            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', contenido['body'])]
+        if 'body' in data:
+            doc.add_paragraph(data['body'])
+            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', data['body'])]
             
             
         # 3. Añadir Imágenes (si se piden para la plantilla)
-        if 'images' in contenido:
-            for img_path in contenido['images']:
+        if 'images' in data:
+            for img_path in data['images']:
                 if os.path.exists(img_path):
                     doc.add_picture(img_path, width=Inches(2.0))
                     placeholders += [img_path]
         
         # 4. Configurar Footer
-        if 'footer' in contenido:
+        if 'footer' in data:
             section = doc.sections[0]
             footer = section.footer
-            footer.paragraphs[0].text = contenido['footer']
-            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', contenido['footer'])]
+            footer.paragraphs[0].text = data['footer']
+            placeholders+= [p[1:-1] for p in re.findall(r'{\w+}', data['footer'])]
             
             
-        doc.save(ruta_salida)
+        doc.save(output_path)
         
         return {
             "status": "ok",
-            "ruta": ruta_salida,
+            "ruta": output_path,
             "placeholders": placeholders
         }
     
@@ -58,6 +62,7 @@ def create_template(ruta_salida: str, contenido: dict):
         return f"Error al crear plantilla: {str(e)}"
     
 
+# recibe una ruta de entrada que es una plantilla y una ruta de salida donde se deposita la plantilla con los {PLACEHOLDERS} sustituidos con el dato real
 
 def format_doc(input_path: str, output_path: str, data: dict) ->str:
     print("FUNC: format_doc", input_path, output_path, data)
@@ -68,13 +73,11 @@ def format_doc(input_path: str, output_path: str, data: dict) ->str:
 
     def replace_text_with_format(paragraph, data_dict):
         """Reemplaza el texto sin perder el formato."""
-        
-        def replace_text_with_format(paragraph, data_dict):
-            for run in paragraph.runs:
-                for match in re.findall(r'{\w+}', run.text):
-                    key = match[1:-1]
-                    if key in data_dict:
-                        run.text = run.text.replace(match, data_dict[key])
+        for run in paragraph.runs:
+            for match in re.findall(r'{\w+}', run.text):
+                key = match[1:-1]
+                if key in data_dict:
+                    run.text = run.text.replace(match, data_dict[key])
         
         for m in re.findall('{\w+}', paragraph.text):
             try:
@@ -113,12 +116,16 @@ def format_doc(input_path: str, output_path: str, data: dict) ->str:
     try:
         # Guarda el documento modificado
         doc.save(output_path)
-        return "Documento guardado en: "+output_path
-        #p=subprocess.run('soffice.exe --headless --convert-to pdf {ruta_dest}.docx')
+        
+        return {
+            "status": "ok",
+            "ruta": output_path
+        }
     except Exception as e:
         print(f"Falla al guardar word {output_path} . {e}")
     
 
+# recibe una ruta de un documento en word .docx y lo convierte en pdf (no necesariamente tiene que ser una plantilla)
 def word_to_pdf(input_path: str, output_path: str):
     # ruta_docx es la ruta absoluta del documento word a convertir en pdf -> C:/Users/SomeFolder/mi_documento.docx
     # ruta_dest es la ruta absoluta con nombre donde se guardará el pdf -> C:/Users/OtherFolder/mi_documento.pdf
@@ -131,6 +138,7 @@ def word_to_pdf(input_path: str, output_path: str):
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.communicate()
         # Esto lanzará un error si el proceso falla
+        print(f"Return code: {p.returncode}")
         if p.returncode not in [0, None]:
             raise Exception  
         
@@ -144,15 +152,18 @@ def word_to_pdf(input_path: str, output_path: str):
             with open(name+'.pdf', 'rb') as fr, open(output_path, 'wb') as fw:
                 fw.write(fr.read())
             # se elimina el documento creado en la carpeta local
-            os.remove(f'{os.path.abspath(".")}\\{name}.pdf')
+            #os.remove(f'{os.path.abspath(".")}\\{name}.pdf')
             #os.remove(ruta_dest+'.docx')
         if p.returncode:
             return f"Hubo un error al guardar el documento word, revise rutas del archivo {output_path}"
         else:
-            return f"Word guardado en {output_path}"
+            return {
+                "status": "ok",
+                "ruta": output_path
+            }
         
     except Exception as e:
-        return f"Falla al guardar archivo {output_path} . {e}"
+        return f"Falla al guardar archivo {output_path} -> {e}"
     
 
 def notificar_error(mensaje: str):
@@ -168,7 +179,7 @@ available_functions = {
     'format_doc': format_doc
 }
 
-# 3. DEFINICIÓN EN FORMATO JSON (Esto es lo que la IA entiende)
+# 3. DEFINICIÓN EN FORMATO JSON
 # Esto es lo que frameworks como LangChain hacen por detrás
 tools_definition = [
     {
@@ -179,19 +190,19 @@ tools_definition = [
             'parameters': {
                 'type': 'object',
                 'properties': {
-                    'ruta_salida': {'type': 'string', 'description': 'Ruta absoluta donde se guardará la plantilla .docx'},
-                    'contenido': {
+                    'output_path': {'type': 'string', 'description': 'Ruta absoluta donde se guardará la plantilla .docx'},
+                    'data': {
                         'type': 'object',
                         'properties': {
-                            'header': {'type': 'string'},
-                            'body': {'type': 'string'},
-                            'footer': {'type': 'string'},
-                            'images': {'type': 'array', 'items': {'type': 'string'}}
+                            'header': {'type': 'string', 'description': 'Útil para títulos o encabezados del documento'},
+                            'body': {'type': 'string', 'description': 'Contenido completo del documento'},
+                            'footer': {'type': 'string', 'description': 'Útil para avisos o pies de página o derechos de autor.'},
+                            'images': {'type': 'array', 'items': {'type': 'string', 'description':'Cualquier imagen que se tenga que poner sobre el documento'}}
                         },
                         'required': ['body']
                     }
                 },
-                'required': ['ruta_salida', 'contenido']
+                'required': ['output_path', 'data']
             }
         }
     },
@@ -243,7 +254,6 @@ def run_agent(prompt, model):
     messages = [
         {
             'role': 'system', 
-            
             'content': (
                 '''Eres un redactor profesional de documentos legales.
                 OBJETIVO PRINCIPAL:
@@ -252,13 +262,14 @@ def run_agent(prompt, model):
                 USO DE PLACEHOLDERS:
                 - SOLO usa placeholders {EN_MAYUSCULAS} cuando un dato específico sea variable.
                 - NO reemplaces todo el texto por placeholders.
-                - El documento debe contener frases, cláusulas y contexto real.
+                - El documento debe contener frases, cláusulas, datos útiles y contexto real.
                 FLUJO:
                 1. Redacta el texto completo del documento (header, body y footer).
-                2. Inserta placeholders SOLO para datos variables (nombres, montos, fechas, ubicaciones).
+                2. Inserta placeholders SOLO para datos variables (nombres, montos, fechas, ubicaciones, o datos específicados explícitamente).
                 3. Llama a 'create_template' con el texto generado.
-                4. Usa la lista de placeholders devuelta para llamar a 'format_doc'.
-                5. Ejecuta los pasos uno por uno, esperando el resultado anterior.'''
+                4. Si hay una lista de placeholders devuelta, usalos para llamar a 'format_doc'.
+                5. Si EXPLICITAMENTE se indica que un documento debe convertirse a pdf, usa 'word_to_pdf' y por default con ruta de salida y nombre de documento igual a la de entrada pero con extensión pdf.
+                6. Ejecuta los pasos uno por uno, esperando el resultado anterior.'''
             )
         },
         {'role': 'user', 'content': prompt}
@@ -293,6 +304,7 @@ def run_agent(prompt, model):
             
         # El bucle continúa: enviamos los resultados de vuelta a Ollama 
         # para que decida qué sigue (ej. ya creó la plantilla, ahora le toca llenarla).
+    print(messages)
     return messages
 
 if __name__=="__main__":
