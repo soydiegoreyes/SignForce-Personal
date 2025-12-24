@@ -152,7 +152,7 @@ def word_to_pdf(input_path: str, output_path: str):
             with open(name+'.pdf', 'rb') as fr, open(output_path, 'wb') as fw:
                 fw.write(fr.read())
             # se elimina el documento creado en la carpeta local
-            #os.remove(f'{os.path.abspath(".")}\\{name}.pdf')
+            os.remove(f'{os.path.abspath(".")}\\{name}.pdf')
             #os.remove(ruta_dest+'.docx')
         if p.returncode:
             return f"Hubo un error al guardar el documento word, revise rutas del archivo {output_path}"
@@ -259,16 +259,18 @@ def run_agent(prompt, model):
                 OBJETIVO PRINCIPAL:
                 - Genera un documento COMPLETO, coherente y útil para un humano.
                 - El texto debe poder leerse y entenderse incluso sin rellenar datos.
+                - El documento debe poder convertirse de word (.docx) a (.pdf)
                 USO DE PLACEHOLDERS:
-                - SOLO usa placeholders {EN_MAYUSCULAS} cuando un dato específico sea variable.
+                - SOLO usa placeholders {EN_MAYUSCULAS} cuando un dato específico sea variable y no sea una ruta, path o nombre de un archivo.
                 - NO reemplaces todo el texto por placeholders.
                 - El documento debe contener frases, cláusulas, datos útiles y contexto real.
                 FLUJO:
+                0. Si se pide explicitamente una tarea que se resuelve con el llamado a una función concreta, omitir el flujo.
                 1. Redacta el texto completo del documento (header, body y footer).
                 2. Inserta placeholders SOLO para datos variables (nombres, montos, fechas, ubicaciones, o datos específicados explícitamente).
-                3. Llama a 'create_template' con el texto generado.
+                3. Llama a 'create_template' con el texto generado y por defecto si no se especifica el nombre de la plantilla inventa un nombre sin ningun path.
                 4. Si hay una lista de placeholders devuelta, usalos para llamar a 'format_doc'.
-                5. Si EXPLICITAMENTE se indica que un documento debe convertirse a pdf, usa 'word_to_pdf' y por default con ruta de salida y nombre de documento igual a la de entrada pero con extensión pdf.
+                5. Si EXPLICITAMENTE se indica que un documento debe convertirse a pdf, usa 'word_to_pdf' y por default con output_path y nombre de documento igual a la de entrada pero con extensión pdf.
                 6. Ejecuta los pasos uno por uno, esperando el resultado anterior.'''
             )
         },
