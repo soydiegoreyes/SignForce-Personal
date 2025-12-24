@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignForce - Iniciar Sesión</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link rel="stylesheet" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Inter%3Awght%40400%3B500%3B700%3B900&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/registro/login.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body>
+     <!-- Barra superior rediseñada -->
+    <header class="glass-header" id="mainHeader">
+      <div class="flex items-center gap-8 relative">
+        <!-- Burbuja liquid glass -->
+        <div class="liquid-bubble" id="liquidBubble"></div>
+        
+        <div class="flex items-center gap-4 text-primary">
+          <div class="size-4">
+            <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+          </div>
+          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+        </div>
+        <div class="flex items-center gap-9">
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="home">Inicio</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+        </div>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <a href="/index" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
+          Home
+        </a>
+        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+    <div class="bg">
+    <!-- Contenido principal -->
+    <div class="login-container">
+        <!-- Columna izquierda - Texto descriptivo -->
+        <div class="content-left">
+            <div>
+                <h1 class="text-white text-4xl md:text-6xl font-bold leading-tight mb-6 p-4 drop-shadow-md">Rápido, Seguro y 100% Legal</h1><br>
+            </div>
+            <p class="text-white/70 text-lg md:text-xl mb-8">Con SIGNFORCE gestiona tus documentos electrónicos con garantía de integridad y autenticidad conforme a la NOM-151.</p>
+            
+            <div class="features" id="features">
+                <div class="feature-item glass-card fade-in delay-1">
+                    <i class="fas fa-shield-alt feature-icon"></i>
+                    <div>
+                        <h3 class="text-primary text-xl font-bold mb-2">Seguridad garantizada</h3>
+                        <p>Todos tus documentos protegidos con cifrado de última generación.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item glass-card fade-in delay-2">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <div>
+                        <h3 class="text-primary text-xl font-bold mb-2">Rápido y eficiente</h3>
+                        <p>Firma y envía documentos en segundos desde cualquier dispositivo.</p>
+                    </div>
+                </div>
+                
+                <div class="feature-item glass-card fade-in delay-3">
+                    <i class="fas fa-check-circle feature-icon"></i>
+                    <div>
+                        <h3 class="text-primary text-xl font-bold mb-2">Cumplimiento normativo</h3>
+                        <p>Cumple con todos los requisitos legales para firmas electrónicas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna derecha - Formulario -->
+        <div class="content-right">
+            <div class="form-container glass-panel fade-in delay-1">
+                <div class="form-tabs">
+                    <div class="tab active" data-tab="login">Iniciar Sesión</div>
+                    <div class="tab" data-tab="register">Registrarse</div>
+                </div>
+
+                <div class="form-content max-h-[480px]">
+                    <!-- Formulario de Login -->
+                    <form class="form active" id="loginForm">
+                        <div class="form-group">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <label for="login-email">Correo electrónico</label>
+                            <input type="email" id="login-email" class="input-field" placeholder="       tucorreo@ejemplo.com" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="login-password" class="input-field" placeholder="       ········" required>
+                            <i class="fas fa-eye password-toggle" id="login-password-toggle"></i>
+                        </div>
+                        
+                        <button type="submit" class="btn hover-glow">Iniciar Sesión</button>
+                        
+                        <div class="divider">o continúa con</div>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-btn hover-glow">
+                                <i class="fab fa-google"></i> Google
+                            </button>
+                            <button type="button" class="social-btn hover-glow">
+                                <i class="fab fa-microsoft"></i> Microsoft
+                            </button>
+                        </div>
+                        
+                        <div class="form-footer">
+                            <p>¿Olvidaste tu contraseña? <a href="#">Recupérala aquí</a></p>
+                        </div>
+                    </form>
+
+                    <!-- Formulario de REGISTRO -->
+                    <form class="form" id="registerForm">
+                        <div class="form-group">
+                            <label>Nombre y Apellido</label>
+                            <div class="name-fields">
+                                <div class="form-group">
+                                    <input type="text" id="first-name" class="input-field" placeholder="       Nombre" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="text" id="last-name" class="input-field" placeholder="       Apellidos" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox para indicar si es el responsable legal -->
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="legal-responsible-checkbox">
+                                La persona que registra es el responsable legal
+                            </label>
+                        </div>
+
+
+                        <!-- Contenedor para los campos del responsable legal (inicialmente oculto) -->
+                        <div id="legal-responsible-container">
+                            <div class="form-group">
+                                <label>Nombre y Apellido del Responsable Legal</label>
+                                <div class="name-fields">
+                                    <div class="form-group">
+                                        <input type="text" id="legal-first-name" class="input-field" placeholder="Nombre">
+                                    </div>
+                                    <div class="form-group">
+                                        <input type="text" id="legal-last-name" class="input-field" placeholder="Apellidos">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                          <label for="business-name">Razón Social</label>
+                          <i class="fas fa-building input-icon"></i>
+                          <input type="text" id="business-name" class="input-field" placeholder="Razón Social" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="alias">Alias</label>
+                            <i class="fas fa-user-tag input-icon"></i>
+                            <input type="text" id="business-alias" class="input-field" placeholder="Alias (opcional)">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="business-rfc">RFC</label>
+                            <i class="fas fa-city input-icon"></i>
+                            <input type="text" id="business-taxnum" class="input-field" placeholder="RFC" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country">País</label>
+                            <i class="fas fa-moon input-icon"></i>
+                            <input type="text" id="country" class="input-field" placeholder="Pais" value="Mexico" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city">Ciudad</label>
+                            <i class="fas fa-moon input-icon"></i>
+                            <input type="text" id="city" class="input-field" placeholder="Ciudad" value="CDMX" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="register-email">Correo electrónico (será tu nombre de usuario)</label>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="register-email" class="input-field" placeholder="tucorreo@ejemplo.com" required>
+                            <small>Se necesitará correo electrónico para la verificación y recuperación de la cuenta</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-phone">Numero de teléfono (para contactarte)</label>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="tel" id="register-phone" class="input-field" placeholder="10 digitos" required>
+                            <small>Se necesitará tu teléfono para cualquier aclaración de la cuenta</small>
+                        </div>
+                        
+                        <div class="terms-checkbox">
+                            <input type="checkbox" id="terms" required>
+                            <label for="terms">Acepto los términos y condiciones</label>
+                        </div>
+                        
+                        <div class="notice-box glass-card" id="notice-box"></div>
+                        
+                        <button type="submit" class="btn hover-glow">Crear Cuenta</button>
+                        
+                        <div class="form-footer">
+                            <p>¿Ya tienes una cuenta? <a href="#" id="switchToLogin">Inicia sesión</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-panel">
+        <p class="text-center text-secondary">&copy; 2025 SignForce. Todos los derechos reservados.</p>
+    </footer>
+    <script src="/registro/login.js"></script>
+</body>
+</html>

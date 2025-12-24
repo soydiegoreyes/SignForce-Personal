@@ -305,12 +305,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             const requestBody = {
-                IdDocs: documentIds.map(item => item.idDocument),
-                Type: "uploaded",
-                Page: 1,
-                PageSize: 50, // Número alto para obtener todos los documentos
-                OrderBy: 'createdAtDoc',
-                OrderDir: 'ASC'
+                idDocs: documentIds.map(item => item.idDocument),
+                page: 1,
+                page_size: 50, // Número alto para obtener todos los documentos
+                order_by: 'createdAtDoc',
+                order_dir: 'ASC',
+                type: "pdf"
             };
 
             const response = await fetch('/statusDocs', {

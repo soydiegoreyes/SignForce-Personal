@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validación de Documentos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap" rel="stylesheet">
+    <style>
+        /* Variables del sistema de colores del index.css */
+        
+        .bg {
+        background: 
+            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        }
+
+        :root {
+            --color-background: #000;
+            --color-card: rgba(255, 255, 255, 0.05);
+            --color-text-primary: #ffffff;
+            --color-text-secondary: rgba(255, 255, 255, 0.7);
+            --color-accent: rgba(255, 255, 255, 0.5);
+            --color-shadow: rgba(0, 0, 0, 0.3);
+            --color-blue-dark: #1e2c4b;
+            --color-blue-light: #93bde5;
+            --color-gold: #e5b019;
+            --color-red-wine: #74273a;
+            
+            --primary-color: #c643ee;
+            --secondary-color: #7b37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+        }
+
+        [data-theme="light"] {
+            --color-background: #f8fafc;
+            --color-card: rgba(255, 255, 255, 0.8);
+            --color-text-primary: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-accent: rgba(0, 0, 0, 0.1);
+            --color-shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: var(--color-background);
+            min-height: 100vh;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        .bg {
+        background: 
+            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
+            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: "Michroma", sans-serif;
+            color: var(--color-text-primary);
+        }
+
+        body.light-theme {
+            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+            body.light-theme .glass-panel,
+            body.light-theme .glass-card,
+            body.light-theme .glass-header {
+            background: rgba(255, 255, 255, 0.7);
+            color: #1e293b;
+        }
+            body.light-theme .text-primary { color: #1e293b; }
+            body.light-theme .text-secondary { color: #64748b; }
+
+            .main-content { margin-top: 120px; }
+            .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+
+        /* Barra superior mejorada - 25% más grande */
+        .glass-header {
+            position: fixed;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 62.5px; /* 25% más grande que 50px */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 8px 32px 0 rgba(255, 255, 255, 0.1),
+                0 0 10px 1px rgba(200, 90, 255, 0.4);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        /* Efecto liquid glass al pasar el mouse */
+        .glass-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(0, 0, 0, 0.1),
+            transparent
+        );
+        transition: 0.5s;
+        }
+
+        .glass-header:hover::before {
+        left: 100%;
+        }
+
+        /* Burbuja liquid glass */
+        .liquid-bubble {
+        position: fixed;
+        width: 120px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: -1;
+        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+        }
+        
+        /* Efecto hover para los items del menú */
+        .nav-item {
+        position: relative;
+        padding: 8px 16px;
+        transition: color 0.3s ease;
+        }
+
+        .nav-item:hover {
+        color: rgb(255, 255, 255) !important;
+        }
+
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: var(--color-text-primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.625rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--color-text-primary);
+            padding: 0.5rem 0.625rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Contenido principal con margen para el header fijo */
+        .main-content {
+            margin-top: 120px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-family: "Michroma", sans-serif;
+            font-size: 2.5rem;
+            background: -webkit-linear-gradient(#faf9f6, #dcd7ce, #aca69a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(1, 0, 28, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 2rem;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .empresa-info h3 {
+            margin-bottom: 1rem;
+            color: var(--color-accent);
+        }
+        .empresa-info p { margin-bottom: 0.5rem; }
+
+        .form-container h3 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .documentos-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .documento-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .documento-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(200, 90, 255, 0.5);
+        }
+
+        .documento-item span {
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-right: 1rem;
+        }
+
+        .status-pendiente {
+            background-color: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+        }
+
+        .status-completo {
+            background-color: rgba(34, 197, 94, 0.2);
+            color: #baffff;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .btn-upload {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(198, 67, 238, 0.3);
+        }
+
+        .btn-upload:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(198, 67, 238, 0.4);
+        }
+
+        .btn-completar {
+            background: var(--success-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+
+        .btn-completar:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+        }
+
+        .btn-completar:disabled {
+            background: rgba(156, 163, 175, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .btn-guardar {
+            background: var(--color-blue-light);
+            color: var(--color-background);
+            box-shadow: 0 4px 15px rgba(147, 189, 229, 0.3);
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-guardar:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(147, 189, 229, 0.4);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+        }
+
+        .file-input-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input {
+            position: absolute;
+            left: 0; top: 0;
+            opacity: 0;
+            width: 100%; height: 100%;
+            cursor: pointer;
+        }
+
+        .file-info {
+           margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        .error {
+            color: #ef4444;
+            padding: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            color: #baffff;
+            padding: 1rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+        .form.active {
+            display: block;
+        }
+
+        .form-group {
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            gap: 4rem;
+            width: 90%;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        input.input-field[type="text"],
+        input.input-field[type="tel"],
+        input.input-field[type="email"],
+        input.input-field[type="password"] {
+            appearance: none;
+            -webkit-appearance: none; /* Safari / Chrome */
+            -moz-appearance: none; /* Firefox */
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border-radius: 10px; /* tu estilo original */
+            background: #1a1c2266;
+            padding-left: 40px !important;
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            border: 1px solid rgba(200, 90, 255, 0.5);
+        }
+
+        .input-field::placeholder {
+            color: var(--color-text-secondary) !important;
+            opacity: 0.7;
+            }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(229, 124, 25, 0.3);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 52px; /* Cambiado de top: 40px */
+            color: var(--color-accent);
+            font-size: 1rem;
+            pointer-events: none; /* Evita que interfiera con los clicks */
+        }
+
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Animaciones del index.css */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.2s;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glass-header {
+                width: 90%;
+            }
+            .main-content {
+                margin-top: 150px;
+            }
+            
+            .nav-item {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .glass-header {
+                padding: 0 15px;
+                height: 50px;
+            }
+        }
+        
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Barra superior rediseñada -->
+    <header class="glass-header" id="mainHeader">
+      <div class="flex items-center gap-8 relative">
+        <!-- Burbuja liquid glass -->
+        <div class="liquid-bubble" id="liquidBubble"></div>
+        
+        <div class="flex items-center gap-4 text-primary">
+          <div class="size-4">
+            
+          </div>
+          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+        </div>
+        <div class="flex items-center gap-9">
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
+          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+        </div>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <a href="/login" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
+          Iniciar Sesión
+        </a>
+        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </header>
+    
+    <div class="bg">
+        <div class="main-content">
+            <div class="container">
+                <h1 class="fade-in">Validación de Documentos</h1>
+                <div id="messageContainer"></div>
+                <div class="empresa-info glass-card fade-in delay-1" id="empresaInfo">
+                    <!-- Información de la empresa se llenará con JS -->
+                </div>
+                
+                <div class="form-container glass-panel fade-in delay-1">
+                    <div class="form-tabs">
+                        <h3>Documentos Requeridos</h3>
+                        <div class="documentos-list">
+                            <div class="documento-item">
+                                <span>Acta Constitutiva</span>
+                                <div class="file-info" id="infoActa"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusActa">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnActa" for="fileActa" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Poder Notarial</span>
+                                <div class="file-info" id="infoPoder"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusPoder">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnPoder" for="filePoder" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Identificación Oficial</span>
+                                <div class="file-info" id="infoIdentificacion"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnIdentificacion" for="fileIdentificacion" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="documento-item">
+                                <span>Comprobante de Domicilio</span>
+                                <div class="file-info" id="infoDomicilio"></div>
+                                <div>
+                                    <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
+                                    <div class="file-input-container">
+                                        <label id="btnDomicilio" for="fileDomicilio" class="btn btn-upload">Subir</label>
+                                        <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-completar" id="btnCompletar" disabled>Completar Validación</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mapeo de tipos de documentos a las propiedades de la respuesta
+        const documentTypes = {
+            'acta': 'docActa',
+            'poder': 'docPoder',
+            'identificacion': 'docIdentidad',
+            'domicilio': 'docResidencia'
+        };
+
+        // Estado de documentos
+        let documentos = {
+            acta: { subido: false, archivo: null, nombre: '' },
+            poder: { subido: false, archivo: null, nombre: '' },
+            identificacion: { subido: false, archivo: null, nombre: '' },
+            domicilio: { subido: false, archivo: null, nombre: '' }
+        };
+
+        // Información de la empresa
+        let empresa = null;
+
+        // Al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            //===================================== LIQUID BUBBLE =========================================
+
+           // Configurar animaciones del liquid bubble
+            configurarLiquidBubble();
+
+            // Obtener datos de validación
+            obtenerDatosValidacion();
+            
+            // Configurar event listeners para los inputs de archivo
+            configurarEventListeners();
+            
+            // Configurar el botón de completar validación
+            document.getElementById('btnCompletar').addEventListener('click', completarValidacion);
+            
+            // Configurar el toggle del tema
+            document.getElementById('themeToggle').addEventListener('click', toggleTema);
+
+            
+        });
+
+        //===================================== LIQUID BUBBLE =========================================
+        function configurarLiquidBubble() {
+
+            // Efecto liquid glass para la burbuja del menú
+            const liquidBubble = document.getElementById('liquidBubble');
+            const navItems = document.querySelectorAll('.nav-item');
+            
+            // Posiciones iniciales de los items del menú
+            const itemPositions = {};
+            
+            // Calcular posiciones de los items
+            function calculatePositions() {
+            navItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
+                
+                itemPositions[item.dataset.item] = {
+                left: rect.left - headerRect.left,
+                width: rect.width
+                };
+            });
+            
+            // Posicionar burbuja en el item activo (home por defecto)
+            moveBubble('home');
+            }
+            
+            // Mover la burbuja al item seleccionado
+            function moveBubble(itemName) {
+            const item = itemPositions[itemName];
+            if (item) {
+                liquidBubble.style.left = `${item.left - 10}px`;
+                liquidBubble.style.width = `${item.width + 20}px`;
+            }
+            }
+            
+            // Event listeners para los items del menú
+            navItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                moveBubble(item.dataset.item);
+            });
+            
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                moveBubble(item.dataset.item);
+                // Scroll suave al hacer clic en los enlaces
+                const targetId = item.getAttribute('href');
+                if (targetId && targetId !== '#') {
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                }
+            });
+            });
+            
+            // Calcular posiciones al cargar y al redimensionar
+            window.addEventListener('load', calculatePositions);
+            window.addEventListener('resize', calculatePositions);
+        }
+
+        //===================================== TOGGLE THEME =========================================
+        function toggleTema() {
+            const body = document.body;
+            const themeToggleIcon = document.querySelector('.theme-toggle i');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                body.classList.add('light-theme');
+                themeToggleIcon.className = 'fas fa-sun';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                body.classList.remove('light-theme');
+                themeToggleIcon.className = 'fas fa-moon';
+            }
+        }
+
+        //===================================== GET DATA VALIDATION =========================================
+        async function obtenerDatosValidacion() {
+            try {
+                mostrarMensaje('Cargando datos de validación...', 'info');
+                
+                const response = await fetch('/getvaldata', {
+                    method: 'GET',
+                    credentials: 'include' // Incluir cookies para el JWT
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(data);
+                // Actualizar la interfaz con los datos recibidos
+                actualizarInterfaz(data);
+                
+                mostrarMensaje('Datos cargados correctamente', 'success');
+            } catch (error) {
+                console.error('Error al obtener datos de validación:', error);
+                mostrarMensaje('Error al cargar los datos: ' + error.message, 'error');
+            }
+        }
+
+        //===================================== UPDATE DATA INTERFACE =========================================
+        function actualizarInterfaz(data) {
+            
+            // Actualizar información de la empresa
+            const inputline = '<div class="form-group"><input type="text" id="{0}" class="input-field" placeholder="{1}"></div>';
+            
+            document.getElementById('empresaInfo').innerHTML = `
+                <h3>${data.legalName?data.legalName:'Nombre no disponible'}</h3>
+                <p><strong>Alias:</strong> ${data.aliasName?data.aliasName:'No especificado'}</p>
+                <p><strong>RFC:</strong> ${data.taxNum?data.taxNum:'No especificado'}</p>
+                <p><strong>Nombre de representante Legal:</strong> ${data.legalSignupName?data.legalSignupName:'No especificado'}</p>
+                <p><strong>Apellido de representante Legal:</strong> ${data.legalSignupLastname?data.legalSignupLastname:'No especificado'}</p>
+                <p><strong>Dirección:</strong> ${data.streetAddress?data.streetAddress:inputline.format("street-address", "Calle y Número")}</p>
+                <p><strong>Código Postal:</strong> ${data.postalCode?data.postalCode:inputline.format("postal-code", "Código postal")}</p>
+                <p><strong>Colonia:</strong> ${data.neighborhood?data.neighborhood:inputline.format("neighborhood", "Colonia")}</p>
+                <p><strong>Localidad:</strong> ${data.locality?data.locality:inputline.format("locality", "Delegacion o municipio")}</p>
+                <div class="actions" style="margin-bottom: 1rem;">
+                    <button class="btn btn-guardar" id="btnGuardarInfo">Guardar Información</button>
+                </div>
+            `;
+            
+            for (const [key, value] of Object.entries(documentTypes)) {
+                if (data[value]) {
+                    // Documento ya existe, bloquear la subida
+                    documentos[key].subido = true;
+                    documentos[key].nombre = data[value];
+
+                    // Construir IDs dinámicos
+                    const capitalized = key.charAt(0).toUpperCase() + key.slice(1);
+
+                    // Actualizar UI
+                    const statusEl = document.getElementById(`status${capitalized}`);
+                    statusEl.className = 'status status-completo';
+                    statusEl.textContent = 'Completo';
+
+                    // Cambiar el label (que simula el botón)
+                    const labelEl = document.querySelector(`label[for="file${capitalized}"]`);
+                    if (labelEl) {
+                        labelEl.textContent = 'Documento subido';
+                        labelEl.classList.add('disabled-label'); // clase para estilos grises
+                    }
+
+                    // Deshabilitar el input file real
+                    document.getElementById(`file${capitalized}`).disabled = true;
+
+                    // Mostrar información del archivo
+                    document.getElementById(`info${capitalized}`).textContent = `Archivo: ${data[value]}`;
+                }
+            }
+            
+            // Verificar si todos los documentos están completos
+            verificarCompletitud();
+        }
+
+        // Agregar esta función para recopilar datos de los inputs
+        function recopilarDatosTexto() {
+            const datos = {};
+            
+            // Obtener valores de todos los inputs de texto
+            const inputs = document.querySelectorAll('#empresaInfo input');
+            inputs.forEach(input => {
+                switch(input.id) {
+                    case 'street-address':
+                        datos.streetAddress = input.value;
+                        break;
+                    case 'postal-code':
+                        datos.postalCode = input.value;
+                        break;
+                    case 'neighborhood':
+                        datos.neighborhood = input.value;
+                        break;
+                    case 'locality':
+                        datos.locality = input.value;
+                        break;
+                }
+            });
+            
+            return datos;
+        }
+
+        //===================================== UPLOAD DOCS =========================================
+        function configurarEventListeners() {
+            for (const key of Object.keys(documentTypes)) {
+                const input = document.getElementById(`file${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                input.addEventListener('change', (event) => {
+                    subirDocumento(key, event.target.files[0]);
+                });
+            }
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'btnGuardarInfo') {
+                    guardarInformacionTexto();
+                }
+            });
+        }
+
+        // Función para subir un documento
+        async function subirDocumento(tipo, archivo) {
+            console.log(tipo);
+            console.log(archivo);
+            if (!archivo) return;
+            
+            try {
+                mostrarMensaje(`Subiendo ${tipo}...`, 'info');
+                
+                const formData = new FormData();
+                formData.append('documentType', documentTypes[tipo]);
+                formData.append('document', archivo); // Este es el key que busca Go
+                
+                // Debug: ver qué se está enviando
+                console.log('DocumentType value:', documentTypes[tipo]);
+                console.log('Archivo name:', archivo.name);
+                
+                // También enviar datos de texto si existen
+                const datosTexto = recopilarDatosTexto();
+                for (const key in datosTexto) {
+                    if (datosTexto[key]) {
+                        formData.append(key, datosTexto[key]);
+                    }
+                }
+                
+                const response = await fetch('/updatevaldata', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Resultado:', result);
+                mostrarMensaje('Documento subido exitosamente', 'success');
+                
+                // Actualizar estado del documento
+                documentos[tipo].subido = true;
+                documentos[tipo].archivo = archivo;
+                documentos[tipo].nombre = archivo.name;
+                
+                // Actualizar UI
+                document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).className = 'status status-completo';
+                document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = 'Completo';
+                document.getElementById(`btn${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = 'Documento subido';
+                document.getElementById(`btn${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).disabled = true;
+                document.getElementById(`file${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).disabled = true;
+                document.getElementById(`info${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = `Archivo: ${archivo.name}`;
+                
+                // Verificar si todos los documentos están completos
+                verificarCompletitud();
+                
+                mostrarMensaje(`${tipo} subido correctamente`, 'success');
+            } catch (error) {
+                console.error(`Error al subir ${tipo}:`, error);
+                mostrarMensaje(`Error al subir ${tipo}: ${error.message}`, 'error');
+                
+                // Limpiar el input de archivo
+                document.getElementById(`file${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).value = '';
+            }
+        }
+
+        // Función para guardar solo información de texto
+        async function guardarInformacionTexto() {
+            try {
+                mostrarMensaje('Guardando información...', 'info');
+                
+                const datos = recopilarDatosTexto();
+                const response = await fetch('/updatevaldata', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datos)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                mostrarMensaje('Información guardada correctamente', 'success');
+            } catch (error) {
+                console.error('Error al guardar información:', error);
+                mostrarMensaje('Error al guardar información: ' + error.message, 'error');
+            }
+        }
+
+        //===================================== CHECK COMPLETE =========================================
+        function verificarCompletitud() {
+            const todosCompletos = Object.values(documentos).every(doc => doc.subido);
+            document.getElementById('btnCompletar').disabled = !todosCompletos;
+        }
+
+        // Función para completar la validación
+        async function completarValidacion() {
+            try {
+                mostrarMensaje('Completando validación...', 'info');
+                
+                const response = await fetch('/completevalidation', {
+                    method: 'POST',
+                    body: JSON.stringify({ status: '3' }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                mostrarMensaje('Validación completada con éxito', 'success');
+                
+                // Redirigir o mostrar mensaje de éxito
+                setTimeout(() => {
+                    window.location.href = '/waitapprove'; // Cambiar por la URL correcta
+                }, 2000);
+            } catch (error) {
+                console.error('Error al completar validación:', error);
+                mostrarMensaje('Error al completar validación: ' + error.message, 'error');
+            }
+        }
+
+        //===================================== SHOW MESSAGES =========================================
+        function mostrarMensaje(mensaje, tipo) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        String.prototype.format = function () {
+            const args = arguments;
+            return this.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] !== 'undefined' ? args[number] : match;
+            });
+        };
+    </script>
+</body>
+</html>

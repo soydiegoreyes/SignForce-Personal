@@ -171,7 +171,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 page: page,
                 page_size: pageSize,
                 order_by: 'createdAtDoc',
-                order_dir: 'ASC'
+                order_dir: 'ASC',
+                type: 'pdf'
             };
 
             const response = await fetch('/statusDocs', {
@@ -763,7 +764,8 @@ window.sendDocChatMessage = async function() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 idDocument: chatDocId,
-                query: question,
+                prompt: question,
+                type: "interact",
                 history: chatHistory    // opcional si tu backend lo soporta
             })
         });

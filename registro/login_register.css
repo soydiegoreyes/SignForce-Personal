@@ -1,0 +1,720 @@
+/* Variables CSS para temas */
+:root {
+    /* Modo claro */
+    --bg-gradient-light: linear-gradient(180deg, #F0F1C5 0%, #EEEFE0 100%);
+    --text-color-light: #38303d;
+    --primary-light: #725f78;
+    --accent-light: #a38fac;
+    --card-bg-light: rgba(203, 203, 203, 0.25);
+
+    /* Modo oscuro */
+    --bg-gradient-dark: linear-gradient(180deg, #1a0f27 0%, #2c2043 50%, #522c64 100%);
+    --text-color-dark: #eecaff;
+    --primary-dark: #cda3d8;
+    --accent-dark: #b48fb9;
+    --card-bg-dark: #251a2c40;
+
+    /* Valores iniciales */
+    --bg-gradient: var(--bg-gradient-dark);
+    --text-color: var(--text-color-dark);
+    --primary: var(--primary-dark);
+    --accent: var(--accent-dark);
+    --card-bg: var(--card-bg-dark);
+}
+
+[data-theme="light"] {
+    --bg-gradient: var(--bg-gradient-light);
+    --text-color: var(--text-color-light);
+    --primary: var(--primary-light);
+    --accent: var(--accent-light);
+    --card-bg: var(--card-bg-light);
+}
+
+/* Estilos generales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: 
+        radial-gradient(circle at 70% 30%, 
+        rgba(187, 137, 245, 0.445) 0%, 
+        rgba(141, 214, 233, 0.205) 30%, 
+        transparent 60%),
+        radial-gradient(circle at 20% 80%, 
+        rgba(237, 91, 250, 0.349) 0%, 
+        rgba(3, 5, 94, 0.233) 40%, 
+        transparent 70%),
+        radial-gradient(circle at center, 
+        rgba(246, 145, 255, 0.6) 0%, 
+        rgba(131, 56, 236, 0.3) 30%, 
+        transparent 60%),
+        linear-gradient(180deg, 
+        #01000a 0%, 
+        #24083fd5 50%, 
+        #080025 100%);
+  
+  
+  
+    background-attachment: fixed;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Fondo con imagen */
+body::before {
+    content: '';
+    position: fixed;
+    top: 20;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--bg-gradient);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    z-index: -2;
+}
+
+/* Overlay que cambia con el tema */
+body::after {
+    content: '';
+    position: fixed;
+    top:90vh;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay);
+    z-index: -1;
+    transition: background 0.3s;
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-text {
+    opacity: 0;
+    animation: fadeInDown 0.8s ease-out forwards;
+}
+
+.animate-form {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
+.delay-4 { animation-delay: 0.8s; }
+.delay-5 { animation-delay: 1s; }
+
+/* Header */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 0.5rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background-color: #0f0f0f33;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Cuando haces hover sobre el header */
+header a:hover::after {
+    width: 100%;
+    left: 0;
+    background: var(--accent);
+}
+header a::after {
+    content: '';
+    position: sticky;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.logo i {
+    font-size: 2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Toggle de tema con íconos */
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-icon {
+    font-size: 1rem;
+    color: var(--accent);
+}
+
+
+
+/* Contenido principal - Sin scroll */
+.login-container {
+    display: flex;
+    height: calc(100vh);
+    overflow: auto;
+}
+
+.content-left {
+    width: 55%;
+    height: 100vh;
+    padding: 0 5%;
+    padding-top: 60px; /* Altura del header */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+    /* Ocultar scrollbar pero mantener funcionalidad */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+/* Ocultar scrollbar en WebKit (Chrome, Safari) */
+.content-left::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+}
+
+.content-right {
+    width: 45%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+/* Texto izquierdo */
+.hero-text {
+    max-width: 600px;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05); /* suave fondo translúcido */
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.hero-text h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 1.2rem;
+    color: var(--accent);
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+.hero-text p {
+    font-size: 1rem;
+    opacity: 0.85;
+    color: #e0e0e0;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.features {
+    margin-top: 2rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.feature-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.feature-icon {
+    color: var(--accent);
+    font-size: 1.4rem;
+    margin-top: 0.2rem;
+}
+.hero-text {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: 0.3s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Tarjeta de formulario */
+.form-container {
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh; /* 👈 altura máxima relativa a la ventana */
+    overflow-y: auto; /* 👈 activa el scroll vertical */
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-container {
+    display: block; /* o */
+    display: flex;
+    flex-direction: column;
+}
+
+.tab {
+    flex: 1;
+    padding: 1.2rem;
+    text-align: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab.active {
+    background: transparent;
+    color: var(--accent);
+    position: relative;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent);
+}
+
+.form-content {
+    padding: 1rem;
+}
+
+.form {
+    display: none;
+}
+
+.form.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    padding-left: 40px;
+    border: none;
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 40px;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 40px;
+    cursor: pointer;
+    color: var(--accent);
+}
+
+.btn {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(0deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.15);
+}
+
+.divider {
+    text-align: center;
+    position: relative;
+    margin: 1.5rem 0;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.divider::before {
+    left: 0;
+}
+
+.divider::after {
+    right: 0;
+}
+
+.social-login {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.social-btn {
+    flex: 1;
+    padding: 0.8rem;
+    border-radius: 10px;
+    background: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: var(--text-color);
+}
+
+.social-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.form-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.form-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+footer {
+    position: sticky;
+    padding: 1rem 5%;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.footer-column h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+}
+
+.footer-links {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.footer-links a:hover {
+    opacity: 1;
+}
+
+.social-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.social-links a {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    opacity: 0.7;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.social-links a:hover {
+    opacity: 1;
+    transform: translateY(-3px);
+    color: var(--accent);
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
+}
+
+/* Estilos específicos para el formulario de registro */
+.name-fields {
+    display: flex;
+    gap: 1rem;
+}
+
+.name-fields .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.notice-box {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(255, 255, 0, 0.1);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 5px 5px 0;
+}
+
+.notice-box p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.notice-box strong {
+    color: var(--accent);
+}
+
+.terms-checkbox {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.terms-checkbox input {
+    width: auto;
+    margin-right: 0.5rem;
+    padding: 0;
+}
+
+.terms-checkbox label {
+    margin-bottom: 0;
+}
+
+/* Aplica al contenedor con scroll, por ejemplo .form-container */
+.form-container::-webkit-scrollbar {
+width: 6px; /* ancho vertical */
+height: 6px; /* alto horizontal */
+}
+
+.form-container::-webkit-scrollbar-track {
+background: transparent; /* o un color suave como #f0f0f0 */
+}
+
+.form-container::-webkit-scrollbar-thumb {
+background-color: rgba(100, 100, 100, 0.3); /* color tenue */
+border-radius: 4px;
+}
+
+.form-container::-webkit-scrollbar-thumb:hover {
+background-color: rgba(100, 100, 100, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .login-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+    
+    .content-left, .content-right {
+        width: 100%;
+        padding: 2rem;
+    }
+    
+    .content-left {
+        text-align: center;
+        padding-bottom: 0;
+    }
+    
+    .features {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+    
+    .form-container {
+        max-width: 100%;
+    }
+    
+    .social-login {
+        flex-direction: column;
+    }
+
+    .name-fields {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        padding: 1rem;
+    }
+    
+    .logo {
+        font-size: 1.5rem;
+    }
+    
+    .form-content {
+        padding: 1.5rem;
+    }
+}

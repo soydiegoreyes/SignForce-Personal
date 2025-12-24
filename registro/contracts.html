@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SignForce - Firma de Documentos</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;600;800&family=Noto+Sans:wght@400;600">
+  <link rel="stylesheet" href="/registro/contracts.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="glass-header" id="mainHeader">
+    <div class="header-left">
+      <div class="liquid-bubble" id="liquidBubble"></div>
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+        </div>
+        <h2 class="brand-title">SignForce</h2>
+      </div>
+      <nav class="nav">
+        <a class="nav-item" href="#" data-item="home">Inicio</a>
+        <a class="nav-item" href="#contact" data-item="contact">Contacto</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <button class="btn-chip" id="goHome">Home</button>
+      <button class="btn-chip" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+    </div>
+  </header>
+
+  <main class="bg">
+    <section class="container" id="view-setup" aria-labelledby="setup-title">
+      <div class="content-left">
+        <h1 id="setup-title" class="headline">Configura tu firma</h1>
+        <ul class="features">
+          <li class="feature-item glass-card">
+            <div class="feature-icon" aria-hidden="true">📂</div>
+            <div>
+              <h3>Ubica el folder con tu E-FIRMA o FIEL</h3>
+              <p>Encontrarás tu llave y certificado habitualmente con la extension <strong>.KEY</strong> y <strong>.CER</strong></p>
+              <p>Tambien es habitual que tengan la extenision <strong>.PEM</strong></p>
+            </div>
+          </li>
+          <li class="feature-item glass-card">
+            <div class="feature-icon" aria-hidden="true">🛡️</div>
+            <div>
+              <h3>Con tu password validamos que tus llaves sean correctas</h3>
+              <p>Tu password es <strong>TUYO</strong> y no lo guardamos en ningún momento.</p>
+              <p>Por cada firma que realices te lo pediremos.</p>
+              <p>Tus llaves se mantienen cifradas y seguras.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="content-right">
+        <div class="form-container glass-panel">
+          <h2 class="form-title">Sube tus credenciales</h2>
+          <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
+            <div class="form-group">
+              <label for="keyFile">Llave privada RSA (.pem / .key / .der)</label>
+              <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
+            </div>
+            <div class="form-group">
+              <label for="certFile">Certificado público (.cer / .crt / .pem / .der)</label>
+              <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
+            </div>
+            <div class="form-group">
+              <label for="keyPassword">Contraseña de la llave</label>
+              <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
+            </div>
+            <button class="btn" type="submit">Continuar</button>
+            <p class="form-hint">* En este demo, la verificación es simulada para no requerir backend.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="container hidden" id="view-dashboard" aria-labelledby="dashboard-title">
+      <div class="content-left">
+        <h1 id="dashboard-title" class="headline">Tus documentos</h1>
+        <p class="lead">Revisa y firma tus documentos. El estado se sincroniza con un endpoint simulado y se guarda localmente.</p>
+
+        <div class="glass-panel p-block">
+          <h3>Datos del usuario y la empresa</h3>
+          <div class="feature-item glass-card fade-in delay-1">
+              <i class="fas fa-shield-alt feature-icon"></i>
+              <div>
+                  <h3 class="text-primary text-xl font-bold mb-2">Llaves registrads</h3>
+                  <p>llave.key</p>
+                  <p>llave.cer</p>
+                  <form id="profileForm" class="grid-2">
+                    <div class="form-group">
+                      <label for="nombreUsuario">Password</label>
+                      <input class="input-field" id="keypass" type="password" placeholder="************" />
+                    </div>
+                  </form>
+              </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-right">
+        <div id="docsList" class="docs-list">
+          <!-- Cards generadas por JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="glass-panel footer">
+    <p>&copy; 2025 SignForce. Todos los derechos reservados.</p>
+  </footer>
+
+  <template id="doc-card-template">
+    <article class="doc-card glass-panel">
+      <header class="doc-card-header">
+        <h4 class="doc-title"></h4>
+        <span class="badge" data-status>—</span>
+      </header>
+      <div class="doc-viewer" data-doc-body></div>
+      <div class="doc-actions">
+        <button class="btn ghost" data-preview>Vista previa</button>
+        <button class="btn" data-sign>Firmar</button>
+      </div>
+      <div class="doc-meta" data-meta></div>
+    </article>
+  </template>
+
+  <!-- Modal de vista previa -->
+  <dialog id="previewModal" class="modal glass-panel">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="previewTitle">Vista previa</h3>
+        <button class="btn-chip ghost" id="closePreview" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="doc-viewer modal-body" id="previewBody"></div>
+      <footer class="modal-footer">
+        <button class="btn ghost" id="closePreview2">Cerrar</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script src="/registro/contracts.js"></script>
+</body>
+</html>

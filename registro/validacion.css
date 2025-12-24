@@ -1,0 +1,397 @@
+/* Variables CSS para temas (consistentes con los anteriores) */
+:root {
+    /* Modo claro */
+    --bg-gradient-light: linear-gradient(180deg, #F0F1C5 0%, #EEEFE0 100%);
+    --text-color-light: #343d30;
+    --primary-light: #66785F;
+    --accent-light: #91AC8F;
+    --card-bg-light: rgba(203, 203, 203, 0.25);
+    --success-light: #4CAF50;
+    --warning-light: #FFC107;
+    --danger-light: #F44336;
+
+    /* Modo oscuro */
+    --bg-gradient-dark: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    --text-color-dark: #FAFFCA;
+    --primary-dark: #BBD8A3;
+    --accent-dark: #9bb98f;
+    --card-bg-dark: #1a2c2540;
+    --success-dark: #81C784;
+    --warning-dark: #FFD54F;
+    --danger-dark: #E57373;
+
+    /* Valores iniciales */
+    --bg-gradient: var(--bg-gradient-dark);
+    --text-color: var(--text-color-dark);
+    --primary: var(--primary-dark);
+    --accent: var(--accent-dark);
+    --card-bg: var(--card-bg-dark);
+    --success: var(--success-dark);
+    --warning: var(--warning-dark);
+    --danger: var(--danger-dark);
+}
+
+[data-theme="light"] {
+    --bg-gradient: var(--bg-gradient-light);
+    --text-color: var(--text-color-light);
+    --primary: var(--primary-light);
+    --accent: var(--accent-light);
+    --card-bg: var(--card-bg-light);
+    --success: var(--success-light);
+    --warning: var(--warning-light);
+    --danger: var(--danger-light);
+}
+
+/* Estilos generales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-color);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+    text-align: left;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin: 2rem 0 1rem;
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+/* Header */
+header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 0.5rem 2rem; /* Cambié de 5% a rem fijo */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* distribuye logo, nav y botón */
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background-color: #0f0f0f33;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.logo i {
+    font-size: 2rem;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    padding: 0.5rem 0;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* tarjeta flotante*/
+.form-container {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.form-tabs {
+    display: flexbox;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tab {
+    padding: 0.5rem 1rem;
+    background: rgba(255,255,255,0.08);
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.tab:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.tab.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.form-content {
+    color: #ddd;
+}
+
+
+/* Lista de documentos */
+.documentos-list {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.documento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.documento-item:last-child {
+    border-bottom: none;
+}
+
+.documento-item > div {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Estados de los documentos */
+.status {
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 100px;
+    text-align: center;
+}
+
+.status-pendiente {
+    background-color: var(--warning);
+    color: #000;
+}
+
+.status-en-revision {
+    background-color: var(--accent);
+    color: #000;
+}
+
+.status-aprobado {
+    background-color: var(--success);
+    color: #000;
+}
+
+.status-rechazado {
+    background-color: var(--danger);
+    color: #fff;
+}
+
+/* Botones */
+.btn {
+    padding: 0.7rem 1.3rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-upload {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-upload:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-completar {
+    background: var(--success);
+    color: white;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.btn-completar:hover:not(:disabled) {
+    background: #66BB6A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-completar:disabled {
+    background: #616161;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-text {
+    opacity: 0;
+    animation: fadeInDown 0.8s ease-out forwards;
+}
+
+.animate-form {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
+.delay-4 { animation-delay: 0.8s; }
+.delay-5 { animation-delay: 1s; }
+
+/* Efecto para cuando todos los documentos estén aprobados */
+.todos-aprobados .btn-completar {
+    animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    
+    .documento-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .documento-item > div {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    .btn {
+        padding: 0.6rem 1rem;
+    }
+    
+    .status {
+        min-width: 80px;
+    }
+}
