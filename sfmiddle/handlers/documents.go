@@ -88,10 +88,6 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	if request.MultipartForm.File != nil {
 		var docType string = request.MultipartForm.Value["documentType"][0]
 
-		/*if docTypeVal, exists := request.MultipartForm.Value["documentExt"]; exists && len(docTypeVal) > 0 {
-			docType = docTypeVal[0]
-		}*/
-
 		// Buscar el archivo en el campo "document"
 		if files, exists := request.MultipartForm.File["document"]; exists && len(files) > 0 {
 			for i, fileHeader := range files {
@@ -117,26 +113,56 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					processedFiles = append(processedFiles, docData)
 					continue
 				}
-
-				switch docType {
-				case "template":
-					docData.Path = fmt.Sprintf("%s/%s/%s/templates/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
-				case "logoinst":
-					docData.Path = fmt.Sprintf("%s/%s/logos/", os.Getenv("GENERIC_DOC_PATH"), idInst)
-					fileHeader.Filename = uuid.NewString() + "_" + fileHeader.Filename
-				default:
-					docData.Path = fmt.Sprintf("%s/%s/%s/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
-				}
-
 				file, err = fileHeader.Open()
 				if err != nil {
 					http.Error(respWriter, fmt.Sprintf("error abriendo archivo %s: %v", fileHeader.Filename, err), http.StatusBadRequest)
 					return
 				}
 				defer file.Close()
+				docBytes, err := io.ReadAll(file)
+				if err != nil {
+					http.Error(respWriter, fmt.Sprintf("error leyendo archivo %s: %v", fileHeader.Filename, err), http.StatusBadRequest)
+				}
+				// se manda el filepath para comprobar que se guardó el archivo
+				docData.Hash, err = utilities.GetHash(docBytes, configs.HashConf)
+				if err != nil {
+					fmt.Println("Error obteniendo hash de archivo:", err)
+					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
+					return
+				}
 
-				var filePath string
+				var tablename string
+				var cols []string
+				var vals []interface{}
+				switch docType {
+				case "generic":
+					docData.Path = fmt.Sprintf("%s/%s/%s/", os.Getenv("GENERIC_DOC_PATH"), idInst, idUser)
+					tablename = "documents"
+					cols = []string{"documentHash", "ownerInstDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
+					vals = []interface{}{docData.Hash, idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
+
+				case "template":
+					docData.Path = fmt.Sprintf("%s/%s/%s/", os.Getenv("TEMPLATE_DOC_PATH"), idInst, idUser)
+					tablename = "doctemplates"
+					cols = []string{"ownerInstDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
+					vals = []interface{}{idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
+				case "logoinst":
+					docData.Path = fmt.Sprintf("%s/%s/logos/", os.Getenv("GENERIC_DOC_PATH"), idInst)
+					fileHeader.Filename = uuid.NewString() + "_" + fileHeader.Filename
+					tablename = "images"
+
+				default:
+					fmt.Println("Tipo de documento desconocido")
+					return
+				}
+
 				// Guardar el archivo y obtener la ruta /ruta_general/idInst/idUser/midoc.pdf
+				_, err = file.Seek(0, io.SeekStart)
+				if err != nil {
+					http.Error(respWriter, "Error reposicionando archivo", http.StatusInternalServerError)
+					return
+				}
+				var filePath string
 				filePath, err = utilities.GuardarArchivo(
 					file, // archivo completo
 					docData.Path,
@@ -145,23 +171,13 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					idUser,
 					false,
 				)
-				if err != nil {
+				if err != nil || filePath == "" {
 					fmt.Println("Error guardando archivo:", err)
 					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
 					return
 				}
 
-				docData.Hash, err = utilities.GetHash(filePath, configs.HashConf)
-				if err != nil {
-					fmt.Println("Error obteniendo hash de archivo:", err)
-					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
-					return
-				}
-
-				// Actualizar datos en la base de datos
-				cols := []string{"documentHash", "ownerInstDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
-				vals := []interface{}{docData.Hash, idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
-				idDoc, err := db.DB_con.GenericInsert("documents", cols, vals)
+				idDoc, err := db.DB_con.GenericInsert(tablename, cols, vals)
 				if err != nil {
 					fmt.Printf("Error actualizando datos en DB: %v\n", err)
 					http.Error(respWriter, "Error actualizando datos", http.StatusInternalServerError)
@@ -282,7 +298,13 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		docWheres = map[string][]string{
 			"idDocument": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
 		}
-
+	case "template":
+		tableName = "doctemplates"
+		attrs = append(attrs, "idTemplate", "documentPath", "documentName", "documentExt", "authUseStatus", "authRoleStatus", "activeDoc", "sizeB", "abstractDoc")
+		idColMain = "idTemplate"
+		docWheres = map[string][]string{
+			"idTemplate": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
+		}
 	default:
 		http.Error(respWriter, "Tipo de documento no válido", http.StatusBadRequest)
 		return
@@ -437,12 +459,28 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
 		return
 	}
-
-	// ===== Configuración base =====
-	attrs := []string{
-		"documentHash", "createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
-		"deletedReasonDoc", "documentPath", "documentName", "documentExt", "sizeB",
-		"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
+	var attrs []string
+	var tablename, idCol string
+	switch req.Type {
+	case "docx":
+		tablename = "doctemplates"
+		idCol = "idTemplate"
+		attrs = []string{
+			"createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
+			"documentPath", "documentName", "documentExt", "sizeB",
+			"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
+		}
+	case "pdf":
+		tablename = "documents"
+		idCol = "idDocument"
+		attrs = []string{
+			"documentHash", "createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
+			"deletedReasonDoc", "documentPath", "documentName", "documentExt", "sizeB",
+			"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
+		}
+	default:
+		fmt.Println("No debería ocurrir esto.")
+		return
 	}
 
 	// ===== Parámetros de paginación =====
@@ -469,7 +507,6 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"creatorUserDoc_fk": {idUser},
 		"ownerInstDoc_fk":   {idInst},
-		//"ownerTeamDoc_fk":   {idTeam},
 	}
 
 	logic := ""
@@ -479,7 +516,7 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	case len(req.IdDocs) != 0:
 		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND idDocument"
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND idDocument"
-		wheres["idDocument"] = req.IdDocs
+		wheres[idCol] = req.IdDocs
 
 	case len(req.PathDocs) != 0:
 		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentPath"
@@ -495,19 +532,19 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
 		wheres["createdAtDoc"] = []string{req.DateFrom, req.DateTo}
-		wheres["idDocument"] = []string{orderDir}
+		wheres[idCol] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 
 	default:
 		// Caso general: sin filtros, solo paginación
 		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk ORDER BY " + orderBy
 		logic = "creatorUserDoc_fk AND ownerInstDoc_fk ORDER BY " + orderBy
-		wheres["idDocument"] = []string{orderDir}
+		wheres[idCol] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 	}
 
 	// ===== Ejecutar SELECT =====
-	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
+	docData, err := db.DB_con.GenericSelect(tablename, idCol, attrs, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener documentos: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -516,7 +553,7 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Obtener total de documentos =====
 	baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s'", idUser, idInst)
 
-	query := fmt.Sprintf("SELECT COUNT(*) FROM documents WHERE %s;", baseWhere)
+	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s;", tablename, baseWhere)
 	var total int
 	err = db.DB_con.DB.QueryRow(query).Scan(&total)
 	if err != nil {
@@ -567,14 +604,64 @@ func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Estructura de entrada =====
 	type docQuery struct {
 		IdDocument string `json:"idDocument"`
-		Query      string `json:"query"`
+		Prompt     string `json:"prompt"`
+		Type       string `json:"type"`
 	}
 	var dq docQuery
 	err = json.NewDecoder(request.Body).Decode(&dq)
 	if err != nil {
 		http.Error(respWriter, "Error al decodificar json", http.StatusBadRequest)
 	}
-	resp := iapackage.InteractDoc(dq.IdDocument, dq.Query)
+	resp := iapackage.InteractDoc(dq.IdDocument, dq.Prompt, dq.Type)
+	if resp == nil {
+		http.Error(respWriter, "Error en iafunctions al obtener respuesta llm", http.StatusInternalServerError)
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(resp)
+}
+
+func InteractAgent(respWriter http.ResponseWriter, request *http.Request) {
+
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	_, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	//idTeam, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Estructura de entrada =====
+	type agentQuery struct {
+		IdDocument string `json:"idDocument,omitempty"`
+		Query      string `json:"query"`
+		Type       string `json:"type"`
+	}
+	var aq agentQuery
+	err = json.NewDecoder(request.Body).Decode(&aq)
+	if err != nil {
+		http.Error(respWriter, "Error al decodificar json", http.StatusBadRequest)
+	}
+	resp := iapackage.InteractDoc(aq.IdDocument, aq.Query, aq.Type)
 	if resp == nil {
 		http.Error(respWriter, "Error en iafunctions al obtener respuesta llm", http.StatusInternalServerError)
 	}

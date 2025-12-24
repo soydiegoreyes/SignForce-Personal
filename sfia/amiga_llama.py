@@ -12,7 +12,7 @@ import os
 from datetime import datetime as dt
 import dotenv
 import ollama
-
+from agent import run_agent
 
 dotenv.load_dotenv()
 #________________________________________________________________________________________________________ 
@@ -135,8 +135,8 @@ async def actions(data: dict = Body(...)):
 async def interact(data: dict = Body(...)):
     # esta funcion se puede optimizar con memoria de conversacion con redis
     if os.path.exists(data["path"]):
-        if data["query"] != "":
-            msj = data["query"]
+        if data["prompt"] != "":
+            msj = data["prompt"]
         msj += prompts[0]
         doc = fitz.open(data["path"])
         for page in doc.pages():
@@ -151,6 +151,11 @@ async def interact(data: dict = Body(...)):
     else:
         print("No se encontró el documento")
         return {"status":"error","message": "No existe el documento", "date": dt.now().isoformat()}
+
+@app.post("/agent")
+async def agent(data: dict =Body(...)):
+    resp = run_agent(data["prompt"], "qwen3:4b")
+    return {"status": True, "message":clean_text(resp)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host = "0.0.0.0", port = 4999)

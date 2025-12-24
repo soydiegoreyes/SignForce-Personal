@@ -84,12 +84,9 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId, docName, idDocumen
 	// IssuerSerialV2 (Opcional simplificado, o puedes usar la estructura IssuerSerial)
 	//isv2 := cert.CreateElement("xades:IssuerSerialV2") ******************************************* DEVOLVER A V2
 	isv2 := cert.CreateElement("xades:IssuerSerial")
-	// Nota: Algunas implementaciones requieren aquí el DER encoded base64,
-	// pero incluiremos los campos ds por compatibilidad si es necesario.
-	//isv2.SetText(utilities.Encode_b64([]byte(k.Certificate.Issuer.String() + k.Certificate.SerialNumber.String())))
 	issuerName := k.Certificate.Issuer.String()
 	isv2.CreateElement("ds:X509IssuerName").SetText(issuerName)
-	// El Serial Number debe ser el número decimal (no hexadecimal)
+	// El Serial Number debe ser el número decimal
 	serialNumber := k.Certificate.SerialNumber.String()
 	isv2.CreateElement("ds:X509SerialNumber").SetText(serialNumber)
 
@@ -107,7 +104,6 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId, docName, idDocumen
 	if err != nil {
 		fmt.Println("error en canonización", err)
 	}
-	//spHashB64, _ := utilities.GetHash(signedPropsBytes, configs.HashConf)
 
 	// =========================================================================
 	// PASO 2: CONSTRUIR SignedInfo

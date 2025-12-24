@@ -141,6 +141,7 @@ func main() {
 	mux.HandleFunc("/payment", payment)
 	mux.HandleFunc("/dashboard/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
+	mux.HandleFunc("/mytemplates", myTemplates)
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
 	mux.HandleFunc("/viewSignature", viewSignature) // obtiene los equipos de una institucion
@@ -295,6 +296,13 @@ func myDocuments(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	http.ServeFile(respWriter, request, "./../sffront/documentFlow/documents.html")
+}
+func myTemplates(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/template_man.html")
 }
 func myFolders(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
