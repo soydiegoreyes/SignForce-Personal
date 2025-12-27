@@ -159,7 +159,9 @@ async function loadTemplates() {
         }
         
         const data = await response.json();
-        currentTemplates = Object.values(data.data || {});
+        currentTemplates = currentTemplates = Object.entries(data.data || {}).map(
+            ([id, template]) => ({id, ...template})
+        );
         totalTemplates = data.total || currentTemplates.length;
         
         renderTemplates();
@@ -212,11 +214,6 @@ function createTemplateCard(template) {
     const card = document.createElement('div');
     card.className = 'glass-card rounded-xl overflow-hidden fade-in';
     
-    // Determinar estado
-    const isDraft = template.status === 'draft' || !template.status;
-    const isPublished = template.status === 'published';
-    const isProcessing = template.status === 'processing';
-    
     // Formatear fecha
     const createdDate = template.createdAtDoc ? 
         new Date(template.createdAtDoc).toLocaleDateString('es-MX', {
@@ -233,12 +230,12 @@ function createTemplateCard(template) {
             <div class="flex justify-between items-start mb-4">
                 <div class="flex-1">
                     <h3 class="text-lg font-bold text-primary mb-1 truncate">${template.documentName || 'Plantilla sin nombre'}</h3>
-                    <p class="text-secondary text-sm">${template.documentExt?.toUpperCase() || 'DOCX'} • ${sizeFormatted}</p>
+                    <p class="text-secondary text-sm">${template.documentExt || 'Sin extensión'} • ${sizeFormatted}</p>
                 </div>
                 <div>
-                    ${isDraft ? '<span class="status-badge status-draft">Borrador</span>' : 
-                      isPublished ? '<span class="status-badge status-published">Publicada</span>' : 
-                      '<span class="status-badge status-processing">Procesando</span>'}
+                    ${template.authUseStatus === "1"? '<span class="status-badge status-public">Pública</span>' : 
+                        template.authUseStatus === "2" ? '<span class="status-badge status-private">Privada</span>' : 
+                      '<span class="status-badge status-inactive">Inactiva</span>'}
                 </div>
             </div>
             
@@ -250,20 +247,16 @@ function createTemplateCard(template) {
             
             <div class="flex items-center justify-between text-sm text-secondary mb-6">
                 <span>Creada: ${createdDate}</span>
-                ${template.aiGenerated ? '<span class="template-badge"><span class="material-symbols-outlined text-xs">auto_awesome</span>IA</span>' : ''}
             </div>
             
             <div class="flex gap-2">
-                <button class="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors flex items-center justify-center gap-2 fill-template-btn" data-id="${template.id || template.documentHash}">
+                <button class="flex-1 px-3 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors flex items-center justify-center gap-2 fill-template-btn" data-id="${template.id}">
                     <span class="material-symbols-outlined text-sm">edit_document</span>
                     Llenar
                 </button>
-                <button class="flex-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors flex items-center justify-center gap-2" onclick="downloadTemplate('${template.documentPath}', '${template.documentName}', '${template.id || template.documentHash}')">
+                <button class="flex-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors flex items-center justify-center gap-2" onclick="downloadTemplate('${template.documentPath}', '${template.documentName+"."+template.documentExt}', '${template.id}')">
                     <span class="material-symbols-outlined text-sm">download</span>
                     Descargar
-                </button>
-                <button class="px-3 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors" onclick="viewTemplate('${template.documentPath}', '${template.id || template.documentHash}')">
-                    <span class="material-symbols-outlined text-sm">visibility</span>
                 </button>
             </div>
         </div>
@@ -286,14 +279,13 @@ function updateStats() {
     // Por ahora, calculamos de los datos locales
     
     const total = totalTemplates;
-    const published = currentTemplates.filter(t => t.status === 'published').length;
-    const draft = currentTemplates.filter(t => !t.status || t.status === 'draft').length;
-    const aiGenerated = currentTemplates.filter(t => t.aiGenerated).length;
+    const published = currentTemplates.filter(t => t.authUseStatus === '1').length;
+    const priv = currentTemplates.filter(t => !t.authUseStatus || t.authUseStatus === '2').length;
     
     document.getElementById('totalTemplates').textContent = total;
     document.getElementById('publishedTemplates').textContent = published;
-    document.getElementById('draftTemplates').textContent = draft;
-    document.getElementById('aiGenerated').textContent = aiGenerated;
+    document.getElementById('privateTemplates').textContent = priv;
+    
 }
 
 // Renderizar paginación
@@ -791,16 +783,6 @@ async function downloadGeneratedPdf() {
     }
 }
 
-// Funciones auxiliares
-function viewTemplate(path, id) {
-    // Usar la misma función viewDocument de documents.js
-    if (window.viewDocument) {
-        window.viewDocument(path.split('/').pop() || 'plantilla', id);
-    } else {
-        // Implementación alternativa
-        window.open(`/downloadDoc?id=${id}&type=template`, '_blank');
-    }
-}
 
 async function downloadTemplate(path, name, id) {
     try {
@@ -879,5 +861,4 @@ window.openAIModal = openAIModal;
 window.closeAIModal = closeAIModal;
 window.openFillModal = openFillModal;
 window.closeFillModal = closeFillModal;
-window.viewTemplate = viewTemplate;
 window.downloadTemplate = downloadTemplate;
