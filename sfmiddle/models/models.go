@@ -115,9 +115,11 @@ type FolderRequest struct {
 }
 
 type LLMrequest struct {
+	IdInst string `json:"idInst"`
+	IdUser string `json:"idUser"`
 	Path   string `json:"path"`
 	Action int    `json:"action,omitempty"`
-	Prompt string `json:"prompt,omitempty"`
+	Prompt string `json:"prompt"`
 }
 
 type SignDoc struct {

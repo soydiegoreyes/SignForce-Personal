@@ -74,16 +74,14 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId, docName, idDocumen
 	ssp.CreateElement("xades:SigningTime").SetText(gentime)
 
 	// Cambiado a SigningCertificateV2
-	//scv2 := ssp.CreateElement("xades:SigningCertificateV2") ******************************************* DEVOLVER A V2
-	scv2 := ssp.CreateElement("xades:SigningCertificate")
+	scv2 := ssp.CreateElement("xades:SigningCertificateV2")
 	cert := scv2.CreateElement("xades:Cert")
 	digest := cert.CreateElement("xades:CertDigest")
 	digest.CreateElement("ds:DigestMethod").CreateAttr("Algorithm", AlgSHA256)
 	digest.CreateElement("ds:DigestValue").SetText(certHashB64)
 
-	// IssuerSerialV2 (Opcional simplificado, o puedes usar la estructura IssuerSerial)
-	//isv2 := cert.CreateElement("xades:IssuerSerialV2") ******************************************* DEVOLVER A V2
-	isv2 := cert.CreateElement("xades:IssuerSerial")
+	// IssuerSerialV2 (Opcional simplificado, la estructura IssuerSerial está obsoleta)
+	isv2 := cert.CreateElement("xades:IssuerSerialV2")
 	issuerName := k.Certificate.Issuer.String()
 	isv2.CreateElement("ds:X509IssuerName").SetText(issuerName)
 	// El Serial Number debe ser el número decimal

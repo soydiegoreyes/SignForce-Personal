@@ -348,7 +348,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		}
 	case "template":
 		// Verificar permisos y estado del documento
-		if docInfo["activeTemplate"] != "1" {
+		if docInfo["activeDoc"] != "1" {
 			http.Error(respWriter, "Documento inactivo", http.StatusForbidden)
 			return
 		}
@@ -593,8 +593,8 @@ func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	_, ok1 := claims["uid"].(string)
-	_, ok2 := claims["iid"].(string)
+	idInst, ok1 := claims["uid"].(string)
+	idUser, ok2 := claims["iid"].(string)
 	//idTeam, ok3 := claims["team"].(string)
 	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
@@ -612,7 +612,7 @@ func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		http.Error(respWriter, "Error al decodificar json", http.StatusBadRequest)
 	}
-	resp := iapackage.InteractDoc(dq.IdDocument, dq.Prompt, dq.Type)
+	resp := iapackage.InteractDoc(dq.IdDocument, idInst, idUser, dq.Prompt, dq.Type)
 	if resp == nil {
 		http.Error(respWriter, "Error en iafunctions al obtener respuesta llm", http.StatusInternalServerError)
 	}
@@ -642,8 +642,8 @@ func InteractAgent(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	_, ok1 := claims["uid"].(string)
-	_, ok2 := claims["iid"].(string)
+	idInst, ok1 := claims["uid"].(string)
+	idUser, ok2 := claims["iid"].(string)
 	//idTeam, ok3 := claims["team"].(string)
 	if !ok1 || !ok2 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
@@ -661,7 +661,7 @@ func InteractAgent(respWriter http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		http.Error(respWriter, "Error al decodificar json", http.StatusBadRequest)
 	}
-	resp := iapackage.InteractDoc(aq.IdDocument, aq.Query, aq.Type)
+	resp := iapackage.InteractDoc(aq.IdDocument, idInst, idUser, aq.Query, aq.Type)
 	if resp == nil {
 		http.Error(respWriter, "Error en iafunctions al obtener respuesta llm", http.StatusInternalServerError)
 	}

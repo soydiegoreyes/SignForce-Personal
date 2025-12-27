@@ -93,7 +93,7 @@ func GetAbstractDoc(idDoc string) {
 	}
 }
 
-func InteractDoc(idDoc, prompt, typeIA string) *models.LLMresp {
+func InteractDoc(idDoc, idInst, idUser, prompt, typeIA string) *models.LLMresp {
 	var fileName string
 	if idDoc != "" {
 		attrs := []string{"documentPath", "documentName", "documentExt", "activeDoc"}
@@ -125,6 +125,8 @@ func InteractDoc(idDoc, prompt, typeIA string) *models.LLMresp {
 
 	// Modelo para request a api de LLM
 	payload := models.LLMrequest{
+		IdInst: idInst,
+		IdUser: idUser,
 		Path:   fileName,
 		Prompt: prompt,
 	}
@@ -163,6 +165,7 @@ func InteractDoc(idDoc, prompt, typeIA string) *models.LLMresp {
 			fmt.Println("Error al convertir respuesta a JSON:", err)
 			return nil
 		}
+		fmt.Println("Message: ", llamaresp.Message)
 		return &llamaresp
 	} else {
 		fmt.Println("Error en servicio llm: ", err)

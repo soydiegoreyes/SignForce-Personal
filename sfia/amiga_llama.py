@@ -154,8 +154,9 @@ async def interact(data: dict = Body(...)):
 
 @app.post("/agent")
 async def agent(data: dict =Body(...)):
-    resp = run_agent(data["prompt"], "qwen3:4b")
-    return {"status": True, "message":clean_text(resp)}
+    
+    resp = run_agent(data["prompt"], data["idInst"], data["idUser"], "qwen3:4b")
+    return {"status": True, "message":resp}
 
 if __name__ == "__main__":
     uvicorn.run(app, host = "0.0.0.0", port = 4999)
