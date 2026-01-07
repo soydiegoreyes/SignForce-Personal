@@ -39,6 +39,8 @@
             position: relative;
             overflow: hidden;
             display: flex;
+            max-height: 30vh;
+            height: 30vh;
             flex-direction: column;
         }
         
@@ -103,10 +105,10 @@
         }
 
         .badge-sign-req {
-            background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+            background: rgba(68, 239, 105, 0.15);
+            color: #a5fccc;
+            border: 1px solid rgba(68, 239, 105, 0.3);
+            box-shadow: 0 0 8px rgba(68, 239, 105, 0.2);
         }
 
         .badge-info-only {
@@ -190,7 +192,7 @@
                             </span>
                             <span class="text-xs text-gray-400" id="headerIdInvite">ID: ...</span>
                         </div>
-                        
+                        <p>Invitación de:</p>
                         <h2 class="text-3xl font-bold text-white mb-1" id="headerEmisorName">Cargando...</h2>
                         <p class="text-lg text-gray-400 mb-6" id="headerInstName">...</p>
                         
@@ -467,25 +469,24 @@
                 // Determinar icono según extensión
                 let iconName = 'description';
                 let iconColor = 'text-gray-400';
-                if(doc.documentExt === 'pdf') { iconName = 'picture_as_pdf'; iconColor = 'text-red-400'; }
-                if(doc.documentExt === 'xml') { iconName = 'code'; iconColor = 'text-orange-400'; }
+                if(doc.documentExt === 'pdf') {iconName = 'visibility'; iconColor = 'text-blue-500';}
+                else {iconName = 'indeterminate_question_box'; iconColor = 'text-orange-400';}
 
                 const card = document.createElement('div');
                 card.className = 'tech-card p-5 group';
                 card.innerHTML = `
                     <div class="flex justify-between items-start mb-4">
-                        <div class="p-3 bg-white/5 rounded-lg group-hover:bg-white/10 transition-colors">
-                            <span class="material-symbols-outlined ${iconColor} text-2xl">${iconName}</span>
+                        <div class="p-3 bg-white/5 rounded-lg group-hover:bg-white/10 transition-colors flex items-center gap-2">
+                            <div class="p-1 bg-white/20 rounded-md flex items-center">
+                                <button onclick="viewDocument('${doc.documentFullName}', '${doc.idDocument}')">
+                                    <span class="material-symbols-outlined ${iconColor} text-2xl shrink-0">${iconName}</span>
+                                </button>
+                            </div>
+                            
+                            <h4 class="text-lg font-semibold text-white line-clamp-2" title="${doc.documentFullName}">${doc.documentName || doc.documentFullName}</h4>
                         </div>
-                        ${isSign 
-                            ? `<span class="badge-neon badge-sign-req"><span class="material-symbols-outlined text-[10px]">edit</span> Firmar</span>`
-                            : `<span class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span> Info</span>`
-                        }
                     </div>
-                    
-                    <h4 class="text-lg font-semibold text-white mb-2 line-clamp-2" title="${doc.documentFullName}">${doc.documentName || doc.documentFullName}</h4>
-                    
-                    <div class="text-sm text-gray-400 mb-4 h-10 overflow-hidden relative">
+                    <div class="text-sm text-gray-400 mb-4 p-2 h-10 overflow-y-auto h-[15vh]">
                         ${doc.abstract || item.comment || 'Sin descripción disponible para este documento.'}
                         <div class="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[#151c2d] to-transparent"></div>
                     </div>
@@ -494,9 +495,10 @@
                         <div class="text-xs text-gray-500">
                             ${(doc.documentExt || 'FILE').toUpperCase()} • ${(item.document.documentSize || '1.2 MB')} 
                         </div>
-                        <button onclick="viewDocument('${doc.documentFullName}', '${doc.idDocument}')" class="text-sm text-blue-400 hover:text-white font-medium flex items-center gap-1 transition-colors">
-                            Ver documento <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                        </button>
+                        ${isSign 
+                            ? `<span class="badge-neon badge-sign-req"><span class="material-symbols-outlined text-[10px]">edit</span> Firmar</span>`
+                            : `<span class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span> Info</span>`
+                        }
                     </div>
                 `;
                 grid.appendChild(card);

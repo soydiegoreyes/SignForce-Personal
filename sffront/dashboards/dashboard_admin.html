@@ -427,7 +427,7 @@
         <div class="flex flex-1 justify-end gap-8">
             <div class="flex items-center gap-4">
                 <span class="text-sm text-secondary">Admin Master</span>
-                <button id="logoutBtn" class="btn-secondary flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 text-sm font-bold leading-normal tracking-[0.015em]">
+                <button id="logoutBtn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 text-sm font-bold text-purple-300 leading-normal tracking-[0.015em]">
                     <span class="material-symbols-outlined mr-2 text-sm">logout</span>
                     Salir
                 </button>
@@ -1914,6 +1914,33 @@
             // Implementar lógica de edición
         };
 
+        async function logout() {
+            if (confirm('¿Cerrar sesión como administrador?')) {
+                try {
+                    const response = await fetch('/logoutUser', {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) { 
+                        // BORRAR TOKEN EN SESSION STORAGE
+                        sessionStorage.removeItem('aut');
+                        window.location.href = '/login';
+                        
+                    } else {
+                        sessionStorage.removeItem('aut');
+                        throw new Error(data.message || 'Error al cerrar sesión');
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+        }
+
         // Función para eliminar usuario (placeholder)
         window.deleteUser = function(userId) {
             if (confirm(`¿Estás seguro de eliminar al usuario ${userId}? Esta acción no se puede deshacer.`)) {
@@ -1932,14 +1959,7 @@
         function init() {
             // Cargar datos iniciales del dashboard
             loadDashboardData();
-            
-            // Configurar logout
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                if (confirm('¿Cerrar sesión como administrador?')) {
-                    window.location.href = '/logout';
-                }
-            });
-            
+            document.getElementById("logoutBtn").addEventListener("click", logout)
             // Configurar tema oscuro/claro si es necesario
             const themeToggle = document.getElementById('themeToggle');
             if (themeToggle) {

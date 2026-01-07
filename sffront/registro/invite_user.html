@@ -5,6 +5,8 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Registro de Usuario - SignForce</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Añadir TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -22,7 +24,7 @@
         .input-tech {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #000;                     /* <-- fuerza negro */
+            color: #000;
             transition: background 0.3s ease,
                         border-color 0.3s ease,
                         box-shadow 0.3s ease;
@@ -50,9 +52,159 @@
             filter: brightness(1.1);
         }
 
+        /* Estilos para la captura de foto */
+        #photoOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #videoContainer {
+            position: relative;
+            width: 90%;
+            max-width: 640px;
+            height: 70vh;
+            max-height: 640px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Espejo para que sea intuitivo */
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 450px;
+            border: 3px solid rgba(59, 130, 246, 0.8);
+            border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+            box-shadow: 
+                0 0 0 2000px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(59, 130, 246, 0.3);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .capture-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 3px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .capture-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .capture-btn:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            background: #ef4444;
+        }
+
+        .cancel-btn:hover {
+            background: #dc2626;
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            padding: 0 20px;
+            max-width: 500px;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+            margin-top: 10px;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #captureStatus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 20;
+        }
+
+        /* Modal de procesamiento */
+        #processingModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
         /* Animaciones */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-pulse { animation: pulse 2s infinite; }
     </style>
 </head>
 <body class="font-sans bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
@@ -133,6 +285,7 @@
 
                 <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-6">
                     
+                    <!-- Datos de usuario -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nombre(s)</label>
@@ -173,6 +326,46 @@
                         </div>
                     </div>
 
+                    <!-- Sección de foto KYC -->
+                    <div class="border-t border-white/10 pt-6 mt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Verificación de Identidad (KYC)</h3>
+                                <p class="text-gray-400 text-sm">Toma una foto de tu rostro para completar el proceso de verificación</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+                            <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                                <div class="flex-1">
+                                    <p class="text-gray-300 mb-2 text-sm">
+                                        <span class="material-symbols-outlined text-sm align-middle mr-2">camera</span>
+                                        Requerimos una foto actual de tu rostro para validar tu identidad.
+                                    </p>
+                                    <ul class="text-gray-400 text-xs space-y-1 ml-6 list-disc">
+                                        <li>Asegúrate de tener buena iluminación</li>
+                                        <li>Mira directamente a la cámara</li>
+                                        <li>Tu rostro debe encajar en el óvalo guía</li>
+                                        <li>No uses lentes oscuros ni gorras</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="flex flex-col items-center">
+                                    <div id="photoPreviewContainer" class="photo-preview hidden">
+                                        <img id="photoPreview" alt="Foto capturada">
+                                    </div>
+                                    <button type="button" id="btnTakePhoto" 
+                                            class="btn-cyber px-6 py-3 rounded-lg text-white font-medium flex items-center gap-2">
+                                        <span class="material-symbols-outlined">camera</span>
+                                        <span id="btnPhotoText">Tomar Foto KYC</span>
+                                    </button>
+                                    <input type="hidden" id="kycPhotoPath" name="kycPhotoPath">
+                                    <p class="text-xs text-gray-500 mt-2" id="photoStatus">Foto no capturada</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="formMessage" class="hidden rounded-lg p-4 text-sm font-medium"></div>
 
                     <div class="pt-4">
@@ -186,29 +379,215 @@
         </section>
     </main>
 
-    <script>
-        // --- Variables Globales ---
-        let inviteId = null;
-        let inviteEmail = null; // Guardamos el email que viene del invite
+    <!-- Overlay de captura de foto -->
+    <div id="photoOverlay" style="display: none;">
+        <div id="videoContainer">
+            <div id="captureStatus"></div>
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="face-guide"></div>
+            <div class="camera-controls">
+                <button type="button" id="btnCancelCapture" class="cancel-btn capture-btn">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+                <button type="button" id="btnCapture" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">photo_camera</span>
+                </button>
+                <button type="button" id="btnSwitchCamera" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">flip_camera_ios</span>
+                </button>
+            </div>
+        </div>
+        <div class="instructions">
+            <p>Coloca tu rostro dentro del óvalo. La foto se tomará automáticamente cuando detectemos una cara válida.</p>
+            <p class="text-sm text-gray-400 mt-2">Para una mejor calidad, evita movimientos bruscos.</p>
+        </div>
+    </div>
 
-        // --- Inicialización ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            inviteId = urlParams.get('id');
+    <!-- Modal de procesamiento -->
+    <div id="processingModal">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mb-4"></div>
+        <h3 class="text-xl font-bold mb-2">Procesando Imagen</h3>
+        <p id="processingMessage" class="text-gray-300">Validando tu foto...</p>
+    </div>
+
+    <script>
+        /* ============================================================
+        VARIABLES GLOBALES
+        ============================================================ */
+        let inviteId = null;
+        let inviteEmail = null;
+        let faceModel = null;
+        let faceVector = null;
+
+        let videoStream = null;
+        let isProcessing = false;
+        let currentFacingMode = 'user';
+
+        /* ============================================================
+        INIT
+        ============================================================ */
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            inviteId = params.get('id');
 
             if (!inviteId) {
-                showErrorGlobal('No se detectó un ID de invitación válido en la URL.');
+                alert('Invitación inválida');
                 return;
             }
 
+            await loadFaceModel();
             fetchInviteData(inviteId);
+            setupCameraUI();
         });
 
-        // --- Funciones Lógicas ---
+        /* ============================================================
+        MODELO FACIAL
+        ============================================================ */
+        async function loadFaceModel() {
+            try {
+                console.log('⏳ Cargando modelo facial...');
+                faceModel = await tf.loadGraphModel('/facevector/model.json');
+                console.log('✅ Modelo facial cargado');
+            } catch (err) {
+                console.error(err);
+                alert('Error cargando el modelo facial');
+            }
+        }
+
+        /* ============================================================
+        PREPROCESAMIENTO (105,105,3)
+        ============================================================ */
+        function preprocessCanvas(canvas) {
+            return tf.tidy(() =>
+                tf.browser.fromPixels(canvas)
+                    .resizeBilinear([105, 105])
+                    .toFloat()
+                    .div(255.0)
+                    .expandDims(0) // [1,105,105,3]
+            );
+        }
+
+        /* ============================================================
+        EXTRACCIÓN DEL VECTOR FACIAL (256)
+        ============================================================ */
+        async function extractFaceVector(canvas) {
+            if (!faceModel) throw new Error('Modelo no cargado');
+
+            const input = preprocessCanvas(canvas);
+            const embedding = faceModel.predict(input);
+            const vector = await embedding.data(); // Float32Array(256)
+
+            tf.dispose([input, embedding]);
+
+            return Array.from(vector);
+        }
+
+        /* ============================================================
+        CAMARA
+        ============================================================ */
+        function setupCameraUI() {
+            document.getElementById('btnTakePhoto').onclick = startCamera;
+            document.getElementById('btnCancelCapture').onclick = stopCamera;
+            document.getElementById('btnCapture').onclick = capturePhoto;
+            document.getElementById('btnSwitchCamera').onclick = switchCamera;
+        }
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('videoElement');
+                document.getElementById('photoOverlay').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode },
+                    audio: false
+                });
+
+                video.srcObject = videoStream;
+            } catch (err) {
+                alert('No se pudo acceder a la cámara');
+                stopCamera();
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(t => t.stop());
+                videoStream = null;
+            }
+
+            document.getElementById('photoOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            stopCamera();
+            setTimeout(startCamera, 300);
+        }
+
+        /* ============================================================
+        CAPTURA + VECTOR
+        ============================================================ */
+        async function capturePhoto() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            try {
+                const video = document.getElementById('videoElement');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = 105;
+                canvas.height = 105;
+                ctx.drawImage(video, 0, 0, 105, 105);
+
+                faceVector = await extractFaceVector(canvas);
+                console.log('🧠 Face vector:', faceVector);
+
+                // Preview visual
+                document.getElementById('photoPreview').src = canvas.toDataURL('image/jpeg');
+                document.getElementById('photoPreviewContainer').classList.remove('hidden');
+                document.getElementById('photoStatus').textContent = 'Rostro capturado ✓';
+                document.getElementById('photoStatus').style.color = '#10b981';
+
+                stopCamera();
+                validateForm();
+
+            } catch (err) {
+                console.error(err);
+                alert('Error procesando el rostro');
+            } finally {
+                isProcessing = false;
+            }
+        }
+
+        /* ============================================================
+        FORM VALIDATION
+        ============================================================ */
+        function validateForm() {
+            const required = [
+                'nameUser',
+                'lastNameUser',
+                'aliasUser',
+                'phoneUser',
+                'taxNumUser',
+                'pobUidUser'
+            ];
+
+            const fieldsOK = required.every(id =>
+                document.getElementById(id).value.trim() !== ''
+            );
+
+            const faceOK = Array.isArray(faceVector) && faceVector.length === 256;
+
+            document.getElementById('btnSubmit').disabled = !(fieldsOK && faceOK);
+        }
+
+        // --- Funciones Lógicas Existentes (modificadas) ---
 
         async function fetchInviteData(id) {
             try {
-                // GET a tu endpoint en Go
                 const response = await fetch(`/getinviteuser?id=${id}`);
                 
                 if (!response.ok) {
@@ -218,26 +597,22 @@
 
                 const data = await response.json();
                 
-                const hostData = data.host; // Datos del dueño (UserInstJoin)
-                const inviteData = data[id]; // Datos específicos de la invite
+                const hostData = data.host;
+                const inviteData = data[id];
 
                 if (!hostData || !inviteData) {
                     throw new Error('Estructura de datos incorrecta recibida del servidor');
                 }
 
-                // Guardar email para el registro posterior
                 inviteEmail = inviteData.emailDest;
 
-                // Renderizar UI
                 document.getElementById('loadingInfo').classList.add('hidden');
                 document.getElementById('inviteInfoContent').classList.remove('hidden');
 
-                // Llenar datos del Host
                 const instName = hostData.legalNameInst || hostData.aliasNameInst || 'Institución Independiente';
                 document.getElementById('hostName').textContent = `${hostData.nameUser} ${hostData.lastNameUser}`;
                 document.getElementById('hostInstitution').textContent = instName;
 
-                // Llenar datos Invite
                 document.getElementById('userEmailDisplay').textContent = inviteData.emailDest;
                 
                 const expDate = new Date(inviteData.expirationDate);
@@ -245,15 +620,14 @@
                     ? expDate.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) 
                     : 'Sin fecha';
                 
-                roletype = {1:"Root",2: "Admin", 3: "Usuario"};
-                const roleApp =  roletype[inviteData.roleApp]|| 'Sin rol';
+                const roletype = {1:"Root",2: "Admin", 3: "Usuario"};
+                const roleApp = roletype[inviteData.roleApp] || 'Sin rol';
                 document.getElementById('roleApp').textContent = roleApp;
                 document.getElementById('roleApp').value = inviteData.roleApp;
 
             } catch (err) {
                 console.error(err);
                 showErrorGlobal(err.message);
-                // Deshabilitar formulario si falla la carga
                 document.getElementById('btnSubmit').disabled = true;
                 const inputs = document.querySelectorAll('input');
                 inputs.forEach(i => i.disabled = true);
@@ -265,31 +639,25 @@
             const btn = document.getElementById('btnSubmit');
             const msgDiv = document.getElementById('formMessage');
             
-            // Limpiar mensajes previos
             msgDiv.classList.add('hidden');
             msgDiv.className = 'hidden rounded-lg p-4 text-sm font-medium';
 
-            // Validaciones Regex Básicas (Opcional, pero recomendado)
-            const rfc = document.getElementById('taxNumUser').value.toUpperCase();
-            const curp = document.getElementById('pobUidUser').value.toUpperCase();
-
-            // Estructura para Go (/createuser)
-            // NOTA: Asumimos que PobUid (curp) es string en el JSON final,
-            // aunque tu struct Go diga bool, para un registro se necesita el valor string.
-  
             const payload = {
                 idInvite: inviteId,
                 name: document.getElementById('nameUser').value.trim(),
                 lastname: document.getElementById('lastNameUser').value.trim(),
                 alias: document.getElementById('aliasUser').value.trim(),
-                email: inviteEmail, // Importante: usar el del invite, no uno nuevo
+                email: inviteEmail,
                 phone: document.getElementById('phoneUser').value.trim(),
-                rfc: rfc,
-                curp: curp, // Enviamos string. Si Go falla, cambiar struct a String.
+                rfc: document.getElementById('taxNumUser').value.toUpperCase(),
+                curp: document.getElementById('pobUidUser').value.toUpperCase(),
                 role: document.getElementById('roleApp').value,
+                alive: true,
+                facevector: faceVector
             };
+
             console.log(payload);
-            // UI Loading
+            
             btn.disabled = true;
             btn.innerHTML = `<div class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> Procesando...`;
 
@@ -301,19 +669,16 @@
                 });
 
                 if (response.ok) {
-                    // Éxito
                     msgDiv.textContent = "¡Registro exitoso! Revisa tu correo para acceder al sistema.";
                     msgDiv.classList.remove('hidden');
                     msgDiv.classList.add('bg-green-500/20', 'text-green-400', 'border', 'border-green-500/30');
                     
-                    // Alerta nativa solicitada
                     alert("Revisa tu correo para acceder al sistema");
                     
-                    // Opcional: Redirigir o limpiar
                     document.getElementById('registerForm').reset();
                     
                 } else {
-                    const errData = await response.text(); // o .json() según devuelva tu error
+                    const errData = await response.text();
                     throw new Error(errData || 'Error al crear usuario');
                 }
 
@@ -339,6 +704,11 @@
             document.getElementById('registerForm').style.opacity = '0.5';
             document.getElementById('registerForm').style.pointerEvents = 'none';
         }
+
+        // Añadir event listeners para validación en tiempo real
+        document.querySelectorAll('.input-tech').forEach(input => {
+            input.addEventListener('input', validateForm);
+        });
 
     </script>
 </body>

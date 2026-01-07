@@ -113,12 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function fetchUsers(term) {
+    
     try {
       const searchType = searchTypeSelect.value;
       const isRegex = !checkExact.checked; 
 
       const payload = {
-        params: [term],
+        params: [term.trim()],
         type: searchType,
         likeop: isRegex
       };
