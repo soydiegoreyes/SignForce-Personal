@@ -6,13 +6,14 @@ import (
 
 	"time"
 
+	"bytes"
 	"log"
 	"net/http"
-
 	"os"
 	"path/filepath"
 
 	"sfmiddle/auth"
+	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
@@ -33,8 +34,8 @@ func init() {
 
 	// Debug temporal:
 	//log.Println("DB_USER:", os.Getenv("DB_USER"))
-
 	db.DB_con = db.NewConn()
+	coms.EmailCli = coms.ConfEmail()
 }
 
 /*
@@ -102,8 +103,9 @@ func main() {
 
 	// Registrar rutas API
 	mux.HandleFunc("/", home)
-	mux.HandleFunc("/register", handlers.RegisterInst)                 // registrar nuevo cliente
-	mux.HandleFunc("/loginUser", login)                                // loguear usuario
+	mux.HandleFunc("/register", handlers.RegisterInst) // registrar nuevo cliente
+	mux.HandleFunc("/loginUser", login)                // loguear usuario
+	mux.HandleFunc("/logoutUser", logout)
 	mux.HandleFunc("/uploadDocs", handlers.UploadDocs)                 // subir cualquier tipo de documento
 	mux.HandleFunc("/downloadDoc", handlers.DownloadDoc)               // obtener datos de cualquier tipo de documento
 	mux.HandleFunc("/statusDocs", handlers.StatusDocs)                 // obtener datos de cualquier tipo de documento
@@ -122,7 +124,7 @@ func main() {
 	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
-	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitacion
+	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitación a firma
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
 	mux.HandleFunc("/viewSign", handlers.ViewSign)                     // obtiene los equipos de una institucion
 	mux.HandleFunc("/getAsice", handlers.BuildAsice)                   // obtiene los equipos de una institucion
@@ -130,6 +132,7 @@ func main() {
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
+	mux.HandleFunc("/dashStats", handlers.StatsDash)
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -236,6 +239,21 @@ func main() {
 		}
 
 		http.FileServer(http.Dir("./../sffront/documentFlow")).ServeHTTP(w, r)
+	})))
+
+	// sirve el modelo de reconocimiento facial
+	mux.Handle("/facevector/", http.StripPrefix("/facevector/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Determinar el Content-Type basado en la extensión del archivo
+		switch filepath.Ext(r.URL.Path) {
+		case ".bin":
+			w.Header().Set("Content-Type", "application/octet-stream")
+		case ".json":
+			w.Header().Set("Content-Type", "application/json")
+		default:
+			w.Header().Set("Content-Type", "text/plain")
+		}
+
+		http.FileServer(http.Dir("./../sffront/iamodels/facevector/")).ServeHTTP(w, r)
 	})))
 
 	// Aplicar middleware CORS
@@ -589,4 +607,99 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	json.NewEncoder(respWriter).Encode(loginResp)
+}
+
+func logout(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	attrs := []string{"activeUser", "idKeysUser_fk"}
+	wheres := map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+	}
+
+	http.SetCookie(respWriter, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // true en producción
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Unix(0, 0), // fecha en el pasado
+		MaxAge:   -1,              // MUY IMPORTANTE
+	})
+
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Datos de usuario no encontrado", http.StatusNotFound)
+		return
+	}
+	if userData[idUser]["activeUser"] != "1" {
+		http.Error(respWriter, "No es un usuario activo", http.StatusUnauthorized)
+		return
+	}
+	idKey := userData[idUser]["idKeysUser_fk"]
+
+	type idUserReq struct {
+		IdUser string `json:"iduser"`
+		IdKey  string `json:"idkey"`
+	}
+
+	// Crear request para logout
+	reqData := idUserReq{
+		IdUser: idUser,
+		IdKey:  idKey,
+	}
+
+	// Validar las llaves mediante API externa
+	userRequest, err := json.Marshal(reqData)
+	if err != nil {
+		http.Error(respWriter, "Error preparando datos para validación", http.StatusInternalServerError)
+		return
+	}
+
+	uploadKeysURL := os.Getenv("BACK_URL") + "logout" // url de sfback
+	req, err := http.NewRequest("POST", uploadKeysURL, bytes.NewBuffer(userRequest))
+	if err != nil {
+		http.Error(respWriter, "Error creando solicitud de logout", http.StatusInternalServerError)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(respWriter, "Error conectando al servicio de logout", http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		http.Error(respWriter, "Error en logout de firma", http.StatusInternalServerError)
+		return
+	}
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(map[string]string{"message": "OK"})
+
 }

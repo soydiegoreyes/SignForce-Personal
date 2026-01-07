@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"sfmiddle/auth"
+	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/documentflow"
@@ -67,7 +69,7 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	if len(US.Params) > 0 {
 		wheres[US.ParamType] = US.Params
 		if US.Regex {
-			wheres["LOGIC"] = []string{"idInstitution_fk AND REGEXP " + US.ParamType}
+			wheres["LOGIC"] = []string{"idInstitution_fk AND LIKE " + US.ParamType}
 		}
 	}
 
@@ -450,7 +452,7 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	attrs := []string{"emailDest", "idUser", "createdAt", "expirationDate", "roleApp"}
+	attrs := []string{"emailDest", "idUser", "createdAt", "acceptedAt", "expirationDate", "roleApp"}
 	wheres := map[string][]string{
 		"idUserInvite": {idInvite},
 	}
@@ -459,8 +461,16 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener invitación", http.StatusInternalServerError)
 		return
 	}
-	if exptime, _ := time.Parse(invData[idInvite]["expirationDate"], "2006-01-02T15:04:05Z"); exptime.After(time.Now()) {
+	if exptime, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["expirationDate"]); exptime.After(time.Now()) {
 		http.Error(respWriter, "Error invitación expirada", http.StatusForbidden)
+		return
+	}
+	if invData[idInvite]["acceptedAt"] != "" {
+		if acceptedAt, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["acceptedAt"]); acceptedAt.After(time.Now()) {
+			http.Error(respWriter, "Error invitación no coincide con fecha", http.StatusForbidden)
+			return
+		}
+		http.Error(respWriter, "La invitación ya fue aceptada", http.StatusForbidden)
 		return
 	}
 
@@ -484,6 +494,7 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(reqUser.FaceVector)
 	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{reqUser.IdInvite}, []string{"acceptedAt"}, []string{"idInstitution_fk"})
 	if err != nil {
 		fmt.Println("error al buscar invitacion")
@@ -500,14 +511,39 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		fmt.Println(err)
 		return
 	}
+	var isAlive int
+	if reqUser.IsAlive {
+		isAlive = 1
+	}
 	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "isAliveUser", "roleAppUser_fk", "idInstitution_fk"}
-	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, 1, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
+	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, isAlive, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
 	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("Nuevo usuario: ", idNewUser)
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.LittleEndian, reqUser.FaceVector)
+	if err != nil {
+		fmt.Println(err)
 
+	}
+	facevector := buf.Bytes()
+	if err != nil {
+		fmt.Println(err)
+	}
+	cols = []string{"idUser", "embedding", "selected"}
+	values = []interface{}{idNewUser, facevector, "1"}
+	idUserEmb, err := db.DB_con.GenericInsert("faceembeddings", cols, values)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Embedding usuario: ", idUserEmb)
+
+	if err = db.DB_con.GenericBatchUpdate("users", "idUser", map[string]map[string]interface{}{idNewUser: {"kycUser_fk": idUserEmb}}); err != nil {
+		fmt.Println(err)
+		return
+	}
 	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUser.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
 		fmt.Println(err)
 		return
@@ -515,17 +551,6 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 
 	// invitacion de usuario por email
 	registerResp := models.RegisterResponse{Check: false, InstId: "", Error: ""}
-	whereMap := map[string][]string{
-		"nameApp": {"emailServ"},
-	}
-
-	appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
-	if err != nil {
-		registerResp.Error = fmt.Sprintf("%s", err)
-		json.NewEncoder(respWriter).Encode(registerResp)
-		return
-	}
-
 	binDoc, err := os.ReadFile("./templates/welcome_register.html")
 	if err != nil {
 		registerResp.Error = fmt.Sprintf("%s", err)
@@ -536,7 +561,8 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
 	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 	payload := models.EmailRequest{
 		IdUser:   "1",
@@ -546,37 +572,40 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		MimeType: "html",
 	}
 
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		fmt.Println("Error al convertir a JSON:", err)
-		return
-	}
-	var host, port string
-	for _, v := range appData {
-		host = v["domainApp"]
-		port = v["portApp"]
-		break
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
+	err = coms.EmailCli.SendMail(&payload)
 	if err != nil {
 		registerResp.Error = fmt.Sprintf("%s", err)
 		json.NewEncoder(respWriter).Encode(registerResp)
 		return
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
-	// Ejecutar petición
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		registerResp.Error = fmt.Sprintf("%s", err)
-		json.NewEncoder(respWriter).Encode(registerResp)
+
+	registerResp.Check = true
+}
+
+// Función para obtener estadísticas de uso de la plataforma para dashboard
+func StatsDash(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	defer resp.Body.Close()
-
-	if strings.Contains(resp.Status, "200 OK") {
-		registerResp.Check = true
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
 	}
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println("JWT claims:", idUser, idInst, authInst)
+
 }

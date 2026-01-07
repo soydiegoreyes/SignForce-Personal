@@ -69,7 +69,6 @@ func UserInstJoin(idUser string) map[string]string {
 	attrs1 := []string{"idUser", "nameUser", "lastNameUser", "emailUser", "aliasUser", "activeUser"}
 	attrs2 := []string{"idInstitution", "legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst", "activeInst"}
 	userData, err := db.DB_con.GenericJoinSelect("users", "institutions", "users.idInstitution_fk = institutions.idInstitution", "idUser", []string{idUser}, attrs1, attrs2)
-	//userData, err := db.DB_con.ExecuteSelect(query)
 	if err != nil {
 		fmt.Printf("%s", err)
 		return nil

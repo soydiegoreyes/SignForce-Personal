@@ -93,6 +93,8 @@ func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attribu
 				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("ORDER BY %s", k), fmt.Sprintf("ORDER BY %s %s", k, v[0]))
 			} else if strings.Contains(wheres, fmt.Sprintf("REGEXP %s", k)) {
 				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("REGEXP %s", k), fmt.Sprintf("%s REGEXP '%s'", k, v[0]))
+			} else if strings.Contains(wheres, fmt.Sprintf("LIKE %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("LIKE %s", k), fmt.Sprintf("%s LIKE '%s'", k, "%"+v[0]+"%"))
 			} else {
 				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
 			}

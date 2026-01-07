@@ -1,11 +1,9 @@
 package documentflow
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
+	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
@@ -18,14 +16,6 @@ import (
 )
 
 func GenerateInvites(invites []models.InviteMail) error {
-	whereMap := map[string][]string{
-		"nameApp": {"emailServ"},
-	}
-	data, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
-	if err != nil {
-		fmt.Printf("%s", err)
-		return err
-	}
 	binDoc, err := os.ReadFile("./templates/sign_invite.html")
 	if err != nil {
 		fmt.Printf("%s", err)
@@ -47,38 +37,10 @@ func GenerateInvites(invites []models.InviteMail) error {
 			Dest:     []string{invite.ReviewerEmail},
 			MimeType: "html",
 		}
-
-		jsonPayload, err := json.Marshal(payload)
+		err = coms.EmailCli.SendMail(&payload)
 		if err != nil {
-			fmt.Println("Error al convertir a JSON:", err)
-			return err
+			fmt.Println("No se envió el email de la invitación: ", invite.UrlSignLink)
 		}
-		var host, port string
-		for _, v := range data {
-			host = v["domainApp"]
-			port = v["portApp"]
-			break
-		}
-
-		req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
-		if err != nil {
-			fmt.Printf("%s", err)
-			return err
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
-		// Ejecutar petición
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			fmt.Printf("%s", err)
-			return err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode == http.StatusOK {
-			fmt.Println("TODO OK")
-		}
-
 	}
 	return nil
 }
@@ -169,41 +131,6 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	for _, dD := range DocsData {
 		docHashes = append(docHashes, dD["digestValueSign"])
 	}
-
-	/*
-		// Obtener los documentos de la invitación específica
-		attrs = []string{"idfolderdocument"}
-		wheres = map[string][]string{
-			"idInvite": {idInvite},
-		}
-
-		inviteDocsData, err := db.DB_con.GenericSelect("invitesdetail", "idfolderdocument", attrs, wheres)
-		if err != nil {
-			return nil, fmt.Errorf("error obteniendo documentos de la invitación: %v", err)
-		}
-
-		if len(inviteDocsData) == 0 {
-			return nil, fmt.Errorf("no se encontraron documentos en la invitación")
-		}
-
-		// Obtener los idDocument de los folderdocuments
-
-		var docIds []string
-
-		for _, doc := range inviteDocsData {
-			wheres = map[string][]string{
-				"idfolderdocument": {doc["idfolderdocument"]},
-			}
-			folderDocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument",
-				[]string{"idDocument"}, wheres)
-			if err != nil {
-				return nil, fmt.Errorf("error obteniendo documentos del folder: %v", err)
-			}
-			for _, fd := range folderDocData {
-				docIds = append(docIds, fd["idDocument"])
-			}
-		}
-	*/
 
 	// Obtener datos de los documentos
 	attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
@@ -307,23 +234,15 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	return inviteInfo, nil
 }
 
-// REAHACER FUNCION PARA QUE NO DEPENDA DE LOS teams
-func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) {
-	whereMap := map[string][]string{
-		"nameApp": {"emailServ"},
-	}
-
-	dataApp, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
-	if err != nil {
-		fmt.Printf("%s", err)
-		return
-	}
+// Envía una invitación a un correo para que se una a signforce
+func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
 
 	userData := objects.UserInstJoin(idUser) // info del usuario que invita
 	var guestData map[string]string
 	binDoc, err := os.ReadFile("./templates/invite_user.html")
 	if err != nil {
 		fmt.Printf("%s", err)
+		return err
 	}
 
 	if idUserDest == "" {
@@ -351,7 +270,8 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) {
 	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(5*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
+	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
+	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
 
 	payload := models.EmailRequest{
 		IdUser:   idUserDest,
@@ -360,43 +280,18 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) {
 		Dest:     []string{emailDest},
 		MimeType: "html",
 	}
-
-	jsonPayload, err := json.Marshal(payload)
+	err = coms.EmailCli.SendMail(&payload)
 	if err != nil {
-		fmt.Println("Error al convertir a JSON:", err)
-		return
+		fmt.Println("No se envió el email de la invitación: ", idInviteUser, err)
+		return err
+	} else {
+		texp := time.Now().Add(time.Hour * 24 * 7).Format("2006-01-02 15:04:05")
+		cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
+		_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, texp, roleApp})
+		if err != nil {
+			fmt.Printf("%s", err)
+			return err
+		}
 	}
-	var host, port string
-	for _, v := range dataApp {
-		host = v["domainApp"]
-		port = v["portApp"]
-		break
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		fmt.Printf("%s", err)
-		return
-	}
-	texp := time.Now().Add(time.Hour * 24 * 7).Format("2006-01-02 15:04:05")
-	cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
-	_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, texp, roleApp})
-	if err != nil {
-		fmt.Printf("%s", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
-	// Ejecutar petición
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Printf("%s", err)
-		return
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		fmt.Println("TODO OK")
-	}
-	resp.Body.Close()
+	return nil
 }

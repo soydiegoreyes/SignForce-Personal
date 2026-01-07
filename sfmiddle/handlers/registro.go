@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"sfmiddle/auth"
+	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
@@ -206,17 +206,6 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 			fmt.Println("Usuario registrado ", userId, " Inst: ", lastId)
 
-			whereMap = map[string][]string{
-				"nameApp": {"emailServ"},
-			}
-
-			appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
-			if err != nil {
-				registerResp.Error = fmt.Sprintf("%s", err)
-				json.NewEncoder(respWriter).Encode(registerResp)
-				return
-			}
-
 			binDoc, err := os.ReadFile("./templates/welcome_register.html")
 			if err != nil {
 				registerResp.Error = fmt.Sprintf("%s", err)
@@ -227,7 +216,8 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
 			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 			payload := models.EmailRequest{
 				IdUser:   userId,
@@ -237,39 +227,14 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				MimeType: "html",
 			}
 
-			jsonPayload, err := json.Marshal(payload)
-			if err != nil {
-				fmt.Println("Error al convertir a JSON:", err)
-				return
-			}
-			var host, port string
-			for _, v := range appData {
-				host = v["domainApp"]
-				port = v["portApp"]
-				break
-			}
-
-			req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/mailserv", host, port), bytes.NewBuffer(jsonPayload))
+			err = coms.EmailCli.SendMail(&payload)
 			if err != nil {
 				registerResp.Error = fmt.Sprintf("%s", err)
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
-			// Ejecutar petición
-			client := &http.Client{}
-			resp, err := client.Do(req)
-			if err != nil {
-				registerResp.Error = fmt.Sprintf("%s", err)
-				json.NewEncoder(respWriter).Encode(registerResp)
-				return
-			}
-			defer resp.Body.Close()
 
-			if strings.Contains(resp.Status, "200 OK") {
-				registerResp.Check = true
-			}
+			registerResp.Check = true
 
 		} else {
 			registerResp.Error = "Ya tiene un registro para su numero de empresa. Revisar estatus de su registro."
@@ -601,7 +566,7 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	// Obtener datos de la base de datos usando el user ID
 	idUser := claims["uid"].(string)
 	idInst := claims["iid"].(string)
-	if idInst != "1" && idUser == "0" {
+	if idInst != "1" || idUser == "0" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}

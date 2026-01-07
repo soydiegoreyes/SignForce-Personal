@@ -43,17 +43,12 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Extraer datos del JWT
-	idUser, ok := claims["uid"].(string)
-	if !ok {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	if !ok1 || !ok2 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	idInst, ok := claims["iid"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	//idTeam, ok := claims["team"].(string)
 
 	// Validar Content-Type
 	contentType := request.Header.Get("Content-Type")
@@ -146,17 +141,24 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					tablename = "doctemplates"
 					cols = []string{"ownerInstDoc_fk", "creatorUserDoc_fk", "documentName", "documentPath", "documentExt", "sizeB", "authUseStatus", "authRoleStatus"}
 					vals = []interface{}{idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
+
 				case "logoinst":
 					docData.Path = fmt.Sprintf("%s/%s/logos/", os.Getenv("GENERIC_DOC_PATH"), idInst)
 					fileHeader.Filename = uuid.NewString() + "_" + fileHeader.Filename
 					tablename = "images"
+
+				case "imgkyc":
+					docData.Path = fmt.Sprintf("%s/%s/%s/kyc/", os.Getenv("GENERIC_IMG_PATH"), idInst, idUser)
+					tablename = "images"
+					cols = []string{"imageHash", "ownerInstImg_fk", "creatorUserImg_fk", "imageName", "imagePath", "imageExt", "sizeB", "authUseStatus", "authRoleStatus"}
+					vals = []interface{}{docData.Hash, idInst, idUser, docData.Name, docData.Path, docData.Ext, docData.Size, "1", "1"}
 
 				default:
 					fmt.Println("Tipo de documento desconocido")
 					return
 				}
 
-				// Guardar el archivo y obtener la ruta /ruta_general/idInst/idUser/midoc.pdf
+				// Regreso al inicio del documento
 				_, err = file.Seek(0, io.SeekStart)
 				if err != nil {
 					http.Error(respWriter, "Error reposicionando archivo", http.StatusInternalServerError)

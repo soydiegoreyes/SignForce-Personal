@@ -18,15 +18,17 @@ type RegisterRequest struct {
 }
 
 type UserDataReq struct {
-	IdInvite string `json:"idInvite"`
-	Name     string `json:"name"`
-	LastName string `json:"lastname"`
-	Alias    string `json:"alias"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	TaxNum   string `json:"rfc"`
-	PobUid   string `json:"curp"`
-	Role     string `json:"role"`
+	IdInvite   string    `json:"idInvite"`
+	Name       string    `json:"name"`
+	LastName   string    `json:"lastname"`
+	Alias      string    `json:"alias"`
+	Email      string    `json:"email"`
+	Phone      string    `json:"phone"`
+	TaxNum     string    `json:"rfc"`
+	PobUid     string    `json:"curp"`
+	Role       string    `json:"role"`
+	IsAlive    bool      `json:"alive"`
+	FaceVector []float32 `json:"facevector"`
 }
 
 type GetUserRequest struct {
