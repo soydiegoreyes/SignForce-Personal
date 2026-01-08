@@ -190,3 +190,11 @@ func CompressZip(pathSource, pathDest string) bool {
 	fmt.Println(cmd.Stderr)
 	return true
 }
+
+func Bool2Int(v bool) int {
+	if v {
+		return 1
+	} else {
+		return 0
+	}
+}

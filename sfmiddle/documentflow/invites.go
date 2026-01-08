@@ -214,9 +214,11 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 
 	// Construir la Invite completa
 	invite := models.Invite{
-		IdInvite:   idInvite,
-		UserDest:   models.Reviewer{User: inviteData[idInvite]["idUserDest_fk"]}, // Solo el ID por ahora
-		AliveProof: inviteData[idInvite]["requireAliveProof"] == "1",
+		IdInvite: idInvite,
+		UserDest: models.Reviewer{
+			User:       inviteData[idInvite]["idUserDest_fk"],
+			AliveProof: inviteData[idInvite]["requireAliveProof"] == "1",
+		}, // Solo el ID por ahora
 		SentAt:     inviteData[idInvite]["sentAt"],
 		InviteDocs: inviteDocs,
 	}

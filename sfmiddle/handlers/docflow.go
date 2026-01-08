@@ -249,7 +249,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				}
 
 				// ===== INSERT en tabla invites =====
-				inviteCols := []string{"idInvite", "idFolder", "idUserOwnner_fk", "idUserDest_fk", "expirationDate", "sentAt", "descriptionText"}
+				inviteCols := []string{"idInvite", "idFolder", "idUserOwnner_fk", "idUserDest_fk", "expirationDate", "requireAliveProof", "sentAt", "descriptionText"}
 
 				inviteAttrs := []interface{}{
 					invites[reviewer.User].IdInvite, // idInvite
@@ -257,6 +257,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					idUser,                          // idUserOwnner
 					reviewer.User,                   // idUserDest_fk
 					reviewer.DueDate,                // expirationDate
+					reviewer.AliveProof,             // requireAliveProof
 					invites[reviewer.User].SentAt,   // sentAt
 					reviewer.Comment,                // descriptionText
 				}
@@ -522,15 +523,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
-	/*
-		type SignDoc struct {
-			Aut       string     `json:"aut"`
-			IdInvite  string     `json:"inviteId"`
-			IdKey     string     `json:"keyId"`
-			IdFolder  string     `json:"folderId"`
-			Documents []Document `json:"signDocuments"`
-		}
-	*/
+
 	// Decodificar request
 	var reqdoc models.SignDoc
 	if err := json.NewDecoder(request.Body).Decode(&reqdoc); err != nil {
@@ -564,7 +557,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ============= Validar que la llave pertenezca al usuario =======================
-	attrs := []string{"activeUser", "idKeysUser_fk", "isAliveUser"}
+	attrs := []string{"activeUser", "idKeysUser_fk", "isAliveUser", "kycUser_fk"}
 	wheres := map[string][]string{
 		"idUser": {idUser},
 	}
@@ -584,6 +577,29 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 	if userData[idUser]["idKeysUser_fk"] != reqdoc.IdKey {
 		http.Error(respWriter, "La llave no pertenece al usuario autenticado", http.StatusUnauthorized)
 		return
+	}
+	//=====================================================================
+	if inviteInfo.Folder.Invites[0].UserDest.AliveProof {
+		whereMap := map[string][]string{
+			"idUser":   {idUser},
+			"selected": {"1"},
+		}
+		fvData, err := db.DB_con.GenericSelect("faceembeddings", "idKycUser", []string{"embedding"}, whereMap)
+		if err != nil {
+			fmt.Printf("%s", err)
+			return
+		}
+		if len(fvData) == 0 {
+			fmt.Printf("Usuario no tiene biometría registrada")
+			return
+		}
+		var idEmb string
+		for idKycUser, facevecData := range fvData {
+			idEmb = idKycUser
+			fmt.Printf("%s ->IdEmb, Embeding_Original->  %v %T Embedding_Evaluar-> %v", idEmb, facevecData["embedding"], facevecData["embedding"], reqdoc.FaceVector)
+			break
+		}
+
 	}
 	//=====================================================================
 	whereMap := map[string][]string{
@@ -633,7 +649,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		}
 	}
-	fmt.Println(signResult)
+
 	fmt.Println("Firmas realizadas con éxito")
 
 	// añadir los qr a los pdf firmados
@@ -648,7 +664,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			fmt.Printf("%s", err)
 			return
 		}
-		fmt.Println("SData path: ", SData["xmlPath"])
+
 		var folderPath string
 		reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`) // se toma el idInst y el idFolder ya que dentro del folder está la lista de usuarios
 		if baseFolderPath := reg.FindAllString(SData["xmlPath"], 1); len(baseFolderPath) > 0 {

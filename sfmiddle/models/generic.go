@@ -38,6 +38,7 @@ type Reviewer struct {
 	IsExternal    bool           `json:"external"`
 	User          string         `json:"user"`
 	Role          int            `json:"role"`
+	AliveProof    bool           `json:"alive_proof"`
 	DueDate       string         `json:"due_date"`
 	Comment       string         `json:"comment"`
 	SignPositions []SignPosition `json:"positions"`
@@ -115,7 +116,6 @@ type UserDestInfo struct {
 type Invite struct {
 	IdInvite   string      `json:"idInvite"`
 	UserDest   Reviewer    `json:"userDest"`
-	AliveProof bool        `json:"aliveProof"`
 	SentAt     string      `json:"sentAt"`
 	InviteDocs []InviteDoc `json:"invitedocs"`
 }

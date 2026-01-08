@@ -345,7 +345,11 @@ func (cnx *ConexionDB) GenericBatchUpdate(tableName string, whereColumn string, 
 
 		for field, val := range updateData {
 			setClauses = append(setClauses, fmt.Sprintf("%s = ?", field))
-			values = append(values, val)
+			if x, ok := val.(bool); ok {
+				values = append(values, utilities.Bool2Int(x))
+			} else {
+				values = append(values, val)
+			}
 		}
 
 		// Agregar el valor del WHERE al final
@@ -453,7 +457,11 @@ func (cnx *ConexionDB) GenericInsert(tableName string, columns []string, values 
 
 	// se construyen los valores que son los atributos
 	for i, v := range values {
-		vals += "'" + fmt.Sprintf("%v", v) + "'"
+		if x, ok := v.(bool); ok {
+			vals += "'" + fmt.Sprintf("%v", utilities.Bool2Int(x)) + "'"
+		} else {
+			vals += "'" + fmt.Sprintf("%v", v) + "'"
+		}
 		if i < len(values)-1 {
 			vals += ", "
 		}
