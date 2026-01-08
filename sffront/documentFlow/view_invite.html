@@ -4,6 +4,7 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Firmar Documento - SignForce</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
@@ -150,6 +151,195 @@
             font-weight: 600;
             color: #f3f4f6;
         }
+        
+        /* Estilos para la captura de foto */
+        #photoOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #videoContainer {
+            position: relative;
+            width: 90%;
+            max-width: 640px;
+            height: 70vh;
+            max-height: 640px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Espejo para que sea intuitivo */
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 450px;
+            border: 3px solid rgba(59, 130, 246, 0.8);
+            border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+            box-shadow: 
+                0 0 0 2000px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(59, 130, 246, 0.3);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .capture-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 3px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .capture-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .capture-btn:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            background: #ef4444;
+        }
+
+        .cancel-btn:hover {
+            background: #dc2626;
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            padding: 0 20px;
+            max-width: 500px;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+            margin-top: 10px;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #captureStatus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 20;
+        }
+
+        /* Modal de procesamiento */
+        #processingModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes gemGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(124, 58, 237, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(124, 58, 237, 0.5); }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-pulse { animation: pulse 2s infinite; }
+        
+        /* Botón gema para biometría */
+        .gem-button {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            animation: gemGlow 1s infinite;
+            transition: all 0.3s ease;
+            padding: 1em;
+        }
+        
+        .gem-button:hover {
+            transform: scale(1.1);
+            animation: gemGlow 2s infinite;
+        }
+        
+        .gem-button.captured {
+            background: linear-gradient(135deg, #10b981, #047857);
+            animation: none;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .gem-button.captured:hover {
+            animation: none;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.7);
+        }
     </style>
 </head>
 <body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
@@ -253,7 +443,6 @@
         </main>
 
         <aside class="flex flex-col gap-6">
-            
             <div class="tech-card p-6 h-full max-h-[calc(100vh-120px)] sticky top-24">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-bold text-white flex items-center gap-2">
@@ -278,7 +467,6 @@
                 </div>
             </div>
         </aside>
-
     </div>
 
     <div id="documentModal" class="fixed inset-0 z-[100] hidden">
@@ -337,6 +525,38 @@
             </div>
         </div>
     </div>
+
+    <!-- Overlay de captura de foto -->
+    <div id="photoOverlay" style="display: none;">
+        <div id="videoContainer">
+            <div id="captureStatus"></div>
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="face-guide"></div>
+            <div class="camera-controls">
+                <button type="button" id="btnCancelCapture" class="cancel-btn capture-btn">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+                <button type="button" id="btnCapture" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">photo_camera</span>
+                </button>
+                <button type="button" id="btnSwitchCamera" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">flip_camera_ios</span>
+                </button>
+            </div>
+        </div>
+        <div class="instructions">
+            <p>Coloca tu rostro dentro del óvalo. La foto se tomará automáticamente cuando detectemos una cara válida.</p>
+            <p class="text-sm text-gray-400 mt-2">Para una mejor calidad, evita movimientos bruscos.</p>
+        </div>
+    </div>
+
+    <!-- Modal de procesamiento -->
+    <div id="processingModal">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mb-4"></div>
+        <h3 class="text-xl font-bold mb-2">Procesando Imagen</h3>
+        <p id="processingMessage" class="text-gray-300">Validando tu foto...</p>
+    </div>
+    
     <script>
         // --- Variables Globales ---
         let userKeys = [];
@@ -344,6 +564,14 @@
         let currentInvite = null;
         let currentFolder = null;
         let aut = sessionStorage.getItem('aut');
+        
+        let faceModel = null;
+        let faceVector = null;
+
+        let videoStream = null;
+        let isProcessing = false;
+        let currentFacingMode = 'user';
+        let isBiometryCaptured = false;
 
         // --- Inicialización ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -357,12 +585,150 @@
 
             await loadInviteData(inviteId);
         });
+        
+        /* ============================================================
+        MODELO FACIAL
+        ============================================================ */
+        async function loadFaceModel() {
+            try {
+                console.log('⏳ Cargando modelo facial...');
+                faceModel = await tf.loadGraphModel('/facevector/model.json');
+                console.log('✅ Modelo facial cargado');
+            } catch (err) {
+                console.error(err);
+                alert('Error cargando el modelo facial');
+            }
+        }
+
+        /* ============================================================
+        PREPROCESAMIENTO (105,105,3)
+        ============================================================ */
+        function preprocessCanvas(canvas) {
+            return tf.tidy(() =>
+                tf.browser.fromPixels(canvas)
+                    .resizeBilinear([105, 105])
+                    .toFloat()
+                    .div(255.0)
+                    .expandDims(0) // [1,105,105,3]
+            );
+        }
+
+        /* ============================================================
+        EXTRACCIÓN DEL VECTOR FACIAL (256)
+        ============================================================ */
+        async function extractFaceVector(canvas) {
+            if (!faceModel) throw new Error('Modelo no cargado');
+
+            const input = preprocessCanvas(canvas);
+            const embedding = faceModel.predict(input);
+            const vector = await embedding.data(); // Float32Array(256)
+
+            tf.dispose([input, embedding]);
+
+            return Array.from(vector);
+        }
+
+        /* ============================================================
+        CAMARA
+        ============================================================ */
+        function setupCameraUI() {
+            document.getElementById('btnCancelCapture').onclick = stopCamera;
+            document.getElementById('btnCapture').onclick = capturePhoto;
+            document.getElementById('btnSwitchCamera').onclick = switchCamera;
+        }
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('videoElement');
+                document.getElementById('photoOverlay').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
+                videoStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: currentFacingMode },
+                    audio: false
+                });
+
+                video.srcObject = videoStream;
+            } catch (err) {
+                alert('No se pudo acceder a la cámara');
+                stopCamera();
+            }
+        }
+
+        function stopCamera() {
+            if (videoStream) {
+                videoStream.getTracks().forEach(t => t.stop());
+                videoStream = null;
+            }
+
+            document.getElementById('photoOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            stopCamera();
+            setTimeout(startCamera, 300);
+        }
+
+        /* ============================================================
+        CAPTURA + VECTOR
+        ============================================================ */
+        async function capturePhoto() {
+            if (isProcessing) return;
+            isProcessing = true;
+
+            try {
+                const video = document.getElementById('videoElement');
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = 105;
+                canvas.height = 105;
+                ctx.drawImage(video, 0, 0, 105, 105);
+
+                faceVector = await extractFaceVector(canvas);
+                console.log('🧠 Face vector:', faceVector);
+                
+                // Marcar biometría como capturada
+                isBiometryCaptured = true;
+                updateBiometryButton();
+
+                stopCamera();
+                mostrarMensaje('Prueba de vida capturada exitosamente', 'success');
+
+            } catch (err) {
+                console.error(err);
+                alert('Error procesando el rostro');
+            } finally {
+                isProcessing = false;
+            }
+        }
+        
+        /* ============================================================
+        ACTUALIZAR BOTÓN DE BIOMETRÍA
+        ============================================================ */
+        function updateBiometryButton() {
+            const headerBio = document.getElementById('headerBio');
+            if (!headerBio) return;
+            
+            if (isBiometryCaptured) {
+                headerBio.innerHTML = `
+                    <button class="gem-button captured" onclick="startCamera()" title="Prueba de vida capturada - Click para recapturar">
+                        <span class="material-symbols-outlined text-white text-sm">check</span>
+                    </button>
+                `;
+            } else {
+                headerBio.innerHTML = `
+                    <button class="gem-button" onclick="startCamera()" title="Capturar prueba de vida">Requerida</button>
+                `;
+            }
+        }
 
         // --- Funciones de Datos ---
 
         async function loadInviteData(inviteId) {
             try {
-                // Simulación de fetch (REEMPLAZAR CON TU FETCH REAL)
                 const response = await fetch('/getinvite', {
                     method: 'POST',
                     credentials: 'include',
@@ -376,9 +742,14 @@
                 if (!rawData || !rawData.folder) throw new Error('Estructura de datos inválida');
                 
                 currentFolder = rawData.folder;
-                // Buscar la invitación específica o usar la primera si no coincide
                 currentInvite = currentFolder.invites.find(i => i.idInvite === inviteId) || currentFolder.invites[0];
-
+                
+                // Cargar modelo facial si se requiere biometría
+                if (currentInvite.userDest.alive_proof) {
+                    await loadFaceModel();
+                    setupCameraUI();
+                }
+                
                 // 1. Renderizar Header (Info de Emisor e Invitación)
                 renderInviteHeader(currentFolder, currentInvite);
 
@@ -440,9 +811,11 @@
             // Biometría
             const bioElem = document.getElementById('headerBio');
             const bioIcon = document.getElementById('iconBio');
-            if (invite.aliveProof) {
-                bioElem.textContent = "Requerida";
-                bioElem.classList.add("text-blue-400", "font-bold");
+            if (invite.userDest.alive_proof) {
+                // Mostrar botón de gema en lugar de texto
+                bioElem.innerHTML = `
+                    <button class="gem-button" onclick="startCamera()" title="Capturar prueba de vida">Requerida</button>
+                `;
                 bioIcon.classList.add("text-blue-400");
             } else {
                 bioElem.textContent = "No requerida";
@@ -545,9 +918,7 @@
         // --- Lógica de Negocio ---
 
         async function selectKey(idKey) {
-            // Actualizar visualmente antes de la petición para feedback instantáneo
             document.querySelectorAll('.key-card-item').forEach(el => el.classList.remove('selected'));
-            // (La clase se reaplicará correctamente tras el fetch, pero esto da sensación de rapidez)
             
             try {
                 const res = await fetch('/updatek', {
@@ -560,7 +931,6 @@
                 if (!res.ok) throw new Error('Error al seleccionar llave');
                 
                 selectedKeyId = idKey;
-                // Recargar para confirmar estado desde servidor
                 await loadUserKeys(); 
                 mostrarMensaje('Llave seleccionada', 'success');
                 logoutk();
@@ -593,7 +963,7 @@
                 `;
             }
         }
-
+        
         // 1. Función principal llamada por el botón "Firmar"
         function signAllDocuments() {
             // Validaciones básicas
@@ -602,7 +972,14 @@
                 return;
             }
             
-            if (currentInvite.aliveProof && !confirm('Se requiere prueba de vida. ¿Continuar?')) return;
+            // Validar biometría si es requerida
+            if (currentInvite.userDest.alive_proof) {
+                if (!isBiometryCaptured || !faceVector || faceVector.length !== 256) {
+                    mostrarMensaje('Debes capturar la prueba de vida primero', 'error');
+                    startCamera();
+                    return;
+                }
+            }
 
             // REVISAR SI EXISTE EL TOKEN (aut)
             let currentAut = sessionStorage.getItem('aut');
@@ -629,11 +1006,12 @@
 
             try {
                 const body = {
-                    aut: authToken, // Usamos el token pasado (ya sea del storage o recién obtenido)
+                    aut: authToken,
                     inviteId: currentInvite.idInvite,
                     keyId: selectedKeyId,
                     folderId: currentFolder.idFolder,
-                    signDocuments: signDocs
+                    signDocuments: signDocs,
+                    facevector: currentInvite.userDest.alive_proof ? faceVector : null,
                 };
 
                 const res = await fetch('/signDocument', {
@@ -649,25 +1027,20 @@
                     
                     // Verificamos que signed exista y sea un objeto
                     if (data.signed) {
-                        // Convertimos el objeto en un array de [clave, valor] para poder usar forEach
                         Object.entries(data.signed).forEach(([idDoc, path]) => {
-                            // Aquí puedes mostrar el ID o el path
                             console.log(`ID: ${idDoc}, Path: ${path}`);
                             mostrarMensaje(`Documento firmado exitosamente.`, 'success'); 
                         });
                         
-                        // Opcional: Mostrar un mensaje general contando cuántos se firmaron
                         const totalFirmados = Object.keys(data.signed).length;
                         mostrarMensaje(`Proceso finalizado. Total firmados: ${totalFirmados}`, 'success');
                     }
 
-                    //setTimeout(() => location.reload(), 1500);
+                    setTimeout(() => location.reload(), 1500);
 
                 } else {
-                    // Tu lógica de errores se mantiene igual
                     if (res.status === 401 || res.status === 403 || (data.message && data.message.includes('token'))) {
                         logoutk();
-
                         mostrarMensaje('Tu sesión expiró. Intenta firmar de nuevo.', 'error');
                     } else {
                         mostrarMensaje('Error: ' + (data.message || 'Error desconocido'), 'error');
@@ -709,21 +1082,18 @@
             btnSubmit.innerHTML = `<div class="spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Procesando...`;
 
             try {
-                // LLAMADA A /logink PARA OBTENER EL JWT
                 const response = await fetch('/logink', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: password }), // Enviamos solo el password
+                    body: JSON.stringify({ password: password }),
                     credentials: 'include'
                 });
 
                 const data = await response.json();
 
-                if (response.ok && data.token) { // Asumiendo que el endpoint devuelve { token: "jwt..." }
-                    // GUARDAR TOKEN EN SESSION STORAGE
+                if (response.ok && data.token) {
                     sessionStorage.setItem('aut', data.token);
                     
-                    // Cerrar modal y proceder a firmar con el nuevo token
                     closeAuthModal();
                     mostrarMensaje('Autorización exitosa', 'success');
                     executeSigning(data.token);
@@ -743,8 +1113,7 @@
         
         async function acceptInvite() {
             if(!confirm("¿Confirmar visto bueno?")) return;
-            // Implementar lógica similar a signDocument pero apuntando a /acceptDocument
-             try {
+            try {
                 const res = await fetch('/acceptDocument', { 
                     method: 'POST', 
                     headers: {'Content-Type':'application/json'}, 
@@ -815,21 +1184,17 @@
 
         async function logoutk() {
             try {
-                // LLAMADA A /logink PARA OBTENER EL JWT
                 const response = await fetch('/logoutk', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idKey: selectedKeyId }), // Enviamos solo el password
+                    body: JSON.stringify({ idKey: selectedKeyId }),
                     credentials: 'include'
                 });
 
                 const data = await response.json();
 
-                if (response.ok) { // Asumiendo que el endpoint devuelve { token: "jwt..." }
-                    // GUARDAR TOKEN EN SESSION STORAGE
+                if (response.ok) {
                     sessionStorage.removeItem('aut');
-                    
-                    // Cerrar modal y proceder a firmar con el nuevo token
                     mostrarMensaje('Cierre de sesión de firma', 'success');
                 } else {
                     throw new Error(data.message || 'Error al cerrar sesión');
@@ -847,7 +1212,6 @@
         }
 
         // Función mock para subir llaves (puedes reutilizar tu lógica original aquí)
-        // Mostrar formulario para subir llaves
         function showKeyUploadForm() {
             const sidebarActions = document.getElementById('sidebarActions');
             sidebarActions.innerHTML = `
@@ -886,13 +1250,11 @@
                 }
 
                 try {
-                // Crear FormData para enviar los archivos
                 const formData = new FormData();
                 formData.append('keyFile', keyFile);
                 formData.append('certFile', certFile);
                 formData.append('passKey', keyPassword);
 
-                // Enviar al endpoint de Go
                 const response = await fetch('/uploadk', {
                     method: 'POST',
                     body: formData,
@@ -907,7 +1269,6 @@
                 const result = await response.json();
                 console.log(result);
                 if (result.valid) {
-                    // Recargar las llaves
                     await loadUserKeys();
                     mostrarMensaje('Llaves subidas correctamente', 'success');
                 } else {

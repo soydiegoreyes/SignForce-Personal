@@ -214,7 +214,7 @@ function setupCanvasInteractions() {
         const y = e.clientY - rect.top;
         const newMarker = {
             user: currentDraggedReviewer.user,
-            x, y, width: 100, height: 30, page: pageNum,
+            x, y, width: 50, height: 50, page: pageNum,
             bgColor: markerColors[markers.length % markerColors.length]
         };
         markers.push(newMarker);
@@ -256,7 +256,7 @@ function handleMouseMove(e) {
         selectedTextBox.y = Math.max(0, Math.min(y - dragOffsetY, overlayCanvas.height - selectedTextBox.height));
         redrawMarkers();
     } else if (isResizing && selectedTextBox) {
-        selectedTextBox.width = Math.max(50, x - selectedTextBox.x);
+        selectedTextBox.width = Math.max(20, x - selectedTextBox.x);
         selectedTextBox.height = Math.max(20, y - selectedTextBox.y);
         redrawMarkers();
     } else {

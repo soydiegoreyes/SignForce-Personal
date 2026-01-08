@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchTypeSelect = document.getElementById('searchType');
   const checkExact = document.getElementById('checkExact');
   const checkGuest = document.getElementById('checkGuest');
+  const checkAlive = document.getElementById('checkAliveProof');
   const suggestionsList = document.getElementById('suggestionsList');
   const selectedUserDisplay = document.getElementById('selectedUserDisplay');
   const selectedUserName = document.getElementById('selectedUserName');
@@ -366,6 +367,7 @@ document.addEventListener('DOMContentLoaded', () => {
             external: true,    // json:"external"
             user: "-1",  // json:"user"
             role: 1,           // json:"role"
+            alive_proof: checkAlive.checked, // json:"alive_proof"
             due_date: today,   // json:"due_date"
             comment: comment.value, // json:"comment"
             positions: [],     // json:"positions"
@@ -387,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
             external: false,          // json:"external"
             user: selectedUserObj.id, // json:"user" (Aquí va el ID para internos)
             role: 1,                  // json:"role"
+            alive_proof: checkAlive.checked, // json:"alive_proof"
             due_date: today,          // json:"due_date"
             comment: comment.value,   // json:"comment"
             positions: [],            // json:"positions"
@@ -408,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTable();
     
     // Limpiar campos
+    checkAlive.checked=false;
     comment.value = '';
     if (checkGuest.checked) {
         searchInput.value = '';
