@@ -213,3 +213,11 @@ func GetHashC14N(xmlFull string, idNode string, algo string) (string, error) {
 	hashBase64 := strings.TrimSpace(string(out))
 	return hashBase64, nil
 }
+
+func Bool2Int(v bool) int {
+	if v {
+		return 1
+	} else {
+		return 0
+	}
+}
