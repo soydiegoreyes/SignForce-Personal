@@ -572,7 +572,7 @@
         let isProcessing = false;
         let currentFacingMode = 'user';
         let isBiometryCaptured = false;
-
+        let isSamePerson =false;
         // --- Inicialización ---
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -622,10 +622,29 @@
             const input = preprocessCanvas(canvas);
             const embedding = faceModel.predict(input);
             const vector = await embedding.data(); // Float32Array(256)
-
             tf.dispose([input, embedding]);
 
             return Array.from(vector);
+        }
+
+        async function compareFaces(vector) {
+            if (!faceVector) throw new Error('No se ha tomado una fotografía');
+            try {
+                const res = await fetch('/validateFace', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ facevector: vector })
+                });
+                
+                if (!res.ok) throw new Error('Error al validar rostro');
+                const response = await res.json();
+                mostrarMensaje("Acc", response.distance);
+                return response.match;
+            } catch (err) {
+                mostrarMensaje(err.message, 'error');
+                return false;
+            }
         }
 
         /* ============================================================
@@ -688,15 +707,17 @@
                 ctx.drawImage(video, 0, 0, 105, 105);
 
                 faceVector = await extractFaceVector(canvas);
-                console.log('🧠 Face vector:', faceVector);
+                isSamePerson = await compareFaces(faceVector);
                 
                 // Marcar biometría como capturada
-                isBiometryCaptured = true;
-                updateBiometryButton();
-
+                if (isSamePerson){
+                    isBiometryCaptured = true;
+                    updateBiometryButton();
+                    mostrarMensaje('Prueba de vida capturada exitosamente', 'success');
+                } else {
+                    mostrarMensaje('Coincidencia facial insuficiente. Intente de nuevo.', 'error');
+                }
                 stopCamera();
-                mostrarMensaje('Prueba de vida capturada exitosamente', 'success');
-
             } catch (err) {
                 console.error(err);
                 alert('Error procesando el rostro');
@@ -838,7 +859,7 @@
             invitedocs.forEach(item => {
                 const doc = item.document;
                 const isSign = item.forSign;
-                
+                const idSignature = item.idSign;
                 // Determinar icono según extensión
                 let iconName = 'description';
                 let iconColor = 'text-gray-400';
@@ -868,9 +889,11 @@
                         <div class="text-xs text-gray-500">
                             ${(doc.documentExt || 'FILE').toUpperCase()} • ${(item.document.documentSize || '1.2 MB')} 
                         </div>
+                        
                         ${isSign 
-                            ? `<span class="badge-neon badge-sign-req"><span class="material-symbols-outlined text-[10px]">edit</span> Firmar</span>`
-                            : `<span class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span> Info</span>`
+                            ? idSignature===""? `<span class="badge-neon badge-sign-req"><span class="material-symbols-outlined text-[10px]">edit</span>Firmar</span>`
+                            : `<a href="http://192.168.1.67:8000/viewSignature?id=${idSignature}" class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span>Ver Firma</a>`:
+                            `<span class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span>Info</span>`
                         }
                     </div>
                 `;
@@ -974,7 +997,7 @@
             
             // Validar biometría si es requerida
             if (currentInvite.userDest.alive_proof) {
-                if (!isBiometryCaptured || !faceVector || faceVector.length !== 256) {
+                if (!isBiometryCaptured || !faceVector || !isSamePerson || faceVector.length !== 256) {
                     mostrarMensaje('Debes capturar la prueba de vida primero', 'error');
                     startCamera();
                     return;
@@ -1003,7 +1026,7 @@
                 }));
 
             mostrarMensaje('Firmando documentos...', 'info');
-
+//validateFace
             try {
                 const body = {
                     aut: authToken,
@@ -1011,7 +1034,6 @@
                     keyId: selectedKeyId,
                     folderId: currentFolder.idFolder,
                     signDocuments: signDocs,
-                    facevector: currentInvite.userDest.alive_proof ? faceVector : null,
                 };
 
                 const res = await fetch('/signDocument', {
@@ -1036,7 +1058,7 @@
                         mostrarMensaje(`Proceso finalizado. Total firmados: ${totalFirmados}`, 'success');
                     }
 
-                    setTimeout(() => location.reload(), 1500);
+                    //setTimeout(() => location.reload(), 1500);
 
                 } else {
                     if (res.status === 401 || res.status === 403 || (data.message && data.message.includes('token'))) {
@@ -1155,6 +1177,12 @@
         }
 
         async function viewDocument(name, docId) {
+            if (currentInvite.userDest.alive_proof) {
+                if (!isBiometryCaptured || !faceVector || !isSamePerson || faceVector.length !== 256) {
+                    mostrarMensaje('Debes capturar la prueba de vida primero', 'error');
+                    return;
+                }
+            }
             const modal = document.getElementById('documentModal');
             const viewer = document.getElementById('documentViewer');
             const loading = document.getElementById('modalLoading');
