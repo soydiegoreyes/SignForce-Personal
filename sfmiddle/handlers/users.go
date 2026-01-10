@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"sfmiddle/auth"
@@ -528,7 +529,7 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		fmt.Println(err)
 
 	}
-	facevector := buf.Bytes()
+	facevector := utilities.Encode_b64(buf.Bytes())
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -561,8 +562,8 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
 	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 	payload := models.EmailRequest{
 		IdUser:   "1",
@@ -607,5 +608,94 @@ func StatsDash(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	fmt.Println("JWT claims:", idUser, idInst, authInst)
+
+}
+
+func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+	}
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	var attrs = []string{"kycUser_fk", "isAliveUser", "activeUser"}
+	var wheres = map[string][]string{
+		"idUser":           {idUser},
+		"idInstitution_fk": {idInst},
+	}
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	//=====================================================================
+	whereMap := map[string][]string{
+		"idUser":   {idUser},
+		"selected": {"1"},
+	}
+	fvData, err := db.DB_con.GenericSelect("faceembeddings", "idKycUser", []string{"embedding"}, whereMap)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return
+	}
+	if len(fvData) == 0 {
+		fmt.Printf("Usuario no tiene biometría registrada")
+		return
+	}
+
+	b64emb := fvData[userData[idUser]["kycUser_fk"]]["embedding"]
+	embRaw := utilities.Decode_b64(b64emb)
+
+	var storedVector []float64
+	for i := 0; i < len(embRaw); i += 4 {
+		// Leemos 4 bytes en LittleEndian (estándar de JS)
+		bits := binary.LittleEndian.Uint32(embRaw[i : i+4])
+		floatVal := math.Float32frombits(bits)
+		storedVector = append(storedVector, float64(floatVal))
+	}
+
+	// 2. Decodificar el vector que viene del Frontend
+	var inputData struct {
+		FaceVector []float64 `json:"facevector"`
+	}
+	if err := json.NewDecoder(request.Body).Decode(&inputData); err != nil {
+		http.Error(respWriter, "Request inválido", http.StatusBadRequest)
+		return
+	}
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.LittleEndian, inputData.FaceVector)
+	if err != nil {
+		fmt.Println(err)
+
+	}
+	// 3. Comparar
+	fmt.Println(inputData.FaceVector)
+	distancia := utilities.EuclideanDistance(storedVector, inputData.FaceVector)
+
+	// 4. Umbral (Threshold)
+	// En face-api.js / tensorflow, un umbral de 0.6 suele ser el estándar
+	samePerson := distancia < 0.6
+
+	fmt.Printf("Distancia calculada: %f - Match: %v\n", distancia, samePerson)
+
+	// Enviar respuesta
+	respWriter.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(respWriter).Encode(map[string]interface{}{
+		"match":    samePerson,
+		"distance": distancia,
+	})
+
+	//=====================================================================
 
 }

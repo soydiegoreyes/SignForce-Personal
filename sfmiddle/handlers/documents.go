@@ -390,7 +390,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener información del archivo. Es posible que el recurso no exista", http.StatusNotFound)
 		return
 	}
-
+	fmt.Println(fileInfo)
 	// Abrir el archivo
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -407,6 +407,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	contentType := http.DetectContentType(buffer)
+	fmt.Println(contentType)
 
 	// Resetear el puntero del archivo al inicio
 	file.Seek(0, 0)
@@ -417,12 +418,13 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", filepath.Base(filePath)))
 
 	// Copiar el contenido del archivo a la respuesta
-	_, err = io.Copy(respWriter, file)
+	n, err := io.Copy(respWriter, file)
 	if err != nil {
 		// No podemos usar http.Error aquí porque ya hemos comenzado a escribir la respuesta
 		fmt.Printf("Error al enviar archivo: %v", err)
 		return
 	}
+	fmt.Println("numero de bytes ->", n)
 }
 
 // ====================================================================================================

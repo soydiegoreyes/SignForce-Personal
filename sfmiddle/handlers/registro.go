@@ -216,8 +216,8 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
 			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 			payload := models.EmailRequest{
 				IdUser:   userId,

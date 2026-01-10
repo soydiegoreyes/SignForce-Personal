@@ -227,18 +227,39 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	// lista de invitaciones que serán identificadas cada una por el id del usuario
 	invites := make(map[string]*models.Invite)
 	invitesMails := make(map[string]models.InviteMail) // cada usuario tiene su invite mail y se deben de enviar como lista
-	var numSigners, numReviewers int
+	var numSigners, numReviewers int                   // contadores totales de cuantas firmas y cuantas revisiones de todo el folder (incluso con repeticion de usuario)
+
+	// se obtienen los documentos que están registrados dentro del folder
 	var idFolder string
-	for idDoc, docrev := range requestData { // -> por cada documento dentro del request
+	for _, docrev := range requestData {
 		idFolder = docrev.IdFolder
+		break
+	}
+	wheres := map[string][]string{
+		"idFolder": {idFolder},
+	}
+	folderdocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", []string{"idDocument"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener documentos del folder: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// creamos un mapa inverso de folderdoc para que por cada id de documento haya un id de folderdoc
+	docfolder := make(map[string]string)
+	for idFD, FDData := range folderdocData {
+		docfolder[FDData["idDocument"]] = idFD
+	}
+
+	// para cada documento dentro del folder preparamos la invitación
+	for idDoc, docrev := range requestData { // -> por cada documento dentro del request
 		// se crea la carpeta de la invitacion dentro del folder
 		invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/META-INF", os.Getenv("BASE_DIR"), idInst, idFolder, idDoc)
 		if err := os.MkdirAll(invitePath, 0755); err != nil {
 			http.Error(respWriter, "Error al crear folder de invite: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-
+		var signsPerDoc, revsPerDoc int
 		for i, reviewer := range docrev.Reviewers { // -> por cada revisor dentro del documento
+
 			// si dentro de la lista de invitaciones NO esta el idUser entonces se crea una nueva invitación
 			if _, ok := invites[reviewer.User]; !ok {
 				invites[reviewer.User] = &models.Invite{ //-> dado que es una invitacion por usuario entonces el id es el del usuario como director de la invitacion
@@ -346,16 +367,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				}
 			}
 
-			wheres = map[string][]string{
-				"idFolder": {docrev.IdFolder},
-			}
-
-			folderdocData, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", []string{"idDocument"}, wheres)
-			if err != nil {
-				http.Error(respWriter, "Error al obtener documentos del folder: "+err.Error(), http.StatusInternalServerError)
-				return
-			}
-
+			// insertamos los detalles de la invitación
 			inviteDetCols := []string{"idInvite", "idfolderdocument"}
 
 			for idfolderdoc := range folderdocData {
@@ -381,28 +393,42 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					ReviewerInst:  fmt.Sprintf("%s (%s)", InstData[reviewerInst]["legalNameInst"], InstData[reviewerInst]["aliasNameInst"]),
 					SentDate:      invites[reviewer.User].SentAt,
 					SenderMessage: reviewer.Comment,
-					UrlSignLink:   fmt.Sprintf("%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), invites[reviewer.User].IdInvite),
-					//UrlSignLink:   fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), invites[reviewer.User].IdInvite),
+					//UrlSignLink:   fmt.Sprintf("%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), invites[reviewer.User].IdInvite),
+					UrlSignLink: fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), invites[reviewer.User].IdInvite),
 				}
 				invitesMails[reviewer.User] = inviteEmail
 			}
 			if reviewer.Role == 1 {
 				numSigners += 1
+				signsPerDoc += 1
 			} else {
 				numReviewers += 1
+				revsPerDoc += 1
 			}
 		}
-
+		// para cada documento en docfolder registramos el numero de firmantes y el numero de reviewers para obtener las estadísticas.
 		updates := map[string]map[string]interface{}{
-			idFolder: {
-				"numSigners":   numSigners,
-				"numReceivers": numReviewers,
+			docfolder[idDoc]: {
+				"numSigners":   signsPerDoc,
+				"numReviewers": revsPerDoc,
 			},
 		}
-		err := db.DB_con.GenericBatchUpdate("folders", "idFolder", updates)
+		err = db.DB_con.GenericBatchUpdate("folderdocuments", "idfolderdocument", updates)
 		if err != nil {
 			http.Error(respWriter, "Error actualizando folder", http.StatusInternalServerError)
 		}
+	}
+
+	// updates globales a folder
+	updates := map[string]map[string]interface{}{
+		idFolder: {
+			"numSigners":   numSigners,
+			"numReceivers": numReviewers,
+		},
+	}
+	err = db.DB_con.GenericBatchUpdate("folders", "idFolder", updates)
+	if err != nil {
+		http.Error(respWriter, "Error actualizando folder", http.StatusInternalServerError)
 	}
 	imails := []models.InviteMail{}
 	for _, invs := range invitesMails {
@@ -578,30 +604,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "La llave no pertenece al usuario autenticado", http.StatusUnauthorized)
 		return
 	}
-	//=====================================================================
-	if inviteInfo.Folder.Invites[0].UserDest.AliveProof {
-		whereMap := map[string][]string{
-			"idUser":   {idUser},
-			"selected": {"1"},
-		}
-		fvData, err := db.DB_con.GenericSelect("faceembeddings", "idKycUser", []string{"embedding"}, whereMap)
-		if err != nil {
-			fmt.Printf("%s", err)
-			return
-		}
-		if len(fvData) == 0 {
-			fmt.Printf("Usuario no tiene biometría registrada")
-			return
-		}
-		var idEmb string
-		for idKycUser, facevecData := range fvData {
-			idEmb = idKycUser
-			fmt.Printf("%s ->IdEmb, Embeding_Original->  %v %T Embedding_Evaluar-> %v", idEmb, facevecData["embedding"], facevecData["embedding"], reqdoc.FaceVector)
-			break
-		}
 
-	}
-	//=====================================================================
 	whereMap := map[string][]string{
 		"nameApp": {"sfback"},
 	}

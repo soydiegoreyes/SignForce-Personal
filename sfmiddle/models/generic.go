@@ -121,11 +121,12 @@ type Invite struct {
 }
 
 type InviteDoc struct {
-	Doc       Document `json:"document"`
-	ForSign   bool     `json:"forSign"`
-	ExpiresAt string   `json:"expirationDate"`
-	Order     int      `json:"order"`
-	Comment   string   `json:"comment"`
+	Doc         Document `json:"document"`
+	ForSign     bool     `json:"forSign"`
+	ExpiresAt   string   `json:"expirationDate"`
+	Order       int      `json:"order"`
+	Comment     string   `json:"comment"`
+	IdSignature string   `json:"idSign"`
 }
 
 type InviteUser struct {

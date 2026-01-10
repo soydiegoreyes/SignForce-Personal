@@ -125,12 +125,11 @@ type LLMrequest struct {
 }
 
 type SignDoc struct {
-	Aut        string     `json:"aut"`
-	IdInvite   string     `json:"inviteId"`
-	IdKey      string     `json:"keyId"`
-	IdFolder   string     `json:"folderId"`
-	Documents  []Document `json:"signDocuments"`
-	FaceVector []float32  `json:"facevector"`
+	Aut       string     `json:"aut"`
+	IdInvite  string     `json:"inviteId"`
+	IdKey     string     `json:"keyId"`
+	IdFolder  string     `json:"folderId"`
+	Documents []Document `json:"signDocuments"`
 }
 
 // ==================== RESPONSES ====================//

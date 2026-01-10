@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -197,4 +198,16 @@ func Bool2Int(v bool) int {
 	} else {
 		return 0
 	}
+}
+
+func EuclideanDistance(v1, v2 []float64) float64 {
+	if len(v1) != len(v2) {
+		return 1.0 // O manejar error: dimensiones no coinciden
+	}
+	var sum float64
+	for i := range v1 {
+		dist := v1[i] - v2[i]
+		sum += dist * dist
+	}
+	return math.Sqrt(sum)
 }

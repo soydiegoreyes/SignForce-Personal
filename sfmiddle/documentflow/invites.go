@@ -112,37 +112,46 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	// Obtener los documentos de la invitación específica
-	attrs = []string{"digestValueSign"}
+	attrs = []string{"digestValueSign", "signatureValueSign"}
 	wheres = map[string][]string{
 		"idInvite_fk": {idInvite},
 		"idUser_fk":   {inviteData[idInvite]["idUserDest_fk"]},
 	}
 
-	DocsData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
+	signsData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo documentos de la invitación: %v", err)
 	}
 
-	if len(DocsData) == 0 {
+	if len(signsData) == 0 {
 		return nil, fmt.Errorf("no se encontraron documentos en la invitación")
 	}
 
 	var docHashes []string
-	for _, dD := range DocsData {
-		docHashes = append(docHashes, dD["digestValueSign"])
+	idSigns := make(map[string]string)
+
+	for idSgin, dD := range signsData {
+		docHashes = append(docHashes, "'"+dD["digestValueSign"]+"'")
+		if dD["signatureValueSign"] != "" {
+			idSigns[dD["digestValueSign"]] = idSgin
+		}
 	}
+	attrs = []string{"D.idDocument", "documentPath", "documentName", "documentExt", "documentHash", "authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
+	var q = fmt.Sprintf("SELECT %s FROM documents as D inner join folderdocuments as FD ON D.idDocument=FD.idDocument WHERE D.documentHash IN (%s) AND FD.idFolder IN (%s);", strings.Join(attrs, ","), strings.Join(docHashes, ","), idFolder)
+	docData, err := db.DB_con.ExecuteSelect(q)
 
 	// Obtener datos de los documentos
-	attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
-		"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
-	wheres = map[string][]string{
-		"documentHash":      docHashes,
-		"creatorUserDoc_fk": {inviteData[idInvite]["idUserOwnner_fk"]},
-	}
-	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
-	if err != nil {
-		return nil, fmt.Errorf("error obteniendo datos del documento: %v", err)
-	}
+	/*
+		attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
+			"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
+		wheres = map[string][]string{
+			"documentHash":      docHashes,
+			"creatorUserDoc_fk": {inviteData[idInvite]["idUserOwnner_fk"]},
+		}
+		docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo datos del documento: %v", err)
+		}*/
 	if len(docData) == 0 {
 		return nil, fmt.Errorf("documentos no encontrados")
 	}
@@ -204,9 +213,10 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 				Abstract:         doc["abstractDoc"],
 				LastModifiedDoc:  doc["lastModifiedDoc"],
 			},
-			ForSign:   true, // Esto debería venir de la base de datos según el rol del usuario
-			ExpiresAt: inviteData[idInvite]["expirationDate"],
-			Comment:   inviteData[idInvite]["descriptionText"],
+			ForSign:     true, // Esto debería venir de la base de datos según el rol del usuario
+			ExpiresAt:   inviteData[idInvite]["expirationDate"],
+			Comment:     inviteData[idInvite]["descriptionText"],
+			IdSignature: idSigns[doc["documentHash"]],
 		}
 		inviteDocs = append(inviteDocs, inviteDoc)
 
@@ -272,8 +282,8 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
 	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(5*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
-	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
+	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
+	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
 
 	payload := models.EmailRequest{
 		IdUser:   idUserDest,

@@ -133,6 +133,7 @@ func main() {
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
 	mux.HandleFunc("/dashStats", handlers.StatsDash)
+	mux.HandleFunc("/validateFace", handlers.ValidateFace)
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
