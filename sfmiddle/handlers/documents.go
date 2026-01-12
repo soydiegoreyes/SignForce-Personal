@@ -438,13 +438,13 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Autenticación por JWT =====
 	cookie, err := request.Cookie("token")
 	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		http.Error(respWriter, "No autorizado"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	claims, err := auth.ValidateJWT(cookie.Value)
 	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		http.Error(respWriter, "No autorizado"+err.Error(), http.StatusUnauthorized)
 		return
 	}
 

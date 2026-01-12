@@ -574,8 +574,15 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 				location = "/noAuthPage"
 				token = ""
 			}
-		} else { // la institucion ya está activa (en un estatus ACTIVO)
-			location = satusActive[dataInst[idInst]["statusInst_fk"]]
+		} else {
+			switch dataInst[idInst]["statusInst_fk"] {
+			case "7":
+				location = "/mydocs"
+			case "8":
+				location = "/mydocs"
+			default:
+				location = satusActive[dataInst[idInst]["statusInst_fk"]]
+			}
 		}
 	} else { // el usuario no esta activo y no tiene pemiso de entrar
 		location = "/noAuthPage"
@@ -588,7 +595,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true, // poner en true en producción con HTTPS
+		Secure:   false, // poner en true en producción con HTTPS
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(1 * time.Hour),
 	})
