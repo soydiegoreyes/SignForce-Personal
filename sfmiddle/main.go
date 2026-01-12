@@ -143,7 +143,7 @@ func main() {
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/mykeys", myKeys)
 	mux.HandleFunc("/payment", payment)
-	mux.HandleFunc("/dashboard/approvals", approvalsDash)
+	mux.HandleFunc("/approvalsDash", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
 	mux.HandleFunc("/mytemplates", myTemplates)
 	mux.HandleFunc("/addSigners", addSigners)
@@ -152,7 +152,7 @@ func main() {
 	mux.HandleFunc("/viewinvite", viewInvite)
 	mux.HandleFunc("/viewinviteuser", viewInviteUser)
 	mux.HandleFunc("/myfolders", myFolders)
-	mux.HandleFunc("/dashboard/users", usersDash)
+	mux.HandleFunc("/users", usersDash)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -547,46 +547,40 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	//var statusVal = map[string]bool{"2": true, "3": true, "4": true, "5": true}
-	//var statusContr = map[string]bool{"6": true, "7": true}
-	var satusActive = map[string]bool{"8": true}
-	var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
+	var satusActive = map[string]string{
+		"2": "/validation", "3": "/waitapprove", "4": "/noAuthPage",
+		"5": "/payment", "6": "/noAuthPage", "7": "/noAuthPage", "8": "/noAuthPage", "9": "/noAuthPage",
+		"10": "/noAuthPage", "11": "/noAuthPage", "12": "/noAuthPage",
+	}
+	//var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
 
 	var location string
 	// Si el usuario esta activo
 	if dataUser[idUser]["activeUser"] == "1" {
 		// se valida si la institucion no esta activa aun
 		if dataInst[idInst]["activeInst"] == "0" {
-			// si no esta activa entonces hay que ver que estatus tiene
-			if dataInst[idInst]["statusInst_fk"] == "2" {
-				// se encuentra en etapa de validacion por lo que se redirige a /validacion
+			switch dataInst[idInst]["statusInst_fk"] {
+			case "2":
 				location = "/validation"
-			} else if dataInst[idInst]["statusInst_fk"] == "3" {
+			case "3":
 				location = "/waitapprove"
-			} else if dataInst[idInst]["statusInst_fk"] == "5" {
+			case "5":
 				location = "/payment"
-			} else if dataInst[idInst]["statusInst_fk"] == "6" {
+			case "6":
 				location = "/mykeys"
-			} else if dataInst[idInst]["statusInst_fk"] == "7" {
+			case "7":
 				location = "/mydocs"
-			} else if dataInst[idInst]["statusInst_fk"] == "8" {
-				location = "/dashboard/users"
-			} else if satusInactive[dataInst[idInst]["statusInst_fk"]] {
+			default:
 				location = "/noAuthPage"
-			} else {
-				location = "/noAuthPage"
+				token = ""
 			}
 		} else { // la institucion ya está activa (en un estatus ACTIVO)
-			if satusActive[dataInst[idInst]["statusInst_fk"]] {
-				location = "/dashboard"
-			} else { // La institucion estaba activa pero fue dada de baja, suspendida o revocada
-				location = "/noAuthPage"
-			}
+			location = satusActive[dataInst[idInst]["statusInst_fk"]]
 		}
 	} else { // el usuario no esta activo y no tiene pemiso de entrar
 		location = "/noAuthPage"
+		token = ""
 	}
-	//fmt.Println(location)
 
 	// Setear cookie con el token
 	http.SetCookie(respWriter, &http.Cookie{
@@ -594,7 +588,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // poner en true en producción con HTTPS
+		Secure:   true, // poner en true en producción con HTTPS
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(1 * time.Hour),
 	})
