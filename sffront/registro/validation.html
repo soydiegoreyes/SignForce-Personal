@@ -1,360 +1,290 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validación de Documentos</title>
+    <title>Validación de Documentos - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap" rel="stylesheet">
     <style>
-        /* Variables del sistema de colores del index.css */
+        /* Estilos Base y Scrollbar */
+        .keys-list {
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(33, 150, 243, 0.3) transparent;
+            padding-right: 5px;
+        }
         
-        .bg {
-        background: 
-            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
-            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
-            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+        .keys-list::-webkit-scrollbar { width: 4px; }
+        .keys-list::-webkit-scrollbar-track { background: transparent; }
+        .keys-list::-webkit-scrollbar-thumb {
+            background-color: rgba(33, 150, 243, 0.3);
+            border-radius: 3px;
         }
 
-        :root {
-            --color-background: #000;
-            --color-card: rgba(255, 255, 255, 0.05);
-            --color-text-primary: #ffffff;
-            --color-text-secondary: rgba(255, 255, 255, 0.7);
-            --color-accent: rgba(255, 255, 255, 0.5);
-            --color-shadow: rgba(0, 0, 0, 0.3);
-            --color-blue-dark: #1e2c4b;
-            --color-blue-light: #93bde5;
-            --color-gold: #e5b019;
-            --color-red-wine: #74273a;
-            
-            --primary-color: #c643ee;
-            --secondary-color: #7b37c9;
-            --success-color: #4cc9f0;
-            --warning-color: #f72585;
-        }
-
-        [data-theme="light"] {
-            --color-background: #f8fafc;
-            --color-card: rgba(255, 255, 255, 0.8);
-            --color-text-primary: #1e293b;
-            --color-text-secondary: #64748b;
-            --color-accent: rgba(0, 0, 0, 0.1);
-            --color-shadow: rgba(0, 0, 0, 0.1);
-        }
-
-        body {
-            background: var(--color-background);
-            min-height: 100vh;
-            background-attachment: fixed;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--color-text-primary);
-        }
-
-        .bg {
-        background: 
-            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
-            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
-            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: "Michroma", sans-serif;
-            color: var(--color-text-primary);
-        }
-
-        body.light-theme {
-            background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-        }
-            body.light-theme .glass-panel,
-            body.light-theme .glass-card,
-            body.light-theme .glass-header {
-            background: rgba(255, 255, 255, 0.7);
-            color: #1e293b;
-        }
-            body.light-theme .text-primary { color: #1e293b; }
-            body.light-theme .text-secondary { color: #64748b; }
-
-            .main-content { margin-top: 120px; }
-            .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-
-        /* Barra superior mejorada - 25% más grande */
-        .glass-header {
-            position: fixed;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70%;
-            height: 62.5px; /* 25% más grande que 50px */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 50px;
+        /* Tarjetas Estilo "Invitación" */
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 8px 32px 0 rgba(255, 255, 255, 0.1),
-                0 0 10px 1px rgba(200, 90, 255, 0.4);
-            z-index: 1000;
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 25px;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            flex-direction: column;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Contenedores de datos con resplandor */
+        .sig-data-item {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            position: relative;
             overflow: hidden;
         }
 
-        /* Efecto liquid glass al pasar el mouse */
-        .glass-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(0, 0, 0, 0.1),
-            transparent
-        );
-        transition: 0.5s;
+        .sig-data-item::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, 
+                rgba(59, 130, 246, 0.3), 
+                rgba(124, 58, 237, 0.3), 
+                rgba(59, 130, 246, 0.3));
+            border-radius: 14px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .glass-header:hover::before {
-        left: 100%;
+        .sig-data-item:hover::before {
+            opacity: 1;
         }
 
-        /* Burbuja liquid glass */
-        .liquid-bubble {
-        position: fixed;
-        width: 120px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: -1;
-        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+        .sig-data-item:hover {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+            border-color: rgba(33, 150, 243, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Badges Neon */
+        .badge-neon {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-validation {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+        }
+
+        .badge-document {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* Botones */
+        .btn-cyber {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 500;
         }
         
-        /* Efecto hover para los items del menú */
-        .nav-item {
-        position: relative;
-        padding: 8px 16px;
-        transition: color 0.3s ease;
+        .btn-cyber:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
         }
 
-        .nav-item:hover {
-        color: rgb(255, 255, 255) !important;
-        }
-
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: var(--color-text-primary);
-            cursor: pointer;
-            font-size: 0.875rem;
-            padding: 0.5rem 0.625rem;
-            border-radius: 50px;
-            transition: all 0.3s;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 0;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-
-        .auth-button {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--color-text-primary);
-            padding: 0.5rem 0.625rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-
-        .auth-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-
-        /* Contenido principal con margen para el header fijo */
-        .main-content {
-            margin-top: 120px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-family: "Michroma", sans-serif;
-            font-size: 2.5rem;
-            background: -webkit-linear-gradient(#faf9f6, #dcd7ce, #aca69a);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .glass-panel {
-            background: rgba(1, 0, 28, 0.1);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            padding: 2rem;
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        .empresa-info h3 {
-            margin-bottom: 1rem;
-            color: var(--color-accent);
-        }
-        .empresa-info p { margin-bottom: 0.5rem; }
-
-        .form-container h3 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .documentos-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .documento-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 12px;
+        .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
-        }
-
-        .documento-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 15px rgba(200, 90, 255, 0.5);
-        }
-
-        .documento-item span {
+            color: white;
             font-weight: 500;
-            color: var(--color-text-primary);
         }
 
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Header Panel */
+        .header-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+
+        /* Estados de documentos */
         .status {
-            padding: 0.25rem 0.75rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 20px;
             font-size: 0.85rem;
-            font-weight: 500;
-            margin-right: 1rem;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+            border: 1px solid transparent;
         }
 
         .status-pendiente {
             background-color: rgba(249, 115, 22, 0.2);
             color: #f97316;
+            border-color: rgba(249, 115, 22, 0.3);
         }
 
         .status-completo {
             background-color: rgba(34, 197, 94, 0.2);
-            color: #baffff;
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, 0.3);
         }
 
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        /* Inputs */
+        .input-field {
+            width: 100%;
+            padding: 0.75rem 1rem;
             border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.05); /* Fondo transparente oscuro */
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+            color: #f3f4f6; /* Texto claro */
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
         }
 
-        .btn-upload {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 15px rgba(198, 67, 238, 0.3);
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.7); /* Borde azul al enfocar */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Sombra azul sutil */
+            background: rgba(255, 255, 255, 0.08); /* Fondo ligeramente más claro al enfocar */
+            color: #ffffff; /* Texto blanco puro al enfocar */
         }
 
-        .btn-upload:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(198, 67, 238, 0.4);
+        .input-field::placeholder {
+            color: rgba(156, 163, 175, 0.7); /* Placeholder gris translúcido */
+            /* Quita el background del placeholder - no es necesario */
         }
 
-        .btn-completar {
-            background: var(--success-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        /* Si quieres que el input se vea aún más oscuro cuando no está enfocado */
+        .input-field:not(:focus) {
+            background: rgba(255, 255, 255, 0.03); /* Aún más oscuro cuando no está enfocado */
         }
 
-        .btn-completar:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+        /* Mensajes */
+        .message-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
         }
 
-        .btn-completar:disabled {
-            background: rgba(156, 163, 175, 0.5);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-        .btn-guardar {
-            background: var(--color-blue-light);
-            color: var(--color-background);
-            box-shadow: 0 4px 15px rgba(147, 189, 229, 0.3);
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
+        .message-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
         }
 
-        .btn-guardar:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(147, 189, 229, 0.4);
+        .message-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
         }
 
-        .actions {
+        /* Document items */
+        .documento-item {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
         }
 
+        .documento-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 0.25rem;
+        }
+
+        /* File input styling */
         .file-input-container {
             position: relative;
             display: inline-block;
@@ -362,245 +292,180 @@
 
         .file-input {
             position: absolute;
-            left: 0; top: 0;
+            left: 0;
+            top: 0;
             opacity: 0;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             cursor: pointer;
         }
 
-        .file-info {
-           margin-top: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--color-text-secondary);
-        }
-
-        .error {
-            color: #ef4444;
-            padding: 1rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .success {
-            color: #baffff;
-            padding: 1rem;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-
+        /* Loading animation */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: #fff;
+            border-top-color: #3b82f6;
             animation: spin 1s ease-in-out infinite;
             margin-right: 0.5rem;
         }
-        .form.active {
-            display: block;
-        }
-
-        .form-group {
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            gap: 4rem;
-            width: 90%;
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: var(--color-text-primary);
-        }
-
-        input.input-field[type="text"],
-        input.input-field[type="tel"],
-        input.input-field[type="email"],
-        input.input-field[type="password"] {
-            appearance: none;
-            -webkit-appearance: none; /* Safari / Chrome */
-            -moz-appearance: none; /* Firefox */
-            width: 100%;
-            padding: 0.9rem 1rem;
-            border-radius: 10px; /* tu estilo original */
-            background: #1a1c2266;
-            padding-left: 40px !important;
-            font-size: 1rem;
-            color: var(--color-text-primary);
-            border: 1px solid rgba(200, 90, 255, 0.5);
-        }
-
-        .input-field::placeholder {
-            color: var(--color-text-secondary) !important;
-            opacity: 0.7;
-            }
-
-        .input-field:focus {
-            outline: none;
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(229, 124, 25, 0.3);
-        }
-
-        .input-icon {
-            position: absolute;
-            left: 15px;
-            top: 52px; /* Cambiado de top: 40px */
-            color: var(--color-accent);
-            font-size: 1rem;
-            pointer-events: none; /* Evita que interfiera con los clicks */
-        }
-
 
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
-
-        /* Animaciones del index.css */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        .delay-1 {
-            animation-delay: 0.2s;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .glass-header {
-                width: 90%;
-            }
-            .main-content {
-                margin-top: 150px;
-            }
-            
-            .nav-item {
-                font-size: 0.75rem;
-                padding: 6px 12px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-        }
-        @media (max-width: 480px) {
-            .glass-header {
-                padding: 0 15px;
-                height: 50px;
-            }
-        }
-        
     </style>
 </head>
-<body data-theme="dark">
-    <!-- Barra superior rediseñada -->
-    <header class="glass-header" id="mainHeader">
-      <div class="flex items-center gap-8 relative">
-        <!-- Burbuja liquid glass -->
-        <div class="liquid-bubble" id="liquidBubble"></div>
-        
-        <div class="flex items-center gap-4 text-primary">
-          <div class="size-4">
-            
-          </div>
-          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-        </div>
-        <div class="flex items-center gap-9">
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
-        </div>
-      </div>
-      <div class="flex flex-1 justify-end gap-8">
-        <a href="/login" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
-          Iniciar Sesión
-        </a>
-        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
-      </div>
-    </header>
-    
-    <div class="bg">
-        <div class="main-content">
-            <div class="container">
-                <h1 class="fade-in">Validación de Documentos</h1>
-                <div id="messageContainer"></div>
-                <div class="empresa-info glass-card fade-in delay-1" id="empresaInfo">
-                    <!-- Información de la empresa se llenará con JS -->
+<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
+
+    <header class="header-panel fixed top-0 w-full z-50 h-16">
+        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
                 </div>
-                
-                <div class="form-container glass-panel fade-in delay-1">
-                    <div class="form-tabs">
-                        <h3>Documentos Requeridos</h3>
-                        <div class="documentos-list">
-                            <div class="documento-item">
-                                <span>Acta Constitutiva</span>
-                                <div class="file-info" id="infoActa"></div>
-                                <div>
-                                    <span class="status status-pendiente" id="statusActa">Pendiente</span>
-                                    <div class="file-input-container">
-                                        <label id="btnActa" for="fileActa" class="btn btn-upload">Subir</label>
-                                        <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="documento-item">
-                                <span>Poder Notarial</span>
-                                <div class="file-info" id="infoPoder"></div>
-                                <div>
-                                    <span class="status status-pendiente" id="statusPoder">Pendiente</span>
-                                    <div class="file-input-container">
-                                        <label id="btnPoder" for="filePoder" class="btn btn-upload">Subir</label>
-                                        <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="documento-item">
-                                <span>Identificación Oficial</span>
-                                <div class="file-info" id="infoIdentificacion"></div>
-                                <div>
-                                    <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
-                                    <div class="file-input-container">
-                                        <label id="btnIdentificacion" for="fileIdentificacion" class="btn btn-upload">Subir</label>
-                                        <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="documento-item">
-                                <span>Comprobante de Domicilio</span>
-                                <div class="file-info" id="infoDomicilio"></div>
-                                <div>
-                                    <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
-                                    <div class="file-input-container">
-                                        <label id="btnDomicilio" for="fileDomicilio" class="btn btn-upload">Subir</label>
-                                        <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                                    </div>
-                                </div>
-                            </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Validación de Documentos</span></h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-xs font-medium">Conectado</span>
+                </div>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+                    <span class="material-symbols-outlined text-sm">dark_mode</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1200px] mx-auto w-full flex flex-col gap-8">
+        
+        <!-- Sección Principal - Información de la Empresa -->
+        <div class="tech-card p-8 animate-fade-in">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <span class="badge-neon badge-validation">
+                        <span class="material-symbols-outlined text-[14px">business</span>
+                        Información de la Empresa
+                    </span>
+                </div>
+            </div>
+
+            <div id="messageContainer"></div>
+
+            <div class="sig-data-item">
+                <div id="empresaInfo" class="space-y-4">
+                    <!-- Información se llenará con JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Documentos Requeridos -->
+        <div class="tech-card p-8 animate-fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-green-400">description</span>
+                    Documentos Requeridos
+                </h3>
+                <div class="h-px flex-1 bg-white/10 ml-6"></div>
+            </div>
+
+            <div class="documentos-list space-y-4">
+                <!-- Acta Constitutiva -->
+                <div class="documento-item">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-blue-400 text-lg">description</span>
+                            <span class="font-medium text-white">Acta Constitutiva</span>
                         </div>
-                        <div class="actions">
-                            <button class="btn btn-completar" id="btnCompletar" disabled>Completar Validación</button>
+                        <div class="file-info" id="infoActa"></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="status status-pendiente" id="statusActa">Pendiente</span>
+                        <div class="file-input-container">
+                            <button id="btnActa" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">upload</span>
+                                Subir
+                            </button>
+                            <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                         </div>
                     </div>
+                </div>
+
+                <!-- Poder Notarial -->
+                <div class="documento-item">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-purple-400 text-lg">gavel</span>
+                            <span class="font-medium text-white">Poder Notarial</span>
+                        </div>
+                        <div class="file-info" id="infoPoder"></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="status status-pendiente" id="statusPoder">Pendiente</span>
+                        <div class="file-input-container">
+                            <button id="btnPoder" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">upload</span>
+                                Subir
+                            </button>
+                            <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Identificación Oficial -->
+                <div class="documento-item">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-green-400 text-lg">badge</span>
+                            <span class="font-medium text-white">Identificación Oficial</span>
+                        </div>
+                        <div class="file-info" id="infoIdentificacion"></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
+                        <div class="file-input-container">
+                            <button id="btnIdentificacion" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">upload</span>
+                                Subir
+                            </button>
+                            <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprobante de Domicilio -->
+                <div class="documento-item">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="material-symbols-outlined text-orange-400 text-lg">home</span>
+                            <span class="font-medium text-white">Comprobante de Domicilio</span>
+                        </div>
+                        <div class="file-info" id="infoDomicilio"></div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
+                        <div class="file-input-container">
+                            <button id="btnDomicilio" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">upload</span>
+                                Subir
+                            </button>
+                            <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-white/10">
+                <div class="flex justify-center">
+                    <button class="btn-cyber px-8 py-3 rounded-lg text-white font-medium flex items-center gap-2 text-lg" id="btnCompletar" disabled>
+                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                        Completar Validación
+                    </button>
                 </div>
             </div>
         </div>
@@ -628,11 +493,6 @@
 
         // Al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            //===================================== LIQUID BUBBLE =========================================
-
-           // Configurar animaciones del liquid bubble
-            configurarLiquidBubble();
-
             // Obtener datos de validación
             obtenerDatosValidacion();
             
@@ -644,83 +504,24 @@
             
             // Configurar el toggle del tema
             document.getElementById('themeToggle').addEventListener('click', toggleTema);
-
-            
         });
-
-        //===================================== LIQUID BUBBLE =========================================
-        function configurarLiquidBubble() {
-
-            // Efecto liquid glass para la burbuja del menú
-            const liquidBubble = document.getElementById('liquidBubble');
-            const navItems = document.querySelectorAll('.nav-item');
-            
-            // Posiciones iniciales de los items del menú
-            const itemPositions = {};
-            
-            // Calcular posiciones de los items
-            function calculatePositions() {
-            navItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                
-                itemPositions[item.dataset.item] = {
-                left: rect.left - headerRect.left,
-                width: rect.width
-                };
-            });
-            
-            // Posicionar burbuja en el item activo (home por defecto)
-            moveBubble('home');
-            }
-            
-            // Mover la burbuja al item seleccionado
-            function moveBubble(itemName) {
-            const item = itemPositions[itemName];
-            if (item) {
-                liquidBubble.style.left = `${item.left - 10}px`;
-                liquidBubble.style.width = `${item.width + 20}px`;
-            }
-            }
-            
-            // Event listeners para los items del menú
-            navItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                moveBubble(item.dataset.item);
-            });
-            
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                moveBubble(item.dataset.item);
-                // Scroll suave al hacer clic en los enlaces
-                const targetId = item.getAttribute('href');
-                if (targetId && targetId !== '#') {
-                document.querySelector(targetId).scrollIntoView({
-                    behavior: 'smooth'
-                });
-                }
-            });
-            });
-            
-            // Calcular posiciones al cargar y al redimensionar
-            window.addEventListener('load', calculatePositions);
-            window.addEventListener('resize', calculatePositions);
-        }
 
         //===================================== TOGGLE THEME =========================================
         function toggleTema() {
-            const body = document.body;
-            const themeToggleIcon = document.querySelector('.theme-toggle i');
+            const html = document.documentElement;
+            const isDark = html.classList.contains('dark');
+            html.classList.toggle('dark', !isDark);
             
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.setAttribute('data-theme', 'light');
-                body.classList.add('light-theme');
-                themeToggleIcon.className = 'fas fa-sun';
+            // Actualizar ícono
+            const icon = document.querySelector('#themeToggle .material-symbols-outlined');
+            if (isDark) {
+                icon.textContent = 'light_mode';
             } else {
-                body.setAttribute('data-theme', 'dark');
-                body.classList.remove('light-theme');
-                themeToggleIcon.className = 'fas fa-moon';
+                icon.textContent = 'dark_mode';
             }
+            
+            // Guardar preferencia
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
         }
 
         //===================================== GET DATA VALIDATION =========================================
@@ -753,22 +554,51 @@
         function actualizarInterfaz(data) {
             
             // Actualizar información de la empresa
-            const inputline = '<div class="form-group"><input type="text" id="{0}" class="input-field" placeholder="{1}"></div>';
+            const inputline = '<div class="mb-4"><label class="info-label">{1}</label><input type="text" id="{0}" class="input-field" placeholder="{1}" value="{2}"></div>';
             
             document.getElementById('empresaInfo').innerHTML = `
-                <h3>${data.legalName?data.legalName:'Nombre no disponible'}</h3>
-                <p><strong>Alias:</strong> ${data.aliasName?data.aliasName:'No especificado'}</p>
-                <p><strong>RFC:</strong> ${data.taxNum?data.taxNum:'No especificado'}</p>
-                <p><strong>Nombre de representante Legal:</strong> ${data.legalSignupName?data.legalSignupName:'No especificado'}</p>
-                <p><strong>Apellido de representante Legal:</strong> ${data.legalSignupLastname?data.legalSignupLastname:'No especificado'}</p>
-                <p><strong>Dirección:</strong> ${data.streetAddress?data.streetAddress:inputline.format("street-address", "Calle y Número")}</p>
-                <p><strong>Código Postal:</strong> ${data.postalCode?data.postalCode:inputline.format("postal-code", "Código postal")}</p>
-                <p><strong>Colonia:</strong> ${data.neighborhood?data.neighborhood:inputline.format("neighborhood", "Colonia")}</p>
-                <p><strong>Localidad:</strong> ${data.locality?data.locality:inputline.format("locality", "Delegacion o municipio")}</p>
-                <div class="actions" style="margin-bottom: 1rem;">
-                    <button class="btn btn-guardar" id="btnGuardarInfo">Guardar Información</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                        <div>
+                            <p class="info-label">Razón Social</p>
+                            <p class="info-value">${data.legalName?data.legalName:'No especificado'}</p>
+                        </div>
+                        <div>
+                            <p class="info-label">Alias</p>
+                            <p class="info-value">${data.aliasName?data.aliasName:'No especificado'}</p>
+                        </div>
+                        <div>
+                            <p class="info-label">RFC</p>
+                            <p class="info-value">${data.taxNum?data.taxNum:'No especificado'}</p>
+                        </div>
+                        <div>
+                            <p class="info-label">Representante Legal</p>
+                            <p class="info-value">${data.legalSignupName?data.legalSignupName + ' ' + (data.legalSignupLastname || '') :'No especificado'}</p>
+                        </div>
+                    
+                </div>
+                
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    ${inputline.format("street-address", "Calle y Número", data.streetAddress || '')}
+                    ${inputline.format("neighborhood", "Colonia", data.neighborhood || '')}
+                </div>
+                <div class="space-y-4">
+                    ${inputline.format("locality", "Delegación o Municipio", data.locality || '')}
+                    ${inputline.format("postal-code", "Código Postal", data.postalCode || '')}
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-white/10">
+                    <div class="flex justify-end">
+                        <button class="btn-cyber px-6 py-2 rounded-lg flex items-center gap-2" id="btnGuardarInfo">
+                            <span class="material-symbols-outlined text-sm">save</span>
+                            Guardar Información
+                        </button>
+                    </div>
                 </div>
             `;
+            
+            // Configurar evento para guardar información
+            document.getElementById('btnGuardarInfo').addEventListener('click', guardarInformacionTexto);
             
             for (const [key, value] of Object.entries(documentTypes)) {
                 if (data[value]) {
@@ -784,11 +614,13 @@
                     statusEl.className = 'status status-completo';
                     statusEl.textContent = 'Completo';
 
-                    // Cambiar el label (que simula el botón)
-                    const labelEl = document.querySelector(`label[for="file${capitalized}"]`);
-                    if (labelEl) {
-                        labelEl.textContent = 'Documento subido';
-                        labelEl.classList.add('disabled-label'); // clase para estilos grises
+                    // Cambiar el botón
+                    const buttonEl = document.getElementById(`btn${capitalized}`);
+                    if (buttonEl) {
+                        buttonEl.textContent = 'Documento subido';
+                        buttonEl.classList.remove('btn-cyber');
+                        buttonEl.classList.add('btn-secondary');
+                        buttonEl.disabled = true;
                     }
 
                     // Deshabilitar el input file real
@@ -837,11 +669,6 @@
                     subirDocumento(key, event.target.files[0]);
                 });
             }
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.id === 'btnGuardarInfo') {
-                    guardarInformacionTexto();
-                }
-            });
         }
 
         // Función para subir un documento
@@ -890,17 +717,23 @@
                 documentos[tipo].nombre = archivo.name;
                 
                 // Actualizar UI
-                document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).className = 'status status-completo';
-                document.getElementById(`status${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = 'Completo';
-                document.getElementById(`btn${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = 'Documento subido';
-                document.getElementById(`btn${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).disabled = true;
-                document.getElementById(`file${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).disabled = true;
-                document.getElementById(`info${tipo.charAt(0).toUpperCase() + tipo.slice(1)}`).textContent = `Archivo: ${archivo.name}`;
+                const capitalized = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+                document.getElementById(`status${capitalized}`).className = 'status status-completo';
+                document.getElementById(`status${capitalized}`).textContent = 'Completo';
+                
+                const buttonEl = document.getElementById(`btn${capitalized}`);
+                buttonEl.textContent = 'Documento subido';
+                buttonEl.classList.remove('btn-cyber');
+                buttonEl.classList.add('btn-secondary');
+                buttonEl.disabled = true;
+                
+                document.getElementById(`file${capitalized}`).disabled = true;
+                document.getElementById(`info${capitalized}`).textContent = `Archivo: ${archivo.name}`;
                 
                 // Verificar si todos los documentos están completos
                 verificarCompletitud();
                 
-                mostrarMensaje(`${tipo} subido correctamente`, 'success');
+                mostrarMensaje(`${tipo.charAt(0).toUpperCase() + tipo.slice(1)} subido correctamente`, 'success');
             } catch (error) {
                 console.error(`Error al subir ${tipo}:`, error);
                 mostrarMensaje(`Error al subir ${tipo}: ${error.message}`, 'error');
@@ -977,7 +810,7 @@
         //===================================== SHOW MESSAGES =========================================
         function mostrarMensaje(mensaje, tipo) {
             const messageContainer = document.getElementById('messageContainer');
-            messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;
+            messageContainer.innerHTML = `<div class="message-${tipo}">${mensaje}</div>`;
             
             // Auto-ocultar después de 5 segundos
             setTimeout(() => {
