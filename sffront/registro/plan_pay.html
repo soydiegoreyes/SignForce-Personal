@@ -1,303 +1,126 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Planes y Precios - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Michroma:wght@400&display=swap" rel="stylesheet">
     <style>
-        /* Variables del sistema de colores del index.css */
-        :root {
-            --color-background: #0b0220;
-            --color-card: rgba(255, 255, 255, 0.05);
-            --color-text-primary: #ffffff;
-            --color-text-secondary: rgba(255, 255, 255, 0.7);
-            --color-accent: rgba(255, 255, 255, 0.5);
-            --color-shadow: rgba(0, 0, 0, 0.3);
-            --color-blue-dark: #1e2c4b;
-            --color-blue-light: #93bde5;
-            --color-gold: #e5b019;
-            --color-red-wine: #74273a;
-        }
-
+        /* Estilos de view_signature.html */
         body {
-            background: var(--color-background);
-            min-height: 100vh;
-            background-attachment: fixed;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--color-text-primary);
+            font-family: 'Inter', sans-serif;
         }
 
-        .bg {
-            background: 
-                radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
-                radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
-                radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: "Michroma", sans-serif;
-            color: var(--color-text-primary);
-        }
-
-        /* Barra superior mejorada - 25% más grande */
-        .glass-header {
-        position: fixed;
-            top: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 70%;
-            height: 62.5px; /* 25% más grande que 50px */
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-radius: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 
-                0 8px 32px 0 rgba(255, 255, 255, 0.1),
-                0 0 10px 1px rgba(200, 90, 255, 0.4);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-between;
+        /* Badges Neon */
+        .badge-neon {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
             align-items: center;
-            padding: 0 25px;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            gap: 4px;
+            background: rgba(59, 130, 246, 0.7);
+        }
+
+        /* Tarjetas Estilo "Invitación" */
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
             overflow: hidden;
-        }
-
-        /* Efecto liquid glass al pasar el mouse */
-        .glass-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(0, 0, 0, 0.1),
-                transparent
-            );
-            transition: 0.5s;
-        }
-
-        .glass-header:hover::before {
-            left: 100%;
-        }
-
-        /* Burbuja liquid glass */
-        .liquid-bubble {
-            position: fixed;
-            width: 120px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            z-index: -1;
-            box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+            display: flex;
+            flex-direction: column;
         }
         
-        /* Efecto hover para los items del menú */
-        .nav-item {
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(56, 189, 248, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Botones */
+        .btn-cyber {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
             position: relative;
-            padding: 8px 16px;
-            transition: color 0.3s ease;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cyber:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
         }
 
-        .nav-item:hover {
-            color: rgb(255, 255, 255) !important;
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: var(--color-text-primary);
-            cursor: pointer;
-            font-size: 0.875rem;
-            padding: 0.5rem 0.625rem;
-            border-radius: 50px;
-            transition: all 0.3s;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 0;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-
-        .auth-button {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--color-text-primary);
-            padding: 0.5rem 0.625rem;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-
-        .auth-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-        }
-
-        /* Contenido principal con margen para el header fijo */
-        .main-content {
-            margin-top: 120px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-family: "Michroma", sans-serif;
-            font-size: 2.5rem;
-            background: -webkit-linear-gradient(#faf9f6, #dcd7ce, #aca69a);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .glass-panel {
-            background: rgba(1, 0, 28, 0.1);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            padding: 2rem;
-        }
-
-        .glass-card {
+        .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
         }
 
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
         }
 
-        .btn-upload {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 15px rgba(198, 67, 238, 0.3);
+        /* Header Panel simplificado */
+        .header-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #f3f4f6;
         }
 
-        .btn-upload:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(198, 67, 238, 0.4);
-        }
-
-        .btn-submit {
-            background: var(--success-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
-        }
-
-        .btn-submit:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
-        }
-
-        .btn-submit:disabled {
-            background: rgba(156, 163, 175, 0.5);
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        .error {
-            color: #ef4444;
-            padding: 1rem;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .success {
-            color: #baffff;
-            padding: 1rem;
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 0.5rem;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Animaciones del index.css */
+        /* Animaciones */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .fade-in {
+        .animate-fade-in {
             animation: fadeIn 0.8s ease forwards;
         }
 
-        .delay-1 {
-            animation-delay: 0.2s;
-        }
-
-        /* PLANES Y PRECIOS */
+        /* Planes */
         .plans-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 4rem;
-            margin: 3rem;
+            gap: 2rem;
+            margin: 2rem 0;
         }
 
         .plan-card {
@@ -315,8 +138,8 @@
 
         .plan-card.featured {
             transform: scale(1.05);
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 0 25px rgba(198, 67, 238, 0.3);
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
         }
 
         .plan-card:hover {
@@ -332,25 +155,26 @@
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 1rem;
-            color: var(--color-text-primary);
+            color: #f3f4f6;
         }
 
         .plan-price {
             font-size: 2.5rem;
             font-weight: bold;
             margin: 1.5rem 0;
-            color: var(--primary-color);
+            color: #60a5fa;
         }
 
         .plan-price span {
             font-size: 1rem;
-            color: var(--color-text-secondary);
+            color: #9ca3af;
         }
 
         .plan-features {
             list-style: none;
             margin: 1.5rem 0;
             text-align: left;
+            padding: 0;
         }
 
         .plan-features li {
@@ -358,17 +182,25 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
+            color: #d1d5db;
         }
 
         .plan-features li i {
             margin-right: 0.5rem;
-            color: var(--success-color);
+        }
+
+        .plan-features li .fa-check {
+            color: #10b981;
+        }
+
+        .plan-features li .fa-times {
+            color: #ef4444;
         }
 
         .plan-button {
             width: 100%;
             padding: 1rem;
-            background: var(--primary-color);
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
             color: white;
             border: none;
             border-radius: 8px;
@@ -379,12 +211,12 @@
         }
 
         .plan-button:hover {
-            background: var(--secondary-color);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(198, 67, 238, 0.4);
         }
 
-        /* MODAL DE PAGO */
+        /* Modal de Pago */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -408,9 +240,8 @@
         }
 
         .payment-modal {
-            background: rgba(1, 0, 28, 0.9);
+            background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-radius: 16px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
@@ -432,9 +263,10 @@
             right: 1rem;
             background: none;
             border: none;
-            color: var(--color-text-secondary);
+            color: #9ca3af;
             font-size: 1.5rem;
             cursor: pointer;
+            padding: 0;
         }
 
         .payment-form {
@@ -449,31 +281,33 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
+            color: #d1d5db;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             font-size: 1rem;
-            color: var(--color-text-primary);
-            border: 1px solid rgba(200, 90, 255, 0.5);
+            color: #f3f4f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(198, 67, 238, 0.3);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
 
         .form-row {
             display: flex;
-            gap: 4rem;
+            gap: 1rem;
         }
 
         .form-row .form-group {
-            flex: 2;
+            flex: 1;
         }
 
         .payment-summary {
@@ -481,44 +315,64 @@
             border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .payment-summary h4 {
             margin-bottom: 0.5rem;
-            color: var(--primary-color);
+            color: #60a5fa;
         }
 
         .payment-loader {
             display: none;
             text-align: center;
             margin: 1rem 0;
+            color: #60a5fa;
         }
 
         .payment-success {
             display: none;
             text-align: center;
-            color: var(--success-color);
+            color: #10b981;
             margin: 1rem 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Mensajes */
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .glass-header {
-                width: 90%;
-            }
-            .main-content {
-                margin-top: 150px;
-            }
-            
-            .nav-item {
-                font-size: 0.75rem;
-                padding: 6px 12px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
             .plans-container {
                 grid-template-columns: 1fr;
             }
@@ -536,109 +390,101 @@
                 gap: 0;
             }
         }
-        @media (max-width: 480px) {
-            .glass-header {
-                padding: 0 15px;
-                height: 50px;
-            }
-            
-            .payment-modal {
-                padding: 1.5rem;
-            }
-        }
     </style>
 </head>
-<body data-theme="dark">
-    <!-- Barra superior rediseñada -->
-    <header class="glass-header" id="mainHeader">
-      <div class="flex items-center gap-8 relative">
-        <!-- Burbuja liquid glass -->
-        <div class="liquid-bubble" id="liquidBubble"></div>
-        
-        <div class="flex items-center gap-4 text-primary">
-          <div class="size-4">
+<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
+
+    <!-- Header simplificado -->
+    <header class="header-panel fixed top-0 w-full z-50 h-16">
+        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Planes y Precios</span></h1>
+            </div>
             
-          </div>
-          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-        </div>
-        <div class="flex items-center gap-9">
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
-          <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
-        </div>
-      </div>
-      <div class="flex flex-1 justify-end gap-8">
-        <a href="/login" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
-          Iniciar Sesión
-        </a>
-        <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-          <i class="fas fa-moon"></i>
-        </button>
-      </div>
-    </header>
-    <div class="main-content">
-        <div class="bg">
-            <h1 class="fade-in">Planes y Precios</h1>
-            <div id="messageContainer"></div>
-            
-            <div class="plans-container fade-in delay-1">
-                <!-- Plan Básico -->
-                <div class="plan-card featured">
-                    <div class="plan-name">Básico</div>
-                    <div class="plan-price">$9<span>/mes</span></div>
-                    <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Hasta 5 documentos mensuales</li>
-                        <li><i class="fas fa-check"></i> Firma básica digital</li>
-                        <li><i class="fas fa-check"></i> Almacenamiento por 30 días</li>
-                        <li><i class="fas fa-check"></i> Soporte por email</li>
-                        <li><i class="fas fa-times" style="color: var(--warning-color);"></i> Plantillas personalizadas</li>
-                    </ul>
-                    <button class="plan-button" data-plan="basico" data-price="9" plan-id="1">Seleccionar Plan</button>
-                </div>
-                
-                <!-- Plan Profesional -->
-                <div class="plan-card featured">
-                    <div class="plan-name">Profesional</div>
-                    <div class="plan-price">$19<span>/mes</span></div>
-                    <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Documentos ilimitados</li>
-                        <li><i class="fas fa-check"></i> Firma avanzada con certificado</li>
-                        <li><i class="fas fa-check"></i> Almacenamiento por 1 año</li>
-                        <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
-                        <li><i class="fas fa-check"></i> Plantillas personalizadas</li>
-                    </ul>
-                    <button class="plan-button" data-plan="profesional" data-price="19" plan-id="2">Seleccionar Plan</button>
-                </div>
-                
-                <!-- Plan Empresarial -->
-                <div class="plan-card featured">
-                    <div class="plan-name">Empresarial</div>
-                    <div class="plan-price">$49<span>/mes</span></div>
-                    <ul class="plan-features">
-                        <li><i class="fas fa-check"></i> Documentos ilimitados</li>
-                        <li><i class="fas fa-check"></i> Firmas múltiples y flujos de trabajo</li>
-                        <li><i class="fas fa-check"></i> Almacenamiento permanente</li>
-                        <li><i class="fas fa-check"></i> Soporte dedicado</li>
-                        <li><i class="fas fa-check"></i> API acceso e integraciones</li>
-                    </ul>
-                    <button class="plan-button" data-plan="empresarial" data-price="49" plan-id="3">Seleccionar Plan</button>
-                </div>
+            <div class="flex items-center gap-4">
+                <a href="/" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-medium">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+                <a href="/login" class="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 transition-colors text-sm font-medium">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+                </a>
             </div>
         </div>
+    </header>
+
+    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
+        
+        <!-- Título -->
+        <div class="text-center mb-8 animate-fade-in">
+            <h1 class="text-4xl font-bold text-white mb-2">Planes y Precios</h1>
+            <p class="text-gray-400">Elige el plan que mejor se adapte a tus necesidades de firma electrónica</p>
+        </div>
+        
+        <!-- Mensajes -->
+        <div id="messageContainer" class="max-w-4xl mx-auto mb-6"></div>
+        
+        <!-- Planes -->
+        <div class="plans-container animate-fade-in">
+            <!-- Plan Básico -->
+            <div class="plan-card featured">
+                <div class="plan-name">Básico</div>
+                <div class="plan-price">$9<span>/mes</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Hasta 5 documentos mensuales</li>
+                    <li><i class="fas fa-check"></i> Firma básica digital</li>
+                    <li><i class="fas fa-check"></i> Almacenamiento por 30 días</li>
+                    <li><i class="fas fa-check"></i> Soporte por email</li>
+                    <li><i class="fas fa-times"></i> Plantillas personalizadas</li>
+                </ul>
+                <button class="plan-button" data-plan="basico" data-price="9" plan-id="1">Seleccionar Plan</button>
+            </div>
+            
+            <!-- Plan Profesional -->
+            <div class="plan-card featured">
+                <div class="plan-name">Profesional</div>
+                <div class="plan-price">$19<span>/mes</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Documentos ilimitados</li>
+                    <li><i class="fas fa-check"></i> Firma avanzada con certificado</li>
+                    <li><i class="fas fa-check"></i> Almacenamiento por 1 año</li>
+                    <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
+                    <li><i class="fas fa-check"></i> Plantillas personalizadas</li>
+                </ul>
+                <button class="plan-button" data-plan="profesional" data-price="19" plan-id="2">Seleccionar Plan</button>
+            </div>
+            
+            <!-- Plan Empresarial -->
+            <div class="plan-card featured">
+                <div class="plan-name">Empresarial</div>
+                <div class="plan-price">$49<span>/mes</span></div>
+                <ul class="plan-features">
+                    <li><i class="fas fa-check"></i> Documentos ilimitados</li>
+                    <li><i class="fas fa-check"></i> Firmas múltiples y flujos de trabajo</li>
+                    <li><i class="fas fa-check"></i> Almacenamiento permanente</li>
+                    <li><i class="fas fa-check"></i> Soporte dedicado</li>
+                    <li><i class="fas fa-check"></i> API acceso e integraciones</li>
+                </ul>
+                <button class="plan-button" data-plan="empresarial" data-price="49" plan-id="3">Seleccionar Plan</button>
+            </div>
+        </div>
+
     </div>
-    
 
     <!-- Modal de Pago -->
     <div class="modal-overlay" id="paymentModal">
         <div class="payment-modal">
             <button class="close-modal" id="closeModal">&times;</button>
-            <h3>Completa tu compra</h3>
+            <h3 class="text-xl font-bold text-white mb-4">Completa tu compra</h3>
             
             <div class="payment-summary">
-                <h4>Resumen del pedido</h4>
-                <p id="selectedPlan">Plan: <span></span></p>
-                <p id="planPrice">Precio: $<span></span>/mes</p>
+                <h4 class="text-lg font-semibold">Resumen del pedido</h4>
+                <p class="text-gray-300 mt-2"><span class="font-medium">Plan:</span> <span id="selectedPlanSpan"></span></p>
+                <p class="text-gray-300"><span class="font-medium">Precio:</span> $<span id="planPriceSpan"></span>/mes</p>
             </div>
             
             <form class="payment-form" id="paymentForm">
@@ -669,30 +515,31 @@
                 </div>
                 
                 <div class="payment-success" id="paymentSuccess">
-                    <i class="fas fa-check-circle" style="font-size: 2rem;"></i>
+                    <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
                     <p>¡Pago realizado con éxito!</p>
                 </div>
                 
-                <button type="submit" class="btn btn-submit" style="width: 100%;">Pagar ahora</button>
+                <button type="submit" class="btn-cyber px-4 py-3 rounded-lg text-white font-medium w-full">
+                    Pagar ahora
+                </button>
             </form>
         </div>
     </div>
 
     <script>
+        // Variables globales
+        let currentPlan = null;
+        let currentPrice = null;
+
         // Al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            // Configurar animaciones del liquid bubble
-            configurarLiquidBubble();
-            
-            // Configurar el toggle del tema
-            document.getElementById('themeToggle').addEventListener('click', toggleTema);
-            
             // Configurar botones de selección de plan
             document.querySelectorAll('.plan-button').forEach(button => {
                 button.addEventListener('click', () => {
                     const plan = button.getAttribute('data-plan');
                     const price = button.getAttribute('data-price');
-                    abrirModalPago(plan, price);
+                    const planId = button.getAttribute('plan-id');
+                    abrirModalPago(plan, price, planId);
                 });
             });
             
@@ -705,86 +552,22 @@
             // Formatear inputs de tarjeta
             document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
             document.getElementById('expiryDate').addEventListener('input', formatExpiryDate);
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('paymentModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('paymentModal')) {
+                    cerrarModal();
+                }
+            });
         });
 
-        //===================================== LIQUID BUBBLE =========================================
-        function configurarLiquidBubble() {
-            // Efecto liquid glass para la burbuja del menú
-            const liquidBubble = document.getElementById('liquidBubble');
-            const navItems = document.querySelectorAll('.nav-item');
+        // ===================================== MODAL DE PAGO =========================================
+        function abrirModalPago(plan, precio, planId) {
+            currentPlan = plan;
+            currentPrice = precio;
             
-            // Posiciones iniciales de los items del menú
-            const itemPositions = {};
-            
-            // Calcular posiciones de los items
-            function calculatePositions() {
-                navItems.forEach(item => {
-                    const rect = item.getBoundingClientRect();
-                    const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                    
-                    itemPositions[item.dataset.item] = {
-                        left: rect.left - headerRect.left,
-                        width: rect.width
-                    };
-                });
-                
-                // Posicionar burbuja en el item activo (home por defecto)
-                moveBubble('home');
-            }
-            
-            // Mover la burbuja al item seleccionado
-            function moveBubble(itemName) {
-                const item = itemPositions[itemName];
-                if (item) {
-                    liquidBubble.style.left = `${item.left - 10}px`;
-                    liquidBubble.style.width = `${item.width + 20}px`;
-                }
-            }
-            
-            // Event listeners para los items del menú
-            navItems.forEach(item => {
-                item.addEventListener('mouseenter', () => {
-                    moveBubble(item.dataset.item);
-                });
-                
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    moveBubble(item.dataset.item);
-                    // Scroll suave al hacer clic en los enlaces
-                    const targetId = item.getAttribute('href');
-                    if (targetId && targetId !== '#') {
-                        document.querySelector(targetId).scrollIntoView({
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-            
-            // Calcular posiciones al cargar y al redimensionar
-            window.addEventListener('load', calculatePositions);
-            window.addEventListener('resize', calculatePositions);
-        }
-
-        //===================================== TOGGLE THEME =========================================
-        function toggleTema() {
-            const body = document.body;
-            const themeToggleIcon = document.querySelector('.theme-toggle i');
-            
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.setAttribute('data-theme', 'light');
-                body.classList.add('light-theme');
-                themeToggleIcon.className = 'fas fa-sun';
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                body.classList.remove('light-theme');
-                themeToggleIcon.className = 'fas fa-moon';
-            }
-        }
-
-        //===================================== MODAL DE PAGO =========================================
-        function abrirModalPago(plan, precio) {
-            document.getElementById('selectedPlan').querySelector('span').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-            document.getElementById('planPrice').querySelector('span').textContent = precio;
+            document.getElementById('selectedPlanSpan').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+            document.getElementById('planPriceSpan').textContent = precio;
             
             const modal = document.getElementById('paymentModal');
             modal.classList.add('active');
@@ -805,15 +588,8 @@
             document.getElementById('paymentLoader').style.display = 'none';
             document.getElementById('paymentSuccess').style.display = 'none';
         }
-        
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('paymentModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('paymentModal')) {
-                cerrarModal();
-            }
-        });
 
-        //===================================== FORMATEO DE TARJETA =========================================
+        // ===================================== FORMATEO DE TARJETA =========================================
         function formatCardNumber(e) {
             let input = e.target.value.replace(/\D/g, '').substring(0, 16);
             let formattedInput = '';
@@ -836,12 +612,13 @@
                 let year = input.substring(2, 4);
                 let now = new Date();
                 let m = parseInt(month);
-                let y = 2000 + parseInt(year); // en 2100 se debe validar
-                if (now.getFullYear() > y){
+                let y = 2000 + parseInt(year);
+                
+                if (now.getFullYear() > y) {
                     year = "99";
                     mostrarMensaje("El año de expiración no es válido", "error");
                 }
-                if (m > 12 || m < 1){
+                if (m > 12 || m < 1) {
                     month = "12";
                     mostrarMensaje("El mes de expiración no es válido", "error");
                 }
@@ -851,7 +628,7 @@
             }
         }
 
-        //===================================== PROCESAMIENTO DE PAGO =========================================
+        // ===================================== PROCESAMIENTO DE PAGO =========================================
         async function procesarPago(event) {
             event.preventDefault();
 
@@ -880,13 +657,11 @@
 
             // ---------- ARMADO DEL BODY ----------
             const payload = {
-                // Los nombres deben coincidir con la estructura de models.PaymentReq en Go
-                cardnumber:     cardNumber,
+                cardnumber: cardNumber,
                 exp: expiryDate,
-                cvv:         cvv,
-                nameowner:   cardName,
-                // Estos valores provienen del botón que abrió el modal
-                plan:        document.getElementById('selectedPlan').querySelector('span').textContent
+                cvv: cvv,
+                nameowner: cardName,
+                plan: document.getElementById('selectedPlanSpan').textContent
             };
 
             // ---------- INDICADOR DE CARGA ----------
@@ -898,9 +673,6 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
-                        // Si tu backend necesita cookies (JWT) automáticamente, no añadas nada más.
-                        // Si usas credenciales explícitas:
-                        // credentials: 'include'
                     },
                     body: JSON.stringify(payload)
                 });
@@ -908,26 +680,27 @@
                 loader.style.display = 'none';
 
                 if (!response.ok) {
-                    // El backend devolvió un error (4xx/5xx)
                     const errorText = await response.text();
                     mostrarMensaje(`Error del servidor: ${errorText}`, 'error');
                     return;
                 }
 
-                // Suponiendo que el endpoint devuelve JSON con la estructura PaymentResp
                 const data = await response.json();
                 
-                // Cerrar modal después de unos segundos (opcional)
-                setTimeout(cerrarModal, 1000);
-                // ---------- MENSAJE DE ÉXITO ----------
-                if (data.success){
+                if (data.success) {
+                    // Mostrar éxito
                     const successDiv = document.getElementById('paymentSuccess');
                     successDiv.style.display = 'block';
                     
                     mostrarMensaje(`Plan activado: ${data.plan}, vence ${data.expiration}`, 'success');
-                    window.location.href = "/mykeys";
+                    
+                    // Cerrar modal después de 1.5 segundos y redirigir
+                    setTimeout(() => {
+                        cerrarModal();
+                        window.location.href = "/mykeys";
+                    }, 1500);
                 } else {
-                    throw "Error";
+                    throw new Error("Error en la respuesta del servidor");
                 }
                 
             } catch (err) {
@@ -937,7 +710,7 @@
             }
         }
         
-        //===================================== SHOW MESSAGES =========================================
+        // ===================================== SHOW MESSAGES =========================================
         function mostrarMensaje(mensaje, tipo) {
             const messageContainer = document.getElementById('messageContainer');
             messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;

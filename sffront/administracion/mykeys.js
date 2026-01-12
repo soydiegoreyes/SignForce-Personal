@@ -1,10 +1,14 @@
 // ====== Estado y utilidades ======
     function $(sel, root = document) { return root.querySelector(sel); }
     function $all(sel, root = document) { return Array.from(root.querySelectorAll(sel)); }
-
-    function getTodayISO() {
-      const d = new Date();
-      return d.toISOString().slice(0, 10);
+    
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
     }
 
     // ====== Petición de endpoint /statusk ======
@@ -72,8 +76,8 @@
           <p class="key-detail"><strong>Certificado:</strong> ${key.nameCer}</p>
           <p class="key-detail"><strong>Llave:</strong> ${key.nameKey}</p>
           <p class="key-detail"><strong>ID único:</strong> ${key.subjectUniqueId}</p>
-          <p class="key-detail"><strong>Expiración:</strong> ${key.expiration}</p>
-          <p class="key-detail"><strong>Subido el:</strong> ${key.uploadedAt}</p>
+          <p class="key-detail"><strong>Expiración:</strong> ${formatDate(key.expiration)}</p>
+          <p class="key-detail"><strong>Subido el:</strong> ${formatDate(key.uploadedAt)}</p>
         `;
         keyCard.appendChild(details);
         const issuerdetails = document.createElement('div');
@@ -92,6 +96,7 @@
         marcarSeleccionada(null); // ningún seleccionado
       }
     }
+
     function formatIssuer(issuerRFC4514) {
       if (!issuerRFC4514) {
         return '';
@@ -201,13 +206,6 @@
       window.addEventListener('load', () => { if (navItems[0]) moveBubble(navItems[0]); });
       navItems.forEach(item => item.addEventListener('mouseenter', () => moveBubble(item)));
 
-      // Tema
-      const themeToggle = document.getElementById('themeToggle');
-      themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-theme');
-        themeToggle.textContent = document.body.classList.contains('light-theme') ? '☀️' : '🌙';
-      });
-
       // Cargar y mostrar las llaves
       const keys = await fetchKeysStatus();
       renderKeys(keys);
@@ -266,7 +264,7 @@
       const closeTerms2 = document.getElementById('closeTerms2');
       
       termsLink.addEventListener('click', () => {
-        document.getElementById('termsDate').textContent = getTodayISO();
+        document.getElementById('termsDate').textContent = new Date().toLocaleDateString();
         termsModal.showModal();
       });
       

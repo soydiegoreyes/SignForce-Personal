@@ -1,72 +1,125 @@
 <!DOCTYPE html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SignForce - Gestión de Llaves RSA</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;600;800&family=Noto+Sans:wght@400;600">
+  
+  <!-- Fuentes y estilos unificados -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  
   <link rel="stylesheet" href="/administracion/mykeys.css">
   <script src="/administracion/mykeys.js"></script>
 </head>
-<body>
-  <!-- Header -->
-  <header class="glass-header" id="mainHeader">
+<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen">
+  
+  <!-- Header con estilo unificado -->
+  <header class="glass-header animate-fade-in">
     <div class="header-left">
-      <div class="liquid-bubble" id="liquidBubble"></div>
       <div class="brand">
-        <div class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
+        <div class="brand-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+          </svg>
         </div>
         <h2 class="brand-title">SignForce</h2>
       </div>
       <nav class="nav">
-        <a class="nav-item" href="#" data-item="home">Inicio</a>
-        <a class="nav-item" href="/mydocs" data-item="contact">Documentos</a>
+        <a class="nav-item" href="#" data-item="home">
+          <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
+          Inicio
+        </a>
+        <a class="nav-item" href="/mydocs" data-item="contact">
+          <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+          Documentos
+        </a>
       </nav>
     </div>
     <div class="header-right">
-      <button class="btn-chip" id="goHome">Home</button>
-      <button class="btn-chip" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+      <button class="btn-chip" id="goHome">
+        <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
+        Home
+      </button>
     </div>
   </header>
 
   <main class="bg">
     <section class="container" id="view-setup" aria-labelledby="setup-title">
-    </br>
-      <h1 id="setup-title" class="headline text-center">Gestión de llaves</h1>
+      <h1 id="setup-title" class="headline">Gestión de Llaves RSA</h1>
+      <p class="lead">Administra tus llaves criptográficas de forma segura</p>
+      
       <div class="main-content">
+        <!-- Panel Izquierdo: Lista de llaves -->
         <div class="content-left">
-          <h2>Tus llaves registradas</h2>
-          <div id="keysList" class="keys-list">
-            <!-- Las llaves se cargarán aquí dinámicamente -->
+          <div class="tech-card p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-400">key</span>
+                Tus Llaves Registradas
+              </h2>
+              <span class="badge badge-neon">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                e.Firma
+              </span>
+            </div>
+            
+            <div id="keysList" class="keys-list">
+              <!-- Las llaves se cargarán aquí dinámicamente -->
+            </div>
           </div>
         </div>
 
+        <!-- Panel Derecho: Formulario -->
         <div class="content-right">
-          <div class="form-container glass-panel">
-            <h2 class="form-title">Sube tus credenciales</h2>
+          <div class="tech-card p-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="size-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">assured_workload</span>
+              </div>
+              <h2 class="text-xl font-bold text-white">Sube tus Credenciales</h2>
+            </div>
+            
             <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
               <div class="form-group">
-                <label for="keyFile">Llave privada RSA (.pem / .key / .der)
-                  <span class="help-icon">?
-                    <div class="help-modal glass-panel">
-                      <p>Tu llave privada suele tener extensión .key, .pem o .der</p>
-                      <img src="./home/images/keys_folder1.png">
+                <label for="keyFile" class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-blue-400" style="font-size: 20px;">key</span>
+                  Llave privada RSA (.pem / .key / .der)
+                  <span class="help-icon">
+                    <span class="material-symbols-outlined text-gray-400" style="font-size: 16px;">help</span>
+                    <div class="help-modal">
+                      <p class="text-sm">Tu llave privada suele tener extensión .key, .pem o .der. Asegúrate de subir el archivo correcto.</p>
+                      <img src="./home/images/keys_folder1.png" alt="Ejemplo de archivos de llaves">
                     </div>
                   </span>
                 </label>
                 <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
               </div>
+              
               <div class="form-group">
-                <label for="certFile">Certificado público (.cer / .crt / .pem / .der)</label>
+                <label for="certFile" class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-green-400" style="font-size: 20px;">verified</span>
+                  Certificado público (.cer / .crt / .pem / .der)
+                </label>
                 <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
               </div>
+              
               <div class="form-group">
-                <label for="keyPassword">Contraseña de la llave</label>
+                <label for="keyPassword" class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-red-400" style="font-size: 20px;">lock</span>
+                  Contraseña de la llave
+                </label>
                 <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
               </div>
-              <button class="btn" type="submit">Subir Llaves</button>
+              
+              <button class="btn" type="submit">
+                <span class="material-symbols-outlined">upload</span>
+                Subir Llaves
+              </button>
               
               <div class="disclaimer">
                 Al subir tus llaves aceptas los <span class="terms-link" id="termsLink">Términos y Condiciones</span>
@@ -78,26 +131,43 @@
     </section>
   </main>
 
-  <footer class="glass-panel footer">
-    <p>&copy; 2025 SignForce. Todos los derechos reservados.</p>
+  <!-- Footer -->
+  <footer class="footer animate-fade-in">
+    <p class="text-gray-400 text-sm">&copy; 2025 SignForce. Todos los derechos reservados.</p>
   </footer>
 
   <!-- Modal de Términos y Condiciones -->
-  <dialog id="termsModal" class="modal glass-panel">
+  <dialog id="termsModal" class="modal">
     <div class="modal-content">
       <header class="modal-header">
-        <h3>Términos y Condiciones</h3>
-        <button class="btn-chip ghost" id="closeTerms" aria-label="Cerrar">✕</button>
+        <h3 class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-blue-400">security</span>
+          Términos y Condiciones
+        </h3>
+        <button class="btn-chip ghost" id="closeTerms" aria-label="Cerrar">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </header>
       <div class="modal-body">
         <h2>Aviso de Privacidad</h2>
         <p>Este Aviso de Privacidad describe cómo SignForce trata tus datos personales conforme a la legislación aplicable. Tu información se utiliza exclusivamente para la prestación de servicios de firma y sellado de tiempo. Al continuar, aceptas los términos descritos.</p>
+        
         <h3>Términos y Condiciones</h3>
-        <p>El uso de la plataforma implica la aceptación plena de los presentes términos. El usuario se compromete a proporcionar información veraz y a custodiar sus credenciales de firma.</p>
-        <p>Fecha: <span id="termsDate"></span></p>
+        <p>El uso de la plataforma implica la aceptación plena de los presentes términos. El usuario se compromete a:</p>
+        <ul class="list-disc pl-5 mt-2 space-y-2">
+          <li>Proporcionar información veraz y actualizada</li>
+          <li>Custodiar sus credenciales de firma de forma segura</li>
+          <li>Utilizar el servicio conforme a la legislación vigente</li>
+          <li>No realizar actividades fraudulentas o malintencionadas</li>
+        </ul>
+        
+        <p class="mt-4"><strong>Fecha:</strong> <span id="termsDate"></span></p>
       </div>
       <footer class="modal-footer">
-        <button class="btn ghost" id="closeTerms2">Cerrar</button>
+        <button class="btn ghost" id="closeTerms2">
+          <span class="material-symbols-outlined">check</span>
+          Aceptar y Cerrar
+        </button>
       </footer>
     </div>
   </dialog>

@@ -96,33 +96,6 @@ loginForm.addEventListener('submit', (e) => {
             alert('Credenciales incorrectas');
         }
     }
-
-    // Simular autenticación
-    // En un caso real sería un fetch a la API
-    /*
-    fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Guardar token y redirigir según tipo de usuario
-            if (data.user.tipo === 'root') {
-                window.location.href = './../dashboards/dashboard-root.html';
-            } else if (data.user.tipo === 'admin_equipo') {
-                window.location.href = './../dashboards/dashboard-admin.html';
-            } else {
-                window.location.href = 'dashboard.html';
-            }
-        } else {
-            alert('Credenciales incorrectas');
-        }
-    });
-    */
     //_____________________________________________________________________________________
 });
 
@@ -188,7 +161,6 @@ registerForm.addEventListener('submit', async (e) => {
     
     
     try {
-
         // Simula tabla de empresas o instituciones en DB _________________________________________
         // Obtener empresas existentes o iniciar un array vacío
         let empresas = JSON.parse(sessionStorage.getItem('empresas')) || [];
@@ -215,29 +187,7 @@ registerForm.addEventListener('submit', async (e) => {
 
         // Redirigir a la pantalla de validación
         window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.id;
-        
-        //________________________________________________________________
-        // Realizar la petición fetch
-        /*const response = await fetch('https://tuapi.com/registro', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData)
-        });
-        
-        // Verificar si la respuesta es exitosa
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Error en el registro');
-        }
-        
-        // Procesar respuesta exitosa
-        const data = await response.json();*/
         alert('Registro exitoso. ¡Bienvenido a SignForce!');
-        
-        // Redireccionar o realizar otras acciones después del registro
-        // window.location.href = '/dashboard';
         
     } catch (error) {
         console.error('Error:', error);
