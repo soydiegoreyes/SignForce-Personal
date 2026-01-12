@@ -464,7 +464,7 @@
         // Cargar datos desde la API
         async function loadApprovalsData() {
             try {
-                const response = await fetch('/approvals');
+                const response = await fetch('/approvalsDash');
                 if (!response.ok) {
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
