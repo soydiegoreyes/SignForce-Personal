@@ -268,7 +268,7 @@
             cursor: pointer;
             padding: 0;
         }
-
+       
         .payment-form {
             margin-top: 1.5rem;
         }
@@ -281,24 +281,24 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #d1d5db;
+            color: #d1d5db00;
         }
 
         .form-control {
             width: 100%;
             padding: 0.75rem;
-            border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             font-size: 1rem;
-            color: #f3f4f6;
+            color: #bbbbbb;
             border: 1px solid rgba(59, 130, 246, 0.3);
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            outline: none;
             border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
         }
 
         .form-row {
@@ -501,7 +501,7 @@
                     
                     <div class="form-group">
                         <label for="cvv">CVV</label>
-                        <input type="text" id="cvv" class="form-control" placeholder="123" maxlength="3">
+                        <input type="password" id="cvv" class="form-control" placeholder="123" autocomplete="off" maxlength="3">
                     </div>
                 </div>
                 

@@ -304,7 +304,7 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Teléfono Móvil</label>
-                            <input type="tel" id="phoneUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="55 1234 5678">
+                            <input type="tel" id="phoneUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="5512345678">
                         </div>
                     </div>
 
@@ -313,7 +313,7 @@
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">RFC (con Homoclave)</label>
                             <input type="text" id="taxNumUser" required 
                                 class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white uppercase" 
-                                placeholder="ABCD800101XYZ" maxlength="13"
+                                placeholder="ABCD800101XYZ" maxlength="15"
                                 oninput="this.value = this.value.toUpperCase()">
                             <p class="text-[10px] text-gray-500 mt-1">Persona Física o Moral</p>
                         </div>
@@ -321,7 +321,7 @@
                             <label class="block text-xs font-bold text-gray-400 uppercase mb-2">CURP</label>
                             <input type="text" id="pobUidUser" required 
                                 class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white uppercase" 
-                                placeholder="ABCD800101HDF..." maxlength="18"
+                                placeholder="ABCD800101HDF..." maxlength="20"
                                 oninput="this.value = this.value.toUpperCase()">
                         </div>
                     </div>
@@ -614,6 +614,8 @@
                 document.getElementById('hostInstitution').textContent = instName;
 
                 document.getElementById('userEmailDisplay').textContent = inviteData.emailDest;
+                
+                console.log(inviteData.expirationDate);
                 
                 const expDate = new Date(inviteData.expirationDate);
                 document.getElementById('expireDate').textContent = !isNaN(expDate) 

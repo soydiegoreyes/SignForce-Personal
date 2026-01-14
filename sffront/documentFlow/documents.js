@@ -216,7 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center py-8 text-secondary">
-                        No hay documentos en esta categoría.
+                        <div class="btn-secondary">
+                            <a href="/upload">Subir documentos</a>
+                        </div>
                     </td>
                 </tr>`;
             return;

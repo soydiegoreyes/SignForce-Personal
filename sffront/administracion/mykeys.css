@@ -250,35 +250,17 @@ h1, h2, h3, h4 {
   padding: 20px;
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: auto;  
 }
-
-.key-card::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
+.key-card:hover{
   background: linear-gradient(45deg, 
     rgba(59, 130, 246, 0.3), 
     rgba(124, 58, 237, 0.3), 
     rgba(59, 130, 246, 0.3));
   border-radius: 14px;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.key-card:hover::before {
-  opacity: 1;
-}
-
-.key-card:hover {
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
   border-color: rgba(33, 150, 243, 0.4);
-  transform: translateY(-2px);
 }
 
 .key-card-header {
@@ -305,12 +287,10 @@ h1, h2, h3, h4 {
   grid-template-columns: 3fr 1fr;
   gap: 16px;
   padding: 12px 0;
-  overflow-y: auto;
 }
 
 .key-detail {
   margin: 0;
-  overflow-y: auto;
 }
 
 .key-detail strong {
@@ -326,6 +306,7 @@ h1, h2, h3, h4 {
   font-size: 14px;
   font-weight: 500;
   color: #fff;
+  position: fixed;
 }
 
 /* ===== Badges Unificados ===== */
@@ -371,7 +352,6 @@ h1, h2, h3, h4 {
 
 /* ===== Formulario ===== */
 .form-container {
-  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
@@ -395,7 +375,6 @@ h1, h2, h3, h4 {
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -406,9 +385,26 @@ h1, h2, h3, h4 {
   padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
+  color: #0f172a;
   font-size: 14px;
+  transition: all 0.3s ease;
+}
+.input-field::file-selector-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  position: relative;
+  overflow: hidden;
   transition: all 0.3s ease;
 }
 
@@ -416,6 +412,7 @@ h1, h2, h3, h4 {
   outline: none;
   border-color: rgba(59, 130, 246, 0.5);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-radius: 10px;
 }
 
 /* ===== Botones Unificados ===== */

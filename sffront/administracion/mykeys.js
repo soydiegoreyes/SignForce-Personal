@@ -73,8 +73,9 @@
         const details = document.createElement('div');
         details.className = 'key-details';
         details.innerHTML = `
-          <p class="key-detail"><strong>Certificado:</strong> ${key.nameCer}</p>
+          
           <p class="key-detail"><strong>Llave:</strong> ${key.nameKey}</p>
+          <p class="key-detail"><strong>Certificado:</strong> ${key.nameCer}</p>
           <p class="key-detail"><strong>ID único:</strong> ${key.subjectUniqueId}</p>
           <p class="key-detail"><strong>Expiración:</strong> ${formatDate(key.expiration)}</p>
           <p class="key-detail"><strong>Subido el:</strong> ${formatDate(key.uploadedAt)}</p>
@@ -193,19 +194,6 @@
 
     // ====== App init ======
     document.addEventListener('DOMContentLoaded', async () => {
-      // Liquid bubble simple: posicionar sobre 'Inicio'
-      const bubble = document.getElementById('liquidBubble');
-      const mainHeader = document.getElementById('mainHeader');
-      const navItems = document.querySelectorAll('.nav-item');
-      function moveBubble(target) {
-        const rect = target.getBoundingClientRect();
-        const headerRect = mainHeader.getBoundingClientRect();
-        bubble.style.left = `${rect.left - headerRect.left - 10}px`;
-        bubble.style.width = `${rect.width + 20}px`;
-      }
-      window.addEventListener('load', () => { if (navItems[0]) moveBubble(navItems[0]); });
-      navItems.forEach(item => item.addEventListener('mouseenter', () => moveBubble(item)));
-
       // Cargar y mostrar las llaves
       const keys = await fetchKeysStatus();
       renderKeys(keys);

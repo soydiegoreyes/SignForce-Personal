@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignForce | Firma Electrónica Avanzada</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="./home/index.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body>
+    <!-- Barra superior -->
+    <header class="glass-header" id="mainHeader">
+        <div class="flex items-center gap-8 relative">
+            <div class="liquid-bubble" id="liquidBubble"></div>
+            
+            <div class="flex items-center gap-4 text-primary">
+                <div class="size-4">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
+                    </svg>
+                </div>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SIGNFORCE</h2>
+            </div>
+            <div class="flex items-center gap-9">
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
+            </div>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+            <a href="/login" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
+                Iniciar Sesión
+            </a>
+            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </header>
+    <div class="bg">
+      <!-- Hero Section Rediseñado -->
+      <section class="hero-section" id="hero-section">
+          <!-- Carrusel de fondo -->
+          <div class="carousel-container" id="heroCarousel">
+              <div class="carousel-slide active" style="background-image: url('/images/person_glass.png')"></div>
+              <div class="carousel-slide" style="background-image: url('/images/man_signing.png')"></div>
+              <div class="carousel-slide" style="background-image: url('/images/person_viewing_doc.png')"></div>
+              <div class="carousel-slide" style="background-image: url('/images/person_viewing_doc1.png')"></div>
+              <div class="carousel-slide" style="background-image: url('/images/person_viewing_doc2.png')"></div>
+          </div>
+
+          <!-- Barra lateral izquierda - Características -->
+          <div class="hero-sidebar">
+              <div class="hero-feature fade-in">
+                  <h3>🔒 Seguridad Blockchain</h3>
+                  <p>Trazabilidad inmutable para todas tus firmas electrónicas</p>
+              </div>
+              <div class="hero-feature fade-in delay-1">
+                  <h3>⚡ Firma Rápida</h3>
+                  <p>Completa documentos en segundos desde cualquier dispositivo</p>
+              </div>
+              <div class="hero-feature fade-in delay-2">
+                  <h3>📈 Analítica Avanzada</h3>
+                  <p>Dashboard en tiempo real con métricas de productividad</p>
+              </div>
+          </div>
+
+          <!-- Contenido principal central -->
+          
+          <div class="hero-main">
+              <div class="hero-cta fade-in delay-2">
+                  <button class="btn-primary">Comenzar Gratis</button>
+                  <button class="btn-secondary">Ver Demo</button>
+              </div>
+
+              <div class="hero-stats fade-in delay-3">
+                  <div class="stat-item">
+                      <span class="stat-number" data-target="50">0+</span>
+                      <span class="stat-label">Empresas Confían</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-number" data-target="100">0+</span>
+                      <span class="stat-label">K Documentos</span>
+                  </div>
+                  <div class="stat-item">
+                      <span class="stat-number" data-target="99">0+</span>
+                      <span class="stat-label">% Satisfacción</span>
+                  </div>
+              </div>
+              <div class="hero-feature p-12">
+                <h1 class="hero-subtitle font-extrabold fade-in delay-1">
+                    La plataforma de firma electrónica más avanzada con tecnología blockchain. 
+                    <br>Validez legal garantizada en México y Latinoamérica.
+                </h1>
+              </div>
+          </div>
+
+          <!-- Barra lateral derecha - Información adicional -->
+          <div class="hero-sidebar">
+              <div class="hero-feature fade-in">
+                  <h3>🌎 Multiplataforma</h3>
+                  <p>Funciona en web, móvil y desktop sin instalación</p>
+              </div>
+              <div class="hero-feature fade-in delay-1">
+                  <h3>📋 NOM-151 Compliant</h3>
+                  <p>Cumplimiento total con regulaciones mexicanas</p>
+              </div>
+              <div class="hero-feature fade-in delay-2">
+                  <h3>🔄 Integraciones</h3>
+                  <p>Conecta con tus herramientas favoritas</p>
+              </div>
+          </div>
+
+          <!-- Controles del carrusel -->
+          <button class="carousel-nav carousel-prev">❮</button>
+          <button class="carousel-nav carousel-next">❯</button>
+          <div class="carousel-indicators">
+              <span class="indicator active"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+              <span class="indicator"></span>
+          </div>
+      </section>
+
+      <!-- Resto de las secciones (Features, Testimonials, etc.) -->
+    
+      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="features">
+          <div class="layout-container flex h-full grow flex-col">
+            <div class="gap-1 flex flex-1 justify-center py-5">
+              <div class="flex flex-col w-full glass-panel p-12">
+                <h2 class="text-primary text-3xl font-bold text-center mb-12 fade-in">Nuestras Ventajas</h2>
+                
+                <div class="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-shield-alt text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Seguridad Blockchain</h3>
+                    <p class="text-secondary">Todas las firmas son registradas en blockchain, garantizando integridad y no repudio de los documentos.</p>
+                  </div>
+                  
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-1">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-bolt text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Rápido y Simple</h3>
+                    <p class="text-secondary">Firma documentos en segundos desde cualquier dispositivo, sin necesidad de imprimir o escanear.</p>
+                  </div>
+                  
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-2">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-check-double text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Cumplimiento Legal</h3>
+                    <p class="text-secondary">Cumple con la NOM-151, eIDAS y regulaciones internacionales para firma electrónica avanzada.</p>
+                  </div>
+                  
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-1">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-chart-line text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Analítica Avanzada</h3>
+                    <p class="text-secondary">Dashboard con seguimiento de documentos firmados, tiempos de respuesta y estado de cada contrato.</p>
+                  </div>
+                  
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-2">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-users text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Flujos de Trabajo</h3>
+                    <p class="text-secondary">Configura procesos de firma múltiple con aprobaciones secuenciales o paralelas según tus necesidades.</p>
+                  </div>
+                  
+                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-3">
+                    <div class="feature-icon text-3xl mb-4 text-accent">
+                      <i class="fas fa-lock text-white/50"></i>
+                    </div>
+                    <h3 class="text-primary text-xl font-bold mb-2">Autenticación Fuerte</h3>
+                    <p class="text-secondary">Múltiples factores de autenticación incluyendo biometría, OTP y certificados digitales.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </section>
+
+      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="testimonials">
+          <div class="layout-container flex h-full grow flex-col">
+            <div class="gap-1 flex flex-1 justify-center py-5">
+              <div class="flex flex-col w-full glass-panel p-12">
+                <h2 class="text-primary text-3xl font-bold text-center mb-12 fade-in">Lo que dicen nuestros clientes</h2>
+                
+                <div class="testimonial-grid grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in">
+                    <p class="testimonial-text text-secondary italic mb-4">"SignForce ha transformado nuestra operación legal. Redujimos el tiempo de firma de contratos de 5 días a menos de 1 hora, con mayor seguridad que los procesos físicos."</p>
+                    <div class="testimonial-author flex items-center">
+                      <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
+                      <div class="author-info">
+                        <h4 class="text-primary font-bold">María González</h4>
+                        <p class="text-secondary text-sm">Directora Legal, FinTech MX</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in delay-1">
+                    <p class="testimonial-text text-secondary italic mb-4">"La implementación fue sencilla y el soporte excelente. Nuestros clientes ahora pueden firmar desde sus celulares sin perder la validez legal de los documentos."</p>
+                    <div class="testimonial-author flex items-center">
+                      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
+                      <div class="author-info">
+                        <h4 class="text-primary font-bold">Carlos Mendoza</h4>
+                        <p class="text-secondary text-sm">CEO, Inmobiliaria Capital</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in delay-2">
+                    <p class="testimonial-text text-secondary italic mb-4">"Como firma de abogados, la seguridad es crítica. SignForce nos da la confianza de que nuestros documentos están protegidos con tecnología de nivel bancario."</p>
+                    <div class="testimonial-author flex items-center">
+                      <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
+                      <div class="author-info">
+                        <h4 class="text-primary font-bold">Ana Lucía Ramírez</h4>
+                        <p class="text-secondary text-sm">Socia, LegalTrust Abogados</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+      </section>
+
+      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="contact">
+          <div class="layout-container flex h-full grow flex-col">
+            <div class="gap-1 flex flex-1 justify-center py-5">
+              <div class="flex flex-col items-center justify-center w-full glass-panel p-12 text-center">
+                <h2 class="text-primary text-3xl font-bold mb-6 fade-in">¿Listo para transformar tus procesos?</h2>
+                <p class="text-secondary text-xl mb-8 fade-in delay-1">Contáctanos para una demostración personalizada o preguntas sobre nuestra solución.</p>
+                <a href="#" class="cta-button inline-flex items-center justify-center rounded-xl h-12 px-8 bg-white/20 text-primary text-lg font-bold hover:bg-white/30 hover-glow fade-in delay-2">Contactar Equipo de Ventas</a>
+              </div>
+            </div>
+          </div>
+      </section>
+
+      <footer class="glass-panel mt-20">
+          <div class="footer-content container mx-auto px-[100px] py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="footer-column">
+              <h3 class="text-primary text-lg font-bold mb-4">SignForce</h3>
+              <p class="text-secondary mb-4">La plataforma líder en firma electrónica avanzada con validez legal en México y Latinoamérica.</p>
+              <div class="social-links flex gap-4">
+                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-linkedin"></i></a>
+                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-instagram"></i></a>
+              </div>
+            </div>
+            
+            <div class="footer-column">
+              <h3 class="text-primary text-lg font-bold mb-4">Producto</h3>
+              <ul class="footer-links">
+                <li><a href="#" class="text-secondary hover:text-white">Características</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Seguridad</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Precios</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Integraciones</a></li>
+              </ul>
+            </div>
+            
+            <div class="footer-column">
+              <h3 class="text-primary text-lg font-bold mb-4">Recursos</h3>
+              <ul class="footer-links">
+                <li><a href="#" class="text-secondary hover:text-white">Documentación</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Centro de ayuda</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Blog</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Webinars</a></li>
+              </ul>
+            </div>
+            
+            <div class="footer-column">
+              <h3 class="text-primary text-lg font-bold mb-4">Empresa</h3>
+              <ul class="footer-links">
+                <li><a href="#" class="text-secondary hover:text-white">Nosotros</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Carreras</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Contacto</a></li>
+                <li><a href="#" class="text-secondary hover:text-white">Soporte</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="copyright text-center py-6 border-t border-white/10">
+            <p class="text-secondary">&copy; 2025 SignForce. Todos los derechos reservados.</p>
+          </div>
+      </footer>
+    </div>
+    <script src="/home/index.js"></script>
+</body>
+</html>
