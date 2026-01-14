@@ -189,16 +189,17 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"idInstitution": {idInst}, // todas las llaves del usuario
 	}
-	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "typeContractInst"}, wheres)
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "typeContractInst", "activeInst"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
 		return
 	}
 	// si no tiene contrato aun y esta en el paso de subir llaves entonces es usuario nuevo y debe pasar a firma de contratos
-	if instData[idInst]["statusInst_fk"] == "6" && instData[idInst]["typeContractInst"] == "0" {
+	if (instData[idInst]["statusInst_fk"] == "6" && instData[idInst]["typeContractInst"] == "0") || (instData[idInst]["activeInst"] == "0") {
 		updates := map[string]map[string]interface{}{
 			idInst: {
 				"statusInst_fk": 7,
+				"activeInst":    1,
 			},
 		}
 

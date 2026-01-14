@@ -462,12 +462,14 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener invitación", http.StatusInternalServerError)
 		return
 	}
-	if exptime, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["expirationDate"]); exptime.After(time.Now()) {
+	// si hoy es despues del tiempo de expiración no se deja entrar
+	if exptime, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["expirationDate"]); time.Now().After(exptime) {
 		http.Error(respWriter, "Error invitación expirada", http.StatusForbidden)
 		return
 	}
 	if invData[idInvite]["acceptedAt"] != "" {
-		if acceptedAt, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["acceptedAt"]); acceptedAt.After(time.Now()) {
+		// si ahora es antes que el tiempo de aceptado algo anda mal
+		if acceptedAt, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["acceptedAt"]); time.Now().Before(acceptedAt) {
 			http.Error(respWriter, "Error invitación no coincide con fecha", http.StatusForbidden)
 			return
 		}
@@ -562,8 +564,8 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
 	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 	payload := models.EmailRequest{
 		IdUser:   "1",

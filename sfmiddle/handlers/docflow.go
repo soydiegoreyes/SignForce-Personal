@@ -393,8 +393,8 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 					ReviewerInst:  fmt.Sprintf("%s (%s)", InstData[reviewerInst]["legalNameInst"], InstData[reviewerInst]["aliasNameInst"]),
 					SentDate:      invites[reviewer.User].SentAt,
 					SenderMessage: reviewer.Comment,
-					//UrlSignLink:   fmt.Sprintf("%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), invites[reviewer.User].IdInvite),
-					UrlSignLink: fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), invites[reviewer.User].IdInvite),
+					UrlSignLink:   fmt.Sprintf("%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), invites[reviewer.User].IdInvite),
+					//UrlSignLink: fmt.Sprintf("http://%s:%s/viewinvite?idInvite=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), invites[reviewer.User].IdInvite),
 				}
 				invitesMails[reviewer.User] = inviteEmail
 			}

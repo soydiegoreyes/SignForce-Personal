@@ -103,7 +103,7 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 					Path:    "",
 					Ok:      false,
 				}
-				if !configs.AllowedExtensions[docData.Ext] {
+				if !configs.AllowedExtensions[strings.ToLower(docData.Ext)] {
 					fmt.Println("Extension no aceptada")
 					processedFiles = append(processedFiles, docData)
 					continue

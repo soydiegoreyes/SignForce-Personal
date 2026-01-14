@@ -35,10 +35,10 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	idUser, ok1 := claims["uid"].(string)
+	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	//idTeam, ok3 := claims["team"].(string)
-	authInst, ok4 := claims["authInst"].(string)
+	_, ok4 := claims["authInst"].(string)
 	if !ok1 || !ok2 || !ok4 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
@@ -50,8 +50,6 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
 		return
 	}
-	// borrar cuando ya no se requiera
-	fmt.Println(idUser, idInst, authInst)
 
 	attrs := []string{"statusPayment_fk", "planId_fk", "expirationPlan", "nameOwner"}
 	wheres := map[string][]string{"idInstitution": {idInst}}
@@ -216,8 +214,8 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
 			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
 			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 			payload := models.EmailRequest{
 				IdUser:   userId,
@@ -572,7 +570,7 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// obtener datos faltantes de la institucion
-	var attrs = []string{"legalNameInst", "aliasNameInst", "taxNumInst", "legalSignupName", "legalSignupLastname", "streetAddress", "addressLine", "postalCode", "neighborhood", "locality"}
+	var attrs = []string{"legalNameInst", "aliasNameInst", "taxNumInst", "legalSignupName", "legalSignupLastname", "streetAddress", "addressLine", "postalCode", "neighborhood", "locality", "contactEmailInst"}
 
 	// Para que una empresa sea aprovada debe haber subido sus documentos y o estar en estatus de rechazo de documentos y asi mismo debe estar inactivo
 	wheres := map[string][]string{
@@ -646,6 +644,30 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 			}
 		}
 		arrayResp[instId] = valResp
+
+		binDoc, err := os.ReadFile("./templates/congrats_welcome.html")
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			body := string(binDoc)
+			body = strings.ReplaceAll(body, "{LEGAL_NAME}", valResp.LegalName)
+			body = strings.ReplaceAll(body, "{URL_LINK}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
+			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
+
+			payload := models.EmailRequest{
+				IdUser:   idUser,
+				Subject:  fmt.Sprintf("¡Solicitud  Aprobada! ya eres parte de Signforce %s", ":)"),
+				Body:     body,
+				Dest:     []string{instData["contactEmailInst"]},
+				MimeType: "html",
+			}
+
+			err = coms.EmailCli.SendMail(&payload)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+		}
 	}
 
 	// Configurar headers de seguridad

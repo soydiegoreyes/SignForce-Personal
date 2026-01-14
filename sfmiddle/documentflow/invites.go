@@ -273,7 +273,10 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
 
 	idInviteUser := uuid.NewString()
 	hostFullName := fmt.Sprintf("%s %s", userData["nameUser"], userData["lastNameUser"])
-	//hostTeamName := userData["nameTeam"]
+
+	// fecha de expiración de la invitación
+	tExp := time.Now().Add(5 * 24 * time.Hour).Format("2006-01-02 15:04:05")
+
 	body := string(binDoc)
 	body = strings.ReplaceAll(body, "{GUEST_ALIAS}", guestData["aliasUser"])
 	body = strings.ReplaceAll(body, "{GUEST_EMAIL}", guestData["emailUser"])
@@ -281,9 +284,9 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
 	body = strings.ReplaceAll(body, "{HOST_INSTALIAS}", userData["aliasNameInst"])
 	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
-	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(5*24*time.Hour).Format("2006-01-02 15:04:05"))
-	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
+	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", tExp)
+	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
+	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
 
 	payload := models.EmailRequest{
 		IdUser:   idUserDest,
@@ -297,9 +300,8 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
 		fmt.Println("No se envió el email de la invitación: ", idInviteUser, err)
 		return err
 	} else {
-		texp := time.Now().Add(time.Hour * 24 * 7).Format("2006-01-02 15:04:05")
 		cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
-		_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, texp, roleApp})
+		_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, tExp, roleApp})
 		if err != nil {
 			fmt.Printf("%s", err)
 			return err

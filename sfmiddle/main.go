@@ -121,7 +121,7 @@ func main() {
 	mux.HandleFunc("/processpayment", handlers.ProcessPayment)         // procesar pago de plan
 	mux.HandleFunc("/findUser", handlers.CheckUserStatus)              // obtener datos de un usuario
 	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
-	mux.HandleFunc("/approvals", handlers.Approvals)                   // obtener datos de instituciones que estan en aprovacion
+	mux.HandleFunc("/approvalsDash", handlers.Approvals)               // obtener datos de instituciones que estan en aprovacion
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
 	mux.HandleFunc("/getinvite", handlers.GetInvite)                   // obtiene los datos de una invitación a firma
@@ -143,7 +143,7 @@ func main() {
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/mykeys", myKeys)
 	mux.HandleFunc("/payment", payment)
-	mux.HandleFunc("/approvalsDash", approvalsDash)
+	mux.HandleFunc("/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
 	mux.HandleFunc("/mytemplates", myTemplates)
 	mux.HandleFunc("/addSigners", addSigners)
@@ -174,7 +174,22 @@ func main() {
 			w.Header().Set("Content-Type", "text/plain")
 		}
 
-		http.FileServer(http.Dir("./../sffront")).ServeHTTP(w, r)
+		http.FileServer(http.Dir("./../sffront/index")).ServeHTTP(w, r)
+	})))
+	mux.Handle("/images/", http.StripPrefix("/images/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Determinar el Content-Type basado en la extensión del archivo
+		switch filepath.Ext(r.URL.Path) {
+		case ".png":
+			w.Header().Set("Content-Type", "image/png")
+		case ".jpg", ".jpeg":
+			w.Header().Set("Content-Type", "image/jpeg")
+		case ".ico":
+			w.Header().Set("Content-Type", "image/x-icon")
+		default:
+			w.Header().Set("Content-Type", "image/svg")
+		}
+
+		http.FileServer(http.Dir("./../sffront/images")).ServeHTTP(w, r)
 	})))
 	// Servir archivos estáticos desde el directorio registro CORREGIDO ("registro")
 	mux.Handle("/registro/", http.StripPrefix("/registro/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -275,7 +290,7 @@ func home(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/index.html")
+	http.ServeFile(respWriter, request, "./../sffront/index/index.html")
 }
 
 // pagina de no autorizacion
@@ -383,7 +398,6 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 	fmt.Println("data: ", data)
 	if len(data) > 0 {
 		if data[idUser]["activeUser"] == "1" && data[idUser]["roleAppUser_fk"] == "1" {
-			//respWriter.Header().Set("Authorization", "Bearer "+cookie.Value)
 			http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
 		}
 	} else {
