@@ -259,6 +259,7 @@
         .info-value {
             font-weight: 600;
             color: #f3f4f6;
+            padding: 1em;
         }
 
         /* Animaciones */
@@ -279,8 +280,8 @@
             margin-top: 4px;
             font-family: 'Inter', monospace;
             font-size: 0.85rem;
+            max-width: 100%;
             overflow-x: auto;
-            white-space: nowrap;
         }
 
         .sig-tech-data::-webkit-scrollbar {
@@ -294,6 +295,13 @@
         .sig-tech-data::-webkit-scrollbar-thumb {
             background-color: rgba(59, 130, 246, 0.3);
             border-radius: 2px;
+        }
+        .sig-code {
+            display: block;
+            white-space: nowrap;      /* UNA sola línea */
+            word-break: normal;       /* No romper Base64 */
+            overflow-x: auto;
+            scrollbar-width: none;
         }
     </style>
 </head>
@@ -442,7 +450,6 @@
                                         <p class="info-label">Nombre</p>
                                         <div class="flex items-center gap-2">
                                             <p class="info-value truncate" id="docName">Cargando...</p>
-                                            <span class="text-xs text-gray-500" id="docIdDisplay">(ID: ...)</span>
                                         </div>
                                     </div>
                                     <div>
@@ -546,17 +553,16 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Algoritmo de Firma -->
+                <!-- Valor de Firma -->
                 <div class="sig-data-item">
                     <h4 class="font-bold text-white mb-3 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-blue-300">settings</span>
-                        Algoritmos
+                        <span class="material-symbols-outlined text-red-300">signature</span>
+                        Valor de Firma
                     </h4>
-                    <div>
-                        <p class="info-label">Tipo de Algoritmo</p>
-                        <p class="info-value text-lg" id="sigAlgo">Cargando...</p>
-                        <p class="info-label">Tipo de Firma</p>
-                        <p class="info-value" id="sigType">Cargando...</p>
+                    <p class="info-label">Algoritmo de Firma: <span class="info-value" id="sigAlgo">Cargando...</span></p>
+                    <div class="sig-tech-data">
+                        <p class="info-label mb-2">Firma Digital Completa</p>
+                        <code class="sig-code" id="sigValue">Cargando...</code>
                     </div>
                 </div>
 
@@ -566,9 +572,11 @@
                         <span class="material-symbols-outlined text-green-300">fingerprint</span>
                         Digest
                     </h4>
-                    <p class="info-label">Valor del Digest</p>
+                    
+                    <p class="info-label">Algoritmo de Hash:<span class="info-value text-lg" id="sigDigestAlgo">Cargando...</span></p>
                     <div class="sig-tech-data">
-                        <code class="text-xs" id="sigDigest">Cargando...</code>
+                        <p class="info-label">Valor del Hash</p>
+                        <code class="sig-code" id="sigDigest">Cargando...</code>
                     </div>
                 </div>
 
@@ -580,19 +588,7 @@
                     </h4>
                     <p class="info-label">Valor Nonce</p>
                     <div class="sig-tech-data">
-                        <code class="text-xs" id="sigNonce">Cargando...</code>
-                    </div>
-                </div>
-
-                <!-- Valor de Firma -->
-                <div class="sig-data-item md:col-span-2 lg:col-span-3">
-                    <h4 class="font-bold text-white mb-3 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-red-300">signature</span>
-                        Valor de Firma
-                    </h4>
-                    <p class="info-label mb-2">Firma Digital Completa</p>
-                    <div class="sig-tech-data max-h-48">
-                        <code class="text-xs whitespace-pre-wrap break-words" id="sigValue">Cargando...</code>
+                        <code class="sig-code" id="sigNonce">Cargando...</code>
                     </div>
                 </div>
             </div>
@@ -707,7 +703,6 @@
             // Documento
             const doc = data.document || {};
             document.getElementById('docName').textContent = doc.documentName || doc.documentFullName || 'Sin nombre';
-            document.getElementById('docIdDisplay').textContent = `(ID: ${doc.idDocument || 'N/A'})`;
             document.getElementById('docType').textContent = (doc.documentExt || 'file').toUpperCase();
             document.getElementById('docSize').textContent = formatFileSize(doc.sizeB);
             document.getElementById('docCreated').textContent = formatDate(doc.createdAtDoc);
@@ -723,12 +718,12 @@
             document.getElementById('sigTimeAgo').textContent = getTimeAgo(sigDate);
 
             // Detalles técnicos
-            document.getElementById('sigAlgo').textContent = sig.signatureAlgoSign_fk || sig.digestAlgoSign_fk || 'N/A';
+            document.getElementById('sigAlgo').textContent = sig.signatureAlgoSign_fk || 'N/A';
+            document.getElementById('sigDigestAlgo').textContent = sig.digestAlgoSign_fk || 'N/A';
             document.getElementById('sigDigest').textContent = sig.digestValueSign || 'N/A';
             document.getElementById('sigNonce').textContent = sig.nonceSign || 'N/A';
             document.getElementById('sigValue').textContent = sig.signatureValueSign || 'N/A';
-            //document.getElementById('sigPath').textContent = sig.pathSign || 'N/A';
-            document.getElementById('sigType').textContent = sig.typeSign_fk || 'N/A';
+            
         }
 
         // Funciones de utilidad
@@ -925,7 +920,7 @@
             }
             
             try {
-                const query = `/getAsice?i=${encodeURIComponent(idInst)}&f=${encodeURIComponent(idFolder)}&d=${encodeURIComponent(idDoc)}&h=${encodeURIComponent(hashD)}`;
+                const query = `/getAsice?f=${encodeURIComponent(idFolder)}&d=${encodeURIComponent(idDoc)}&h=${encodeURIComponent(hashD)}`;
                 const response = await fetch(query, {
                     method: 'GET',
                     credentials: 'include'

@@ -600,10 +600,6 @@
             <section id="user-management-section" class="hidden-section">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-3xl font-bold text-primary fade-in">Gestión de Usuarios</h2>
-                    <button id="addUserBtn" class="btn-primary flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]">
-                        <span class="material-symbols-outlined mr-2">person_add</span>
-                        Invitar Usuario
-                    </button>
                 </div>
 
                 <!-- Barra de búsqueda de usuarios -->
@@ -655,6 +651,10 @@
                         <div class="text-secondary text-sm">
                             Mostrando <span id="usersCount">0</span> usuarios
                         </div>
+                        <button id="addUserBtn" class="btn-secondary flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-6 text-sm font-bold leading-normal tracking-[0.015em]">
+                            <span class="material-symbols-outlined mr-2">person_add</span>
+                            Invitar Usuario
+                        </button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -1488,29 +1488,33 @@
             try {
                 // NOTA: Esta es la estructura que mencionaste para el endpoint /inviteuser
                 const inviteData = {
-                    idInvitado: "", // Vacío como mencionaste
+                    idInvitado: "", // Vacío para que se asigne el id en el back
                     emailInvitado: email,
                     role: role,
                 };
                 
-                // Simular envío de invitación
-                const response = await sendInvitation(inviteData);
+                // envío de invitación
+                // Llamada real al endpoint
+                const response = await fetch('/inviteuser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(inviteData)
+                });
                 
-                if (response.message === "OK") {
-                    showToast(`Invitación enviada a ${email}`, 'success');
-                    inviteUserModal.style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    
-                    // Actualizar contador de invitaciones pendientes
-                    updatePendingInvitesCount();
-                    
-                    // Opcional: Registrar en logs de actividad
-                    logActivity(`Invitación enviada a ${email}`, 'invitation');
-                    
-                } else {
-                    throw new Error(response.message || 'Error al enviar invitación');
+                if (!response.ok) {
+                    throw new Error(response.status || 'Error al enviar invitación');
                 }
                 
+                showToast(`Invitación enviada a ${email}`, 'success');
+                inviteUserModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                // Actualizar contador de invitaciones pendientes
+                updatePendingInvitesCount();
+                
+                // Opcional: Registrar en logs de actividad
+                logActivity(`Invitación enviada a ${email}`, 'invitation');
+                    
             } catch (error) {
                 console.error('Error enviando invitación:', error);
                 showToast(`Error: ${error.message}`, 'error');
@@ -1523,63 +1527,6 @@
             }
         });
 
-        // ===================================
-        // 🔹 FUNCIÓN REAL: sendInvitation
-        // ===================================
-        async function sendInvitation(inviteData) {
-            try {
-                // Llamada real al endpoint
-                const response = await fetch('/inviteuser', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(inviteData)
-                });
-                
-                // 1. Manejar errores de red (códigos HTTP 4xx o 5xx)
-                if (!response.ok) {
-                    // Intentamos leer el mensaje de error del cuerpo de la respuesta,
-                    // si el backend lo devuelve, o usamos un mensaje genérico.
-                    let errorText = 'Error desconocido al enviar la invitación.';
-                    try {
-                        const errorData = await response.json();
-                        // Si tu backend devuelve {"message": "ERROR"}, lo usamos.
-                        if (errorData.message === "ERROR") {
-                            errorText = `Error al invitar al usuario. Status: ${response.status}`;
-                        } else if (errorData.message) {
-                            // Si devuelve un mensaje más descriptivo
-                            errorText = errorData.message;
-                        }
-                    } catch (e) {
-                        // Falla al parsear el JSON de error
-                        errorText = `Error del servidor: ${response.status} ${response.statusText}`;
-                    }
-                    throw new Error(errorText);
-                }
-                
-                // 2. Procesar respuesta exitosa (código HTTP 2xx)
-                const data = await response.json(); // Esperamos {"message": "OK"}
-                
-                // Confirmación final del servidor
-                if (data && data.message === "OK") {
-                    showToast(`Invitación enviada exitosamente a ${inviteData.email}.`, 'success');
-                    // Opcional: Recargar la lista de usuarios si esperas verlo inmediatamente
-                    // loadUsersList(); 
-                } else {
-                    // Este caso es si response.ok es true (ej. 200), pero el mensaje no es "OK"
-                    throw new Error(data.message || "La invitación falló por una razón desconocida.");
-                }
-
-                return data; // Devuelve los datos (que solo serán el {message: "OK"})
-                
-            } catch (error){
-                console.error("Error en inviteuser:", error.message);
-                // Muestra el mensaje de error al usuario
-                showToast(error.message, 'error');
-                // Lanzamos el error para que cualquier función que llame a sendInvitation
-                // sepa que la operación no fue exitosa.
-                throw error;
-            }
-        }
 
         // ==============================
         // 🔹 DETALLES DEL USUARIO
