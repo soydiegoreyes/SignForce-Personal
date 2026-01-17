@@ -483,6 +483,16 @@ func (cnx *ConexionDB) GenericInsert(tableName string, columns []string, values 
 	}
 }
 
+func Update_algos() {
+	var q = "SELECT * FROM signforceapi.algos;"
+	algosData, err := DB_con.ExecuteSelect(q)
+	if err != nil {
+		fmt.Println("Error al actualizar algoritmos de base de datos")
+		return
+	}
+	utilities.AlgosMap = algosData
+}
+
 func NewConn() ConexionDB {
 	DB_cnx := ConexionDB{}
 	if DB_cnx.Conectar() {

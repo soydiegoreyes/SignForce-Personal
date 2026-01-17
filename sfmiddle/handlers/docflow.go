@@ -701,6 +701,27 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	_, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	//_, ok3 := claims["team"].(string)
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
 	qParams := request.URL.Query()
 	idSignature := qParams.Get("id")
 	if idSignature == "" {
@@ -732,6 +753,7 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 	sigdata.Email = usersData[signDoc[idSignature]["idUser_fk"]]["emailUser"]
 	sigdata.Phone = usersData[signDoc[idSignature]["idUser_fk"]]["phoneUser"]
 	sigdata.Active = usersData[signDoc[idSignature]["idUser_fk"]]["activeUser"] == "1"
+
 	// ownner data
 	ownnerdata.Name = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["nameUser"] + " " + usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["lastNameUser"]
 	ownnerdata.Email = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["emailUser"]
@@ -791,7 +813,14 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 	sdata := make(map[string]string)
 	ddata := make(map[string]string)
 	for _, attr := range attrs1 {
-		sdata[attr] = signDoc[idSignature][attr]
+		// se mapea el algoritmo de digest y de firma
+		if attr == "digestAlgoSign_fk" || attr == "signatureAlgoSign_fk" || attr == "typeSign_fk" {
+			idalgo := signDoc[idSignature][attr]
+			oidAlgo := utilities.AlgosMap[idalgo]["oidAlgo"]
+			sdata[attr] = utilities.Coids["oids_algos"][oidAlgo]
+		} else {
+			sdata[attr] = signDoc[idSignature][attr]
+		}
 	}
 	for _, attr := range attrs2 {
 		ddata[attr] = signDoc[idSignature][attr]
@@ -819,26 +848,40 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// Extraer datos del JWT
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	//idTeam, ok3 := claims["team"].(string)
+
+	if !ok1 || !ok2 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
 	q := request.URL.Query()
-	idInstitution := q.Get("i")
 	idFolder := q.Get("f")
 	idDocument := q.Get("d")
 	hashDoc := q.Get("h")
 
-	if idInstitution == "" || idFolder == "" || idDocument == "" || hashDoc == "" {
+	if idFolder == "" || idDocument == "" || hashDoc == "" {
 		http.Error(respWriter, "Parámetros incompletos", http.StatusBadRequest)
 		return
 	}
 
-	basePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), idInstitution, idFolder, idDocument)
-
-	if _, err := os.Stat(basePath); err != nil {
-		http.Error(respWriter, "No existe el folder solicitado", http.StatusBadRequest)
-		return
-	}
-
 	// ===== Obtener datos del documento =====
-	attrs := []string{"documentPath", "documentName", "documentExt"}
+	attrs := []string{"documentPath", "documentName", "documentExt", "ownerInstDoc_fk", "creatorUserDoc_fk", "authUseStatus", "authRoleStatus", "activeDoc"}
 	wheres := map[string][]string{
 		"idDocument":   {idDocument},
 		"documentHash": {hashDoc},
@@ -850,14 +893,35 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	doc := docData[idDocument]
+	docInfo := docData[idDocument]
+	// ===== Obtener datos del usuario propietario =====
+	attrs = []string{"roleAppUser_fk"}
+	wheres = map[string][]string{
+		"idUser":      {idUser},
+		"activeUser":  {"1"},
+		"isAliveUser": {"1"},
+	}
+
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener datos de documento", http.StatusInternalServerError)
+		return
+	}
+
+	userInfo := userData[idUser]
+
+	// validaciones de permisos y estados de documentos
+	if !auth.ValidateUserDocPermissions(idInst, idUser, docInfo, userInfo) {
+		http.Error(respWriter, "No autorizado", http.StatusForbidden)
+		return
+	}
 
 	sourcePath := fmt.Sprintf(
 		"%s/%s%s.%s",
 		os.Getenv("BASE_DIR"),
-		doc["documentPath"],
-		doc["documentName"],
-		doc["documentExt"],
+		docInfo["documentPath"],
+		docInfo["documentName"],
+		docInfo["documentExt"],
 	)
 
 	// ===== Validar archivo original =====
@@ -880,7 +944,12 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	destPath := fmt.Sprintf("%s%s.%s", basePath, doc["documentName"], doc["documentExt"])
+	basePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), idInst, idFolder, idDocument)
+	if _, err := os.Stat(basePath); err != nil {
+		http.Error(respWriter, "No existe el folder solicitado", http.StatusBadRequest)
+		return
+	}
+	destPath := fmt.Sprintf("%s%s.%s", basePath, docInfo["documentName"], docInfo["documentExt"])
 
 	dstFile, err := os.Create(destPath)
 	if err != nil {
@@ -899,7 +968,7 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 	dstFile.Close()
 	srcFile.Close()
 	// ===== Comprimir folder =====
-	zipPath := fmt.Sprintf("%s%s", basePath, doc["documentName"]+".zip")
+	zipPath := fmt.Sprintf("%s%s", basePath, docInfo["documentName"]+".zip")
 
 	if !utilities.CompressZip(basePath+"*", zipPath) {
 		http.Error(respWriter, "Error comprimiendo ASiC-E", http.StatusInternalServerError)
@@ -925,7 +994,7 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Content-Length", fmt.Sprintf("%d", zipInfo.Size()))
 	respWriter.Header().Set(
 		"Content-Disposition",
-		fmt.Sprintf("attachment; filename=\"%s.zip\"", doc["documentName"]),
+		fmt.Sprintf("attachment; filename=\"%s.zip\"", docInfo["documentName"]),
 	)
 
 	respWriter.WriteHeader(http.StatusOK)

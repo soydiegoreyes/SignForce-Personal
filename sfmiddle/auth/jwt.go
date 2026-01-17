@@ -25,9 +25,8 @@ func GenerateJWT(idUser, roleApp, idInst, authStatusInst string) (string, error)
 		"uid":      idUser,
 		"iid":      idInst,
 		"authInst": authStatusInst,
-		//"team":     idTeam,
-		"role": roleApp,
-		"exp":  expirationUnix,
+		"role":     roleApp,
+		"exp":      expirationUnix,
 	})
 
 	ss, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))

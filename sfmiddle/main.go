@@ -32,10 +32,20 @@ func init() {
 	}
 	log.Println(".env cargado correctamente")
 
-	// Debug temporal:
-	//log.Println("DB_USER:", os.Getenv("DB_USER"))
 	db.DB_con = db.NewConn()
 	coms.EmailCli = coms.ConfEmail()
+	go func() {
+		var lastUpdate = time.Now()
+		var nextUpdt = lastUpdate
+		for true {
+			if time.Now().After(nextUpdt) {
+				db.Update_algos()
+				lastUpdate = time.Now()
+				nextUpdt = lastUpdate.Add(24 * time.Hour)
+				time.Sleep(24 * time.Hour)
+			}
+		}
+	}()
 }
 
 /*
@@ -140,19 +150,19 @@ func main() {
 	mux.HandleFunc("/noAuthPage", noauth)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
+	mux.HandleFunc("/users", usersDash)
+	mux.HandleFunc("/edituser", editUser)
 	mux.HandleFunc("/upload", upload)
 	mux.HandleFunc("/mykeys", myKeys)
 	mux.HandleFunc("/payment", payment)
 	mux.HandleFunc("/approvals", approvalsDash)
 	mux.HandleFunc("/mydocs", myDocuments)
+	mux.HandleFunc("/myfolders", myFolders)
 	mux.HandleFunc("/mytemplates", myTemplates)
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
 	mux.HandleFunc("/viewSignature", viewSignature) // obtiene los equipos de una institucion
 	mux.HandleFunc("/viewinvite", viewInvite)
-	mux.HandleFunc("/viewinviteuser", viewInviteUser)
-	mux.HandleFunc("/myfolders", myFolders)
-	mux.HandleFunc("/users", usersDash)
 
 	// carpetas publicas
 	mux.Handle("/home/", http.StripPrefix("/home/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -395,7 +405,7 @@ func validationPage(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener datos del usuario.", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("data: ", data)
+
 	if len(data) > 0 {
 		if data[idUser]["activeUser"] == "1" && data[idUser]["roleAppUser_fk"] == "1" {
 			http.ServeFile(respWriter, request, "./../sffront/registro/validation.html")
@@ -467,12 +477,12 @@ func viewInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 // ==========================================================================================================
 // sirve la pagina para ver una invitacion de usuario nuevo
-func viewInviteUser(respWriter http.ResponseWriter, request *http.Request) {
+func editUser(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(respWriter, request, "./../sffront/registro/invite_user.html")
+	http.ServeFile(respWriter, request, "./../sffront/registro/edit_user.html")
 }
 
 // =======================================================================
@@ -554,7 +564,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Generar JWT
-	//token, err := auth.GenerateJWT(idUser, dataUser[idUser]["idTeam_fk"], dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
 	token, err := auth.GenerateJWT(idUser, dataUser[idUser]["roleAppUser_fk"], idInst, dataInst[idInst]["statusInst_fk"])
 	if err != nil {
 		http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
@@ -563,8 +572,8 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	var satusActive = map[string]string{
 		"2": "/validation", "3": "/waitapprove", "4": "/noAuthPage",
-		"5": "/payment", "6": "/noAuthPage", "7": "/noAuthPage", "8": "/noAuthPage", "9": "/noAuthPage",
-		"10": "/noAuthPage", "11": "/noAuthPage", "12": "/noAuthPage",
+		"5": "/payment", "6": "/mykeys", "7": "/noAuthPage", "8": "/noAuthPage",
+		"9": "/noAuthPage", "10": "/noAuthPage", "11": "/noAuthPage",
 	}
 	//var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
 
@@ -582,8 +591,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 				location = "/payment"
 			case "6":
 				location = "/mykeys"
-			case "7":
-				location = "/mydocs"
 			default:
 				location = "/noAuthPage"
 				token = ""
@@ -591,8 +598,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		} else {
 			switch dataInst[idInst]["statusInst_fk"] {
 			case "7":
-				location = "/mydocs"
-			case "8":
 				location = "/mydocs"
 			default:
 				location = satusActive[dataInst[idInst]["statusInst_fk"]]
@@ -615,7 +620,6 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 	})
 
 	// EN LUGAR DE HACER REDIRECT, RETORNAMOS LA INFO AL FRONTEND
-	//loginResp.Token = token
 	loginResp.RedirectTo = location
 
 	// Configurar headers CORS si es necesario

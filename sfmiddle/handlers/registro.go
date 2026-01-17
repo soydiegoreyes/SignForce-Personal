@@ -9,6 +9,7 @@ import (
 	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
+
 	"sfmiddle/models"
 	"sfmiddle/objects"
 	"sfmiddle/utilities"
@@ -88,6 +89,7 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 			idInst: {
 				"statusInst_fk":      "6",
 				"paymentDataInst_fk": idPay,
+				"activeInst":         1,
 			},
 		}
 		err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
@@ -108,13 +110,16 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 		resp.Plan = d["planId_fk"]
 		resp.Expiration = d["expirationPlan"]
 	}
+
+	fmt.Println("Pago procesado con ID: ", idPay)
+
 	// Convertir a JSON
 	jsonData, err := json.Marshal(resp)
 	if err != nil {
 		http.Error(respWriter, "Error al generar JSON", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Pago procesado con ID: ", idPay)
+
 	// Configurar headers y enviar respuesta
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
@@ -145,7 +150,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 		"taxNumInst": {registerReq.TaxNumInst},
 	}
 
-	data, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "activeInst", "typeContractInst", "legalSignupName", "legalSignupLastname"}, whereMap)
+	data, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "activeInst", "legalSignupName", "legalSignupLastname"}, whereMap)
 	if err != nil {
 		registerResp.Error = "Critical: error al obtener datos de institucion"
 		json.NewEncoder(respWriter).Encode(registerResp)
@@ -165,14 +170,14 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 		if len(data) == 0 || status["idStatusInst"]["permissionStatusInst_fk"] == "1" {
 
 			// se registra la institucion
-			lastId, err := objects.RegisterInst(&registerReq)
+			idInst, err := objects.RegisterInst(&registerReq)
 			if err != nil {
 				registerResp.Error = fmt.Sprintf("%s", err)
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
 
-			registerResp.InstId = lastId
+			registerResp.InstId = idInst
 
 			// se genera un password temporal y se hashea
 			tempPass := utilities.PassGenerator(12)
@@ -184,16 +189,24 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 
 			// se registra el usuario root
-			userId, err := objects.RegisterRootUser(&registerReq, lastId, passHash)
+			idUser, err := objects.RegisterRootUser(&registerReq, idInst, passHash)
 			if err != nil {
 				fmt.Println(err)
 				registerResp.Error = fmt.Sprintf("%s", err)
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
+
+			// el mismo usuario root se invita para llenar sus datos faltantes (solucion temporal)
+			idInvite, err := objects.InviteNewUser(idUser, registerReq.ContactEmailInst, "1", idUser)
+			if err != nil {
+				http.Error(respWriter, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			fmt.Println("invitación de nuevo usuario root: ", idInvite)
 			updates := map[string]map[string]interface{}{
-				lastId: {
-					"rootUser_fk": userId,
+				idInst: {
+					"rootUser_fk": idUser,
 				},
 			}
 			err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
@@ -202,7 +215,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
 			}
-			fmt.Println("Usuario registrado ", userId, " Inst: ", lastId)
+			fmt.Println("Usuario registrado ", idUser, " Inst: ", idInst)
 
 			binDoc, err := os.ReadFile("./templates/welcome_register.html")
 			if err != nil {
@@ -218,7 +231,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
 
 			payload := models.EmailRequest{
-				IdUser:   userId,
+				IdUser:   "1",
 				Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", registerReq.TaxNumInst),
 				Body:     body,
 				Dest:     []string{registerReq.ContactEmailInst},
@@ -232,6 +245,23 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 
+			// Generar JWT
+			token, err := auth.GenerateJWT(idUser, "1", idInst, "2")
+			if err != nil {
+				http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
+				return
+			}
+
+			// Setear cookie con el token
+			http.SetCookie(respWriter, &http.Cookie{
+				Name:     "token",
+				Value:    token,
+				Path:     "/",
+				HttpOnly: true,
+				Secure:   false, // poner en true en producción con HTTPS
+				SameSite: http.SameSiteStrictMode,
+				Expires:  time.Now().Add(1 * time.Hour),
+			})
 			registerResp.Check = true
 
 		} else {
@@ -240,6 +270,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
+
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	json.NewEncoder(respWriter).Encode(registerResp)
@@ -572,7 +603,7 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	// obtener datos faltantes de la institucion
 	var attrs = []string{"legalNameInst", "aliasNameInst", "taxNumInst", "legalSignupName", "legalSignupLastname", "streetAddress", "addressLine", "postalCode", "neighborhood", "locality", "contactEmailInst"}
 
-	// Para que una empresa sea aprovada debe haber subido sus documentos y o estar en estatus de rechazo de documentos y asi mismo debe estar inactivo
+	// Para que una empresa sea aprobada debe haber subido sus documentos y o estar en estatus de rechazo de documentos y asi mismo debe estar inactivo
 	wheres := map[string][]string{
 		"statusInst_fk": {"3", "4"},
 		"activeInst":    {"0"},

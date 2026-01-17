@@ -7,22 +7,40 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"os"
 	"sfmiddle/auth"
-	"sfmiddle/coms"
-	"sfmiddle/configs"
 	"sfmiddle/db"
-	"sfmiddle/documentflow"
+
 	"sfmiddle/models"
 	"sfmiddle/objects"
 	"sfmiddle/utilities"
 	"strconv"
-	"strings"
 	"time"
-	//"sfmiddle/objects"
 )
 
 // ==========================================================================================================
+// handler para crear un usuario nuevo
+func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	var reqUser models.UserDataReq
+	err := json.NewDecoder(request.Body).Decode(&reqUser)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var registerResp models.RegisterResponse
+	registerResp = objects.CreateUser(reqUser)
+
+	respWriter.Header().Set("Content-Type", "application/json")
+	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(respWriter).Encode(registerResp); err != nil {
+		http.Error(respWriter, "Error al codificar JSON"+err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 // funcion que devuelve datos publicos de usuarios
 func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
@@ -110,15 +128,15 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		USData[idus].TotalSigns, _ = strconv.Atoi(sData["total_signs"])
 		USData[idus].SignedDocs, _ = strconv.Atoi(sData["finished"])
 	}
+
+	json.NewEncoder(respWriter).Encode(USData)
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(USData)
-
 }
 
 func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
+	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
@@ -133,20 +151,46 @@ func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	//fmt.Println(claims)
-	// Extraer datos del JWT
+	fmt.Println(claims)
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	authInst, ok4 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok4 {
+
+	if !(ok1 && ok2) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println(idInst, idUser, authInst)
+
+	userInstData := objects.UserInstJoin(idUser)
+	fmt.Println(userInstData)
+	if userInstData["idInstitution"] != idInst {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// se reutiliza el UserDataReq para aprovechar los mismos campos que en create User
+	var reqUpdate models.UserDataReq
+	json.NewDecoder(request.Body).Decode(&reqUpdate)
+	reqUpdate.Role = ""
+	updateResp, err := objects.UpdateUser(reqUpdate, idUser)
+	if err != nil {
+		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !updateResp {
+		http.Error(respWriter, "Error al actualizar datos del usuario", http.StatusInternalServerError)
+		return
+	}
+
+	// se actualiza que se resolvió la invitación
+	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUpdate.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
+		http.Error(respWriter, "Error al aceptar la invitación: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
+	respWriter.WriteHeader(http.StatusOK)
 }
 
 // rehacer logica para que no dependa de teams
@@ -170,13 +214,13 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//_, ok3 := claims["team"].(string)
-	//authInst, ok4 := claims["authInst"].(string)
+	//authInst, ok3 := claims["authInst"].(string)
 
 	if !ok1 || !ok2 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
+	// obtenemos datos del usuario que está invitando
 	userInst := objects.UserInstJoin(idUser)
 	if userInst["activeUser"] != "1" || userInst["activeInst"] != "1" {
 		http.Error(respWriter, "Usuario o institucion no estan activas.", http.StatusInternalServerError)
@@ -202,242 +246,30 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 
 	if len(invUser) > 0 {
 		// se rellenan los campos del destinatario
-		var userData map[string]string
-		for id, data := range invUser {
+		for id, userData := range invUser {
 			if invite.IdUserDest == "" {
 				invite.IdUserDest = id
 			} else {
-				invite.EmailDest = data["emailUser"]
+				invite.EmailDest = userData["emailUser"]
 			}
-			userData = data
+			if userData["activeUser"] != "1" {
+				http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+				return
+			}
 			break
 		}
 
-		if userData["activeUser"] != "1" {
-			http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-			return
-		}
 	}
 
-	documentflow.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser)
+	idInvite, err := objects.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser)
+	if err != nil {
+		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Println("Invitación creada: ", idInvite)
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(map[string]string{"message": "OK"})
-}
-
-func TeamUsers(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-	cookie, err := request.Cookie("token")
-	if err != nil {
-		http.Error(respWriter, "No autorizado (no token)", http.StatusUnauthorized)
-		return
-	}
-
-	claims, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(respWriter, "No autorizado (claims no validas)", http.StatusUnauthorized)
-		return
-	}
-
-	// Extraer datos del JWT
-	idUser, ok1 := claims["uid"].(string)
-	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
-	authInst, ok4 := claims["authInst"].(string)
-
-	if !ok1 || !ok2 || !ok3 || !ok4 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	fmt.Println(idUser, idTeam, idInst, authInst)
-
-	var req models.GetTeamUsersRequest
-	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
-		return
-	}
-
-	var attrs []string
-	if len(req.Fields) > 0 {
-		attrs = append(attrs, req.Fields...)
-	} else {
-		attrs = []string{"nameUser", "lastNameUser", "aliasUser", "emailUser", "activeUser", "roleAppUser_fk", "idTeam_fk", "kycUser_fk"}
-	}
-
-	wheres := map[string][]string{
-		"idTeam_fk": {req.IdTeam},
-	}
-	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
-	if err != nil {
-		http.Error(respWriter, "Error al obtener datos de usuario", http.StatusBadRequest)
-		return
-	}
-	var usersStat []models.UserDataResp
-	for idUsr, usdat := range userData {
-		usersStat = append(usersStat, models.UserDataResp{
-			Id:       idUsr,
-			Name:     usdat["nameUser"],
-			LastName: usdat["lastNameUser"],
-			Alias:    usdat["aliasUser"],
-			Email:    usdat["emailUser"],
-			Active:   usdat["activeUser"],
-			Role:     usdat["roleAppUser_fk"],
-			//Team:     usdat["idTeam_fk"],
-			Kyc: usdat["kycUser_fk"],
-		})
-	}
-	respWriter.Header().Set("Content-Type", "application/json")
-	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(&usersStat)
-}
-
-func InstTeams(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	cookie, err := request.Cookie("token")
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	claims, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	idUser, ok1 := claims["uid"].(string)
-	idInst, ok2 := claims["iid"].(string)
-	idTeam, ok3 := claims["team"].(string)
-	authInst, ok4 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 || !ok4 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	fmt.Println("JWT claims:", idUser, idTeam, idInst, authInst)
-
-	attrs := []string{"creatorUser_fk", "nameTeam", "limitSigners", "limitUsers", "deletedAt", "description"}
-	wheres := map[string][]string{"idInstitution_fk": {idInst}}
-
-	teamData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
-	if err != nil {
-		http.Error(respWriter, "Error al obtener datos de usuario", http.StatusBadRequest)
-		return
-	}
-	fmt.Printf("teamData -> %+v\n", teamData)
-
-	var teamsStat []models.TeamDataResp
-	for idTeamInst, teamdat := range teamData {
-		fmt.Printf("Fila -> idTeam: %s, data: %+v\n", idTeamInst, teamdat)
-		userCreator := objects.UserInstJoin(teamdat["creatorUser_fk"])
-		if len(userCreator) == 0 {
-			userCreator = make(map[string]string)
-			userCreator["nameUser"] = "Sin dato"
-		}
-		fmt.Printf("Creador: %+v\n", userCreator)
-
-		teamsStat = append(teamsStat, models.TeamDataResp{
-			Id:           idTeamInst,
-			CreatorUser:  userCreator["nameUser"],
-			Name:         teamdat["nameTeam"],
-			LimitSigners: teamdat["limitSigners"],
-			LimitUsers:   teamdat["limitUsers"],
-			DeletedAt:    teamdat["deletedAt"],
-			Description:  teamdat["description"],
-		})
-	}
-
-	fmt.Println("Total equipos:", len(teamsStat))
-
-	respWriter.Header().Set("Content-Type", "application/json")
-	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-	respWriter.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(respWriter).Encode(teamsStat); err != nil {
-		fmt.Println("Error al codificar JSON:", err)
-	}
-}
-
-func NewTeam(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-
-	cookie, err := request.Cookie("token")
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	claims, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	idUser, ok1 := claims["uid"].(string)
-	idInst, ok2 := claims["iid"].(string)
-	_, ok3 := claims["team"].(string)
-	//_, ok4 := claims["authInst"].(string)
-
-	if !ok1 || !ok2 || !ok3 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	type newTeamReq struct {
-		NameTeam    string `json:"nameTeam"`
-		Description string `json:"description"`
-	}
-	var req newTeamReq
-	err = json.NewDecoder(request.Body).Decode(&req)
-	if err != nil {
-		http.Error(respWriter, "Error decodificando json", http.StatusBadRequest)
-		return
-	}
-
-	attrs1 := []string{"emailUser", "activeUser", "roleAppUser_fk", "idTeam_fk", "idInstitution_fk"}
-	attrs2 := []string{"statusInst_fk", "activeInst", "rootUser_fk"}
-
-	join := "users.idInstitution_fk = institutions.idInstitution"
-
-	attrs := []string{"creatorUser_fk", "nameTeam", "deletedAt"}
-	wheres := map[string][]string{
-		"idInstitution_fk": {idInst},
-	}
-	userInstData, err := db.DB_con.GenericJoinSelect("users", "institutions", join, "idUser", []string{idUser}, attrs1, attrs2)
-	if err != nil {
-		http.Error(respWriter, "Error obteniendo institucion y usuario", http.StatusInternalServerError)
-		return
-	}
-	teamsData, err := db.DB_con.GenericSelect("teams", "idTeam", attrs, wheres)
-	if err != nil {
-		http.Error(respWriter, "Error obteniendo datos de equipos", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println(userInstData, teamsData)
-	cols := []string{"idInstitution_fk", "creatorUser_fk", "nameTeam", "description"}
-	values := []interface{}{idInst, idUser, req.NameTeam, req.Description}
-	idNewTeam, err := db.DB_con.GenericInsert("teams", cols, values)
-	if err != nil {
-		http.Error(respWriter, "Error insertando equipo", http.StatusInternalServerError)
-		return
-	}
-	fmt.Println(idNewTeam)
-
-	respWriter.Header().Set("Content-Type", "application/json")
-	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
-	respWriter.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(respWriter).Encode(map[string]string{"message": "OK"}); err != nil {
-		fmt.Println("Error al codificar JSON:", err)
-	}
 }
 
 func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
@@ -462,6 +294,10 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener invitación", http.StatusInternalServerError)
 		return
 	}
+
+	// obtenemos datos del usuario que envía la invitación
+	ownnerData := objects.UserInstJoin(invData[idInvite]["idUser"])
+
 	// si hoy es despues del tiempo de expiración no se deja entrar
 	if exptime, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["expirationDate"]); time.Now().After(exptime) {
 		http.Error(respWriter, "Error invitación expirada", http.StatusForbidden)
@@ -477,112 +313,20 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	ownnerData := objects.UserInstJoin(invData[idInvite]["idUser"])
+	// si es el mismo usuario root de la institucion el que envía la invitación entonces está en el proceso de registro
+	if ownnerData["rootUser_fk"] == invData[idInvite]["idUser"] && ownnerData["activeInst"] == "0" {
+		ownnerData["exists"] = invData[idInvite]["idUser"]
+	}
+	// datos del usuario que envió la envió la invitación
 	invData["host"] = ownnerData
+
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(respWriter).Encode(invData); err != nil {
-		fmt.Println("Error al codificar JSON:", err)
-	}
-}
-
-func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodPost {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		http.Error(respWriter, "Error al codificar JSON"+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	var reqUser models.UserDataReq
-	err := json.NewDecoder(request.Body).Decode(&reqUser)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(reqUser.FaceVector)
-	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{reqUser.IdInvite}, []string{"acceptedAt"}, []string{"idInstitution_fk"})
-	if err != nil {
-		fmt.Println("error al buscar invitacion")
-		return
-	}
-	if uinv[reqUser.IdInvite]["acceptedAt"] != "" {
-		fmt.Println("Usuario ya acepto la invitación")
-		return
-	}
-
-	tempPass := utilities.PassGenerator(12)
-	hashed, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	var isAlive int
-	if reqUser.IsAlive {
-		isAlive = 1
-	}
-	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "isAliveUser", "roleAppUser_fk", "idInstitution_fk"}
-	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, isAlive, reqUser.Role, uinv[reqUser.IdInvite]["idInstitution_fk"]}
-	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Nuevo usuario: ", idNewUser)
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.LittleEndian, reqUser.FaceVector)
-	if err != nil {
-		fmt.Println(err)
-
-	}
-	facevector := utilities.Encode_b64(buf.Bytes())
-	if err != nil {
-		fmt.Println(err)
-	}
-	cols = []string{"idUser", "embedding", "selected"}
-	values = []interface{}{idNewUser, facevector, "1"}
-	idUserEmb, err := db.DB_con.GenericInsert("faceembeddings", cols, values)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Embedding usuario: ", idUserEmb)
-
-	if err = db.DB_con.GenericBatchUpdate("users", "idUser", map[string]map[string]interface{}{idNewUser: {"kycUser_fk": idUserEmb}}); err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUser.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// invitacion de usuario por email
-	registerResp := models.RegisterResponse{Check: false, InstId: "", Error: ""}
-	binDoc, err := os.ReadFile("./templates/welcome_register.html")
-	if err != nil {
-		registerResp.Error = fmt.Sprintf("%s", err)
-		json.NewEncoder(respWriter).Encode(registerResp)
-	}
-
-	body := string(binDoc)
-	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
-	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
-	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
-
-	payload := models.EmailRequest{
-		IdUser:   "1",
-		Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", reqUser.Name),
-		Body:     body,
-		Dest:     []string{reqUser.Email},
-		MimeType: "html",
-	}
-
-	err = coms.EmailCli.SendMail(&payload)
-	if err != nil {
-		registerResp.Error = fmt.Sprintf("%s", err)
-		json.NewEncoder(respWriter).Encode(registerResp)
-		return
-	}
-
-	registerResp.Check = true
 }
 
 // Función para obtener estadísticas de uso de la plataforma para dashboard

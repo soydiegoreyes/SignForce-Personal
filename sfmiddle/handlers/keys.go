@@ -37,13 +37,9 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Extraer datos del JWT
-	idUser, ok := claims["uid"].(string)
-	if !ok {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	idInst, ok := claims["iid"].(string)
-	if !ok {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	if !(ok1 && ok2) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -189,17 +185,16 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"idInstitution": {idInst}, // todas las llaves del usuario
 	}
-	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "typeContractInst", "activeInst"}, wheres)
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "activeInst"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener informacion de llaves", http.StatusInternalServerError)
 		return
 	}
 	// si no tiene contrato aun y esta en el paso de subir llaves entonces es usuario nuevo y debe pasar a firma de contratos
-	if (instData[idInst]["statusInst_fk"] == "6" && instData[idInst]["typeContractInst"] == "0") || (instData[idInst]["activeInst"] == "0") {
+	if instData[idInst]["statusInst_fk"] == "6" || instData[idInst]["activeInst"] == "0" {
 		updates := map[string]map[string]interface{}{
 			idInst: {
 				"statusInst_fk": 7,
-				"activeInst":    1,
 			},
 		}
 
@@ -269,11 +264,11 @@ func Logink(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Usuario inactivo revise estatus.", http.StatusUnauthorized)
 		return
 	}
-	/*
-		if userData[idUser]["isAliveUser"] != "1" {
-			http.Error(respWriter, "Requiere prueba de vida.", http.StatusUnauthorized)
-		}
-	*/
+
+	if userData[idUser]["isAliveUser"] != "1" {
+		http.Error(respWriter, "Requiere prueba de vida.", http.StatusUnauthorized)
+	}
+
 	type LoginK struct {
 		IdUser   string `json:"iduser"`
 		Password string `json:"password"`

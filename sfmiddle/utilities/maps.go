@@ -195,5 +195,6 @@ var Coids = map[string]map[string]string{
 	},
 }
 
+var AlgosMap map[string]map[string]string
 var Months = Enumerate([]string{"NULL", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"})
 var Wdays = Enumerate([]string{"NULL", "Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"})

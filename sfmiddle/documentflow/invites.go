@@ -7,12 +7,9 @@ import (
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
-	"sfmiddle/objects"
+
 	"sfmiddle/utilities"
 	"strings"
-	"time"
-
-	"github.com/google/uuid"
 )
 
 func GenerateInvites(invites []models.InviteMail) error {
@@ -45,6 +42,7 @@ func GenerateInvites(invites []models.InviteMail) error {
 	return nil
 }
 
+// funcion de invitación a firma de documentos
 func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	// obtenemos datos de la invitación (solo una por usuario)
 	attrs := []string{"idFolder", "idUserOwnner_fk", "idUserDest_fk", "requireAliveProof",
@@ -140,18 +138,6 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	var q = fmt.Sprintf("SELECT %s FROM documents as D inner join folderdocuments as FD ON D.idDocument=FD.idDocument WHERE D.documentHash IN (%s) AND FD.idFolder IN (%s);", strings.Join(attrs, ","), strings.Join(docHashes, ","), idFolder)
 	docData, err := db.DB_con.ExecuteSelect(q)
 
-	// Obtener datos de los documentos
-	/*
-		attrs = []string{"idDocument", "documentPath", "documentName", "documentExt", "documentHash",
-			"authUseStatus", "authRoleStatus", "activeDoc", "abstractDoc", "createdAtDoc", "lastModifiedDoc"}
-		wheres = map[string][]string{
-			"documentHash":      docHashes,
-			"creatorUserDoc_fk": {inviteData[idInvite]["idUserOwnner_fk"]},
-		}
-		docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
-		if err != nil {
-			return nil, fmt.Errorf("error obteniendo datos del documento: %v", err)
-		}*/
 	if len(docData) == 0 {
 		return nil, fmt.Errorf("documentos no encontrados")
 	}
@@ -244,68 +230,4 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 	}
 
 	return inviteInfo, nil
-}
-
-// Envía una invitación a un correo para que se una a signforce
-func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) error {
-
-	userData := objects.UserInstJoin(idUser) // info del usuario que invita
-	var guestData map[string]string
-	binDoc, err := os.ReadFile("./templates/invite_user.html")
-	if err != nil {
-		fmt.Printf("%s", err)
-		return err
-	}
-
-	if idUserDest == "" {
-		idUserDest = idUser
-		guestData = map[string]string{
-			"nameUser":      emailDest,
-			"aliasUser":     emailDest,
-			"lastNameUser":  "",
-			"legalNameInst": userData["legalNameInst"],
-			"aliasNameInst": userData["aliasNameInst"],
-			"emailUser":     emailDest,
-		}
-	} else {
-		guestData = objects.UserInstJoin(idUserDest)
-	}
-
-	idInviteUser := uuid.NewString()
-	hostFullName := fmt.Sprintf("%s %s", userData["nameUser"], userData["lastNameUser"])
-
-	// fecha de expiración de la invitación
-	tExp := time.Now().Add(5 * 24 * time.Hour).Format("2006-01-02 15:04:05")
-
-	body := string(binDoc)
-	body = strings.ReplaceAll(body, "{GUEST_ALIAS}", guestData["aliasUser"])
-	body = strings.ReplaceAll(body, "{GUEST_EMAIL}", guestData["emailUser"])
-	body = strings.ReplaceAll(body, "{HOST_INSTNAME}", userData["legalNameInst"])
-	body = strings.ReplaceAll(body, "{HOST_INSTALIAS}", userData["aliasNameInst"])
-	body = strings.ReplaceAll(body, "{HOST_FULLNAME}", hostFullName)
-	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
-	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", tExp)
-	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/viewinviteuser?id=%s", os.Getenv("API_IP"), idInviteUser))
-	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/viewinviteuser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
-
-	payload := models.EmailRequest{
-		IdUser:   idUserDest,
-		Subject:  fmt.Sprintf("¡Tienes una invitación! %s quiere que te unas a SIGNFORCE.", guestData["nameUser"]),
-		Body:     body,
-		Dest:     []string{emailDest},
-		MimeType: "html",
-	}
-	err = coms.EmailCli.SendMail(&payload)
-	if err != nil {
-		fmt.Println("No se envió el email de la invitación: ", idInviteUser, err)
-		return err
-	} else {
-		cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
-		_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, tExp, roleApp})
-		if err != nil {
-			fmt.Printf("%s", err)
-			return err
-		}
-	}
-	return nil
 }

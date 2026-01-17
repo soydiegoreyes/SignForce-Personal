@@ -253,6 +253,9 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	// variables para datos del usuario y documento
+	var docInfo, userInfo map[string]string
+
 	// Validar datos del usuario
 	wheres := map[string][]string{
 		"idUser":           {idUser},
@@ -264,7 +267,10 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener información de usuario", http.StatusInternalServerError)
 		return
 	}
-	if userData[idUser]["activeUser"] != "1" {
+	// info del usuario
+	userInfo = userData[idUser]
+
+	if userInfo["activeUser"] != "1" {
 		http.Error(respWriter, "No autorizado. Usuario inactivo", http.StatusUnauthorized)
 		return
 	}
@@ -295,14 +301,14 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		}
 	case "uploaded":
 		tableName = "documents"
-		attrs = append(attrs, "idDocument", "documentPath", "documentName", "documentExt", "documentHash", "authUseStatus", "authRoleStatus", "activeDoc", "sizeB", "abstractDoc")
+		attrs = append(attrs, "idDocument", "documentPath", "documentName", "documentExt", "documentHash", "sizeB", "abstractDoc")
 		idColMain = "idDocument"
 		docWheres = map[string][]string{
 			"idDocument": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
 		}
 	case "template":
 		tableName = "doctemplates"
-		attrs = append(attrs, "idTemplate", "documentPath", "documentName", "documentExt", "authUseStatus", "authRoleStatus", "activeDoc", "sizeB", "abstractDoc")
+		attrs = append(attrs, "idTemplate", "documentPath", "documentName", "documentExt", "sizeB", "abstractDoc")
 		idColMain = "idTemplate"
 		docWheres = map[string][]string{
 			"idTemplate": {docRequest.IdDoc}, // Ajusta el nombre de la columna según tu esquema
@@ -311,6 +317,8 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Tipo de documento no válido", http.StatusBadRequest)
 		return
 	}
+	// atributos obligatorios
+	attrs = append(attrs, "ownerInstDoc_fk", "creatorUserDoc_fk", "authUseStatus", "authRoleStatus", "activeDoc")
 
 	// Obtener datos del documento
 	docData, err := db.DB_con.GenericSelect(tableName, idColMain, attrs, docWheres)
@@ -318,7 +326,6 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener información del documento", http.StatusInternalServerError)
 		return
 	}
-
 	// Verificar si se encontró el documento
 	if len(docData) == 0 {
 		http.Error(respWriter, "Documento no encontrado", http.StatusNotFound)
@@ -326,54 +333,24 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Obtener el primer (y único) documento encontrado
-	var docInfo map[string]string
 	for _, doc := range docData {
 		docInfo = doc
 		break
 	}
+
+	// validaciones de permisos y estados de documentos
+	if !auth.ValidateUserDocPermissions(idInst, idUser, docInfo, userInfo) {
+		http.Error(respWriter, "No autorizado", http.StatusForbidden)
+		return
+	}
+
 	switch docRequest.Type {
-	case "uploaded":
-		// Verificar permisos y estado del documento
-		if docInfo["activeDoc"] != "1" {
-			http.Error(respWriter, "Documento inactivo", http.StatusForbidden)
-			return
-		}
-
-		if docInfo["authRoleStatus"] != "1" {
-			http.Error(respWriter, "No autorizado para descargar este documento", http.StatusForbidden)
-			return
-		}
-
-		if docInfo["authUseStatus"] != "1" {
-			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
-			return
-		}
-	case "template":
-		// Verificar permisos y estado del documento
-		if docInfo["activeDoc"] != "1" {
-			http.Error(respWriter, "Documento inactivo", http.StatusForbidden)
-			return
-		}
-
-		if docInfo["authRoleStatus"] != "1" {
-			http.Error(respWriter, "No autorizado para descargar este documento", http.StatusForbidden)
-			return
-		}
-
-		if docInfo["authUseStatus"] != "1" {
-			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
-			return
-		}
 	case "kyc":
 		if docInfo["expirationDate"] != "" {
 			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
 			return
 		}
 	}
-
-	// Verificar permisos adicionales (opcional)
-	// Puedes agregar lógica adicional aquí para verificar si el usuario tiene permisos
-	// basándose en ownerInstDoc_fk, creatorUserDoc_fk, etc.
 
 	// Construir la ruta completa del archivo
 	var filePath string = fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
