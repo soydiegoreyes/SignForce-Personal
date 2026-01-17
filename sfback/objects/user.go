@@ -38,7 +38,7 @@ func NewUser(idUser string, password string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener datos del usuario %v. error: %v", idUser, err)
 	}
-	log.Println(userData)
+	log.Println("UserData-> ", userData)
 
 	// Se obtienen las rutas de llave y certificado
 	idKeyUser := userData[idUser]["idKeysUser_fk"]
@@ -50,7 +50,7 @@ func NewUser(idUser string, password string) (*User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error al obtener datos del usuario %v. error: %v", idUser, err)
 	}
-	log.Println(keysUser)
+	log.Println("UserKeys-> ", keysUser)
 
 	var usuActivo bool
 	if userData[idUser]["activeUser"] == "1" {
@@ -76,14 +76,17 @@ func NewUser(idUser string, password string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("desde New User: ", valKeysResp)
 	// nunca deberia de suceder ya que un nuevo usuario
-	if !valKeysResp.Exists {
+	if valKeysResp.Exists {
+		fmt.Println("critical: las llaves del usuario no coinciden con el id del usuario en registros de base de datos")
 		return nil, errors.New("critical: las llaves del usuario no coinciden con el id del usuario en registros de base de datos")
 	}
 	if !user.Keys.ValidKeys {
+		fmt.Println("el certificado no está vigente o no coincide con la clave privada")
 		return nil, errors.New("el certificado no está vigente o no coincide con la clave privada")
 	}
-	fmt.Printf("Propietario: %s, Exp: %s \n", valKeysResp.Owner, valKeysResp.Expiration)
+	fmt.Printf("Propietario: %s, Exp: %s, valid: %v \n", valKeysResp.Owner, valKeysResp.Expiration, user.Keys.ValidKeys)
 	// comparacion de POBID y TAXNUM que es para validar si el usuario tiene completos esos datos
 	/*
 		validPobUid := user.PobID == user.Keys.CertMap["SubjectSerialNumber"]

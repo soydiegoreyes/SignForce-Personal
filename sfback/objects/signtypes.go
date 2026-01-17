@@ -219,7 +219,7 @@ func (k *Keys) GenerarFirmaXades(pdfHash []byte, signatureId, docName, idDocumen
 		"genTimeSign":        gentime,
 		"nonceSign":          signatureId,
 		"certHash":           certHashB64,
-		"typeSign":           "9",
+		"typeSign":           "9", // rsa Signature con hash 256 -> será mapeada para front
 	}
 
 	return signData, nil

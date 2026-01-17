@@ -167,16 +167,32 @@ func (k *Keys) ValidateKeys(password string) (*models.UploadKeysResponse, error)
 			"hashKey": {k.KeyHash},
 			"hashCer": {k.CertHash},
 		}
-		keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"serialNumber", "signature", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber"}, wheres)
+
+		keys, err := db.DB_con.GenericSelect("userkeys", "idUserKeys", []string{"idUser_fk", "serialNumber", "signature", "hashKey", "hashCer", "subjectUniqueId", "subjectSerialNumber"}, wheres)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error en consulta llaves: ", err)
 			resp.Exists = true
 		}
+
+		// puede haber subidas las mismas llaves pero con diferente id del usuario
+		var idUsers = make(map[string]int)
 		if len(keys) == 0 {
 			resp.Exists = false
 		} else {
+			// se recorren todas las llaves
 			for _, key := range keys {
+				// si las llaves subidas corresponden a alguna de las llaves guardadas se le suman al usuario que las tiene
 				if k.CertMap["SerialNumber"] == key["serialNumber"] && k.CertMap["Signature"] == key["signature"] && k.CertMap["SubjectUniqueId"] == key["subjectUniqueId"] && k.CertMap["SubjectSerialNumber"] == key["subjectSerialNumber"] {
+					if _, ok := idUsers[key["idUser_fk"]]; !ok {
+						idUsers[key["idUser_fk"]] = 0
+					} else {
+						idUsers[key["idUser_fk"]] += 1
+					}
+
+				}
+				// solo puede haber una sola llave igual por cada usuario, no puede haber mas de una llave igual por usuario
+				// si tiene mas de una entonces el mismo usuario ha subido mas de una vez sus llaves
+				if idUsers[key["idUser_fk"]] > 1 {
 					resp.Exists = true
 					break
 				}

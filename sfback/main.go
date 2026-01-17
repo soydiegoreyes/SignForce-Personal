@@ -129,19 +129,21 @@ func loginUser(respWriter http.ResponseWriter, request *http.Request) {
 		fmt.Println("Usuario no está activo")
 		user, err = objects.NewUser(loginReq.IdUser, loginReq.Password)
 		if err != nil {
+			fmt.Println(err.Error())
 			json.NewEncoder(respWriter).Encode(models.LoginResponse{Token: "", Error: "Credenciales inválidas"})
 			return
 		}
 
 		// Guarda el usuario en activos (opcional, si se necesita tracking)
 		auth.AddUser(user.Uid, user)
-
+		fmt.Println("desde loginUser: ", user.Keys.CertMap)
 		// Genera el token JWT y lo evuelve
 		token, err = auth.GenerateJWT(user)
 		if err != nil {
 			http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
 			return
 		}
+		fmt.Println(token)
 		json.NewEncoder(respWriter).Encode(models.LoginResponse{Token: token, Error: ""})
 	} else {
 		json.NewEncoder(respWriter).Encode(models.LoginResponse{Token: "", Error: "Ya tiene un usuario logueado. Desloguear para obtener token nuevo"})
@@ -227,6 +229,7 @@ func uploadKeys(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al obtener hash de las llaves", http.StatusInternalServerError)
 		return
 	}
+	// se obtiene el hash de la llave subida y de la llave solicitada
 	if keys.CertHash != req.HashCer && keys.KeyHash != req.HashKey {
 		fmt.Println("Error Hashes no coinciden")
 		http.Error(respWriter, "Hashes no coinciden", http.StatusExpectationFailed)
@@ -386,7 +389,6 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 
 		// Actualizar datos de firmas ========================================
 		// "idUser_fk", "idInvite_fk", "idUserKeys_fk", "digestValueSign",  "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"
-
 		var idSign string
 		for idS, s := range signatureData {
 			if s["digestValueSign"] == docInfo["documentHash"] {
