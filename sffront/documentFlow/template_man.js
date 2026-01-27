@@ -6,17 +6,21 @@ let totalTemplates = 0;
 let currentFilter = 'all';
 let currentSearch = '';
 let selectedTemplateId = null;
+let currentIADocumentsType = 'templates';
+let previewContainer, listContainer, renderedContent;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar los contenedores cuando el HTML ya existe
+    previewContainer = document.getElementById('docx-preview-container');
+    listContainer = document.getElementById('iaDocumentsList');
+    renderedContent = document.getElementById('docx-rendered-content');
+
     // Cargar plantillas
     loadTemplates();
     
     // Configurar eventos
     setupEventListeners();
-    
-    // Configurar tema
-    setupThemeToggle();
     
     // Configurar búsqueda
     setupSearch();
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     // Botón para crear plantilla
     document.getElementById('createTemplateBtn').addEventListener('click', openAIModal);
+    document.getElementById("logoutBtn").addEventListener("click", logout)
     
     // Botones de filtro
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -55,6 +60,16 @@ function setupEventListeners() {
     
     // Botón descargar PDF
     document.getElementById('downloadPdfBtn').addEventListener('click', downloadGeneratedPdf);
+    // Botón para ver documentos IA
+    document.getElementById('viewIADocumentsBtn').addEventListener('click', openIADocumentsModal);
+    
+    // Tabs en el modal de documentos IA
+    document.querySelectorAll('.doc-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const type = tab.dataset.type;
+            switchIADocumentsTab(type);
+        });
+    });
     
     // Cerrar modales
     document.querySelectorAll('.close-modal').forEach(closeBtn => {
@@ -75,24 +90,258 @@ function setupEventListeners() {
     });
 }
 
-// Configurar tema
-function setupThemeToggle() {
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            
-            const icon = themeToggle.querySelector('i');
-            if (document.body.classList.contains('light-theme')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
+// Abrir modal de documentos IA
+function openIADocumentsModal() {
+    const modal = document.getElementById('iaDocumentsModal');
+    modal.style.display = 'block';
+    
+    // Cargar documentos
+    loadIADocuments(currentIADocumentsType);
+}
+
+// Cerrar modal de documentos IA
+function closeIADocumentsModal() {
+    document.getElementById('iaDocumentsModal').style.display = 'none';
+}
+
+// Cambiar tab en documentos IA
+function switchIADocumentsTab(type) {
+    currentIADocumentsType = type;
+    
+    // Actualizar clases de tabs
+    document.querySelectorAll('.doc-tab').forEach(tab => {
+        if (tab.dataset.type === type) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Cargar documentos del tipo seleccionado
+    loadIADocuments(type);
+}
+
+// Cargar documentos IA
+async function loadIADocuments(type = 'templates') {
+    const container = document.getElementById('iaDocumentsList');
+    
+    // Mostrar estado de carga
+    container.innerHTML = `
+        <div class="documents-loading">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-secondary">Cargando ${type === 'templates' ? 'plantillas' : 'documentos'}...</p>
+        </div>
+    `;
+    
+    try {
+        // Hacer fetch para obtener la lista de documentos
+        // Esto depende de cómo esté configurado tu servidor
+        // Necesitarías un endpoint que liste los archivos en el directorio
+        const response = await fetch(`/iatemplates?type=${type}`);
+        
+        if (!response.ok) {
+            // Si no hay endpoint específico, intentar cargar desde /iatemplates
+            // mostrando un mensaje de que necesitamos listar los archivos
+            container.innerHTML = `
+                <div class="documents-error">
+                    <span class="material-symbols-outlined text-3xl mb-2">error</span>
+                    <p>No se pudo cargar la lista de documentos.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const documents = await response.json();
+        renderIADocuments(documents, type);
+        
+    } catch (error) {
+        console.error('Error al cargar documentos IA:', error);
+        container.innerHTML = `
+            <div class="documents-error">
+                <span class="material-symbols-outlined text-3xl mb-2">error</span>
+                <p>Error al cargar los documentos: ${error.message}</p>
+                <button onclick="loadIADocuments('${type}')" class="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg">
+                    Reintentar
+                </button>
+            </div>
+        `;
     }
 }
+
+// Renderizar documentos IA
+function renderIADocuments(documents, type) {
+    const container = document.getElementById('iaDocumentsList');
+    
+    if (!documents || documents.length === 0) {
+        container.innerHTML = `
+            <div class="empty-documents">
+                <span class="material-symbols-outlined text-4xl mb-2">folder_open</span>
+                <p>No hay ${type === 'templates' ? 'plantillas' : 'documentos'} generados por IA.</p>
+                <p class="text-sm mt-2">Crea tu primer documento usando el botón "Nueva Plantilla con IA"</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    documents.forEach(doc => {
+        const docElement = createIADocumentElement(doc, type);
+        container.appendChild(docElement);
+    });
+}
+
+
+// Crear elemento de documento IA
+function createIADocumentElement(doc, type) {
+    const div = document.createElement('div');
+    div.className = 'document-item';
+    
+    // Determinar icono y tipo
+    const isTemplate = type === 'templates' || doc.name.endsWith('.docx') || doc.type === 'docx';
+    const icon = isTemplate ? 'description' : 'picture_as_pdf';
+    const fileType = isTemplate ? 'Template' : 'PDF';
+    const fileExt = isTemplate ? '.docx' : '.pdf';
+    
+    // Formatear fecha
+    const createdDate = doc.created ? 
+        new Date(doc.created).toLocaleDateString('es-MX', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : 'Fecha desconocida';
+    
+    // Formatear tamaño
+    const sizeFormatted = doc.size ? formatBytes(doc.size) : 'Tamaño desconocido';
+    
+    // Nombre del archivo sin extensión para mostrar
+    const displayName = doc.name ? 
+        doc.name.replace(/\.[^/.]+$/, '') : 
+        'Documento sin nombre';
+    
+    div.innerHTML = `
+        <div class="flex items-center flex-1">
+            <span class="material-symbols-outlined document-icon">${icon}</span>
+            <div class="document-info">
+                <div class="document-name">${displayName}</div>
+                <div class="document-meta">
+                    <span>${createdDate}</span>
+                    <span>${sizeFormatted}</span>
+                    <span class="doc-type-badge ${isTemplate ? 'doc-template' : 'doc-pdf'}">
+                        ${fileType}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="doc-actions">
+            <button class="px-3 py-1 bg-white/5 hover:bg-white/10 text-secondary rounded text-sm transition-colors view-doc-btn" 
+                    data-path="${doc.path}" data-name="${doc.name}" data-type="${type}">
+                <span class="material-symbols-outlined text-sm align-middle">visibility</span>
+                Ver
+            </button>
+            <button class="px-3 py-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded text-sm transition-colors download-doc-btn"
+                    data-path="${doc.path}" data-name="${doc.name || displayName + fileExt}" data-type="${type}">
+                <span class="material-symbols-outlined text-sm align-middle">download</span>
+                Descargar
+            </button>
+        </div>
+    `;
+    
+    // Agregar event listeners a los botones
+    const viewBtn = div.querySelector('.view-doc-btn');
+    const downloadBtn = div.querySelector('.download-doc-btn');
+    
+    viewBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const path = e.currentTarget.dataset.path;
+        const type = e.currentTarget.dataset.type;
+        viewIADocument(path, type);
+    });
+    
+    downloadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const path = e.currentTarget.dataset.path;
+        const name = e.currentTarget.dataset.name;
+        const type = e.currentTarget.dataset.type;
+        downloadIADocument(path, name, type);
+    });
+    
+    return div;
+}
+
+
+// Descargar documento IA
+function downloadIADocument(path, name, type) {
+    // path ya es el nombre del archivo según el JSON del back
+    const url = `/iatemplates/${encodeURIComponent(path)}?type=${type}&download=1`;
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name; // Sugerencia de nombre para el navegador
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+// Refrescar documentos IA
+function refreshIADocuments() {
+    loadIADocuments(currentIADocumentsType);
+}
+
+// Ver documento IA
+async function viewIADocument(path, type) {
+    // Asegurarnos de que los elementos existen
+    if (!previewContainer) previewContainer = document.getElementById('docx-preview-container');
+    if (!listContainer) listContainer = document.getElementById('iaDocumentsList');
+    if (!renderedContent) renderedContent = document.getElementById('docx-rendered-content');
+
+    const url = `/iatemplates/${encodeURIComponent(path)}?type=${type}`;
+
+    if (path.endsWith('.pdf')) {
+        window.open(url, '_blank');
+        return;
+    }
+
+    if (path.endsWith('.docx')) {
+        try {
+            showMessage('Cargando vista previa...', 'info');
+            
+            const response = await fetch(url);
+            
+            // Si el back devuelve error (como el 404 que mencionas), lánzalo aquí
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error del servidor: ${errorText}`);
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+
+            // Ocultar lista y mostrar preview
+            listContainer.style.display = 'none';
+            previewContainer.style.display = 'block';
+
+            // Limpiar contenido anterior antes de renderizar
+            renderedContent.innerHTML = '';
+            
+            // Renderizar usando la librería (asegúrate de haberla incluido en el HTML)
+            await docx.renderAsync(arrayBuffer, renderedContent);
+            
+            showMessage('Documento cargado', 'success');
+        } catch (error) {
+            console.error('Error al previsualizar:', error);
+            showMessage(error.message, 'error');
+        }
+    }
+}
+
+// Función para volver corregida
+function closePreview() {
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (listContainer) listContainer.style.display = 'block';
+    if (renderedContent) renderedContent.innerHTML = ''; 
+}
+
 
 // Configurar búsqueda
 function setupSearch() {
@@ -856,9 +1105,39 @@ function showMessage(message, type = 'info') {
     }, 5000);
 }
 
+async function logout() {
+    if (confirm('¿Cerrar sesión como administrador?')) {
+        try {
+            const response = await fetch('/logoutUser', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) { 
+                // BORRAR TOKEN EN SESSION STORAGE
+                sessionStorage.removeItem('aut');
+                window.location.href = '/login';
+                
+            } else {
+                sessionStorage.removeItem('aut');
+                throw new Error(data.message || 'Error al cerrar sesión');
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+}
+
 // Exportar funciones al scope global
 window.openAIModal = openAIModal;
 window.closeAIModal = closeAIModal;
 window.openFillModal = openFillModal;
 window.closeFillModal = closeFillModal;
 window.downloadTemplate = downloadTemplate;
+window.openIADocumentsModal = openIADocumentsModal;
+window.closeIADocumentsModal = closeIADocumentsModal;
+window.refreshIADocuments = refreshIADocuments;

@@ -259,17 +259,12 @@
                 <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
             </div>
             <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="clients">Clientes</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="requests">Solicitudes</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mydocs">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/myfolders">Folders</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mykeys">Mis llaves</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/mytemplates">Plantillas</a>
             </div>
-        </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
         </div>
     </header>
 
@@ -415,23 +410,6 @@
 
         window.addEventListener('load', calculatePositions);
         window.addEventListener('resize', calculatePositions);
-
-        // Toggle de tema claro/oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                
-                const icon = themeToggle.querySelector('i');
-                if (document.body.classList.contains('light-theme')) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                } else {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
-                }
-            });
-        }
 
         // Intersection Observer para animaciones
         const observerOptions = {
@@ -776,7 +754,7 @@
             if (selectedClientId) {
                 // Aquí puedes implementar la lógica para aprobar
                 alert(`Aprobando solicitud de ${selectedClientId}`);
-                completarValidacion({status: "5", institution: selectedClientId});
+                completarValidacion({status: true, institution: selectedClientId});
             }
         });
 
@@ -784,7 +762,7 @@
             if (selectedClientId) {
                 // Aquí puedes implementar la lógica para rechazar
                 alert(`Rechazando solicitud de ${selectedClientId}`);
-                completarValidacion({status: "4", institution: selectedClientId});
+                completarValidacion({status: false, institution: selectedClientId});
             }
         });
 

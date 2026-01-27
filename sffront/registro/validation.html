@@ -322,10 +322,8 @@
     <header class="header-panel fixed top-0 w-full z-50 h-16">
         <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
             <div class="flex items-center gap-3">
-                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
+                <div class="size-12">
+                    <img src="./../images/sflogo.png" alt="Logo" />
                 </div>
                 <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Validación de Documentos</span></h1>
             </div>
@@ -335,9 +333,6 @@
                     <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     <span class="text-xs font-medium">Conectado</span>
                 </div>
-                <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-                    <span class="material-symbols-outlined text-sm">dark_mode</span>
-                </button>
             </div>
         </div>
     </header>
@@ -502,27 +497,7 @@
             // Configurar el botón de completar validación
             document.getElementById('btnCompletar').addEventListener('click', completarValidacion);
             
-            // Configurar el toggle del tema
-            document.getElementById('themeToggle').addEventListener('click', toggleTema);
         });
-
-        //===================================== TOGGLE THEME =========================================
-        function toggleTema() {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            html.classList.toggle('dark', !isDark);
-            
-            // Actualizar ícono
-            const icon = document.querySelector('#themeToggle .material-symbols-outlined');
-            if (isDark) {
-                icon.textContent = 'light_mode';
-            } else {
-                icon.textContent = 'dark_mode';
-            }
-            
-            // Guardar preferencia
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-        }
 
         //===================================== GET DATA VALIDATION =========================================
         async function obtenerDatosValidacion() {
@@ -782,7 +757,7 @@
                 
                 const response = await fetch('/completevalidation', {
                     method: 'POST',
-                    body: JSON.stringify({ status: '3' }),
+                    body: JSON.stringify({ status: true }),
                     headers: {
                         'Content-Type': 'application/json'
                     },

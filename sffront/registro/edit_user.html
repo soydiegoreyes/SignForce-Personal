@@ -212,8 +212,8 @@
     <header class="fixed top-0 w-full z-50 h-16 bg-[#0f172a]/80 backdrop-blur-md border-b border-white/10">
         <div class="h-full px-6 flex items-center max-w-7xl mx-auto">
             <div class="flex items-center gap-3">
-                <div class="size-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <span class="material-symbols-outlined text-white text-sm">person_add</span>
+                <div class="size-12">
+                    <img src="./../images/sflogo.png" alt="Logo" />
                 </div>
                 <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Registro</span></h1>
             </div>
@@ -595,6 +595,7 @@
                     const errText = await response.text();
                     throw new Error(errText || 'Error obteniendo invitación');
                 }
+                
 
                 const data = await response.json();
                 
@@ -697,7 +698,11 @@
                     window.location.href = '/login';
                     
                 } else {
-                    const errData = await response.text();
+                    msj="";
+                    if (response.status == 402) {
+                        msj = "¡IMPORTANTE! Si está en proceso de registro, vuelva cuando concluya los pasos requeridos.";
+                    }
+                    const errData = await response.text() + msj;
                     throw new Error(errData || 'Error al insertar datos de usuario');
                 }
             } catch (err) {

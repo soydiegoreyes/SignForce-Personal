@@ -14,7 +14,7 @@ let chatDocId = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Variables globales locales al scope
-    let selectedDocumentId = null;
+    document.getElementById("logoutBtn").addEventListener("click", logout)
 
     // Configuración del input del chat para enviar con Enter
     const chatInput = document.getElementById('docChatInput');
@@ -63,23 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('load', calculatePositions);
     window.addEventListener('resize', calculatePositions);
-
-    // Toggle de tema claro/oscuro
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            
-            const icon = themeToggle.querySelector('i');
-            if (document.body.classList.contains('light-theme')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-    }
 
     // Intersection Observer para animaciones
     const observerOptions = {
@@ -815,4 +798,30 @@ function renderChatMessages() {
 
     // Scroll al final
     container.scrollTop = container.scrollHeight;
+}
+async function logout() {
+    if (confirm('¿Cerrar sesión como administrador?')) {
+        try {
+            const response = await fetch('/logoutUser', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.ok) { 
+                // BORRAR TOKEN EN SESSION STORAGE
+                sessionStorage.removeItem('aut');
+                window.location.href = '/login';
+                
+            } else {
+                sessionStorage.removeItem('aut');
+                throw new Error(data.message || 'Error al cerrar sesión');
+            }
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
 }

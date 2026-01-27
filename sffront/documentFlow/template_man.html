@@ -5,11 +5,14 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Plantillas de Documentos - SignForce</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/docx-preview/dist/docx-preview.js"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/documentflow/documents.css">
     <style>
@@ -143,6 +146,130 @@
             color: #60a5fa;
             border: 1px solid rgba(59, 130, 246, 0.3);
         }
+        /* Nuevos estilos para el modal de documentos IA */
+        .documents-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+        }
+        
+        .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .document-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+        
+        .document-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .document-name {
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .document-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+        
+        .document-icon {
+            font-size: 1.5rem;
+            margin-right: 12px;
+            color: #38bdf8;
+        }
+        
+        .doc-type-badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .doc-template {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .doc-pdf {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .doc-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .empty-documents {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .documents-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 16px;
+        }
+        
+        .doc-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .doc-tab:hover {
+            color: #e2e8f0;
+        }
+        
+        .doc-tab.active {
+            color: #38bdf8;
+            border-bottom-color: #38bdf8;
+        }
+        
+        .documents-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        
+        .documents-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: #f87171;
+        }
     </style>
 </head>
 <body class="font-display text-gray-800 dark:text-gray-200">
@@ -152,25 +279,23 @@
             <div class="liquid-bubble" id="liquidBubble"></div>
             
             <div class="flex items-center gap-4 text-primary">
-                <div class="size-4">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
-                    </svg>
+                <div class="size-12">
+                    <img src="./../images/sflogo.png" alt="Logo" />
                 </div>
                 <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
             </div>
             <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">users</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/clients">Clientes</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/requests">Solicitudes</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/documents">Documentos</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/templates">Plantillas</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/settings">Configuración</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mydocs">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/myfolders">Folders</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mykeys">Mis llaves</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/mytemplates">Plantillas</a>
             </div>
         </div>
         <div class="flex flex-1 justify-end gap-8">
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
+            <button id="logoutBtn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 text-sm font-bold text-purple-300 leading-normal tracking-[0.015em]">
+                <span class="material-symbols-outlined mr-2 text-sm">logout</span>
+                Salir
             </button>
         </div>
     </header>
@@ -205,7 +330,8 @@
                         <button class="px-4 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors filter-btn" data-filter="all">
                             Todas
                         </button>
-                        <button class="px-4 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors filter-btn" data-filter="draft">
+                        <button id="viewIADocumentsBtn" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors flex items-center gap-2">
+                            <span class="material-symbols-outlined">visibility</span>
                             Borradores
                         </button>
                         <button class="px-4 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors filter-btn" data-filter="published">
@@ -375,6 +501,53 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- Nuevo Modal para ver documentos IA -->
+    <div id="iaDocumentsModal" class="modal prompt-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 class="text-xl font-semibold text-primary mb-4">Documentos Generados por IA</h3>
+            <p class="text-secondary mb-6">Aquí puedes ver y descargar los documentos generados por la IA.</p>
+            
+            <!-- Tabs para alternar entre templates y documentos -->
+            <div class="documents-tabs">
+                <button class="doc-tab active" data-type="templates">
+                    <span class="material-symbols-outlined align-middle mr-2">description</span>
+                    Plantillas (.docx)
+                </button>
+                <button class="doc-tab" data-type="documents">
+                    <span class="material-symbols-outlined align-middle mr-2">picture_as_pdf</span>
+                    Documentos (.pdf)
+                </button>
+            </div>
+            
+            <!-- Lista de documentos -->
+            <div class="documents-list" id="iaDocumentsList">
+                <!-- Los documentos se cargarán aquí -->
+                <div class="documents-loading">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <p class="text-secondary">Cargando documentos...</p>
+                </div>
+            </div>
+            
+            <!-- Botones del modal -->
+            <div class="prompt-actions mt-6">
+                <button onclick="closeIADocumentsModal()" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-secondary rounded-lg transition-colors">
+                    Cerrar
+                </button>
+                <button onclick="refreshIADocuments()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">refresh</span>
+                    Actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="docx-preview-container" style="display: none; background: #f4f4f4; padding: 20px; border-radius: 8px; max-height: 60vh; overflow-y: auto; border: 1px solid #ddd;">
+        <div class="flex justify-between mb-4">
+            <button onclick="closePreview()" class="text-red-500 font-bold">← Volver a la lista</button>
+        </div>
+        <div id="docx-rendered-content"></div>
     </div>
 
     <script src="/documentflow/template_man.js"></script>

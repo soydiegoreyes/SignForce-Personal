@@ -34,26 +34,24 @@
     <header class="glass-header" id="mainHeader">
         <div class="flex items-center gap-8 relative">
             <div class="liquid-bubble" id="liquidBubble"></div>
-            
             <div class="flex items-center gap-4 text-primary">
-                <div class="size-4">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
-                    </svg>
+                <div class="size-12">
+                    <img src="./../images/sflogo.png" alt="Logo" />
                 </div>
                 <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
             </div>
             <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="clients">Clientes</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="requests">Solicitudes</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mydocs">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/myfolders">Folders</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mykeys">Mis llaves</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/mytemplates">Plantillas</a>
             </div>
         </div>
         <div class="flex flex-1 justify-end gap-8">
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
+            <button id="logoutBtn" class="flex cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 text-sm font-bold text-purple-300 leading-normal tracking-[0.015em]">
+                <span class="material-symbols-outlined mr-2 text-sm">logout</span>
+                Salir
             </button>
         </div>
     </header>
@@ -61,7 +59,7 @@
     <div class="bg flex min-h-screen pt-24 pb-8 px-8">
         <aside class="w-64 glass-panel mr-6 flex flex-col max-h-[calc(100vh-8rem)]">
             <div class="p-6 pb-2">
-                <h1 class="text-2xl font-bold text-primary">Visor de Documentos</h1>
+                <h1 class="text-2xl font-bold text-primary">Documentos</h1>
             </div>
             
             <!-- Navegación principal -->
@@ -81,6 +79,10 @@
                 <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="finished">
                     <span class="material-symbols-outlined">check_circle</span>
                     <span>Finalizados/Cancelados</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="/upload">
+                    <span class="material-symbols-outlined">upload_file</span>
+                    <span>Subir Documentos</span>
                 </a>
             </nav>
 

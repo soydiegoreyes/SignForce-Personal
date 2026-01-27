@@ -407,21 +407,18 @@
     <header class="glass-header" id="mainHeader">
         <div class="flex items-center gap-8 relative">
             <div class="liquid-bubble" id="liquidBubble"></div>
-            
             <div class="flex items-center gap-4 text-primary">
-                <div class="size-4">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path>
-                    </svg>
+                <div class="size-12">
+                    <img src="./../images/sflogo.png" alt="Logo" />
                 </div>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce Admin</h2>
+                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
             </div>
             <div class="flex items-center gap-9">
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="users">Gestión Usuarios</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="documents">Documentos</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="teams">Equipos</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="reports">Reportes</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mydocs">Documentos</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/myfolders">Folders</a>
+                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mykeys">Mis llaves</a>
+                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/mytemplates">Plantillas</a>
             </div>
         </div>
         <div class="flex flex-1 justify-end gap-8">
@@ -440,8 +437,7 @@
         <!-- Panel izquierdo -->
         <aside class="w-64 glass-panel mr-6 flex flex-col">
             <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Panel Admin</h1>
-                <p class="text-secondary text-sm mt-1">Usuario Master</p>
+                <h1 class="text-2xl font-bold text-primary">Panel</h1>
             </div>
             <nav class="flex-1 px-4 py-2">
                 <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-tab="dashboard">
@@ -660,7 +656,6 @@
                         <table class="w-full">
                             <thead>
                                 <tr class="border-b border-white/10">
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">ID</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Nombre</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Email</th>
                                     <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Rol</th>
@@ -792,7 +787,7 @@
     <script>
         // Efecto liquid glass para la burbuja del menú
         const liquidBubble = document.getElementById('liquidBubble');
-        const navItems = document.querySelectorAll('.nav-item');
+        const navItems = document.querySelectorAll('[data-tab]');
         
         const itemPositions = {};
         
@@ -1906,18 +1901,7 @@
         function init() {
             // Cargar datos iniciales del dashboard
             loadDashboardData();
-            document.getElementById("logoutBtn").addEventListener("click", logout)
-            // Configurar tema oscuro/claro si es necesario
-            const themeToggle = document.getElementById('themeToggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', () => {
-                    document.documentElement.classList.toggle('dark');
-                    document.documentElement.classList.toggle('light');
-                    localStorage.setItem('theme', 
-                        document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-                    );
-                });
-            }
+            document.getElementById("logoutBtn").addEventListener("click", logout);
         }
 
         // Inicializar aplicación

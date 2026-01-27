@@ -56,21 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', calculatePositions);
     window.addEventListener('resize', calculatePositions);
 
-    // Toggle de tema claro/oscuro
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('light-theme');
-      
-      // Cambiar icono
-      const icon = themeToggle.querySelector('i');
-      if (document.body.classList.contains('light-theme')) {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      } else {
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
-      }
-    });
     //==================================================================================================
     // Validacion representante legal
     const checkbox = document.getElementById('legal-responsible-checkbox');

@@ -360,9 +360,6 @@
                     <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                     <span class="text-xs font-medium">Conectado</span>
                 </div>
-                <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
-                    <span class="material-symbols-outlined text-sm">dark_mode</span>
-                </button>
             </div>
         </div>
     </header>
@@ -892,7 +889,7 @@
                         
                         ${isSign 
                             ? idSignature===""? `<span class="badge-neon badge-sign-req"><span class="material-symbols-outlined text-[10px]">edit</span>Firmar</span>`
-                            : `<a href="http://192.168.1.67:8000/viewSignature?id=${idSignature}" class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span>Ver Firma</a>`:
+                            : `<a href="https://larue-unchargeable-aden.ngrok-free.dev/viewSignature?id=${idSignature}" class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span>Ver Firma</a>`:
                             `<span class="badge-neon badge-info-only"><span class="material-symbols-outlined text-[10px]">visibility</span>Info</span>`
                         }
                     </div>
@@ -1026,8 +1023,14 @@
                 }));
 
             mostrarMensaje('Firmando documentos...', 'info');
-//validateFace
             try {
+                const headers= {
+                    'Content-Type': 'application/json',
+                    'X-Signer-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    'X-Signer-Browser': navigator.userAgentData?.brands
+                        ?.map(b => `${b.brand} ${b.version}`)
+                        .join(', ') || navigator.userAgent
+                    }
                 const body = {
                     aut: authToken,
                     inviteId: currentInvite.idInvite,
@@ -1038,7 +1041,7 @@
 
                 const res = await fetch('/signDocument', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(body),
                     credentials: 'include'
                 });

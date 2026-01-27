@@ -133,23 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('load', calculatePositions);
     window.addEventListener('resize', calculatePositions);
 
-    // Toggle de tema claro/oscuro
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            
-            const icon = themeToggle.querySelector('i');
-            if (document.body.classList.contains('light-theme')) {
-                icon.classList.remove('fa-moon');
-                icon.classList.add('fa-sun');
-            } else {
-                icon.classList.remove('fa-sun');
-                icon.classList.add('fa-moon');
-            }
-        });
-    }
-
     // Intersection Observer para animaciones
     const observerOptions = {
         threshold: 0.1

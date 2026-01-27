@@ -360,7 +360,7 @@ async function saveAndNextDoc() {
             
             if (response.ok) {
                 alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
-                window.location.href = "/mydocs";
+                window.location.href = "/myfolders";
             } else {
                 alert("Error al enviar las invitaciones.");
             }
