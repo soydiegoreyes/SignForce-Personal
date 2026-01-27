@@ -67,26 +67,6 @@ func Latin1ToUTF8(input []byte) string {
 	return string(utf8Str)
 }
 
-func GetClientIP(r *http.Request) string {
-	// X-Forwarded-For puede traer varias IPs: client, proxy1, proxy2...
-	forwarded := r.Header.Get("X-Forwarded-For")
-	if forwarded != "" {
-		// La primera IP es la real
-		parts := strings.Split(forwarded, ",")
-		return strings.TrimSpace(parts[0])
-	}
-
-	// Otro header común
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP != "" {
-		return realIP
-	}
-
-	// Si no viene en headers, usamos la IP directa
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	return ip
-}
-
 func GenerateQR(url, fullpath string) bool {
 	qrCode, _ := qrcode.New(url, qrcode.Medium)
 	err := qrCode.WriteFile(256, fullpath)
@@ -220,4 +200,22 @@ func Bool2Int(v bool) int {
 	} else {
 		return 0
 	}
+}
+
+func GetClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		ips := strings.Split(xff, ",")
+		return strings.TrimSpace(ips[0])
+	}
+	if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
+		return xrip
+	}
+	if cfip := r.Header.Get("CF-Connecting-IP"); cfip != "" {
+		return cfip
+	}
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		return ip
+	}
+	return r.RemoteAddr
 }

@@ -305,7 +305,14 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, err.Error(), http.StatusUnauthorized)
 		return
 	}
+	signerIP := request.Header.Get("X-Signer-IP")
+	signerUA := request.Header.Get("X-Signer-UA")
+	signerTZ := request.Header.Get("X-Signer-Timezone")
+	signerBrowser := request.Header.Get("X-Signer-Browser")
 
+	if signerIP == "" {
+		signerIP = utilities.GetClientIP(request)
+	}
 	// ===== Parseo del body =====
 	var req models.SignDocRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
@@ -322,7 +329,7 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"idInvite_fk": {req.IdInvite},
 	}
-	signatureData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres) // devuelve map[string]map[string]string
+	signatureData, err := db.DB_con.GenericSelect("signatures", "idSignature", attrs, wheres)
 	if err != nil {
 		http.Error(respWriter, "No se pudo acceder a datos de firma", http.StatusInternalServerError)
 		return
@@ -439,12 +446,16 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 				"pathSign":           strings.ReplaceAll(xmlData["xmlPath"], os.Getenv("BASE_DIR")+"/", ""),
 				"typeSign_fk":        xmlData["typeSign"],
 				"nonceSign":          xmlData["nonceSign"],
+				"ipSignerSign":       signerIP,
+				"userAgentSign":      signerUA,
+				"signerBrowser":      signerBrowser,
+				"signerTimeZone":     signerTZ,
 			},
 		}
 
 		err = db.DB_con.GenericBatchUpdate("signatures", "idSignature", updates)
 		if err != nil {
-			fmt.Println("Error en update firma:", idSign)
+			fmt.Println("Error en update firma: ", idSign, err)
 			continue
 		}
 
