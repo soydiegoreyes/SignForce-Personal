@@ -291,55 +291,169 @@ function refreshIADocuments() {
 
 // Ver documento IA
 async function viewIADocument(path, type) {
+    // Ocultar el modal de documentos IA temporalmente
+    document.getElementById('iaDocumentsModal').style.display = 'none';
+    
     // Asegurarnos de que los elementos existen
     if (!previewContainer) previewContainer = document.getElementById('docx-preview-container');
-    if (!listContainer) listContainer = document.getElementById('iaDocumentsList');
     if (!renderedContent) renderedContent = document.getElementById('docx-rendered-content');
-
+    
     const url = `/iatemplates/${encodeURIComponent(path)}?type=${type}`;
-
+    
     if (path.endsWith('.pdf')) {
         window.open(url, '_blank');
         return;
     }
-
+    
     if (path.endsWith('.docx')) {
         try {
             showMessage('Cargando vista previa...', 'info');
             
+            // Mostrar el contenedor de vista previa
+            previewContainer.style.display = 'block';
+            
+            // Agregar overlay para cerrar
+            const overlay = document.createElement('div');
+            overlay.id = 'preview-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Configurar el contenedor de vista previa
+            previewContainer.style.cssText = `
+                display: block !important;
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                max-height: 90vh;
+                width: 90%;
+                max-width: 1000px;
+                overflow-y: auto;
+                z-index: 10000;
+                position: relative;
+                color: #000;
+            `;
+            
+            renderedContent.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="spinner mx-auto mb-4"></div>
+                    <p>Cargando documento...</p>
+                </div>
+            `;
+            
+            overlay.appendChild(previewContainer);
+            document.body.appendChild(overlay);
+            
             const response = await fetch(url);
             
-            // Si el back devuelve error (como el 404 que mencionas), lánzalo aquí
             if (!response.ok) {
                 const errorText = await response.text();
-                throw new Error(`Error del servidor: ${errorText}`);
+                throw new Error(`Error al cargar el documento: ${response.status} - ${errorText}`);
             }
-
+            
             const arrayBuffer = await response.arrayBuffer();
-
-            // Ocultar lista y mostrar preview
-            listContainer.style.display = 'none';
-            previewContainer.style.display = 'block';
-
-            // Limpiar contenido anterior antes de renderizar
+            
+            // Verificar que el arrayBuffer tenga datos
+            if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+                throw new Error('El documento está vacío o no se pudo cargar');
+            }
+            
+            // Limpiar contenido anterior
             renderedContent.innerHTML = '';
             
-            // Renderizar usando la librería (asegúrate de haberla incluido en el HTML)
-            await docx.renderAsync(arrayBuffer, renderedContent);
+            // Verificar que la librería docx esté disponible
+            if (!window.docx) {
+                throw new Error('La librería de vista previa no está disponible');
+            }
             
-            showMessage('Documento cargado', 'success');
+            // Renderizar el documento
+            await window.docx.renderAsync(arrayBuffer, renderedContent, null, {
+                className: "docx", // className for the document container
+                inWrapper: true, // enable wrapping the document in a div
+                ignoreWidth: false,
+                ignoreHeight: false,
+                ignoreFonts: false,
+                breakPages: true,
+                ignoreLastRenderedPageBreak: true,
+                experimental: true,
+            });
+            
+            showMessage('Documento cargado correctamente', 'success');
+            
+            // Agregar botón para cerrar
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: #ef4444;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                font-size: 20px;
+                cursor: pointer;
+                z-index: 10001;
+            `;
+            closeBtn.onclick = () => {
+                closePreview();
+                overlay.remove();
+            };
+            
+            previewContainer.insertBefore(closeBtn, previewContainer.firstChild);
+            
         } catch (error) {
             console.error('Error al previsualizar:', error);
-            showMessage(error.message, 'error');
+            
+            // Mostrar error en el contenedor
+            if (renderedContent) {
+                renderedContent.innerHTML = `
+                    <div class="text-center py-12 text-red-600">
+                        <span class="material-symbols-outlined text-4xl mb-4">error</span>
+                        <p class="text-lg mb-2">Error al cargar el documento</p>
+                        <p class="text-sm mb-4">${error.message}</p>
+                        <button onclick="closePreview()" class="px-4 py-2 bg-blue-600 text-white rounded">
+                            Volver
+                        </button>
+                    </div>
+                `;
+            }
+            
+            showMessage(`Error: ${error.message}`, 'error');
         }
     }
 }
 
 // Función para volver corregida
 function closePreview() {
-    if (previewContainer) previewContainer.style.display = 'none';
-    if (listContainer) listContainer.style.display = 'block';
-    if (renderedContent) renderedContent.innerHTML = ''; 
+    // Cerrar el overlay de vista previa
+    const overlay = document.getElementById('preview-overlay');
+    overlay.remove();
+    
+    
+    // Mostrar nuevamente el modal de documentos IA
+    document.getElementById('iaDocumentsModal').style.display = 'block';
+    
+    // Resetear el previewContainer
+    if (previewContainer) {
+        previewContainer.style.cssText = 'display: none;';
+        document.body.appendChild(previewContainer);
+    }
+    
+    if (renderedContent) {
+        renderedContent.innerHTML = '';
+    }
 }
 
 
