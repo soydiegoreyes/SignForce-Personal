@@ -45,7 +45,12 @@ func UploadDocs(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -231,9 +236,12 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -291,7 +299,7 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		ext := pathDoc[lip+1:]
 		nameDoc := pathDoc[lif+1 : lip]
 		tableName = "kyc"
-		attrs = append(attrs, "documentHash", "documentPath", "documentName", "documentExt")
+		attrs = append(attrs, "documentHash", "documentPath", "documentName", "documentExt", "expirationDate")
 		idColMain = "documentHash"
 		docWheres = map[string][]string{
 			"documentHash": {hash}, // Ajusta el nombre de la columna según tu esquema
@@ -318,7 +326,9 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	// atributos obligatorios
-	attrs = append(attrs, "ownerInstDoc_fk", "creatorUserDoc_fk", "authUseStatus", "authRoleStatus", "activeDoc")
+	if docRequest.Type == "uploaded" || docRequest.Type == "template" {
+		attrs = append(attrs, "ownerInstDoc_fk", "creatorUserDoc_fk", "authUseStatus", "authRoleStatus", "activeDoc")
+	}
 
 	// Obtener datos del documento
 	docData, err := db.DB_con.GenericSelect(tableName, idColMain, attrs, docWheres)
@@ -338,16 +348,16 @@ func DownloadDoc(respWriter http.ResponseWriter, request *http.Request) {
 		break
 	}
 
-	// validaciones de permisos y estados de documentos
-	if !auth.ValidateUserDocPermissions(idInst, idUser, docInfo, userInfo) {
-		http.Error(respWriter, "No autorizado", http.StatusForbidden)
-		return
-	}
-
 	switch docRequest.Type {
 	case "kyc":
 		if docInfo["expirationDate"] != "" {
 			http.Error(respWriter, "Documento sin autorización de uso", http.StatusForbidden)
+			return
+		}
+	default:
+		// validaciones de permisos y estados de documentos
+		if !auth.ValidateUserDocPermissions(idInst, idUser, docInfo, userInfo) {
+			http.Error(respWriter, "No autorizado", http.StatusForbidden)
 			return
 		}
 	}
@@ -425,11 +435,15 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	idUser, ok1 := claims["uid"].(string)
+	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -440,25 +454,22 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
 		return
 	}
-	var attrs []string
+
 	var tablename, idCol string
+	var attrs = []string{
+		"createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
+		"documentPath", "documentName", "documentExt", "sizeB",
+		"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
+	}
+
 	switch req.Type {
 	case "docx":
 		tablename = "doctemplates"
 		idCol = "idTemplate"
-		attrs = []string{
-			"createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
-			"documentPath", "documentName", "documentExt", "sizeB",
-			"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
-		}
 	case "pdf":
 		tablename = "documents"
 		idCol = "idDocument"
-		attrs = []string{
-			"documentHash", "createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
-			"deletedReasonDoc", "documentPath", "documentName", "documentExt", "sizeB",
-			"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
-		}
+		attrs = append([]string{"documentHash", "deletedReasonDoc"}, attrs...)
 	default:
 		fmt.Println("No debería ocurrir esto.")
 		return
@@ -486,40 +497,40 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 
 	// ===== Construcción de filtros =====
 	wheres := map[string][]string{
-		"creatorUserDoc_fk": {idUser},
-		"ownerInstDoc_fk":   {idInst},
+		//"creatorUserDoc_fk": {idUser},
+		"ownerInstDoc_fk": {idInst},
 	}
 
 	logic := ""
-	fmt.Println(req)
+
 	// Si hay filtros por id, tipo o path -> se priorizan
 	switch {
 	case len(req.IdDocs) != 0:
-		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND idDocument"
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND idDocument"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND idDocument"
+		logic = "ownerInstDoc_fk AND idDocument"
 		wheres[idCol] = req.IdDocs
 
 	case len(req.PathDocs) != 0:
-		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentPath"
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentPath"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentPath"
+		logic = "ownerInstDoc_fk AND documentPath"
 		wheres["documentPath"] = req.PathDocs
 
 	case req.Type != "":
-		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND documentExt"
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentExt"
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND documentExt"
+		logic = "ownerInstDoc_fk AND documentExt"
 		wheres["documentExt"] = []string{req.Type}
 
 	case req.DateFrom != "" && req.DateTo != "":
-		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
+		logic = "ownerInstDoc_fk AND createdAtDoc BETWEEN ORDER BY " + orderBy
 		wheres["createdAtDoc"] = []string{req.DateFrom, req.DateTo}
 		wheres[idCol] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 
 	default:
 		// Caso general: sin filtros, solo paginación
-		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk AND ownerTeamDoc_fk ORDER BY " + orderBy
-		logic = "creatorUserDoc_fk AND ownerInstDoc_fk ORDER BY " + orderBy
+		//logic = "creatorUserDoc_fk AND ownerInstDoc_fk ORDER BY " + orderBy
+		logic = "ownerInstDoc_fk ORDER BY " + orderBy
 		wheres[idCol] = []string{orderDir}
 		wheres["LOGIC"] = []string{logic, fmt.Sprintf("LIMIT %d OFFSET %d", pageSize, offset)}
 	}
@@ -532,7 +543,8 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Obtener total de documentos =====
-	baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s'", idUser, idInst)
+	//baseWhere := fmt.Sprintf("creatorUserDoc_fk = '%s' AND ownerInstDoc_fk = '%s'", idUser, idInst)
+	baseWhere := fmt.Sprintf("ownerInstDoc_fk = '%s'", idInst)
 
 	query := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s;", tablename, baseWhere)
 	var total int
@@ -552,6 +564,87 @@ func StatusDocs(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(resp)
+}
+
+func EditDoc(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado"+err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Estructura de entrada =====
+	var req models.FileMetadata // tiene lo necesario para los datos del documento y validar contra base de datos
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
+		return
+	}
+
+	var tablename, idCol string
+	idDoc := strconv.Itoa(req.Id)
+
+	var attrs = []string{
+		"createdAtDoc", "lastModifiedDoc", "deletedAtDoc",
+		"documentPath", "documentName", "documentExt", "sizeB",
+		"abstractDoc", "authUseStatus", "authRoleStatus", "activeDoc",
+	}
+	wheres := map[string][]string{
+		"creatorUserDoc_fk": {idUser},
+		"ownerInstDoc_fk":   {idInst},
+	}
+
+	switch req.Ext {
+	case "docx":
+		tablename = "doctemplates"
+		idCol = "idTemplate"
+
+		wheres["idTemplate"] = []string{idDoc}
+
+	case "pdf":
+		tablename = "documents"
+		idCol = "idDocument"
+		attrs = append([]string{"documentHash", "deletedReasonDoc"}, attrs...)
+		wheres["idDocument"] = []string{idDoc}
+	default:
+		fmt.Println("No debería ocurrir esto.")
+		return
+	}
+
+	// ===== Ejecutar SELECT =====
+	docData, err := db.DB_con.GenericSelect(tablename, idCol, attrs, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error al obtener documentos: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if docData[idDoc]["activeDoc"] == "1" {
+
+	}
+
 }
 
 func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
@@ -574,11 +667,15 @@ func InteractDoc(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	idInst, ok1 := claims["uid"].(string)
-	idUser, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -623,11 +720,15 @@ func InteractAgent(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	idInst, ok1 := claims["uid"].(string)
-	idUser, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 

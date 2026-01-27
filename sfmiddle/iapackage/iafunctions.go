@@ -172,24 +172,3 @@ func InteractDoc(idDoc, idInst, idUser, prompt, typeIA string) *models.LLMresp {
 		return nil
 	}
 }
-
-func interactDoc(idDoc, query string) *models.LLMresp {
-	if idDoc != "" {
-		attrs := []string{"documentPath", "documentName", "documentExt", "activeDoc"}
-		wheres := map[string][]string{
-			"idDocument": {idDoc},
-		}
-
-		docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
-		if err != nil || len(docData) == 0 {
-			fmt.Println("Error al obtener datos del documento: ", err)
-			return nil
-		}
-		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
-		_, err = os.Stat(fileName)
-		if err != nil {
-			fmt.Println("No se encontró el archivo: ", fileName)
-		}
-	}
-	return nil
-}

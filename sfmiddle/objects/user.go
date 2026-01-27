@@ -1,8 +1,6 @@
 package objects
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
 	"os"
 	"sfmiddle/coms"
@@ -112,14 +110,7 @@ func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
 	}
 
 	// obtenemos el facevector
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.LittleEndian, reqUser.FaceVector)
-	if err != nil {
-		registerResp.Error = err.Error()
-		return registerResp
-	}
-	// se obtiene el base64 de los bytes del vector para guardarlos en la base de datos como string
-	facevector := utilities.Encode_b64(buf.Bytes())
+	facevector := utilities.ArrFloat2B64(reqUser.FaceVector)
 
 	// dado que hay vector y la red lo identificó como valido se dice que está vivo
 	var isAlive int
@@ -211,6 +202,7 @@ func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
 	return registerResp
 }
 
+// se actualizan datos del usuario dentro de la plataforma
 func UpdateUser(userReq models.UserDataReq, idUser string) (bool, error) {
 
 	var updates = make(map[string]map[string]interface{})
@@ -223,54 +215,76 @@ func UpdateUser(userReq models.UserDataReq, idUser string) (bool, error) {
 		"taxNumUser":   userReq.TaxNum,
 		"pobUidUser":   userReq.PobUid,
 	}
-	// los valores
+	// los valores a actualizar no deben venir vacíos y deben ser mayores a 3 caracteres
 	for k, v := range values {
 		val, _ := v.(string)
-		if val == "" {
+		if val == "" || len(val) < 3 {
 			delete(values, k)
 		}
 	}
-
-	// se actualiza el facevector en caso de que se pida
+	// solo si el vector facial viene con datos entonces intentamos validar su cambio
 	if len(userReq.FaceVector) != 0 {
-		// obtenemos el facevector
-		buf := new(bytes.Buffer)
-		err := binary.Write(buf, binary.LittleEndian, userReq.FaceVector)
-		if err != nil {
-			return false, err
-		}
-
-		// se obtiene el base64 de los bytes del vector para guardarlos en la base de datos como string
-		facevector := utilities.Encode_b64(buf.Bytes())
-		attrs := []string{"embedding"}
+		attrs := []string{"embedding", "selected"}
 		wheres := map[string][]string{
-			"idUser":   {idUser},
-			"selected": {"1"},
+			"idUser": {idUser},
+			//"selected": {"1"}, no se usa selected porque solo hay 3 casos: solo hay uno (vacio o lleno) o hay mas de uno (todos llenos)
 		}
 
+		// obtenemos los embeddings del usuario
 		faceEmbData, err := db.DB_con.GenericSelect("faceembeddings", "idKycUser", attrs, wheres)
 		if err != nil {
 			return false, err
 		}
-		if len(faceEmbData) > 0 {
-			var idKycUser string
-			for idkyc, data := range faceEmbData {
-				if data["embedding"] != facevector && facevector != "" {
-					idKycUser = idkyc
-				}
-				break
-			}
+		// se procede igual que con las personas.
+		// el embedding solo se puede actualizar si el usuario no tiene ninguno registrado
+		// regularmente el embedding se irá actualizando para tener rasgos mas precisos del usuario
+		// pero esa actualización se hara en un proceso separado
 
-			var updates = map[string]map[string]interface{}{
+		var idKycUser string // es el id que se sustituirá por el nuevo vector (cuando no se ha registrado tiene id pero es un string vacío)
+
+		// si solo hay un vector registrado validamos que esté vacío y esté seleccionado
+		// este es el caso de un nuevo registro
+		if len(faceEmbData) > 0 {
+			// se compara cada uno de los embeddings para promediar si son la misma persona y por tanto actualizar el embedding
+			// esta función esta a discusión y puede ser mejorada
+			var avg float64 = 1 // completamente alejados
+			var selected string // id del embedding seleccionado
+
+			for idkyc, faceData := range faceEmbData {
+				if faceData["selected"] == "1" {
+					selected = idkyc
+					if faceData["embedding"] == "" {
+						if len(faceEmbData) == 1 { // caso base donde el usuario es nuevo y se debe insertar su embedding
+							avg = 0 // esto hace que el id a actualizar sea el seleccionado
+							break
+						} else {
+							continue
+						}
+					}
+				}
+				avg *= utilities.EuclideanDistance(utilities.B642ArrFloat(faceData["embedding"]), userReq.FaceVector)
+			}
+			// si es la misma persona
+			if avg < 0.6 {
+				idKycUser = selected
+			}
+		} else {
+			return false, fmt.Errorf("no tiene id para vector facial. Este error nunca debe ocurrir. %s", "")
+		}
+		// se efectua el update del embedding en caso de que se haya aprobado el cambio
+		facevector := utilities.ArrFloat2B64(userReq.FaceVector) // vector tomado del front
+		if idKycUser != "" {
+			faceupdates := map[string]map[string]interface{}{
 				idKycUser: {"embedding": facevector},
 			}
-			err := db.DB_con.GenericBatchUpdate("faceembeddings", "idKycUser", updates)
+			err = db.DB_con.GenericBatchUpdate("faceembeddings", "idKycUser", faceupdates)
 			if err != nil {
 				return false, err
 			}
 			values["isAliveUser"] = 1
 		}
 	}
+	// se inserta hasta el final para validar que el usuario está vivo en caso de que facevector sea correcto
 	updates[idUser] = values
 	err := db.DB_con.GenericBatchUpdate("users", "idUser", updates)
 	if err != nil {
@@ -291,7 +305,7 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) (string, error
 	}
 
 	if idUserDest == "" {
-		idUserDest = idUser
+		idUserDest = idUser // se le asigna el mismo usuario que el anfitrion solo para fines de envio de email
 		guestData = map[string]string{
 			"nameUser":      emailDest,
 			"aliasUser":     emailDest,

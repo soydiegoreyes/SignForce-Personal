@@ -152,15 +152,16 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 			ownerUserData[inviteData[idInvite]["idUserOwnner_fk"]]["lastNameUser"]),
 		//NameTeamEmisor: teamData[folderData[idFolder]["ownerTeam_fk"]]["name"],
 	}
+	/*
+		// Construir UserDestInfo del destinatario
+		userDest := models.UserDestInfo{
+			NameUserDest: fmt.Sprintf("%s %s",
+				userData[inviteData[idInvite]["idUserDest_fk"]]["nameUser"],
+				userData[inviteData[idInvite]["idUserDest_fk"]]["lastNameUser"]),
+			// Nota: Necesitarías obtener nombre de institución y equipo del destinatario si es necesario
+		}
+	*/
 
-	// Construir UserDestInfo del destinatario
-	userDest := models.UserDestInfo{
-		NameUserDest: fmt.Sprintf("%s %s",
-			userData[inviteData[idInvite]["idUserDest_fk"]]["nameUser"],
-			userData[inviteData[idInvite]["idUserDest_fk"]]["lastNameUser"]),
-		// Nota: Necesitarías obtener nombre de institución y equipo del destinatario si es necesario
-	}
-	fmt.Println(userDest)
 	// Construir la invitación con documentos
 	var inviteDocs []models.InviteDoc
 	for docId, doc := range docData {

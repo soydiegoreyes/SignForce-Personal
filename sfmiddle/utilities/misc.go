@@ -1,7 +1,9 @@
 package utilities
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -114,26 +116,6 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 	return filePath, nil
 }
 
-func GetClientIP(r *http.Request) string {
-	// X-Forwarded-For puede traer varias IPs: client, proxy1, proxy2...
-	forwarded := r.Header.Get("X-Forwarded-For")
-	if forwarded != "" {
-		// La primera IP es la real
-		parts := strings.Split(forwarded, ",")
-		return strings.TrimSpace(parts[0])
-	}
-
-	// Otro header común
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP != "" {
-		return realIP
-	}
-
-	// Si no viene en headers, usamos la IP directa
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
-	return ip
-}
-
 // AppendQRCodes invoca un script de Python para insertar imágenes en un PDF
 func AppendQRCodes(filePath string, SignsPositions map[string]map[string]string) error {
 
@@ -200,14 +182,62 @@ func Bool2Int(v bool) int {
 	}
 }
 
-func EuclideanDistance(v1, v2 []float64) float64 {
+func EuclideanDistance(v1, v2 []float32) float64 {
 	if len(v1) != len(v2) {
-		return 1.0 // O manejar error: dimensiones no coinciden
+		return 1.0
 	}
-	var sum float64
+
+	var sum, r float64
 	for i := range v1 {
-		dist := v1[i] - v2[i]
+		dist := float64(v1[i]) - float64(v2[i])
 		sum += dist * dist
 	}
-	return math.Sqrt(sum)
+	r = math.Sqrt(sum)
+	fmt.Println("distancia: ", r)
+	return r
+}
+
+func B642ArrFloat(strB64 string) []float32 {
+	rawBytes := Decode_b64(strB64)
+	var arr []float32
+	for i := 0; i < len(rawBytes); i += 4 {
+		// Leemos 4 bytes en LittleEndian (estándar de JS)
+		bits := binary.LittleEndian.Uint32(rawBytes[i : i+4])
+		floatVal := math.Float32frombits(bits)
+		arr = append(arr, floatVal)
+	}
+	return arr
+}
+
+func ArrFloat2B64(arr []float32) string {
+	buf := new(bytes.Buffer)
+	err := binary.Write(buf, binary.LittleEndian, arr)
+	if err != nil {
+		fmt.Println("Error decodificando array")
+		return ""
+	}
+
+	return Encode_b64(buf.Bytes())
+}
+
+func GetClientIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		fmt.Println("IP de XFF")
+		ips := strings.Split(xff, ",")
+		return strings.TrimSpace(ips[0])
+	}
+	if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
+		fmt.Println("IP de XRIP")
+		return xrip
+	}
+	if cfip := r.Header.Get("CF-Connecting-IP"); cfip != "" {
+		fmt.Println("IP de CFCIP")
+		return cfip
+	}
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err == nil {
+		fmt.Println("IP de RA")
+		return ip
+	}
+	return r.RemoteAddr
 }

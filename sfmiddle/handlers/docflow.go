@@ -42,9 +42,13 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -137,9 +141,13 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -158,10 +166,8 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 	// ===== Llamar a la función principal =====
 	folderData, err := documentflow.LoadFolderInfo(
 		req.IdFolder,
-		//idTeam,
 		idUser,
 		req.OnlyShared,
-		//req.OnlyTeam,
 		req.OnlyUser,
 		req.Page,
 		req.PageSize,
@@ -178,6 +184,45 @@ func GetFolders(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(respWriter).Encode(folderData); err != nil {
 		http.Error(respWriter, "Error al generar respuesta", http.StatusInternalServerError)
+		return
+	}
+}
+
+func StatusFolder(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodPost {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// ===== Autenticación por JWT =====
+	cookie, err := request.Cookie("token")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	claims, err := auth.ValidateJWT(cookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	_, ok1 := claims["uid"].(string)
+	_, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Estructura de entrada =====
+	var req models.FolderRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
 		return
 	}
 }
@@ -205,9 +250,13 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -248,7 +297,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	for idFD, FDData := range folderdocData {
 		docfolder[FDData["idDocument"]] = idFD
 	}
-
+	inviteDocsInserted := make(map[string]map[string]bool)
 	// para cada documento dentro del folder preparamos la invitación
 	for idDoc, docrev := range requestData { // -> por cada documento dentro del request
 		// se crea la carpeta de la invitacion dentro del folder
@@ -259,7 +308,9 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 		}
 		var signsPerDoc, revsPerDoc int
 		for i, reviewer := range docrev.Reviewers { // -> por cada revisor dentro del documento
-
+			if _, ok := inviteDocsInserted[reviewer.User]; !ok {
+				inviteDocsInserted[reviewer.User] = make(map[string]bool)
+			}
 			// si dentro de la lista de invitaciones NO esta el idUser entonces se crea una nueva invitación
 			if _, ok := invites[reviewer.User]; !ok {
 				invites[reviewer.User] = &models.Invite{ //-> dado que es una invitacion por usuario entonces el id es el del usuario como director de la invitacion
@@ -326,8 +377,33 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				return
 			}
 
-			idSignature := uuid.NewString()
+			// ===== INSERT en tabla invitesdetail (SOLO SI EL DOC ES DE ESTE USUARIO) =====
+			if !inviteDocsInserted[reviewer.User][idDoc] {
+
+				idFDActual, ok := docfolder[idDoc]
+				if !ok {
+					http.Error(respWriter, "Documento no pertenece al folder", http.StatusBadRequest)
+					return
+				}
+
+				inviteDetCols := []string{"idInvite", "idfolderdocument"}
+				inviteDetAttrs := []interface{}{
+					invites[reviewer.User].IdInvite,
+					idFDActual,
+				}
+
+				_, err = db.DB_con.GenericInsert("invitesdetail", inviteDetCols, inviteDetAttrs)
+				if err != nil {
+					http.Error(respWriter, "Error al insertar detalle de invitación: "+err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				// marcamos que este usuario ya tiene este documento
+				inviteDocsInserted[reviewer.User][idDoc] = true
+			}
+
 			// ===== INSERT en tabla signatures =====
+			idSignature := uuid.NewString()
 			signatureCols := []string{
 				"idSignature", "idInvite_fk", "digestValueSign", "idUser_fk",
 			}
@@ -363,22 +439,6 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 				_, err := db.DB_con.GenericInsert("signstamps", signstampCols, signstampAttrs)
 				if err != nil {
 					http.Error(respWriter, "Error al insertar signstamp: "+err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
-
-			// insertamos los detalles de la invitación
-			inviteDetCols := []string{"idInvite", "idfolderdocument"}
-
-			for idfolderdoc := range folderdocData {
-				inviteDetAttrs := []interface{}{
-					invites[reviewer.User].IdInvite,
-					idfolderdoc,
-				}
-
-				_, err = db.DB_con.GenericInsert("invitesdetail", inviteDetCols, inviteDetAttrs)
-				if err != nil {
-					http.Error(respWriter, "Error al insertar invite: "+err.Error(), http.StatusInternalServerError)
 					return
 				}
 			}
@@ -474,9 +534,13 @@ func GetInvite(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -544,9 +608,13 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -632,8 +700,24 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		fmt.Printf("%s", err)
 		return
 	}
+
+	signerIP := utilities.GetClientIP(request)
+	signerUA := request.UserAgent()
+	signerTimezone := request.Header.Get("X-Signer-Timezone")
+	if signerTimezone == "" {
+		signerTimezone = "No Timezone"
+	}
+	signerBrowser := request.Header.Get("X-Signer-Browser")
+	if signerBrowser == "" {
+		signerBrowser = request.UserAgent()
+	}
+
 	reqsign.Header.Set("Content-Type", "application/json")
 	reqsign.Header.Set("Authorization", "Bearer "+reqdoc.Aut)
+	reqsign.Header.Set("X-Signer-IP", signerIP)
+	reqsign.Header.Set("X-Signer-UA", signerUA)
+	reqsign.Header.Set("X-Signer-Timezone", signerTimezone)
+	reqsign.Header.Set("X-Signer-Browser", signerBrowser)
 	// Ejecutar petición
 	client := &http.Client{}
 	resp, err := client.Do(reqsign)
@@ -659,7 +743,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 	// cada firma (idSignature) es un documento firmado por el mismo usuario y esa firma tiene varias posiciones dentro de ese documento
 	// para cada documento se manda el arreglo de coordenadas y paginas para que se meta en el mismo archivo
 	// los id de las firmas no importan solo importa que todas pertenecen al mismo documento hechas por el mismo usuario
-
+	reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`) // se toma el idInst y el idFolder ya que dentro del folder está la lista de usuarios
 	for idSR, SData := range signResult.Signed {
 		wheres := map[string][]string{"idSignature_fk": {idSR}}
 		SStamp, err := db.DB_con.GenericSelect("signstamps", "idStamp", []string{"xSign", "ySign", "wSign", "hSign", "pageSign", "pathImg"}, wheres)
@@ -669,7 +753,6 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		}
 
 		var folderPath string
-		reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`) // se toma el idInst y el idFolder ya que dentro del folder está la lista de usuarios
 		if baseFolderPath := reg.FindAllString(SData["xmlPath"], 1); len(baseFolderPath) > 0 {
 			folderPath = baseFolderPath[0] + SData["idDocument"] + "_" + SData["nameDocument"]
 			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
@@ -686,7 +769,8 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, "Error critico error en path para archivo entregable", http.StatusInternalServerError)
 			return
 		}
-
+		// se sustituye para evitar que llegue al frontend la ruta  base
+		SData["xmlPath"] = SData["idDocument"] + "_" + SData["nameDocument"]
 	}
 
 	respWriter.Header().Set("Content-Type", "application/json")
@@ -714,11 +798,15 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	_, ok1 := claims["uid"].(string)
+	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//_, ok3 := claims["team"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
 
@@ -745,6 +833,10 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 	usersData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener datos de firmante", http.StatusInternalServerError)
+		return
+	}
+	if !(idUser == signDoc[idSignature]["idUser_fk"] || idUser == signDoc[idSignature]["creatorUserDoc_fk"]) {
+		http.Error(respWriter, "No autorizado", http.StatusForbidden)
 		return
 	}
 	// signer data
@@ -863,9 +955,12 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}

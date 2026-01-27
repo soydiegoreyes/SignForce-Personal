@@ -39,7 +39,12 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	if !(ok1 && ok2) {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if !(authInst == "5" || authInst == "6" || authInst == "7") {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -242,9 +247,12 @@ func Logink(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if !(authInst == "5" || authInst == "6" || authInst == "7") {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -362,12 +370,12 @@ func Logoutk(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
-	//_, ok3 := claims["team"].(string)
-
-	if !ok1 || !ok2 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+	_, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
+
 	idkey := make(map[string]string)
 	err = json.NewDecoder(request.Body).Decode(&idkey)
 	if err != nil {
@@ -438,9 +446,12 @@ func GetKeysData(respWriter http.ResponseWriter, request *http.Request) {
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if !(authInst == "5" || authInst == "6" || authInst == "7") {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -512,15 +523,20 @@ func UpdateKeysData(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println(claims)
+
 	// Extraer datos del JWT
-
 	idUser, ok1 := claims["uid"].(string)
-
-	if !ok1 {
+	_, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if !(authInst == "5" || authInst == "6" || authInst == "7") {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
+
 	type updateKeyReq struct {
 		IdKeyUpdate string `json:"idKeyUpdate"`
 	}

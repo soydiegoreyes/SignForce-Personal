@@ -38,10 +38,13 @@ func ProcessPayment(respWriter http.ResponseWriter, request *http.Request) {
 
 	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	_, ok4 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok4 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst == "7" {
+		http.Error(respWriter, "Ya tiene un plan activo", http.StatusExpectationFailed)
 		return
 	}
 
@@ -277,7 +280,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
-// Endpoint para obtener datos de validación
+// Endpoint para obtener datos de validación de una empresa en registro
 func GetValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -298,8 +301,18 @@ func GetValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Obtener datos de la base de datos usando el user ID
-	idUser := claims["uid"].(string)
-	idInst := claims["iid"].(string)
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "2" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
 	valResp := &models.ValidationResponse{}
 
 	// obtener datos faltantes de la institucion
@@ -391,7 +404,7 @@ func GetValidationData(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
-// Endpoint para actualizar datos de validación
+// Endpoint para actualizar datos de validación de una empresa en registro
 func UpdateValidationData(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -412,8 +425,17 @@ func UpdateValidationData(respWriter http.ResponseWriter, request *http.Request)
 	}
 
 	// Obtener user ID e institution ID
-	idUser := claims["uid"].(string)
-	idInst := claims["iid"].(string)
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "2" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
 	valReq := models.ValidationRequest{}
 
 	// Determinar el tipo de contenido
@@ -517,6 +539,8 @@ func UpdateValidationData(respWriter http.ResponseWriter, request *http.Request)
 }
 
 // =======================================================================
+// endpoint compartido para que el usuario de luz verde a signforce para revisar sus documentos
+// signforce promueve a pago o rechaza los documentos de la empresa accediendo desde el dash
 func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -534,11 +558,19 @@ func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
+	_, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	_, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+
 	type StatusData struct {
 		IdInst string `json:"institution"`
-		Status string `json:"status"`
+		Status bool   `json:"status"`
 	}
-	statusData := StatusData{}
+	var statusData StatusData
 	err = json.NewDecoder(request.Body).Decode(&statusData)
 	if err != nil {
 		http.Error(respWriter, "Error en los datos", http.StatusBadRequest)
@@ -547,14 +579,24 @@ func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 	// Obtener user ID e institution ID
 	// si la instutucion signforce hace la actualizacion de alguien entonces debe mandar id
 	// si no manda id o la institucion no es signforce entonces se esta haciendo un update de ella misma
-	fmt.Println(statusData)
-	idInst := claims["iid"].(string)
-	if idInst == "1" && statusData.IdInst != "" {
-		idInst = statusData.IdInst
+	var status string
+	// signforce acepta o rechaza documentos
+	if idInst == "1" {
+		if statusData.Status {
+			status = "5"
+		} else {
+			status = "4"
+		}
+	} else { // usuario acepta su promoción a revisión de documentos
+		if statusData.Status {
+			status = "3"
+			// el usuario no manda ningun IdInst en el struct entonces se asigna el que viene en el token
+			statusData.IdInst = idInst
+		}
 	}
 	updates := map[string]map[string]interface{}{
-		idInst: {
-			"statusInst_fk": statusData.Status,
+		statusData.IdInst: {
+			"statusInst_fk": status,
 		},
 	}
 	err = db.DB_con.GenericBatchUpdate("institutions", "idInstitution", updates)
@@ -572,7 +614,7 @@ func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 }
 
 // =======================================================================
-// Endpoint para obtener datos de validación
+// Endpoint para obtener datos de validación en dashboard de signforce
 func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodGet {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -593,9 +635,14 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Obtener datos de la base de datos usando el user ID
-	idUser := claims["uid"].(string)
-	idInst := claims["iid"].(string)
-	if idInst != "1" || idUser == "0" {
+	idUser, ok1 := claims["uid"].(string)
+	idInst, ok2 := claims["iid"].(string)
+	_, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if idInst != "1" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -674,6 +721,9 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 				}
 			}
 		}
+		//==========================
+		// poner validacion en tabla userstatushistory
+		//==========================
 		arrayResp[instId] = valResp
 
 		binDoc, err := os.ReadFile("./templates/congrats_welcome.html")

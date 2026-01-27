@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"time"
 
@@ -119,6 +120,7 @@ func main() {
 	mux.HandleFunc("/uploadDocs", handlers.UploadDocs)                 // subir cualquier tipo de documento
 	mux.HandleFunc("/downloadDoc", handlers.DownloadDoc)               // obtener datos de cualquier tipo de documento
 	mux.HandleFunc("/statusDocs", handlers.StatusDocs)                 // obtener datos de cualquier tipo de documento
+	mux.HandleFunc("/editDoc", handlers.EditDoc)                       // editar atributos de algún documento
 	mux.HandleFunc("/interactDoc", handlers.InteractDoc)               // obtener datos de cualquier tipo de documento
 	mux.HandleFunc("/uploadk", handlers.Uploadk)                       // subir llaves
 	mux.HandleFunc("/statusk", handlers.GetKeysData)                   // obtener datos de llaves de usuario
@@ -138,7 +140,8 @@ func main() {
 	mux.HandleFunc("/signDocument", handlers.SignDocument)             // endopoint para firma de documento
 	mux.HandleFunc("/viewSign", handlers.ViewSign)                     // obtiene los equipos de una institucion
 	mux.HandleFunc("/getAsice", handlers.BuildAsice)                   // obtiene los equipos de una institucion
-	mux.HandleFunc("/getfolder", handlers.GetFolders)                  // obtiene los folders de un usuario
+	mux.HandleFunc("/getfolders", handlers.GetFolders)                 // obtiene los folders de un usuario
+	mux.HandleFunc("/statusFolder", handlers.StatusFolder)             // obtener datos relacionados con las firmas del folder
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
@@ -280,6 +283,97 @@ func main() {
 		}
 
 		http.FileServer(http.Dir("./../sffront/iamodels/facevector/")).ServeHTTP(w, r)
+	})))
+
+	// sirve los archivos temporales de templates
+	mux.Handle("/iatemplates/", http.StripPrefix("/iatemplates/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// ===== 1. Autenticación (Tu lógica se mantiene igual) =====
+		cookie, err := r.Cookie("token")
+		if err != nil {
+			http.Error(w, "No autorizado", http.StatusUnauthorized)
+			return
+		}
+		claims, err := auth.ValidateJWT(cookie.Value)
+		if err != nil || claims["authInst"] != "7" {
+			http.Error(w, "No autorizado", http.StatusUnauthorized)
+			return
+		}
+
+		idUser := claims["uid"].(string)
+		idInst := claims["iid"].(string)
+
+		// ===== 2. Parámetros y Rutas =====
+		docType := r.URL.Query().Get("type")
+		if docType != "templates" && docType != "documents" {
+			http.Error(w, "type inválido", http.StatusBadRequest)
+			return
+		}
+
+		// Ruta base física en el servidor
+		basePath := fmt.Sprintf("./../sfia/%s/%s/%s/", idInst, idUser, docType)
+
+		// Limpiamos la ruta
+		fileName := filepath.Clean(r.URL.Path)
+
+		// IMPORTANTE: Si fileName es "." o "/" significa que NO pidió un archivo, sino la raíz
+		if fileName == "." || fileName == "/" || fileName == "" {
+			files, err := os.ReadDir(basePath)
+			if err != nil {
+				w.Header().Set("Content-Type", "application/json")
+				json.NewEncoder(w).Encode([]interface{}{})
+				return
+			}
+
+			var fileList []map[string]interface{}
+			for _, file := range files {
+				if file.IsDir() {
+					continue
+				}
+
+				isDocx := strings.HasSuffix(file.Name(), ".docx")
+				isPdf := strings.HasSuffix(file.Name(), ".pdf")
+
+				if (docType == "templates" && isDocx) || (docType == "documents" && isPdf) {
+					fileInfo, _ := file.Info()
+					fileList = append(fileList, map[string]interface{}{
+						"name":    file.Name(),
+						"path":    file.Name(), // Pasamos el nombre para que el front lo use en la URL
+						"size":    fileInfo.Size(),
+						"created": fileInfo.ModTime(),
+						"type":    strings.TrimPrefix(filepath.Ext(file.Name()), "."),
+					})
+				}
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(fileList)
+			return
+		}
+
+		// Caso B: Servir archivo
+		// Quitamos cualquier "/" sobrante al inicio para unir rutas correctamente
+		fileName = strings.TrimPrefix(fileName, "/")
+		fullPath := filepath.Join(basePath, fileName)
+
+		// DEBUG: Descomenta esto para ver en consola qué ruta intenta buscar Go exactamente
+		// fmt.Println("Buscando archivo en:", fullPath)
+
+		info, err := os.Stat(fullPath)
+		if err != nil || info.IsDir() {
+			http.Error(w, "Archivo no encontrado", http.StatusNotFound)
+			return
+		}
+
+		if r.URL.Query().Get("download") == "1" {
+			w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+		}
+
+		http.ServeFile(w, r, fullPath)
 	})))
 
 	// Aplicar middleware CORS
@@ -663,7 +757,7 @@ func logout(respWriter http.ResponseWriter, request *http.Request) {
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // true en producción
+		Secure:   true, // true en producción con https
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Unix(0, 0), // fecha en el pasado
 		MaxAge:   -1,              // MUY IMPORTANTE

@@ -1,11 +1,8 @@
 package handlers
 
 import (
-	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"sfmiddle/auth"
 	"sfmiddle/db"
@@ -61,9 +58,12 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 
 	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	//idTeam, ok3 := claims["team"].(string)
-	//authInst, ok4 := claims["authInst"].(string)
-	if !ok1 || !ok2 {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -129,10 +129,10 @@ func CheckUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		USData[idus].SignedDocs, _ = strconv.Atoi(sData["finished"])
 	}
 
-	json.NewEncoder(respWriter).Encode(USData)
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(USData)
 }
 
 func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
@@ -151,13 +151,16 @@ func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	fmt.Println(claims)
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-
-	if !(ok1 && ok2) {
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	if !(authInst == "6" || authInst == "7") {
+		http.Error(respWriter, "Actualice su pago para acceder", http.StatusPaymentRequired)
 		return
 	}
 
@@ -213,10 +216,13 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Extraer datos del JWT
 	idUser, ok1 := claims["uid"].(string)
-	_, ok2 := claims["iid"].(string)
-	//authInst, ok3 := claims["authInst"].(string)
-
-	if !ok1 || !ok2 {
+	idInst, ok2 := claims["iid"].(string)
+	authInst, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	if authInst != "7" {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -232,33 +238,40 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// buscamos por email o id de usuario destinatario
+	// buscamos por email o id de usuario destinatario (solo un email o id por institución)
+	// alguno de los 2 campos (email o id) debe venir vacío
 	wheres := map[string][]string{
-		"emailUser": {invite.EmailDest},
-		"idUser":    {invite.IdUserDest},
-		"LOGIC":     {"emailUser OR idUser"},
+		"emailUser":        {invite.EmailDest},
+		"idUser":           {invite.IdUserDest},
+		"idInstitution_fk": {idInst},
+		"LOGIC":            {"idInstitution_fk AND emailUser OR idUser"},
 	}
 	invUser, err := db.DB_con.GenericSelect("users", "idUser", []string{"nameUser", "emailUser", "activeUser"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error obteniendo datos de usuario para invitacion", http.StatusInternalServerError)
 		return
 	}
-
-	if len(invUser) > 0 {
+	// si existe el usuario entonces se le invita para que actualice sus datos
+	if len(invUser) == 1 {
 		// se rellenan los campos del destinatario
 		for id, userData := range invUser {
+			if userData["activeUser"] != "1" {
+				http.Error(respWriter, "Invitado no autorizado", http.StatusUnauthorized)
+				return
+			}
 			if invite.IdUserDest == "" {
 				invite.IdUserDest = id
 			} else {
 				invite.EmailDest = userData["emailUser"]
 			}
-			if userData["activeUser"] != "1" {
-				http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-				return
-			}
 			break
 		}
-
+		// si hay varias veces un correo en la misma institucion O se busco por email y id al mismo tiempo puede dar resultados multiples
+	} else if len(invUser) > 1 {
+		http.Error(respWriter, "Error resultado de usuario multiple", http.StatusNotAcceptable)
+		return
+	} else {
+		fmt.Println("Email sin registro previo bajo mismo cliente")
 	}
 
 	idInvite, err := objects.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser)
@@ -295,8 +308,36 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// obtenemos datos del usuario que envía la invitación
+	// obtenemos datos del usuario y de la institucion que envía la invitación
 	ownnerData := objects.UserInstJoin(invData[idInvite]["idUser"])
+
+	// buscamos por email de usuario destinatario (solo un email por institución)
+	wheres = map[string][]string{
+		"emailUser":        {invData[idInvite]["emailDest"]},
+		"idInstitution_fk": {ownnerData["idInstitution"]},
+		"LOGIC":            {"idInstitution_fk AND emailUser"},
+	}
+	invUser, err := db.DB_con.GenericSelect("users", "idUser", []string{"nameUser", "emailUser", "activeUser"}, wheres)
+	if err != nil {
+		http.Error(respWriter, "Error obteniendo datos de usuario para invitacion", http.StatusInternalServerError)
+		return
+	}
+	// el usuario existe
+	if len(invUser) == 1 {
+		for idInvUser := range invUser {
+			// si es el mismo usuario root de la institucion el que envía la invitación entonces está en el proceso de registro
+			if ownnerData["rootUser_fk"] == invData[idInvite]["idUser"] && idInvUser == ownnerData["rootUser_fk"] {
+				ownnerData["exists"] = invData[idInvite]["idUser"]
+			}
+			break
+		}
+
+	} else if len(invUser) > 1 {
+		http.Error(respWriter, "Error Usuario cuenta con mas de un correo registrado bajo el mismo cliente", http.StatusNotAcceptable)
+		return
+	} else {
+		fmt.Println("Email sin registro previo bajo mismo cliente")
+	}
 
 	// si hoy es despues del tiempo de expiración no se deja entrar
 	if exptime, _ := time.Parse("2006-01-02T15:04:05Z", invData[idInvite]["expirationDate"]); time.Now().After(exptime) {
@@ -313,10 +354,6 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// si es el mismo usuario root de la institucion el que envía la invitación entonces está en el proceso de registro
-	if ownnerData["rootUser_fk"] == invData[idInvite]["idUser"] && ownnerData["activeInst"] == "0" {
-		ownnerData["exists"] = invData[idInvite]["idUser"]
-	}
 	// datos del usuario que envió la envió la invitación
 	invData["host"] = ownnerData
 
@@ -353,6 +390,10 @@ func StatsDash(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
+	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
 	fmt.Println("JWT claims:", idUser, idInst, authInst)
 
 }
@@ -374,7 +415,8 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
-	if !ok1 || !ok2 {
+	_, ok3 := claims["authInst"].(string)
+	if !ok1 || !ok2 || !ok3 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -401,32 +443,18 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	b64emb := fvData[userData[idUser]["kycUser_fk"]]["embedding"]
-	embRaw := utilities.Decode_b64(b64emb)
-
-	var storedVector []float64
-	for i := 0; i < len(embRaw); i += 4 {
-		// Leemos 4 bytes en LittleEndian (estándar de JS)
-		bits := binary.LittleEndian.Uint32(embRaw[i : i+4])
-		floatVal := math.Float32frombits(bits)
-		storedVector = append(storedVector, float64(floatVal))
-	}
+	var storedVector = utilities.B642ArrFloat(b64emb)
 
 	// 2. Decodificar el vector que viene del Frontend
 	var inputData struct {
-		FaceVector []float64 `json:"facevector"`
+		FaceVector []float32 `json:"facevector"`
 	}
 	if err := json.NewDecoder(request.Body).Decode(&inputData); err != nil {
 		http.Error(respWriter, "Request inválido", http.StatusBadRequest)
 		return
 	}
-	buf := new(bytes.Buffer)
-	err = binary.Write(buf, binary.LittleEndian, inputData.FaceVector)
-	if err != nil {
-		fmt.Println(err)
 
-	}
 	// 3. Comparar
-	fmt.Println(inputData.FaceVector)
 	distancia := utilities.EuclideanDistance(storedVector, inputData.FaceVector)
 
 	// 4. Umbral (Threshold)
@@ -441,7 +469,4 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 		"match":    samePerson,
 		"distance": distancia,
 	})
-
-	//=====================================================================
-
 }

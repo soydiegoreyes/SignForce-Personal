@@ -34,8 +34,11 @@ func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pa
 
 	wheres := map[string][]string{}
 
+	var docWheres map[string][]string // usado para obtener los documentos de idfolderdocuments
+
+	// consulta a invitaciones del usuario para obtener el folder
 	if onlyShared {
-		// Se obtienen los folders de las invitaciones que ha recibido el usuario
+		// Se obtienen los folders de las invitaciones que ha recibido el usuario ya que se cargan todos los folders en la pantalla
 		idsFoldersShared, err := db.DB_con.GenericSelect("invites", "idInvite", []string{"idFolder"}, map[string][]string{"idUserDest_fk": {idUser}})
 		if err != nil {
 			return nil, fmt.Errorf("error obteniendo datos de invitación: %v", err)
@@ -48,20 +51,37 @@ func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pa
 				FoldersData: make(map[string]interface{}),
 			}, nil
 		}
-
-		for idF := range idsFoldersShared {
-			wheres["idFolder"] = append(wheres["idFolder"], idF)
+		wheresInvDet := map[string][]string{}
+		for idInv := range idsFoldersShared {
+			wheres["idFolder"] = append(wheres["idFolder"], idsFoldersShared[idInv]["idFolder"])
+			wheresInvDet["idInvite"] = append(wheresInvDet["idInvite"], idInv)
 		}
+		// este mapa tiene la relacion de documentos que se pueden obtener del folder folderdocuments
+		idsInvitesdetail, err := db.DB_con.GenericSelect("invitesdetail", "idInviteDetail", []string{"idfolderdocument"}, wheresInvDet)
+		if err != nil {
+			return nil, fmt.Errorf("error obteniendo datos de invitación: %v", err)
+		}
+
+		// filtro para obtener solo el idDocument de cada folder que se obtuvo en el paso previo (WHERE idFolder IN (...) AND idfolderdocument IN (...))
+		docWheres = map[string][]string{"idFolder": {}, "idfolderdocument": {}}
+		for _, invDetData := range idsInvitesdetail {
+			docWheres["idfolderdocument"] = append(docWheres["idfolderdocument"], invDetData["idfolderdocument"])
+		}
+		docWheres["LOGIC"] = []string{"idFolder AND idfolderdocument"}
+
 		logic = "idFolder"
 
 	} else if onlyUser {
 		wheres["creatorUser_fk"] = []string{idUser}
+		docWheres = map[string][]string{"idFolder": {}}
+		docWheres["LOGIC"] = []string{"idFolder"}
 		logic = "creatorUser_fk"
 
 	} else {
 		if idFolder != "" {
 			wheres["idFolder"] = []string{idFolder}
 			logic = "idFolder"
+
 		} else {
 			return &models.FolderListResp{}, fmt.Errorf("no hay parámetros de búsqueda")
 		}
@@ -87,15 +107,11 @@ func LoadFolderInfo(idFolder, idUser string, onlyShared, onlyUser bool, page, pa
 
 	// Obtener documentos de cada folder
 	docAttrs := []string{"idDocument", "idFolder"}
-	docWheres := map[string][]string{
-		"idFolder": {},
-	}
 
 	for folderID := range foldersData {
 		docWheres["idFolder"] = append(docWheres["idFolder"], folderID)
 	}
 
-	docWheres["LOGIC"] = []string{"idFolder"}
 	folderDocs, err := db.DB_con.GenericSelect("folderdocuments", "idfolderdocument", docAttrs, docWheres)
 	if err != nil {
 		return nil, fmt.Errorf("error obteniendo documentos del folder: %v", err)
