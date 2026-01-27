@@ -12,6 +12,54 @@ import subprocess
 path_match = r'(?:[^\s/\\]+[/|\\])*(\w+\.\w{2,10})'
 pmatch =re.compile(path_match)
 
+def create_template_entrypoint(**kwargs):
+    """
+    Normaliza los argumentos para create_template.
+    - Caso 1 (ideal): kwargs contiene 'output_path' y 'data' (dict) -> pasa directamente.
+    - Caso 2 (común cuando el modelo "aplana" el objeto): kwargs contiene 'output_path' y keys como 'header','body',... -> construye data dict.
+    """
+    print("FUNC: create_template_entrypoint args:", kwargs)
+    # Validación mínima
+    if 'output_path' not in kwargs:
+        return {
+            "status": "error",
+            "message": "Falta 'output_path' en argumentos para create_template."
+        }
+
+    output_path = kwargs.get('output_path')
+
+    # Si ya viene 'data' como dict -> úsalo
+    if 'data' in kwargs and isinstance(kwargs['data'], dict):
+        data = kwargs['data']
+        return create_template(output_path, data)
+
+    # Si no hay 'data', construimos uno a partir del resto de kwargs (excluyendo output_path)
+    data = {}
+    for k, v in kwargs.items():
+        if k == 'output_path':
+            continue
+        # 'images' podría ser una cadena JSON que representa una lista; si es str y parece un JSON array, intentar parsear.
+        if k == 'images' and isinstance(v, str):
+            try:
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    data['images'] = parsed
+                    continue
+            except Exception:
+                # si no se parsea, tratarlo como string simple
+                pass
+        data[k] = v
+
+    # Aseguramos que al menos 'body' exista (coherente con tools_definition)
+    if 'body' not in data:
+        # devolvemos error estructurado para que el agente lo muestre
+        return {
+            "status": "error",
+            "message": "create_template requiere al menos 'body' en 'data'.",
+            "received": data
+        }
+
+    return create_template(output_path, data)
 # recibe una ruta donde se guarda el template y el contenido que ira en cada sección del documento.
 # ej. output_path = "C:/USERS/USER/Desktop/mi_plantilla.docx"
 # ej. data = {"header": "Contrato de compraventa {TITULO_CONTRATO}", "body": "Esto es un contrato entre {COMPRADOR} y {VENDEDOR}.", "footer": "Pie de pagina"}
@@ -184,6 +232,7 @@ def copiar_a_destino(input_path, idInst, idUser: str):
             fw.write(fr.read())
         r["status"]= "ok"
         r["ruta"]= ruta_destino
+        os.remove(input_path)
     else:
         r["status"]= "error: Path no fue correctamente formado"
         r["ruta"] = input_path
@@ -199,7 +248,7 @@ def notificar_error(mensaje: str):
 # 2. Mapeo para ejecución
 available_functions = {
     'notificar_error': notificar_error,
-    'create_template': create_template,
+    'create_template': create_template_entrypoint,
     'word_to_pdf': word_to_pdf,
     'format_doc': format_doc,
 }
@@ -302,51 +351,11 @@ def run_agent(prompt, idInst, idUser, model):
         },
         {'role': 'user', 'content': prompt}
     ]
-    '''
-    {
-        "model": "llama3.2",
-        "created_at": "2024-10-24T...",
-        "message": {
-            "role": "assistant",
-            "content": "Respuesta del amigo chat", 
-            "tool_calls": [
-            {
-                "function": {
-                "name": "format_doc",
-                "arguments": {
-                    "ruta_template": "C:/templates/memo.docx",
-                    "ruta_dest": "C:/temp/resultado",
-                    "dict_data": {
-                    "NOMBRE": "Pancracio",
-                    "FECHA": "24/10/2024"
-                    }
-                }
-                }
-            }
-            ]
-        },
-        "done": true,
-        "total_duration": 123456789,
-        "load_duration": 123456,
-        "prompt_eval_count": 45,
-        "eval_count": 32
-        }
-
-        
-        {
-            functionName: {
-                done: bool,
-                error: string,
-                args: json,
-                result: json,
-            }
-        }
-
-    '''
+   
     # Bucle de ejecución (máximo 5 iteraciones para evitar bucles infinitos)
     for i in range(5):
         response = ollama.chat(model=model, messages=messages, tools=tools_definition)
-        print(response)
+        #print(response)
         # Si el modelo ya no quiere llamar a más funciones, terminamos
         if not response["message"].get("tool_calls"):
             return response["message"]["content"]

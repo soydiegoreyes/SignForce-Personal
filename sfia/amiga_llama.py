@@ -67,14 +67,14 @@ LLMsession = OllamaSession("deepseek-r1:8b")
 #=================================================================================
 prompts = dict(enumerate([
     " Evita introduccione, comentarios, consejos u opiniones, proporciona solo hechos y da una respuesta seca.",
-    "Resume brevemente: ",
-    "Resume detalladamente: ",
-    "Obtén las ideas clave: ",
-    "Genera un itinerario con esta información: ",
-    "Obtén los nombres de todas las personas: ",
-    "Realiza una tabla con los datos de todas las personas que encuentres: ",
-    "Realiza una tabla con los siguientes datos: ",
-    'Realiza un <table class="genTable" id="genTable"></table> sin estilos css, sin tailwind, sin saltos de linea, sin caracteres de escape, para insertar los siguientes datos: '
+    " Resume brevemente: ",
+    " Resume detalladamente: ",
+    " Obtén las ideas clave: ",
+    " Genera un itinerario con esta información: ",
+    " Obtén los nombres de todas las personas: ",
+    " Realiza una tabla con los datos de todas las personas que encuentres: ",
+    " Realiza una tabla con los siguientes datos: ",
+    ' Realiza un <table class="genTable" id="genTable"></table> sin estilos css, sin tailwind, sin saltos de linea, sin caracteres de escape, para insertar los siguientes datos: '
     ]))
 print(prompts)
 
@@ -85,9 +85,9 @@ app = FastAPI()
 #CORS-------------------------------------------------------------------------------------------
 #=================================================================================
 app.add_middleware(CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:8000", "http://127.0.0.1:8000"],
     allow_credentials=True,
-    allow_methods=['*'],
+    allow_methods=['POST', 'GET'],
     allow_headers=['*'])
 
 
