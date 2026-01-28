@@ -321,7 +321,7 @@ async function viewIADocument(path, type) {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.8);
+                background: rgba(0,0,0,0);
                 z-index: 9999;
                 display: flex;
                 align-items: center;
@@ -331,7 +331,7 @@ async function viewIADocument(path, type) {
             // Configurar el contenedor de vista previa
             previewContainer.style.cssText = `
                 display: block !important;
-                background: white;
+                background: rgba(0,0,0,0);
                 padding: 20px;
                 border-radius: 8px;
                 max-height: 90vh;
@@ -388,30 +388,6 @@ async function viewIADocument(path, type) {
             });
             
             showMessage('Documento cargado correctamente', 'success');
-            
-            // Agregar botón para cerrar
-            const closeBtn = document.createElement('button');
-            closeBtn.innerHTML = '&times;';
-            closeBtn.style.cssText = `
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: #ef4444;
-                color: white;
-                border: none;
-                border-radius: 50%;
-                width: 30px;
-                height: 30px;
-                font-size: 20px;
-                cursor: pointer;
-                z-index: 10001;
-            `;
-            closeBtn.onclick = () => {
-                closePreview();
-                overlay.remove();
-            };
-            
-            previewContainer.insertBefore(closeBtn, previewContainer.firstChild);
             
         } catch (error) {
             console.error('Error al previsualizar:', error);
