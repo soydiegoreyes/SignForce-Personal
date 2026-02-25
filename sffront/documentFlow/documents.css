@@ -362,3 +362,35 @@ h1, h2, h3, h4 {
 .text-secondary {
   color: rgba(255, 255, 255);
 }
+
+
+/* Estilos para el buscador */
+#searchInput {
+    min-width: 250px;
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    min-width: 300px;
+}
+
+/* Animación de búsqueda */
+@keyframes pulse-search {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.searching {
+    animation: pulse-search 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #searchInput {
+        min-width: 200px;
+    }
+    
+    #searchInput:focus {
+        min-width: 250px;
+    }
+}

@@ -186,3 +186,136 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+ // Funcionalidad del modal de video
+const videoModal = document.getElementById('videoModal');
+const demoVideo = document.getElementById('demoVideo');
+const openVideoModalBtn = document.getElementById('openVideoModal');
+const closeModalBtn = document.getElementById('closeModal');
+const playPauseBtn = document.getElementById('playPauseBtn');
+const muteBtn = document.getElementById('muteBtn');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const videoTime = document.getElementById('videoTime');
+
+// Abrir modal
+if (openVideoModalBtn) {
+    openVideoModalBtn.addEventListener('click', () => {
+        videoModal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Previene scroll
+        demoVideo.play();
+    });
+}
+
+// Cerrar modal
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', closeVideoModal);
+}
+
+// Cerrar modal al hacer clic fuera del contenido
+videoModal.addEventListener('click', (e) => {
+    if (e.target === videoModal) {
+        closeVideoModal();
+    }
+});
+
+// Cerrar con tecla Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && videoModal.classList.contains('active')) {
+        closeVideoModal();
+    }
+});
+
+function closeVideoModal() {
+    videoModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    demoVideo.pause();
+    demoVideo.currentTime = 0;
+}
+
+// Control de reproducción
+if (playPauseBtn && demoVideo) {
+    playPauseBtn.addEventListener('click', () => {
+        if (demoVideo.paused) {
+            demoVideo.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+        } else {
+            demoVideo.pause();
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i> Reproducir';
+        }
+    });
+}
+
+// Control de volumen
+if (muteBtn && demoVideo) {
+    muteBtn.addEventListener('click', () => {
+        demoVideo.muted = !demoVideo.muted;
+        muteBtn.innerHTML = demoVideo.muted 
+            ? '<i class="fas fa-volume-mute"></i> Sin Sonido'
+            : '<i class="fas fa-volume-up"></i> Sonido';
+    });
+}
+
+// Pantalla completa
+if (fullscreenBtn) {
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            videoModal.requestFullscreen().catch(err => {
+                console.log(`Error al intentar pantalla completa: ${err.message}`);
+            });
+            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Salir';
+        } else {
+            document.exitFullscreen();
+            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> Pantalla Completa';
+        }
+    });
+}
+
+// Actualizar barra de progreso
+if (demoVideo && progressBar && progressFill && videoTime) {
+    demoVideo.addEventListener('timeupdate', updateProgressBar);
+    
+    progressBar.addEventListener('click', (e) => {
+        const rect = progressBar.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        demoVideo.currentTime = pos * demoVideo.duration;
+    });
+
+    demoVideo.addEventListener('loadedmetadata', () => {
+        updateVideoTime();
+    });
+}
+
+function updateProgressBar() {
+    if (demoVideo.duration) {
+        const percent = (demoVideo.currentTime / demoVideo.duration) * 100;
+        progressFill.style.width = `${percent}%`;
+        updateVideoTime();
+    }
+}
+
+function updateVideoTime() {
+    const currentMinutes = Math.floor(demoVideo.currentTime / 60);
+    const currentSeconds = Math.floor(demoVideo.currentTime % 60);
+    const totalMinutes = Math.floor(demoVideo.duration / 60);
+    const totalSeconds = Math.floor(demoVideo.duration % 60);
+    
+    videoTime.textContent = 
+        `${currentMinutes.toString().padStart(2, '0')}:${currentSeconds.toString().padStart(2, '0')} / ` +
+        `${totalMinutes.toString().padStart(2, '0')}:${totalSeconds.toString().padStart(2, '0')}`;
+}
+
+// Actualizar botón de play/pause cuando el video termina
+if (demoVideo) {
+    demoVideo.addEventListener('ended', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-redo"></i> Repetir';
+    });
+
+    demoVideo.addEventListener('play', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pausar';
+    });
+
+    demoVideo.addEventListener('pause', () => {
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i> Reproducir';
+    });
+}

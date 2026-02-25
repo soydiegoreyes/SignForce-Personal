@@ -155,6 +155,9 @@ async function loadFoldersData(folderType, page = 1) {
         });
 
         if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
             throw new Error(`Error HTTP: ${response.status}`);
         }
 
@@ -326,6 +329,9 @@ async function loadFolderDocuments(documentIds) {
         });
 
         if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
             throw new Error(`Error HTTP: ${response.status}`);
         }
 
@@ -481,13 +487,19 @@ async function viewDocument(name, docId, path) {
     modalLoading.style.display = 'flex';
     documentViewer.style.display = 'none';
     modal.style.display = 'block';
-
+    
+    const docs = {idDocs: [docId], type: "uploaded", paths: [path]}
     const response = await fetch('/downloadDoc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: docId, type: "uploaded", path })
+        body: JSON.stringify(docs)
     });
-
+    if (!response.ok) {
+        if (resp.status === 401) {  
+            window.location.href = '/login';
+        }
+        throw new Error(`Error HTTP: ${response.status}`);
+    }
     const blob = await response.blob();
     documentViewer.src = URL.createObjectURL(blob);
 

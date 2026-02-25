@@ -131,7 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
 
-      if (!response.ok) throw new Error('Error en búsqueda');
+      if (!response.ok) {
+        if (response.status === 401) {  
+            window.location.href = '/login';
+        }
+        throw new Error('Error en búsqueda');
+      }
       
       const data = await response.json();
       
@@ -478,17 +483,19 @@ document.addEventListener('DOMContentLoaded', () => {
   
   (async () => {
     try {
+      const docs = {idDocs: [currentDocId], type: "uploaded"}
       const response = await fetch('/downloadDoc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: currentDocId,
-          type: "uploaded",
-          path: ""
-        })
+        body: JSON.stringify(docs)
       });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        if (response.status === 401) {  
+            window.location.href = '/login';
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
 
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

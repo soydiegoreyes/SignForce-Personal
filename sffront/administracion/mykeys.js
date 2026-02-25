@@ -21,6 +21,9 @@
       });
 
       if (!response.ok) {
+        if (response.status === 401) {  
+          window.location.href = '/login';
+        }
         const errorText = await response.text();
         throw new Error(`Error: ${response.status} - ${errorText}`);
       }
@@ -177,6 +180,9 @@
           body: JSON.stringify({ idKeyUpdate: idKey })
         });
         if (!r.ok) {
+          if (r.status === 401) {  
+            window.location.href = '/login';
+          }
           const t = await r.text();
           throw new Error(`${r.status} - ${t}`);
         }
@@ -227,6 +233,9 @@
           });
 
           if (!response.ok) {
+            if (response.status === 401) {  
+              window.location.href = '/login';
+            }
             const errorText = await response.text();
             throw new Error(`Error: ${response.status} - ${errorText}`);
           }

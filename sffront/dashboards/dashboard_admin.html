@@ -408,10 +408,10 @@
         <div class="flex items-center gap-8 relative">
             <div class="liquid-bubble" id="liquidBubble"></div>
             <div class="flex items-center gap-4 text-primary">
-                <div class="size-12">
-                    <img src="./../images/sflogo.png" alt="Logo" />
+                <div>
+                    <img src="./../images/sflogo.png" alt="Logo" style="width: 20%;"/>
                 </div>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
+                <!-- <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2> -->
             </div>
             <div class="flex items-center gap-9">
                 <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
@@ -474,7 +474,7 @@
             <!-- Sección del Dashboard -->
             <section id="dashboard-section" class="active-section">
                 <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-3xl font-bold text-primary fade-in">Dashboard Administrador</h2>
+                    <h2 id="dashboardTitle" class="text-3xl font-bold text-primary fade-in">Dashboard</h2>
                     <div class="text-secondary text-sm">
                         <span id="currentDate"></span>
                     </div>
@@ -532,13 +532,19 @@
 
                     <div class="glass-card stat-card p-6">
                         <div class="flex justify-between items-start">
-                            <div>
+                            <div class="flex-1">
                                 <p class="text-secondary text-sm">Invitaciones</p>
-                                <h3 class="text-3xl font-bold text-primary mt-2" id="pendingInvites">0</h3>
-                                <p class="text-purple-400 text-xs mt-1 flex items-center">
-                                    <span class="material-symbols-outlined text-xs mr-1">mail</span>
-                                    Pendientes de aceptar
-                                </p>
+                                <h3 class="text-3xl font-bold text-primary mt-2" id="totalInvites">0</h3>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <p class="text-yellow-400 text-xs flex items-center">
+                                        <span class="material-symbols-outlined text-xs mr-1">hourglass_empty</span>
+                                        <span id="pendingInvites">0</span> pendientes
+                                    </p>
+                                    <p class="text-purple-400 text-xs flex items-center">
+                                        <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                                        <span id="invitesMonth">0</span> este mes
+                                    </p>
+                                </div>
                             </div>
                             <div class="bg-purple-500/20 p-3 rounded-full">
                                 <span class="material-symbols-outlined text-purple-400">send</span>
@@ -914,7 +920,7 @@
                 await loadRecentUsers();
                 
                 // Cargar actividad reciente (simulada)
-                simulateActivityChart();
+                simulateActivityChart(stats);
                 
             } catch (error) {
                 console.error('Error cargando dashboard:', error);
@@ -924,33 +930,50 @@
 
         // Función ficticia para obtener estadísticas del admin
         async function fetchAdminStats() {
-            // NOTA: Esta es una función ficticia que simula la respuesta del backend
-            // En producción, reemplazar con fetch real a tu API
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({
-                        totalUsers: 154,
-                        usersGrowth: 12.5,
-                        signedDocs: 1287,
-                        docsGrowth: 8.3,
-                        pendingDocs: 42,
-                        pendingInvites: 7,
-                        activeUsers: 89
-                    });
-                }, 500);
+            // aqui se hace fetch de todos los stats
+            const response = await fetch('/dashStats', {
+                method: 'GET',
+                credentials:"include",
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
-        }
 
-        function updateDashboardStats(stats) {
-            document.getElementById('totalUsers').textContent = stats.totalUsers;
-            document.getElementById('usersGrowth').textContent = `${stats.usersGrowth}%`;
-            document.getElementById('signedDocs').textContent = stats.signedDocs.toLocaleString();
-            document.getElementById('docsGrowth').textContent = `${stats.docsGrowth}%`;
-            document.getElementById('pendingDocs').textContent = stats.pendingDocs;
-            document.getElementById('pendingInvites').textContent = stats.pendingInvites;
-            document.getElementById('activeUsersCount').textContent = stats.activeUsers;
-        }
+            if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/login';
+                }
+                throw new Error('Error obteniendo estadísticas');
+            }
 
+            return await response.json();
+        }
+        function updateDashboardStats(data) {
+            const fullName = `${data.UserData.name} ${data.UserData.lastname}`;
+            document.getElementById('dashboardTitle').textContent = `${fullName}`;
+
+            // Usuarios
+            document.getElementById('totalUsers').textContent = data.NumUsers;
+            const growthPercent = data.NumUsers > 0 ? ((data.NumUsersMonth / data.NumUsers) * 100).toFixed(1) : 0;
+            document.getElementById('usersGrowth').textContent = `${growthPercent}%`;
+
+            // Documentos
+            document.getElementById('signedDocs').textContent = data.UserData.totalsigns;
+            document.getElementById('docsGrowth').textContent = data.UserData.signed;
+            document.getElementById('pendingDocs').textContent = data.UserData.pending || 0;
+
+            // Invitaciones
+            document.getElementById('totalInvites').textContent = data.TotalInvites ?? 0;
+            document.getElementById('pendingInvites').textContent = data.PendingInvites ?? 0;
+            document.getElementById('invitesMonth').textContent = data.InvitesMonth ?? 0;
+
+            // Gráfica de actividad diaria (si el backend la envía)
+            if (data.FolderStats) {
+                console.log("si hay foldersats");
+                renderActivityChart(data.FolderStats);
+            }
+        }
+        
         async function loadRecentUsers() {
             try {
                 // Simular carga de usuarios recientes
@@ -1057,23 +1080,68 @@
             });
         }
 
-        function simulateActivityChart() {
+        /**
+         * Renderiza la gráfica de actividad diaria.
+         * @param {Object.<string, number>} activityMap - Mapa hora→cantidad. Ej: {"00:00":1,"08:00":5}
+         *   Si no se pasa, usa datos de ejemplo.
+         */
+        function renderActivityChart(activityMap) {
             const chartContainer = document.getElementById('activityChart');
-            // En producción, aquí se integraría una librería como Chart.js
-            chartContainer.innerHTML = `
-                <div class="text-center">
-                    <div class="text-lg font-bold text-primary mb-2">Actividad de usuarios</div>
-                    <div class="text-secondary text-sm mb-6">Últimas 24 horas</div>
-                    <div class="flex items-end justify-center gap-2 h-32">
-                        ${[65, 80, 45, 90, 70, 85, 60].map((height, i) => `
-                            <div class="flex flex-col items-center">
-                                <div class="w-6 bg-gradient-to-t from-blue-500 to-purple-600 rounded-t" style="height: ${height}%"></div>
-                                <span class="text-xs text-secondary mt-2">${['00', '04', '08', '12', '16', '20', '24'][i]}:00</span>
+
+            // Fallback con datos de ejemplo si no llegan del backend
+            const defaultData = {
+                "00:00": 0, "01:00": 0, "02:00": 5, "03:00": 0, "04:00": 0, "05:00": 0, "06:00": 0, "07:00": 0,
+                "08:00": 0, "09:00": 0, "10:00": 5, "11:00": 0, "12:00": 0, "13:00": 0, "14:00": 0, "15:00": 0, 
+                "16:00": 0, "17:00": 0, "18:00": 3, "19:00": 0, "20:00": 0, "21:00": 0, "22:00": 0, "23:00": 0,
+            };
+            const data = activityMap || defaultData;
+
+            // Ordenar las horas cronológicamente
+            const entries = Object.entries(data).sort((a, b) => {
+                const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+                return toMin(a[0]) - toMin(b[0]);
+            });
+
+            const maxVal = Math.max(...entries.map(([, v]) => v), 1);
+
+            const bars = entries.map(([hour, value]) => {
+                const heightPct = Math.round((value / maxVal) * 100);
+                const label = hour.endsWith(':00') ? hour.replace(':00', 'h') : hour;
+                return `
+                    <div class="flex flex-col items-center gap-1">
+                        <span class="text-xs text-secondary font-medium">${value > 0 ? value : ''}</span>
+                        <div class="relative group w-8 flex items-end" style="height:96px">
+                            <div
+                                class="w-full bg-gradient-to-t from-blue-500 to-purple-600 rounded-t transition-all duration-500"
+                                style="height:${heightPct}%"
+                            ></div>
+                            <!-- Tooltip -->
+                            <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block
+                                        bg-black/80 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                                ${hour}: ${value} doc${value !== 1 ? 's' : ''}
                             </div>
-                        `).join('')}
+                        </div>
+                        <span class="text-xs text-secondary">${label}</span>
+                    </div>
+                `;
+            }).join('');
+
+            chartContainer.innerHTML = `
+                <div class="w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-base font-bold text-primary">Actividad del día</div>
+                        <div class="text-secondary text-xs">Documentos nuevos por hora</div>
+                    </div>
+                    <div class="flex items-end justify-around gap-1 px-2">
+                        ${bars}
                     </div>
                 </div>
             `;
+        }
+
+        // Mantener alias por compatibilidad en caso de que se llame sin datos
+        function simulateActivityChart(stats) {
+            renderActivityChart(stats.FolderStats);
         }
 
         // ==============================
@@ -1165,7 +1233,12 @@
                     body: JSON.stringify(payload)
                 });
                 
-                if (!response.ok) throw new Error('Error en la petición al servidor');
+                if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
+                    throw new Error('Error en la petición al servidor');
+                }
                 
                 const data = await response.json(); // Recibe: { "2": { ... }, "5": { ... } }
                 
@@ -1257,7 +1330,12 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) throw new Error('Error cargando lista de usuarios');
+                if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
+                    throw new Error('Error cargando lista de usuarios');
+                }
 
                 const data = await response.json();
                 
@@ -1497,6 +1575,9 @@
                 });
                 
                 if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
                     throw new Error(response.status || 'Error al enviar invitación');
                 }
                 

@@ -1,66 +1,124 @@
 document.addEventListener('DOMContentLoaded', () => {
+    //===================================== PARTICLES =========================================
+    (function createParticles() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        const count = 20;
+        for (let i = 0; i < count; i++) {
+            const p = document.createElement('div');
+            p.classList.add('particle');
+            const size = Math.random() * 3 + 1;
+            p.style.width = size + 'px';
+            p.style.height = size + 'px';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 20 + 15) + 's';
+            p.style.animationDelay = (Math.random() * 15) + 's';
+            container.appendChild(p);
+        }
+    })();
+
+    //===================================== NAV SCROLL =========================================
+    const mainHeader = document.getElementById('mainHeader');
+    if (mainHeader) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                mainHeader.classList.add('scrolled');
+            } else {
+                mainHeader.classList.remove('scrolled');
+            }
+        }, { passive: true });
+    }
+
     //===================================== LIQUID BUBBLE =========================================
 
     // Efecto liquid glass para la burbuja del menú
     const liquidBubble = document.getElementById('liquidBubble');
     const navItems = document.querySelectorAll('.nav-item');
-    
+
     // Posiciones iniciales de los items del menú
     const itemPositions = {};
-    
+
     // Calcular posiciones de los items
     function calculatePositions() {
+      const header = document.getElementById('mainHeader');
+      if (!header) return;
+
       navItems.forEach(item => {
         const rect = item.getBoundingClientRect();
-        const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-        
-        itemPositions[item.dataset.item] = {
+        const headerRect = header.getBoundingClientRect();
+
+        const key = item.dataset.item || item.textContent.trim();
+        itemPositions[key] = {
           left: rect.left - headerRect.left,
-          width: rect.width
+          width: rect.width,
+          top: rect.top - headerRect.top
         };
       });
-      
-      // Posicionar burbuja en el item activo (home por defecto)
-      moveBubble('home');
+
+      // Position bubble on first item by default
+      const firstKey = Object.keys(itemPositions)[0];
+      if (firstKey) moveBubble(firstKey);
     }
-    
-    // Mover la burbuja al item seleccionado
+
+    // Mover la burbuja al item seleccionado con smooth animation
     function moveBubble(itemName) {
       const item = itemPositions[itemName];
-      if (item) {
-        liquidBubble.style.left = `${item.left - 10}px`;
-        liquidBubble.style.width = `${item.width + 20}px`;
+      if (item && liquidBubble) {
+        liquidBubble.style.left = `${item.left - 8}px`;
+        liquidBubble.style.width = `${item.width + 16}px`;
+        liquidBubble.style.opacity = '1';
       }
     }
-    
+
+    // Hide bubble when mouse leaves nav area
+    function hideBubble() {
+      if (liquidBubble) {
+        liquidBubble.style.opacity = '0';
+      }
+    }
+
     // Event listeners para los items del menú
     navItems.forEach(item => {
       item.addEventListener('mouseenter', () => {
-        moveBubble(item.dataset.item);
+        const key = item.dataset.item || item.textContent.trim();
+        moveBubble(key);
       });
-      
+
       item.addEventListener('click', (e) => {
-        e.preventDefault();
-        moveBubble(item.dataset.item);
-        // Scroll suave al hacer clic en los enlaces
-        const targetId = item.getAttribute('href');
-        if (targetId && targetId !== '#') {
-          document.querySelector(targetId).scrollIntoView({
-            behavior: 'smooth'
-          });
+        const key = item.dataset.item || item.textContent.trim();
+        moveBubble(key);
+        // Allow normal link navigation for login page nav items
+        const href = item.getAttribute('href');
+        if (href && href.startsWith('#')) {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+          }
         }
       });
     });
-    
+
+    // Hide bubble when mouse leaves the nav item area
+    const navItemContainer = liquidBubble ? liquidBubble.parentElement : null;
+    if (navItemContainer) {
+      navItemContainer.addEventListener('mouseleave', () => {
+        hideBubble();
+      });
+    }
+
     // Calcular posiciones al cargar y al redimensionar
     window.addEventListener('load', calculatePositions);
     window.addEventListener('resize', calculatePositions);
+
+    // Initial calculation after a brief delay to ensure layout is stable
+    setTimeout(calculatePositions, 100);
 
     //==================================================================================================
     // Validacion representante legal
     const checkbox = document.getElementById('legal-responsible-checkbox');
     const legalContainer = document.getElementById('legal-responsible-container');
-    
+
     checkbox.addEventListener('change', function() {
         if (this.checked) {
             legalContainer.style.display = 'none';
@@ -81,11 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.getAttribute('data-tab');
-            
+
             // Actualizar tabs
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             // Actualizar formularios
             forms.forEach(form => form.classList.remove('active'));
             document.getElementById(`${tabName}Form`).classList.add('active');
@@ -97,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         tabs.forEach(t => t.classList.remove('active'));
         tabs[0].classList.add('active');
-        
+
         forms.forEach(form => form.classList.remove('active'));
         document.getElementById('loginForm').classList.add('active');
     });
@@ -144,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    
+
                     if (data.error) {
                         alert(`Error: ${data.error}`);
                         return;
@@ -162,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const errorData = await response.json();
                     alert(`Error: ${errorData.error || 'Error desconocido'}`);
                 }
-                
+
             } catch (error) {
                 console.error("Error en login:", error);
                 alert(`Error al intentar iniciar sesión: ${error.message}`);
@@ -173,12 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    
+
 
     // Para Formulario de Registro
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         // Obtener valores del formulario
         const firstName = document.getElementById('first-name').value;
         const lastName = document.getElementById('last-name').value;
@@ -192,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const country = document.getElementById('country').value;
         const city = document.getElementById('city').value;
         const terms = document.getElementById('terms').checked;
-        
+
         // Validaciones
         if (!legalName || !legalLastName) {
             alert('Por favor, añade un nombre del responsable del sistema');
@@ -204,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const AliasRegex = /^[A-Z\d]{5,20}$/;
+        const AliasRegex = /^[A-Za-z\d\S]{5,20}$/;
         if (!AliasRegex.test(businessAlias)) {
             alert('Alguno de tus datos no es correcto.');
             document.getElementById('notice-box').innerHTML = '<p><strong>Tu Alias debe contener solo letras y números, sin espacios o caracteres especiales y un máximos de 20 caracteres.</strong></p>';
@@ -217,8 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
             return;
         }
-        
-        
+
+
         if (!EmailRegex.test(email)) {
             alert('Alguno de tus datos no es correcto.');
             document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
@@ -257,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             const nuevaEmpresaJson = JSON.stringify(nuevaEmpresa);
-            
+
             try {
                 // manda los datos a la api para crear un nuevo cliente que empezara el proceso
                 const response = await fetch('/register', {
@@ -271,10 +329,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (!response.ok) {
-                    throw new Error('Error en la respuesta ' + response.statusText);
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                    }
+                    const errorText = await response.text();
+                    throw new Error(`Error ${response.status}: ${errorText}`);
                 }
 
-                
+
                 // Parsear la respuesta JSON
                 const data = await response.json();
                 console.log(data);
@@ -284,21 +346,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Redirigir usando el ID del servidor
                 window.location.href = '/login';
-                
+
                 alert('¡Bienvenido a SignForce! Revisa tu bandeja de entrada.');
 
             } catch (error) {
                 console.error('Error:', error);
                 alert(`Error al registrar: ${error.message}`);
             }
-            
+
         } catch (error) {
             console.error('Error:', error);
             alert(`Error al registrar: ${error.message}`);
         }
     });
 
-    
+
 
     // Intersection Observer para animaciones al hacer scroll
     const observerOptions = {

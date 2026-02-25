@@ -494,6 +494,9 @@ async function loadTemplates() {
         });
         
         if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
@@ -593,9 +596,12 @@ function createTemplateCard(template) {
                     <span class="material-symbols-outlined text-sm">edit_document</span>
                     Llenar
                 </button>
-                <button class="flex-1 px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors flex items-center justify-center gap-2" onclick="downloadTemplate('${template.documentPath}', '${template.documentName+"."+template.documentExt}', '${template.id}')">
+                <button class="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors flex items-center justify-center gap-1 convert-pdf-btn" data-id="${template.id}" title="Convertir a PDF">
+                    <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                    PDF
+                </button>
+                <button class="px-3 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 rounded-lg transition-colors flex items-center justify-center gap-1" onclick="downloadTemplate('${template.documentPath}', '${template.documentName+"."+template.documentExt}', '${template.id}')">
                     <span class="material-symbols-outlined text-sm">download</span>
-                    Descargar
                 </button>
             </div>
         </div>
@@ -605,10 +611,16 @@ function createTemplateCard(template) {
     const fillBtn = card.querySelector('.fill-template-btn');
     fillBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const templateId = e.currentTarget.dataset.id;
-        openFillModal(templateId);
+        openFillModal(e.currentTarget.dataset.id);
     });
-    
+
+    // Agregar event listener al botón de convertir a PDF
+    const pdfBtn = card.querySelector('.convert-pdf-btn');
+    pdfBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        convertTemplateToPdf(e.currentTarget.dataset.id);
+    });
+
     return card;
 }
 
@@ -696,51 +708,44 @@ function closeAIModal() {
 
 // Generar plantilla con IA
 async function generateTemplate() {
-    const prompt = document.getElementById('aiPrompt').value.trim();
+    const userPrompt = document.getElementById('aiPrompt').value.trim();
     const templateName = document.getElementById('templateName').value.trim();
-    
-    if (!prompt) {
+
+    if (!userPrompt) {
         showMessage('Por favor, describe el documento que quieres crear.', 'error');
         return;
     }
-    
-    // Mostrar estado de carga
+
+    const fullPrompt = templateName
+        ? `Nombre del documento: ${templateName}. ${userPrompt}`
+        : userPrompt;
+
     document.getElementById('aiLoading').classList.remove('hidden');
     document.getElementById('generateTemplateBtn').disabled = true;
-    
+
     try {
-        // Llamar al endpoint de IA
         const response = await fetch('/interactDoc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 type: 'agent',
-                prompt: prompt,
-                templateName: templateName || undefined,
-                context: 'Estoy creando una plantilla de documento desde cero.'
+                idDocument: '',
+                prompt: fullPrompt,
             })
         });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
+
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
         const data = await response.json();
-        
-        // Ocultar carga y mostrar respuesta
+
         document.getElementById('aiLoading').classList.add('hidden');
         document.getElementById('aiResponseContainer').classList.remove('hidden');
-        
-        // Mostrar respuesta
-        document.getElementById('aiResponse').textContent = data.content || data.message || 'Plantilla generada exitosamente.';
-        
-        // Guardar el ID de la plantilla generada si existe
-        if (data.templateId) {
-            selectedTemplateId = data.templateId;
-        }
-        
+        document.getElementById('aiResponse').textContent = data.message || 'Plantilla generada exitosamente.';
+
+        // Refrescar lista de plantillas para que aparezca la recién creada
+        loadTemplates();
+
     } catch (error) {
         console.error('Error al generar plantilla:', error);
         document.getElementById('aiLoading').classList.add('hidden');
@@ -753,31 +758,26 @@ async function generateTemplate() {
 // Regenerar plantilla
 async function regenerateTemplate() {
     const prompt = document.getElementById('aiPrompt').value.trim();
-    
+
     if (!prompt) {
         showMessage('Por favor, modifica el prompt antes de regenerar.', 'error');
         return;
     }
-    
+
     document.getElementById('aiLoading').classList.remove('hidden');
-    
+
     try {
         const response = await fetch('/interactDoc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: 'agent',
-                prompt: prompt,
-                previousContent: document.getElementById('aiResponse').textContent
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'agent', idDocument: '', prompt })
         });
-        
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         document.getElementById('aiLoading').classList.add('hidden');
-        document.getElementById('aiResponse').textContent = data.content || data.message;
-        
+        document.getElementById('aiResponse').textContent = data.message;
+        loadTemplates();
     } catch (error) {
         console.error('Error al regenerar:', error);
         document.getElementById('aiLoading').classList.add('hidden');
@@ -785,64 +785,32 @@ async function regenerateTemplate() {
     }
 }
 
-// Crear PDF desde plantilla generada
+// Cerrar modal de creación y ver plantillas (la plantilla ya fue guardada por el agente)
 async function createPdfFromTemplate() {
-    const templateContent = document.getElementById('aiResponse').textContent;
-    
-    if (!templateContent || templateContent.trim() === '') {
-        showMessage('No hay contenido para generar el PDF.', 'error');
-        return;
-    }
-    
+    closeAIModal();
+    showMessage('La plantilla ya fue guardada. Usa el botón "→ PDF" en la tarjeta para convertirla.', 'info');
+}
+
+// Convertir plantilla existente a PDF
+async function convertTemplateToPdf(templateId) {
+    showMessage('Convirtiendo a PDF…', 'info');
     try {
-        // Mostrar carga
-        document.getElementById('createPdfBtn').disabled = true;
-        document.getElementById('createPdfBtn').innerHTML = '<div class="ai-loading"></div> Generando...';
-        
-        // Llamar al endpoint para crear PDF
         const response = await fetch('/interactDoc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 type: 'agent',
-                prompt: templateContent,
-                templateId: selectedTemplateId || undefined
+                idDocument: templateId,
+                prompt: 'Convierte esta plantilla a PDF sin modificar su contenido ni los placeholders.',
             })
         });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
-        
-        // Subir el PDF generado
-        if (data.pdfContent) {
-            await uploadGeneratedPdf(data.pdfContent, data.filename || 'documento_generado.pdf');
-        } else if (data.pdfUrl) {
-            // Descargar el PDF
-            const a = document.createElement('a');
-            a.href = data.pdfUrl;
-            a.download = data.filename || 'documento_generado.pdf';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-        
-        showMessage('PDF generado exitosamente.', 'success');
-        
-        // Cerrar modal y recargar plantillas
-        closeAIModal();
-        loadTemplates();
-        
+        showMessage(data.message || 'PDF generado exitosamente.', 'success');
     } catch (error) {
-        console.error('Error al crear PDF:', error);
-        showMessage('Error al generar el PDF.', 'error');
-    } finally {
-        document.getElementById('createPdfBtn').disabled = false;
-        document.getElementById('createPdfBtn').innerHTML = '<span class="material-symbols-outlined text-sm mr-1">download</span> Crear PDF';
+        console.error('Error al convertir a PDF:', error);
+        showMessage(`Error: ${error.message}`, 'error');
     }
 }
 
@@ -878,6 +846,9 @@ async function uploadGeneratedPdf(pdfContent, filename) {
         });
         
         if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
@@ -890,53 +861,11 @@ async function uploadGeneratedPdf(pdfContent, filename) {
     }
 }
 
-// Guardar plantilla
-async function saveTemplate() {
-    const templateName = document.getElementById('templateName').value.trim() || 
-                         `Plantilla_${new Date().toISOString().slice(0, 10)}`;
-    const templateContent = document.getElementById('aiResponse').textContent;
-    
-    if (!templateContent || templateContent.trim() === '') {
-        showMessage('No hay contenido para guardar.', 'error');
-        return;
-    }
-    
-    try {
-        document.getElementById('saveTemplateBtn').disabled = true;
-        document.getElementById('saveTemplateBtn').innerHTML = '<div class="ai-loading"></div> Guardando...';
-        
-        // Guardar como documento de tipo template
-        const response = await fetch('/saveTemplate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                name: templateName,
-                content: templateContent,
-                type: 'template',
-                aiGenerated: true
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        showMessage('Plantilla guardada exitosamente.', 'success');
-        
-        // Cerrar modal y recargar
-        closeAIModal();
-        loadTemplates();
-        
-    } catch (error) {
-        console.error('Error al guardar plantilla:', error);
-        showMessage('Error al guardar la plantilla.', 'error');
-    } finally {
-        document.getElementById('saveTemplateBtn').disabled = false;
-        document.getElementById('saveTemplateBtn').innerHTML = '<span class="material-symbols-outlined text-sm mr-1">save</span> Guardar Plantilla';
-    }
+// La plantilla ya fue guardada automáticamente por el agente al generarla
+function saveTemplate() {
+    closeAIModal();
+    showMessage('Plantilla guardada. Puedes verla en la lista.', 'success');
+    loadTemplates();
 }
 
 // Abrir modal para llenar plantilla existente
@@ -971,57 +900,38 @@ function closeFillModal() {
     document.getElementById('fillTemplateModal').style.display = 'none';
 }
 
-// Generar documento desde plantilla
+// Generar documento desde plantilla (llena placeholders y convierte a PDF)
 async function generateDocumentFromTemplate() {
     const prompt = document.getElementById('fillPrompt').value.trim();
-    
+
     if (!prompt) {
         showMessage('Por favor, proporciona instrucciones para llenar la plantilla.', 'error');
         return;
     }
-    
+
     document.getElementById('fillLoading').classList.remove('hidden');
     document.getElementById('generateFillBtn').disabled = true;
-    
+
     try {
-        // Obtener la plantilla seleccionada
-        const template = currentTemplates.find(t => t.id === selectedTemplateId || t.documentHash === selectedTemplateId);
-        
-        if (!template) {
-            throw new Error('Plantilla no encontrada');
-        }
-        
-        // Llamar a la IA para llenar la plantilla
         const response = await fetch('/interactDoc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 type: 'agent',
-                templateId: selectedTemplateId,
-                templateContent: template.content || template.abstractDoc,
-                prompt: prompt,
-                context: 'Estoy llenando una plantilla existente con información específica.'
+                idDocument: selectedTemplateId,
+                prompt: prompt + ' Rellena los placeholders, guarda el documento y conviértelo a PDF.',
             })
         });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
+
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+
         const data = await response.json();
-        
-        // Mostrar resultados
+
         document.getElementById('fillLoading').classList.add('hidden');
         document.getElementById('fillResponseContainer').classList.remove('hidden');
-        document.getElementById('fillResponse').textContent = data.content || data.message;
-        
-        // Mostrar vista previa si está disponible
-        if (data.previewHtml) {
-            document.getElementById('documentPreview').innerHTML = data.previewHtml;
-        }
-        
+        document.getElementById('fillResponse').textContent = data.message || 'Documento generado.';
+
     } catch (error) {
         console.error('Error al generar documento:', error);
         document.getElementById('fillLoading').classList.add('hidden');
@@ -1034,35 +944,29 @@ async function generateDocumentFromTemplate() {
 // Regenerar llenado
 async function regenerateFill() {
     const prompt = document.getElementById('fillPrompt').value.trim();
-    
+
     if (!prompt) {
         showMessage('Por favor, modifica las instrucciones.', 'error');
         return;
     }
-    
+
     document.getElementById('fillLoading').classList.remove('hidden');
-    
+
     try {
-        const template = currentTemplates.find(t => t.id === selectedTemplateId || t.documentHash === selectedTemplateId);
-        
         const response = await fetch('/interactDoc', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 type: 'agent',
-                templateId: selectedTemplateId,
-                templateContent: template.content || template.abstractDoc,
-                prompt: prompt,
-                previousContent: document.getElementById('fillResponse').textContent
+                idDocument: selectedTemplateId,
+                prompt: prompt + ' Rellena los placeholders, guarda el documento y conviértelo a PDF.',
             })
         });
-        
+        if (response.status === 401) { window.location.href = '/login'; return; }
+        if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
         const data = await response.json();
         document.getElementById('fillLoading').classList.add('hidden');
-        document.getElementById('fillResponse').textContent = data.content || data.message;
-        
+        document.getElementById('fillResponse').textContent = data.message;
     } catch (error) {
         console.error('Error al regenerar:', error);
         document.getElementById('fillLoading').classList.add('hidden');
@@ -1070,74 +974,28 @@ async function regenerateFill() {
     }
 }
 
-// Descargar PDF generado
-async function downloadGeneratedPdf() {
-    try {
-        document.getElementById('downloadPdfBtn').disabled = true;
-        document.getElementById('downloadPdfBtn').innerHTML = '<div class="ai-loading"></div> Generando...';
-        
-        const content = document.getElementById('fillResponse').textContent;
-        
-        const response = await fetch('/interactDoc', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: 'agent',
-                prompt: content,
-                templateId: selectedTemplateId
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // Subir o descargar el PDF
-        if (data.pdfUrl) {
-            const a = document.createElement('a');
-            a.href = data.pdfUrl;
-            a.download = data.filename || `documento_${new Date().toISOString().slice(0, 10)}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        } else if (data.pdfContent) {
-            await uploadGeneratedPdf(data.pdfContent, data.filename || `documento_${new Date().toISOString().slice(0, 10)}.pdf`);
-        }
-        
-        showMessage('PDF descargado exitosamente.', 'success');
-        
-        // Cerrar modal
-        closeFillModal();
-        
-    } catch (error) {
-        console.error('Error al descargar PDF:', error);
-        showMessage('Error al descargar el PDF.', 'error');
-    } finally {
-        document.getElementById('downloadPdfBtn').disabled = false;
-        document.getElementById('downloadPdfBtn').innerHTML = '<span class="material-symbols-outlined text-sm mr-1">download</span> Descargar PDF';
-    }
+// Descargar PDF generado — cierra el modal y muestra el resultado en Borradores
+function downloadGeneratedPdf() {
+    closeFillModal();
+    showMessage('El PDF fue generado y guardado. Encuéntralo en la sección "Borradores".', 'success');
 }
 
 
 async function downloadTemplate(path, name, id) {
     try {
+        const docs = {idDocs: [id], type: "template", paths: [path]}
         const response = await fetch('/downloadDoc', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                id: id,
-                type: "template",
-                path: path,
-            })
+            body: JSON.stringify(docs)
         });
         
         if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
@@ -1228,6 +1086,7 @@ window.closeAIModal = closeAIModal;
 window.openFillModal = openFillModal;
 window.closeFillModal = closeFillModal;
 window.downloadTemplate = downloadTemplate;
+window.convertTemplateToPdf = convertTemplateToPdf;
 window.openIADocumentsModal = openIADocumentsModal;
 window.closeIADocumentsModal = closeIADocumentsModal;
 window.refreshIADocuments = refreshIADocuments;

@@ -3,18 +3,89 @@ window.cancelProcess = cancelProcess;
 window.acceptShared = acceptShared;
 window.viewHistory = viewHistory;
 
-// Variables globales
-let currentData = {};
-let selectedDocuments = {};
-let currentTab = 'uploaded';
-
 // Chat globals
 let chatHistory = [];
 let chatDocId = null;
 
+// Variables globales
+let currentData = {};
+let selectedDocuments = {};
+/*==================================================== */
+let currentTab = 'uploaded';
+let currentSearchText = '';
+let searchTimer = null;
+const SEARCH_DELAY = 500; // ms de espera después de escribir
+/*==================================================== */
+
+// cargar documentos
+let totalDocs = 0;
+let currentPage = 1;
+let pageSize = 10;
+const searchParams = {
+    page: 1,
+    page_size: pageSize,
+    order_by: 'createdAtDoc',
+    order_dir: 'DESC',
+    type: 'pdf'
+};
+/*====================================================*/
+
+
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // Variables globales locales al scope
     document.getElementById("logoutBtn").addEventListener("click", logout)
+    
+    // Configuración del buscador
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    if (searchInput) {
+        // Buscar al escribir (con debounce)
+        searchInput.addEventListener('input', (e) => {
+            const text = e.target.value;
+            
+            // Mostrar/ocultar botón de limpiar
+            if (clearSearchBtn) {
+                if (text.trim()) {
+                    clearSearchBtn.classList.remove('hidden');
+                } else {
+                    clearSearchBtn.classList.add('hidden');
+                }
+            }
+            
+            // Limpiar timer anterior
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+            
+            // Nuevo timer
+            searchTimer = setTimeout(() => {
+                performSearch(text);
+            }, SEARCH_DELAY);
+        });
+        
+        // Buscar al presionar Enter
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (searchTimer) {
+                    clearTimeout(searchTimer);
+                }
+                performSearch(e.target.value);
+            }
+        });
+    }
+    
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearchBtn.classList.add('hidden');
+            currentSearchText = '';
+            delete searchParams["tags"];
+            performSearch(''); // Recargar sin filtros
+        });
+    }
 
     // Configuración del input del chat para enviar con Enter
     const chatInput = document.getElementById('docChatInput');
@@ -109,6 +180,16 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.getElementById('sectionTitle').textContent = titles[tabName] || 'Documentos';
             
+            // Limpiar búsqueda al cambiar de pestaña
+            if (searchInput) {
+                searchInput.value = '';
+                currentSearchText = '';
+                delete searchParams["tags"];
+                if (clearSearchBtn) {
+                    clearSearchBtn.classList.add('hidden');
+                }
+            }
+            
             // Ocultar botón de consulta y chat al cambiar de pestaña
             document.getElementById('consultDocBtnContainer').classList.add('hidden');
             document.getElementById('leftSidebarChat').classList.add('hidden');
@@ -117,22 +198,104 @@ document.addEventListener('DOMContentLoaded', () => {
             loadDocumentsData(tabName);
         });
     });
-    
-    function mostrarMensaje(mensaje, tipo) {
-        const messageContainer = document.getElementById('messageContainer');
-        const alertClass = tipo === 'error' ? 'bg-red-500' : 'bg-green-500';
-        messageContainer.innerHTML = `<div class="${alertClass} text-white px-4 py-2 rounded-lg">${mensaje}</div>`;
-        
-        // Auto-ocultar después de 5 segundos
-        setTimeout(() => {
-            messageContainer.innerHTML = '';
-        }, 5000);
-    }
 
-    // cargar documentos
-    let currentPage = 1;
-    let pageSize = 10;
-    let totalDocs = 0;
+    // Función para realizar búsqueda
+    async function performSearch(searchText = "", page = 1) {
+        currentSearchText = (searchText || "").trim();
+
+        // Mostrar indicador de búsqueda
+        const tableBody = document.getElementById('documentsTableBody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-8">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <div class="mt-2 text-secondary">Buscando...</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Ajustar parámetros de búsqueda
+        searchParams.page = page;
+        // Mantener page_size definido en pageSize
+        pageSize = searchParams.page_size || pageSize;
+
+        // Si hay texto de búsqueda, enviarlo como tags
+        if (currentSearchText) {
+            const keywords = currentSearchText
+                .split(/\s+/)
+                .filter(word => word.length > 2)
+                .map(word => word.toLowerCase());
+
+            if (keywords.length > 0) {
+                searchParams.tags = keywords;
+            } else {
+                delete searchParams.tags;
+            }
+        } else {
+            delete searchParams.tags;
+        }
+
+        try {
+            const response = await fetch('/statusDocs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(searchParams)
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {  
+                    window.location.href = '/login';
+                }
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+
+            const responseData = await response.json();
+            currentData = responseData.data || {};
+            currentPage = responseData.page || page;
+            pageSize = responseData.page_size || pageSize;
+            totalDocs = responseData.total ?? Object.keys(currentData).length;
+
+            populateTable(currentData, currentTab);
+            renderPagination();
+
+            // Mensaje de resultados (igual que antes)
+            const messageContainer = document.getElementById('messageContainer');
+            if (currentSearchText) {
+                const count = Object.keys(currentData).length;
+                messageContainer.innerHTML = `
+                    <div class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                        ${count} resultado${count !== 1 ? 's' : ''} para "${currentSearchText}"
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    if (messageContainer.innerHTML.includes(currentSearchText)) {
+                        messageContainer.innerHTML = '';
+                    }
+                }, 3000);
+            } else {
+                messageContainer.innerHTML = '';
+            }
+
+        } catch (error) {
+            console.error('Error en la búsqueda:', error);
+            const messageContainer = document.getElementById('messageContainer');
+            if (messageContainer) {
+                messageContainer.innerHTML = `
+                    <div class="bg-red-500 text-white px-4 py-2 rounded-lg">
+                        Error en la búsqueda. Intente nuevamente.
+                    </div>
+                `;
+            }
+        }
+    }
+    /*====================================================*/
 
     // Cargar documentos desde la API
     async function loadDocumentsData(tab, page = 1) {
@@ -149,46 +312,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (window.loadingDocuments) return;
         window.loadingDocuments = true;
+
+        // Actualizamos el parámetro de búsqueda (page) y llamamos al backend
         try {
-            const requestBody = {
-                page: page,
-                page_size: pageSize,
-                order_by: 'createdAtDoc',
-                order_dir: 'ASC',
-                type: 'pdf'
-            };
-
-            const response = await fetch('/statusDocs', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status}`);
-            }
-
-            const responseData = await response.json();
-            currentData = responseData.data || {};
-            currentPage = responseData.page || page;
-            pageSize = responseData.page_size || 10;
-            totalDocs = responseData.total || Object.keys(currentData).length;
-
-            populateTable(currentData, tab);
-            renderPagination();
-        } catch (error) {
-            console.error('Error al cargar los documentos:', error);
-            document.getElementById('documentsTableBody').innerHTML = `
-                <tr>
-                    <td colspan="5" class="text-center py-8 text-red-400">
-                        Error al cargar los documentos. Intente nuevamente.
-                    </td>
-                </tr>
-            `;
+            await performSearch("", page);
+        } finally {
+            window.loadingDocuments = false;
         }
-        window.loadingDocuments = false;
     }
 
     function populateTable(data, tab) {
@@ -244,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center">
-                            <span class="material-symbols-outlined text-white" onclick="viewDocument('${doc.documentPath || doc.documentName}', '${docId}')">description</span>
+                            <span class="material-symbols-outlined text-white" onclick="viewDocument('${doc.documentName}', '${docId}')">description</span>
                         </div>
                         <div class="ml-4">
                             <div class="text-sm font-medium text-primary">${doc.documentName}</div>
@@ -285,20 +415,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleGlobalSignButton() {
+        
         let btnContainer = document.getElementById('globalSignBtnContainer');
+        
         if (!btnContainer) {
             const section = document.getElementById('sectionHeader') || document.querySelector('h2');
             btnContainer = document.createElement('div');
             btnContainer.id = 'globalSignBtnContainer';
             btnContainer.className = 'mb-4 text-right';
-            section.parentNode.insertBefore(btnContainer, section.nextSibling);
         }
 
-        if (selectedDocuments.keys > 0) {
+        const selectedCount = Object.keys(selectedDocuments).length;
+
+        if (selectedCount > 0) {
             btnContainer.innerHTML = `
                 <button id="createSignFolder"
                     class="py-2 px-4 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-semibold">
-                    Iniciar proceso de firma (${selectedDocuments.size})
+                    Iniciar proceso de firma (${selectedCount})
                 </button>
             `;
             document.getElementById('createSignFolder').onclick = createSignFolder;
@@ -463,13 +596,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebarActions.style.display = 'flex';
             sidebarActions.innerHTML = `
                 <button class="w-1/2 py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold" onclick="acceptShared('${docId}')">Firmar (Aceptar)</button>
-                <button class="w-1/2 py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold" onclick="viewDocument('${documentData.documentPath || documentData.documentName}', '${docId}')">Ver</button>
+                <button class="w-1/2 py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold" onclick="viewDocument('${documentData.documentName}', '${docId}')">Ver</button>
             `;
         } else if (currentTab === 'finished') {
             sidebarActions.style.display = 'flex';
             sidebarActions.innerHTML = `
                 <button class="w-1/2 py-3 px-4 rounded-lg bg-gray-700 hover:bg-gray-800 text-white font-semibold" onclick="viewHistory('${docId}')">Historial</button>
-                <button class="w-1/2 py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold" onclick="downloadDocument('${documentData.documentPath}', '${documentData.documentName}', '${docId}')">Descargar</button>
+                <button class="w-1/2 py-3 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold" onclick="downloadDocument('${documentData.documentName}', '${docId}')">Descargar</button>
             `;
         } else {
             sidebarActions.style.display = 'none';
@@ -481,11 +614,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderPagination() {
         const container = document.getElementById('paginationContainer');
+        if (!container) return;
         container.innerHTML = '';
+
+        // Asegurarnos de tener pageSize
+        pageSize = pageSize || searchParams.page_size || 10;
 
         if (totalDocs <= pageSize) return;
 
-        const totalPages = Math.ceil(totalDocs / pageSize);
+        const totalPages = Math.max(1, Math.ceil(totalDocs / pageSize));
 
         const createButton = (text, page, disabled = false, active = false) => {
             const btn = document.createElement('button');
@@ -501,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return btn;
         };
 
-        container.appendChild(createButton('←', currentPage - 1, currentPage === 1));
+        container.appendChild(createButton('←', Math.max(1, currentPage - 1), currentPage === 1));
 
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
@@ -513,7 +650,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 container.appendChild(dots);
             }
         }
-        container.appendChild(createButton('→', currentPage + 1, currentPage === totalPages));
+
+        container.appendChild(createButton('→', Math.min(totalPages, currentPage + 1), currentPage === totalPages));
     }
 
     // Ver documento en modal
@@ -529,20 +667,19 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'block';
         
         try {
+            const docs = {idDocs: [docId], type: "uploaded"}
             const response = await fetch('/downloadDoc', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    id: docId,
-                    type: "uploaded",
-                    path: "",
-
-                })
+                body: JSON.stringify(docs)
             });
             
             if (!response.ok) {
+                if (response.status === 401) {  
+                    window.location.href = '/login';
+                }
                 throw new Error(`Error HTTP: ${response.status}`);
             }
             
@@ -564,21 +701,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function downloadDocument(path, name, docId) {
+    async function downloadDocument(name, docId) {
         try {
+            const docs = {idDocs: [docId], type: "uploaded", paths: []}
             const response = await fetch('/downloadDoc', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    id: docId,
-                    type: "uploaded",
-                    path: path,
-                })
+                body: JSON.stringify(docs)
             });
             
             if (!response.ok) {
+                if (response.status === 401) {  
+                    window.location.href = '/login';
+                }
                 throw new Error(`Error HTTP: ${response.status}`);
             }
             
@@ -616,10 +753,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Acciones: stubs / llamadas al backend
 async function createSignFolder() {
-    const docs = Object.entries(selectedDocuments).map(([id, hash]) => ({
-        idDoc: id,
-        hashDoc: hash
-    }));
+    let docs = {idDocs: [], hashDocs: []}
+
+    Object.entries(selectedDocuments).forEach(([id, hash]) => {
+        docs.idDocs.push(id);
+        docs.hashDocs.push(hash);
+    });
 
     try {
         const resp = await fetch('/newSignFolder', {
@@ -628,7 +767,12 @@ async function createSignFolder() {
             body: JSON.stringify(docs)
         });
 
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (!resp.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error(`HTTP ${resp.status}`);
+        }
         const result = await resp.json();
 
         sessionStorage.setItem("folder", JSON.stringify(result));
@@ -654,7 +798,12 @@ async function signDocument(docId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
-        if (!resp.ok) throw new Error('Error al firmar');
+        if (!resp.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error('Error al firmar');
+        }
         alert('Documento firmado correctamente');
         // Necesitaríamos recargar, pero loadDocumentsData está dentro del scope. 
         // Idealmente refactorizar para que loadDocumentsData sea global, o recargar página.
@@ -673,7 +822,12 @@ async function cancelProcess(docId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
-        if (!resp.ok) throw new Error('Error al cancelar');
+        if (!resp.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error('Error al cancelar');
+        }
         alert('Proceso cancelado');
         window.location.reload();
     } catch (err) {
@@ -689,7 +843,12 @@ async function acceptShared(docId) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
-        if (!resp.ok) throw new Error('Error al aceptar');
+        if (!resp.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error('Error al aceptar');
+        }
         alert('Documento aceptado para firma');
         window.location.reload();
     } catch (err) {
@@ -754,7 +913,12 @@ window.sendDocChatMessage = async function() {
                 history: chatHistory    // opcional si tu backend lo soporta
             })
         });
-
+        if (!response.ok) {
+            if (resp.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error('Error al aceptar');
+        }
         const data = await response.json();
 
         // Agregar respuesta del servidor
@@ -807,7 +971,12 @@ async function logout() {
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             });
-
+            if (!response.ok) {
+                if (resp.status === 401) {  
+                    window.location.href = '/login';
+                }
+                throw new Error('Error al aceptar');
+            }
             const data = await response.json();
 
             if (response.ok) { 

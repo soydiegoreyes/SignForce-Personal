@@ -57,17 +57,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 async function loadPDFfromServer(docId) {
     try {
+        const docs = {idDocs: [docId], type: "uploaded"}
         const response = await fetch('/downloadDoc', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: docId,
-                type: "uploaded",
-                path: ""
-            })
+            body: JSON.stringify(docs)
         });
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+            if (response.status === 401) {  
+                window.location.href = '/login';
+            }
+            throw new Error(`HTTP ${response.status}`);
+        }
         const blob = await response.blob();
         const arrayBuffer = await blob.arrayBuffer();
         const pdfData = new Uint8Array(arrayBuffer);
@@ -362,6 +364,9 @@ async function saveAndNextDoc() {
                 alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
                 window.location.href = "/myfolders";
             } else {
+                if (response.status === 401) {  
+                    window.location.href = '/login';
+                }
                 alert("Error al enviar las invitaciones.");
             }
         } catch (err) {

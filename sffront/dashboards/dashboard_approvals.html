@@ -444,6 +444,9 @@
             try {
                 const response = await fetch('/approvalsDash');
                 if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
                 const data = await response.json();
@@ -643,20 +646,19 @@
             
             try {
                 // Descargar el documento
+                const docs = {type: "kyc", paths: [path]}
                 const response = await fetch('/downloadDoc', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        id: "",
-                        type: "kyc",
-                        path: path,
-
-                    })
+                    body: JSON.stringify(docs)
                 });
                 
                 if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
                 
@@ -683,20 +685,19 @@
         // Descargar documento
         async function downloadDocument(path, name) {
             try {
+                const docs = {type: "kyc", paths: [path]}
                 const response = await fetch('/downloadDoc', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ 
-                        id: "",
-                        type: "kyc",
-                        path: path,
-
-                    })
+                    body: JSON.stringify(docs)
                 });
                 
                 if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
                 
@@ -728,6 +729,9 @@
                 });
                 
                 if (!response.ok) {
+                    if (response.status === 401) {  
+                        window.location.href = '/login';
+                    }
                     console.error('Error al enviar marcador:', await response.text());
                 }
             } catch (error) {

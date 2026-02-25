@@ -20,10 +20,13 @@ body {
 }
 
 .bg {
+    background: #010102;
+    /*
   background: 
     radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
     radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
     radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
+    */
 }
 
 h1, h2, h3, h4 {
