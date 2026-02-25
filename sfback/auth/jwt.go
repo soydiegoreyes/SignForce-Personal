@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"sfback/objects"
@@ -16,10 +18,23 @@ var (
 	JWT_EXP = time.Minute * time.Duration(EXP)
 )
 
+func generateJTI() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
 // Genera un token JWT para el usuario
 func GenerateJWT(user *objects.User) (string, error) {
 	var jwt_exp int
 	var err error
+	jti, err := generateJTI()
+	if err != nil {
+		return "", err
+	}
 	jwt_exp, err = strconv.Atoi(os.Getenv("JWT_EXP"))
 	if err != nil {
 		fmt.Println("Tiempo de expiracion por default")
@@ -30,6 +45,8 @@ func GenerateJWT(user *objects.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"uid": user.Uid,
+		"jti": jti,
+		"iat": now.Unix(),
 		"exp": expirationUnix,
 	})
 
@@ -41,18 +58,28 @@ func GenerateJWT(user *objects.User) (string, error) {
 }
 
 // Valida un token JWT y devuelve los claims
+// Valida un token JWT y devuelve los claims
 func ValidateJWT(tokenString string) (jwt.MapClaims, error) {
-	parsed, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("algoritmo inesperado: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("JWT_KEY")), nil
-	})
+	parsed, err := jwt.Parse(
+		tokenString,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(os.Getenv("JWT_KEY")), nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+	)
 
 	if err != nil {
-		fmt.Println("error parseando:", err)
 		return nil, err
 	}
-	fmt.Println("Token válido")
-	return parsed.Claims.(jwt.MapClaims), nil
+
+	if !parsed.Valid {
+		return nil, fmt.Errorf("token inválido")
+	}
+
+	claims, ok := parsed.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("claims inválidos")
+	}
+
+	return claims, nil
 }

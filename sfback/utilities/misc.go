@@ -104,12 +104,12 @@ func AddTextToQR(qrPath string, text string) bool {
 	qrBounds := qrImage.Bounds()
 	qrWidth := qrBounds.Dx()
 	qrHeight := qrBounds.Dy()
-	textHeightSpace := 50 // Espacio extra para el texto
-	newHeight := qrHeight + textHeightSpace
+	textDeltaSpace := 100 // Espacio extra para el texto
+	//newHeight := qrHeight + textDeltaSpace
 
 	// 3. Crear el nuevo lienzo (imagen)
 	// Creamos un lienzo RGBA del tamaño del QR más el espacio para el texto.
-	newBounds := image.Rect(0, 0, qrWidth, newHeight)
+	newBounds := image.Rect(0, 0, qrWidth+textDeltaSpace, qrHeight+textDeltaSpace)
 	newImage := image.NewRGBA(newBounds)
 
 	// Llenar el fondo del lienzo de blanco

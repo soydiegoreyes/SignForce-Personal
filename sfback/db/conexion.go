@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sfback/utilities"
+	"sort"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -67,47 +68,96 @@ func (cnx *ConexionDB) Desconectar() {
 
 	RESULT: SELECT idDocument, documentHash,documentPath FROM documents WHERE ownerInstDoc_fk IN ('1') AND ownerTeamDoc_fk NOT IN ('4') AND createdAtDoc BETWEEN '2025-10-21' AND '2025-10-23' ORDER BY idDocument ASC LIMIT 5 OFFSET 0;
 */
+// Función auxiliar para generar los placeholders (?, ?, ?) de un IN
+func placeholders(n int) string {
+	ps := make([]string, n)
+	for i := range ps {
+		ps[i] = "?"
+	}
+	return strings.Join(ps, ",")
+}
+
 func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
-
+	var args []interface{}
 	ats := strings.Join(attributes, ",")
 
 	var wheres string
-	if logic, exists := whereMap["LOGIC"]; !exists {
-		// si no existe lógica significa que no puede haber and, or y not y debe haber solo una columna de atributos, se t
-		for k, v := range whereMap {
-			wheres += fmt.Sprintf("%s IN ('%s') AND ", k, strings.Join(v, "','"))
+	logic, hasLogic := whereMap["LOGIC"]
 
+	// 1. Extraer y filtrar las llaves (quitando "LOGIC")
+	var keys []string
+	for k := range whereMap {
+		if k != "LOGIC" {
+			keys = append(keys, k) // <--- Aquí faltaba la 'k'
 		}
-		wheres = wheres[:len(wheres)-5]
-	} else {
-		wheres = logic[0]
-		for k, v := range whereMap {
-			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
-			} else if strings.Contains(wheres, fmt.Sprintf("%s BETWEEN", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("%s BETWEEN", k), fmt.Sprintf("%s BETWEEN '%s' AND '%s'", k, v[0], v[1]))
-			} else if strings.Contains(wheres, fmt.Sprintf("ORDER BY %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("ORDER BY %s", k), fmt.Sprintf("ORDER BY %s %s", k, v[0]))
-			} else if strings.Contains(wheres, fmt.Sprintf("REGEXP %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("REGEXP %s", k), fmt.Sprintf("%s REGEXP '%s'", k, v[0]))
-			} else if strings.Contains(wheres, fmt.Sprintf("LIKE %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("LIKE %s", k), fmt.Sprintf("%s LIKE '%s'", k, "%"+v[0]+"%"))
-			} else {
-				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
+	}
+
+	if !hasLogic {
+		// CASO SIN LOGICA: Ordenamos alfabéticamente para que siempre sea igual
+		sort.Strings(keys)
+		var parts []string
+		for _, k := range keys {
+			v := whereMap[k]
+			parts = append(parts, fmt.Sprintf("%s IN (%s)", k, placeholders(len(v))))
+			for _, val := range v {
+				args = append(args, val)
 			}
 		}
+		wheres = strings.Join(parts, " AND ")
+	} else {
+		// CASO CON LOGICA: Ordenamos las llaves según su aparición en el string logic[0]
+		wheres = logic[0]
+
+		// Ordenamos las llaves basándonos en su posición en el string de lógica
+		sort.Slice(keys, func(i, j int) bool {
+			return strings.Index(wheres, keys[i]) < strings.Index(wheres, keys[j])
+		})
+
+		// Ahora que están ordenadas según aparecen en el SQL, procesamos
+		for _, k := range keys {
+			v := whereMap[k]
+
+			// Prioridad de reemplazo (de más complejo a más simple)
+			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN (%s)", k, placeholders(len(v))))
+				for _, val := range v {
+					args = append(args, val)
+				}
+
+			} else if strings.Contains(wheres, fmt.Sprintf("%s BETWEEN", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("%s BETWEEN", k), fmt.Sprintf("%s BETWEEN ? AND ?", k))
+				args = append(args, v[0], v[1])
+
+			} else if strings.Contains(wheres, fmt.Sprintf("REGEXP %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("REGEXP %s", k), fmt.Sprintf("%s REGEXP ?", k))
+				args = append(args, v[0])
+
+			} else if strings.Contains(wheres, fmt.Sprintf("LIKE %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("LIKE %s", k), fmt.Sprintf("%s LIKE ?", k))
+				args = append(args, "%"+v[0]+"%")
+
+			} else if strings.Contains(wheres, k) {
+				// Reemplazo para el nombre de la columna simple (usando IN por defecto)
+				// Usamos un reemplazo cuidadoso para no romper nombres de columnas similares
+				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN (%s)", k, placeholders(len(v))))
+				for _, val := range v {
+					args = append(args, val)
+				}
+			}
+		}
+
 		if len(logic) == 2 {
 			wheres = fmt.Sprintf("%s %s", wheres, logic[1])
 		}
 	}
 
 	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s;", idColName, ats, tableName, wheres)
-	fmt.Println(query)
-
-	rows, err := cnx.DB.Query(query)
+	fmt.Println(query, args)
+	// IMPORTANTE: Ahora pasamos los 'args' a la query
+	rows, err := cnx.DB.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("error al ejecutar la consulta: %s  -> %v", query, err)
+		return nil, fmt.Errorf("error al ejecutar: %v", err)
 	}
 	defer rows.Close()
 

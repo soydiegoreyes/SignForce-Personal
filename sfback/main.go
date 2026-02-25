@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -193,7 +194,7 @@ func hashDataB64(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 	configs.HashConf.Algorithm = req.DigestAlg
-	hash_b64, err := utilities.GetHash(utilities.Decode_b64(req.DataB64), configs.HashConf)
+	hash_b64, err := utilities.GetHash(utilities.Decode_b64(req.DataB64), configs.HashConf, false)
 	if err != nil {
 		http.Error(respWriter, "Error al obtener hash de los datos", http.StatusNotImplemented)
 		return
@@ -376,15 +377,10 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 		}
 
 		// Cargar archivo subido
-		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
-		fileBytes, err := os.ReadFile(fileName)
-		if err != nil {
-			http.Error(respWriter, "No se pudo leer el archivo real", http.StatusInternalServerError)
-			return
-		}
-
+		fileName := fmt.Sprintf("%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
+		fmt.Println(fileName)
 		// Obtener hash de original para comparación
-		realHash, err := utilities.GetHash(fileBytes, configs.HashConf)
+		realHash, err := utilities.GetHash(fileName, configs.HashConf, true)
 		if err != nil {
 			http.Error(respWriter, "No se pudo obtener hash del archivo real", http.StatusInternalServerError)
 			return
@@ -393,7 +389,7 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, "El archivo ha sido alterado (hash mismatch)", http.StatusBadRequest)
 			return
 		}
-
+		fmt.Println(realHash)
 		// Actualizar datos de firmas ========================================
 		// "idUser_fk", "idInvite_fk", "idUserKeys_fk", "digestValueSign",  "signatureValueSign", "genTimeSign", "pathSign", "typeSign_fk", "nonceSign", "ipSignerSign"
 		var idSign string
@@ -415,16 +411,48 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 		}
 		xmlData["idDocument"] = docReq.IdDocument
 		xmlData["nameDocument"] = docName
-		// crear archivo para firmas qr (entregable)
+		//===============================================================================
+		// ===== Proceso de copia con Desencriptación "al vuelo" =====
+		srcFile, err := os.Open(fileName)
+		if err != nil {
+			http.Error(respWriter, "Error abriendo archivo original", http.StatusInternalServerError)
+			return
+		}
+		defer srcFile.Close()
+		// creamos ruta destino
 		var folderPath string
 		reg := regexp.MustCompile(`.*/folders/\d+/\d+/\d+/`)
 		if baseFolderPath := reg.FindAllString(xmlData["xmlPath"], 1); len(baseFolderPath) > 0 {
-			folderPath = baseFolderPath[0] + docReq.IdDocument + "_" + docName
+			folderPath = baseFolderPath[0] + "signed_" + xmlData["idDocument"] + "_" + docName
 			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
-				err = os.WriteFile(folderPath, fileBytes, 0644)
+				dstFile, err := os.Create(folderPath)
 				if err != nil {
-					fmt.Println("Error generando archivo entregable: ", err)
+					http.Error(respWriter, "Error creando archivo en ASiC-E", http.StatusInternalServerError)
+					return
 				}
+				defer dstFile.Close()
+				// Usamos el Pipe para no cargar el archivo en RAM
+				pr, pw := io.Pipe()
+
+				go func() {
+					// DecryptFile lee de srcFile y escribe lo descifrado en pw
+					err := utilities.DecryptFile(srcFile, pw)
+					if err != nil {
+						pw.CloseWithError(err)
+						return
+					}
+					pw.Close()
+				}()
+
+				// io.Copy lee del extremo del pipe (datos descifrados) y escribe en el archivo destino
+				_, err = io.Copy(dstFile, pr)
+				if err != nil {
+					dstFile.Close()
+					http.Error(respWriter, "Error al descifrar y copiar archivo", http.StatusInternalServerError)
+					return
+				}
+				// Cerramos manualmente antes de comprimir para que el SO libere el lock
+				dstFile.Close()
 			} else {
 				fmt.Println("El documento ya existe: ", err)
 			}
@@ -433,6 +461,7 @@ func signFolderUser(respWriter http.ResponseWriter, request *http.Request) {
 			http.Error(respWriter, "Error critico error en path para archivo entregable", http.StatusInternalServerError)
 			return
 		}
+		//===============================================================================
 
 		// se añade a la respuesta
 		signaturesXML[idSign] = xmlData

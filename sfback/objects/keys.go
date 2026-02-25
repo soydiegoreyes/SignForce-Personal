@@ -44,12 +44,12 @@ type Keys struct {
 
 // Constructor para Keys
 func NewKeys(keypath string, certpath string) *Keys {
-	keyHash, err := utilities.GetHash(keypath, configs.HashConf)
+	keyHash, err := utilities.GetHash(keypath, configs.HashConf, false)
 	if err != nil {
 		fmt.Println("error al obtener hash de llave privada")
 		return nil
 	}
-	cerHash, err := utilities.GetHash(certpath, configs.HashConf)
+	cerHash, err := utilities.GetHash(certpath, configs.HashConf, false)
 	if err != nil {
 		fmt.Println("error al obtener hash de certificado")
 		return nil
