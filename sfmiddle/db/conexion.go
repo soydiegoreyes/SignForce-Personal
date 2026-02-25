@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
+	"strings"
+
 	"sfmiddle/configs"
 	"sfmiddle/models"
 	"sfmiddle/utilities"
-	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -69,47 +71,97 @@ func (cnx *ConexionDB) Desconectar() {
 
 	RESULT: SELECT idDocument, documentHash,documentPath FROM documents WHERE ownerInstDoc_fk IN ('1') AND ownerTeamDoc_fk NOT IN ('4') AND createdAtDoc BETWEEN '2025-10-21' AND '2025-10-23' ORDER BY idDocument ASC LIMIT 5 OFFSET 0;
 */
+
+// Función auxiliar para generar los placeholders (?, ?, ?) de un IN
+func placeholders(n int) string {
+	ps := make([]string, n)
+	for i := range ps {
+		ps[i] = "?"
+	}
+	return strings.Join(ps, ",")
+}
+
 func (cnx *ConexionDB) GenericSelect(tableName string, idColName string, attributes []string, whereMap map[string][]string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
-
+	var args []interface{}
 	ats := strings.Join(attributes, ",")
 
 	var wheres string
-	if logic, exists := whereMap["LOGIC"]; !exists {
-		// si no existe lógica significa que no puede haber and, or y not y debe haber solo una columna de atributos
-		for k, v := range whereMap {
-			wheres += fmt.Sprintf("%s IN ('%s') AND ", k, strings.Join(v, "','"))
+	logic, hasLogic := whereMap["LOGIC"]
 
+	// 1. Extraer y filtrar las llaves (quitando "LOGIC")
+	var keys []string
+	for k := range whereMap {
+		if k != "LOGIC" {
+			keys = append(keys, k) // <--- Aquí faltaba la 'k'
 		}
-		wheres = wheres[:len(wheres)-5]
-	} else {
-		wheres = logic[0]
-		for k, v := range whereMap {
-			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN ('%s')", k, strings.Join(v, "','")))
-			} else if strings.Contains(wheres, fmt.Sprintf("%s BETWEEN", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("%s BETWEEN", k), fmt.Sprintf("%s BETWEEN '%s' AND '%s'", k, v[0], v[1]))
-			} else if strings.Contains(wheres, fmt.Sprintf("ORDER BY %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("ORDER BY %s", k), fmt.Sprintf("ORDER BY %s %s", k, v[0]))
-			} else if strings.Contains(wheres, fmt.Sprintf("REGEXP %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("REGEXP %s", k), fmt.Sprintf("%s REGEXP '%s'", k, v[0]))
-			} else if strings.Contains(wheres, fmt.Sprintf("LIKE %s", k)) {
-				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("LIKE %s", k), fmt.Sprintf("%s LIKE '%s'", k, "%"+v[0]+"%"))
-			} else {
-				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN ('%s')", k, strings.Join(v, "','")))
+	}
+
+	if !hasLogic {
+		// CASO SIN LOGICA: Ordenamos alfabéticamente para que siempre sea igual
+		sort.Strings(keys)
+		var parts []string
+		for _, k := range keys {
+			v := whereMap[k]
+			parts = append(parts, fmt.Sprintf("%s IN (%s)", k, placeholders(len(v))))
+			for _, val := range v {
+				args = append(args, val)
 			}
 		}
+		wheres = strings.Join(parts, " AND ")
+	} else {
+		// CASO CON LOGICA: Ordenamos las llaves según su aparición en el string logic[0]
+		wheres = logic[0]
+
+		// Ordenamos las llaves basándonos en su posición en el string de lógica
+		sort.Slice(keys, func(i, j int) bool {
+			return strings.Index(wheres, keys[i]) < strings.Index(wheres, keys[j])
+		})
+
+		// Ahora que están ordenadas según aparecen en el SQL, procesamos
+		for _, k := range keys {
+			v := whereMap[k]
+
+			// Prioridad de reemplazo (de más complejo a más simple)
+			if strings.Contains(wheres, fmt.Sprintf("NOT %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("NOT %s", k), fmt.Sprintf("%s NOT IN (%s)", k, placeholders(len(v))))
+				for _, val := range v {
+					args = append(args, val)
+				}
+
+			} else if strings.Contains(wheres, fmt.Sprintf("%s BETWEEN", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("%s BETWEEN", k), fmt.Sprintf("%s BETWEEN ? AND ?", k))
+				args = append(args, v[0], v[1])
+
+			} else if strings.Contains(wheres, fmt.Sprintf("REGEXP %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("REGEXP %s", k), fmt.Sprintf("%s REGEXP ?", k))
+				args = append(args, v[0])
+
+			} else if strings.Contains(wheres, fmt.Sprintf("LIKE %s", k)) {
+				wheres = strings.ReplaceAll(wheres, fmt.Sprintf("LIKE %s", k), fmt.Sprintf("%s LIKE ?", k))
+				args = append(args, "%"+v[0]+"%")
+
+			} else if strings.Contains(wheres, k) {
+				// Reemplazo para el nombre de la columna simple (usando IN por defecto)
+				// Usamos un reemplazo cuidadoso para no romper nombres de columnas similares
+				wheres = strings.ReplaceAll(wheres, k, fmt.Sprintf("%s IN (%s)", k, placeholders(len(v))))
+				for _, val := range v {
+					args = append(args, val)
+				}
+			}
+		}
+
 		if len(logic) == 2 {
 			wheres = fmt.Sprintf("%s %s", wheres, logic[1])
 		}
 	}
 
 	query := fmt.Sprintf("SELECT %s, %s FROM %s WHERE %s;", idColName, ats, tableName, wheres)
-	fmt.Println(query)
-
-	rows, err := cnx.DB.Query(query)
+	fmt.Println(query, args)
+	// IMPORTANTE: Ahora pasamos los 'args' a la query
+	rows, err := cnx.DB.Query(query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("error al ejecutar la consulta: %s  -> %v", query, err)
+		return nil, fmt.Errorf("error al ejecutar: %v", err)
 	}
 	defer rows.Close()
 
@@ -260,6 +312,118 @@ func (cnx *ConexionDB) GenericJoinSelect(
 	return result, nil
 }
 
+/*
+func (cnx *ConexionDB) GenericJoinSelect(
+
+	mainTable string,
+	joinTable string,
+	joinCondition string,
+	idColName string,
+	wVals []string, // Estos son los valores peligrosos
+	mainAttributes []string,
+	joinAttributes []string,
+
+	) (map[string]map[string]string, error) {
+		result := make(map[string]map[string]string)
+
+		// 1. Preparar los argumentos para la ejecución
+		var args []interface{}
+		for _, v := range wVals {
+			args = append(args, v)
+		}
+
+		// 2. Construir la lista de atributos (Estructura - Segura si es interna)
+		mainAttrs := ""
+		if len(mainAttributes) > 0 {
+			mainAttrs = mainTable + "." + strings.Join(mainAttributes, ", "+mainTable+".")
+		}
+
+		joinAttrs := ""
+		if len(joinAttributes) > 0 {
+			joinAttrs = joinTable + "." + strings.Join(joinAttributes, ", "+joinTable+".")
+		}
+
+		allAttrs := []string{}
+		if mainAttrs != "" {
+			allAttrs = append(allAttrs, mainAttrs)
+		}
+		if joinAttrs != "" {
+			allAttrs = append(allAttrs, joinAttrs)
+		}
+		selectClause := strings.Join(allAttrs, ", ")
+
+		// 3. Crear los placeholders (?, ?, ?) basado en la cantidad de wVals
+		pHolders := make([]string, len(wVals))
+		for i := range pHolders {
+			pHolders[i] = "?"
+		}
+		whereList := strings.Join(pHolders, ", ")
+
+		// 4. Construir la consulta SQL usando los placeholders
+		query := fmt.Sprintf(
+			"SELECT %s, %s.%s FROM %s JOIN %s ON %s WHERE %s.%s IN (%s);",
+			selectClause,
+			mainTable,
+			idColName,
+			mainTable,
+			joinTable,
+			joinCondition,
+			mainTable,
+			idColName,
+			whereList,
+		)
+		fmt.Println(query, args)
+		// 5. Ejecutar pasando los argumentos por separado
+		rows, err := cnx.DB.Query(query, args...)
+		if err != nil {
+			return nil, fmt.Errorf("error al ejecutar la consulta: %v", err)
+		}
+		defer rows.Close()
+
+		// --- El resto del procesamiento de filas se mantiene igual ---
+		columns, err := rows.Columns()
+		if err != nil {
+			return nil, fmt.Errorf("error al obtener columnas: %v", err)
+		}
+
+		values := make([]interface{}, len(columns))
+		for i := range values {
+			values[i] = new(sql.NullString)
+		}
+
+		for rows.Next() {
+			err := rows.Scan(values...)
+			if err != nil {
+				return nil, fmt.Errorf("error al escanear fila: %v", err)
+			}
+
+			// El ID es el último valor según tu SELECT
+			idNS := values[len(values)-1].(*sql.NullString)
+			id := ""
+			if idNS.Valid {
+				id = idNS.String
+			}
+
+			rowData := make(map[string]string)
+			for i, colName := range columns {
+				// Usamos el nombre de la columna para el mapa, pero saltamos el ID final
+				// para no duplicarlo si ya está en los atributos
+				if i == len(columns)-1 {
+					continue
+				}
+				ns := values[i].(*sql.NullString)
+				if ns.Valid {
+					rowData[colName] = ns.String
+				} else {
+					rowData[colName] = ""
+				}
+			}
+			result[id] = rowData
+		}
+
+		return result, nil
+	}
+*/
 func (cnx *ConexionDB) ExecuteSelect(query string) (map[string]map[string]string, error) {
 	result := make(map[string]map[string]string)
 	fmt.Println(query)
@@ -422,7 +586,7 @@ func (cnx *ConexionDB) UpdateValData(idInst string, idUser string, valReq *model
 		name := v[ls+1 : ld]
 
 		ext := v[ld+1:]
-		hash, err := utilities.GetHash(v, configs.HashConf)
+		hash, err := utilities.GetHash(v, configs.HashConf, true)
 		if err != nil {
 			return fmt.Errorf("error al obtener hash del documento: %w", err)
 		}

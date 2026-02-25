@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"time"
 
@@ -131,8 +130,6 @@ func main() {
 	mux.HandleFunc("/updatevaldata", handlers.UpdateValidationData)    // actualizar estatus de usuario en registro
 	mux.HandleFunc("/completevalidation", handlers.CompleteValidation) // completar validacion de usuario en registro
 	mux.HandleFunc("/processpayment", handlers.ProcessPayment)         // procesar pago de plan
-	mux.HandleFunc("/findUser", handlers.CheckUserStatus)              // obtener datos de un usuario
-	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
 	mux.HandleFunc("/approvalsDash", handlers.Approvals)               // obtener datos de instituciones que estan en aprovacion
 	mux.HandleFunc("/newSignFolder", handlers.NewSignFolder)           // empezar un proceso de firma desde cero
 	mux.HandleFunc("/closeInvite", handlers.CloseAndInvite)            // cierra el folder con todas las invitaciones a firma
@@ -145,8 +142,10 @@ func main() {
 	mux.HandleFunc("/inviteuser", handlers.InviteUser)                 // manda una invitacion a un usuario para formar parte de una institucion
 	mux.HandleFunc("/getinviteuser", handlers.GetInviteUser)           // se obtienen datos de la invitacion para unirse a una institucion
 	mux.HandleFunc("/createuser", handlers.CreateUser)                 // crea un usuario nuevo dentro de una institucion
-	mux.HandleFunc("/dashStats", handlers.StatsDash)
+	mux.HandleFunc("/updateUserStatus", handlers.UpdateUserStatus)     // actualizar datos de un usuario
+	mux.HandleFunc("/findUser", handlers.CheckUserStatus)              // obtener datos de un usuario
 	mux.HandleFunc("/validateFace", handlers.ValidateFace)
+	mux.HandleFunc("/dashStats", handlers.GetStatsDash)
 
 	// Rutas para servir páginas
 	mux.HandleFunc("/login", loginPage)
@@ -286,95 +285,7 @@ func main() {
 	})))
 
 	// sirve los archivos temporales de templates
-	mux.Handle("/iatemplates/", http.StripPrefix("/iatemplates/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-			return
-		}
-
-		// ===== 1. Autenticación (Tu lógica se mantiene igual) =====
-		cookie, err := r.Cookie("token")
-		if err != nil {
-			http.Error(w, "No autorizado", http.StatusUnauthorized)
-			return
-		}
-		claims, err := auth.ValidateJWT(cookie.Value)
-		if err != nil || claims["authInst"] != "7" {
-			http.Error(w, "No autorizado", http.StatusUnauthorized)
-			return
-		}
-
-		idUser := claims["uid"].(string)
-		idInst := claims["iid"].(string)
-
-		// ===== 2. Parámetros y Rutas =====
-		docType := r.URL.Query().Get("type")
-		if docType != "templates" && docType != "documents" {
-			http.Error(w, "type inválido", http.StatusBadRequest)
-			return
-		}
-
-		// Ruta base física en el servidor
-		basePath := fmt.Sprintf("./../sfia/%s/%s/%s/", idInst, idUser, docType)
-
-		// Limpiamos la ruta
-		fileName := filepath.Clean(r.URL.Path)
-
-		// IMPORTANTE: Si fileName es "." o "/" significa que NO pidió un archivo, sino la raíz
-		if fileName == "." || fileName == "/" || fileName == "" {
-			files, err := os.ReadDir(basePath)
-			if err != nil {
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode([]interface{}{})
-				return
-			}
-
-			var fileList []map[string]interface{}
-			for _, file := range files {
-				if file.IsDir() {
-					continue
-				}
-
-				isDocx := strings.HasSuffix(file.Name(), ".docx")
-				isPdf := strings.HasSuffix(file.Name(), ".pdf")
-
-				if (docType == "templates" && isDocx) || (docType == "documents" && isPdf) {
-					fileInfo, _ := file.Info()
-					fileList = append(fileList, map[string]interface{}{
-						"name":    file.Name(),
-						"path":    file.Name(), // Pasamos el nombre para que el front lo use en la URL
-						"size":    fileInfo.Size(),
-						"created": fileInfo.ModTime(),
-						"type":    strings.TrimPrefix(filepath.Ext(file.Name()), "."),
-					})
-				}
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(fileList)
-			return
-		}
-
-		// Caso B: Servir archivo
-		// Quitamos cualquier "/" sobrante al inicio para unir rutas correctamente
-		fileName = strings.TrimPrefix(fileName, "/")
-		fullPath := filepath.Join(basePath, fileName)
-
-		// DEBUG: Descomenta esto para ver en consola qué ruta intenta buscar Go exactamente
-		// fmt.Println("Buscando archivo en:", fullPath)
-
-		info, err := os.Stat(fullPath)
-		if err != nil || info.IsDir() {
-			http.Error(w, "Archivo no encontrado", http.StatusNotFound)
-			return
-		}
-
-		if r.URL.Query().Get("download") == "1" {
-			w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
-		}
-
-		http.ServeFile(w, r, fullPath)
-	})))
+	mux.Handle("/iatemplates/", http.StripPrefix("/iatemplates/", http.HandlerFunc(handlers.IaTemplates)))
 
 	// Aplicar middleware CORS
 	handler := corsMiddleware(mux)
@@ -600,7 +511,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	nh, err := utilities.GetHash([]byte(loginReq.Password), configs.HashConf)
+	nh, err := utilities.GetHash([]byte(loginReq.Password), configs.HashConf, false)
 	if err != nil {
 		loginResp.Error = "Error: No se pudo verificar el password"
 		json.NewEncoder(respWriter).Encode(loginResp)
@@ -666,7 +577,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	var satusActive = map[string]string{
 		"2": "/validation", "3": "/waitapprove", "4": "/noAuthPage",
-		"5": "/payment", "6": "/mykeys", "7": "/noAuthPage", "8": "/noAuthPage",
+		"5": "/payment", "6": "/mykeys", "7": "/users", "8": "/noAuthPage",
 		"9": "/noAuthPage", "10": "/noAuthPage", "11": "/noAuthPage",
 	}
 	//var satusInactive = map[string]bool{"9": true, "10": true, "11": true, "12": true}
@@ -690,14 +601,10 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 				token = ""
 			}
 		} else {
-			switch dataInst[idInst]["statusInst_fk"] {
-			case "7":
-				location = "/mydocs"
-			default:
-				location = satusActive[dataInst[idInst]["statusInst_fk"]]
-			}
+			location = satusActive[dataInst[idInst]["statusInst_fk"]]
 		}
 	} else { // el usuario no esta activo y no tiene pemiso de entrar
+		fmt.Println("no es usuario activo.")
 		location = "/noAuthPage"
 		token = ""
 	}
@@ -708,7 +615,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // poner en true en producción con HTTPS
+		Secure:   true, // poner en true en producción con HTTPS
 		SameSite: http.SameSiteStrictMode,
 		Expires:  time.Now().Add(1 * time.Hour),
 	})

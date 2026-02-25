@@ -52,13 +52,7 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	// ===== Estructura de entrada =====
-	type DocDataRequest struct {
-		IdDoc   string `json:"idDoc,omitempty"`
-		HashDoc string `json:"hashDoc,omitempty"`
-	}
-
-	var req []DocDataRequest
+	var req models.DocDataRequest
 	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
 		http.Error(respWriter, "Error al leer la petición", http.StatusBadRequest)
 		return
@@ -76,10 +70,12 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		"creatorUserDoc_fk": {idUser},
 		"ownerInstDoc_fk":   {idInst},
 	}
+	if len(req.IdDocs) == len(req.HashDocs) {
 
-	for _, d := range req {
-		wheres["idDocument"] = append(wheres["idDocument"], d.IdDoc)
-		wheres["documentHash"] = append(wheres["documentHash"], d.HashDoc)
+	}
+	for i := range len(req.HashDocs) {
+		wheres["idDocument"] = append(wheres["idDocument"], req.IdDocs[i])
+		wheres["documentHash"] = append(wheres["documentHash"], req.HashDocs[i])
 	}
 	// ===== Ejecutar SELECT =====
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
@@ -97,7 +93,7 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error creando folder", http.StatusInternalServerError)
 	}
 	// se crea el nuevo folder
-	folderPath := fmt.Sprintf("%s/folders/%s/%s", os.Getenv("BASE_DIR"), idInst, idFolder)
+	folderPath := fmt.Sprintf("%s/%s/%s", os.Getenv("GENERIC_FOLDER_PATH"), idInst, idFolder)
 	if err := os.MkdirAll(folderPath, 0755); err != nil {
 		fmt.Println("error al crear el folder")
 		return
@@ -105,14 +101,14 @@ func NewSignFolder(respWriter http.ResponseWriter, request *http.Request) {
 
 	// se asocian los documentos enviados al folder creado
 	columns = []string{"idfolderdocument", "idDocument", "idFolder"}
-	for _, d := range req {
+	for i := range len(req.HashDocs) {
 		idFD := uuid.NewString()
-		values = []interface{}{idFD, d.IdDoc, idFolder}
+		values = []interface{}{idFD, req.IdDocs[i], idFolder}
 		_, err := db.DB_con.GenericInsert("folderdocuments", columns, values)
 		if err != nil {
 			fmt.Println("Error al insertar documento en folderdocuments", err)
 		}
-		docData[d.IdDoc]["idFolder"] = idFolder
+		docData[req.IdDocs[i]]["idFolder"] = idFolder
 	}
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
@@ -301,7 +297,7 @@ func CloseAndInvite(respWriter http.ResponseWriter, request *http.Request) {
 	// para cada documento dentro del folder preparamos la invitación
 	for idDoc, docrev := range requestData { // -> por cada documento dentro del request
 		// se crea la carpeta de la invitacion dentro del folder
-		invitePath := fmt.Sprintf("%s/folders/%s/%s/%s/META-INF", os.Getenv("BASE_DIR"), idInst, idFolder, idDoc)
+		invitePath := fmt.Sprintf("%s/%s/%s/%s/META-INF", os.Getenv("GENERIC_FOLDER_PATH"), idInst, idFolder, idDoc)
 		if err := os.MkdirAll(invitePath, 0755); err != nil {
 			http.Error(respWriter, "Error al crear folder de invite: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -605,15 +601,66 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-
 	idUser, ok1 := claims["uid"].(string)
 	_, ok2 := claims["iid"].(string)
 	authInst, ok3 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	jti, ok4 := claims["jti"].(string)
+	if !ok1 || !ok2 || !ok3 || !ok4 {
 		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
 		return
 	}
 	if authInst != "7" {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	// ===== Autenticación para BioToken =====
+	biocookie, err := request.Cookie("biotoken")
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+
+	bioclaims, err := auth.ValidateJWT(biocookie.Value)
+	if err != nil {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	embhash, ok1 := bioclaims["bio"].(string)
+	if !ok1 {
+		http.Error(respWriter, "Token inválido", http.StatusUnauthorized)
+		return
+	}
+	if bioclaims["sid"] != jti {
+		http.Error(respWriter, "Sesión inválida", http.StatusUnauthorized)
+		return
+	}
+	whereMap := map[string][]string{
+		"idUser":   {idUser},
+		"selected": {"1"},
+	}
+	fvData, err := db.DB_con.GenericSelect("faceembeddings", "idKycUser", []string{"embedding"}, whereMap)
+	if err != nil {
+		fmt.Printf("%s", err)
+		return
+	}
+	if len(fvData) == 0 {
+		fmt.Printf("Usuario no tiene biometría registrada")
+		return
+	}
+
+	b64emb := fvData[idUser]["embedding"]
+	storedembhash, err := utilities.GetHash([]byte(b64emb), configs.HashConf, false)
+	if err != nil {
+		fmt.Println("Error decodificando embedding")
+	}
+	if storedembhash != embhash {
+		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
+		return
+	}
+	// ===== Autenticación para firma backend =====
+	authk, err := request.Cookie("authk")
+	if err != nil {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -673,7 +720,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	whereMap := map[string][]string{
+	whereMap = map[string][]string{
 		"nameApp": {"sfback"},
 	}
 	appdata, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, whereMap)
@@ -688,7 +735,7 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		port = v["portApp"]
 		break
 	}
-
+	reqdoc.Aut = authk.Value
 	jsonPayload, err := json.Marshal(reqdoc) // se envia tal cual llegó la peticion
 	if err != nil {
 		fmt.Println("Error al convertir a JSON:", err)
@@ -751,10 +798,10 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 			fmt.Printf("%s", err)
 			return
 		}
-
+		fmt.Println(SData["xmlPath"])
 		var folderPath string
 		if baseFolderPath := reg.FindAllString(SData["xmlPath"], 1); len(baseFolderPath) > 0 {
-			folderPath = baseFolderPath[0] + SData["idDocument"] + "_" + SData["nameDocument"]
+			folderPath = baseFolderPath[0] + "signed_" + SData["idDocument"] + "_" + SData["nameDocument"]
 			if _, err = os.Stat(folderPath); err != nil { // si hay error creamos el documento ya que no existe
 				http.Error(respWriter, "Error no se encontró archivo entregable", http.StatusInternalServerError)
 				return
@@ -772,7 +819,14 @@ func SignDocument(respWriter http.ResponseWriter, request *http.Request) {
 		// se sustituye para evitar que llegue al frontend la ruta  base
 		SData["xmlPath"] = SData["idDocument"] + "_" + SData["nameDocument"]
 	}
-
+	updates := map[string]map[string]interface{}{
+		reqdoc.IdInvite: {"closedAt": time.Now().Format("2006-01-02 15:04:05")},
+	}
+	err = db.DB_con.GenericBatchUpdate("invites", "idInvite", updates)
+	if err != nil {
+		http.Error(respWriter, "Error al actualizar fecha de cierre de invitación", http.StatusInternalServerError)
+		return
+	}
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
@@ -845,6 +899,9 @@ func ViewSign(respWriter http.ResponseWriter, request *http.Request) {
 	sigdata.Email = usersData[signDoc[idSignature]["idUser_fk"]]["emailUser"]
 	sigdata.Phone = usersData[signDoc[idSignature]["idUser_fk"]]["phoneUser"]
 	sigdata.Active = usersData[signDoc[idSignature]["idUser_fk"]]["activeUser"] == "1"
+	// reemplaza el folder de origen
+	signDoc[idSignature]["documentPath"] = strings.ReplaceAll(signDoc[idSignature]["documentPath"], os.Getenv("GENERIC_DOC_PATH"), "")
+	signDoc[idSignature]["pathSign"] = strings.ReplaceAll(signDoc[idSignature]["pathSign"], os.Getenv("GENERIC_FOLDER_PATH"), "")
 
 	// ownner data
 	ownnerdata.Name = usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["nameUser"] + " " + usersData[signDoc[idSignature]["creatorUserDoc_fk"]]["lastNameUser"]
@@ -1010,14 +1067,61 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "No autorizado", http.StatusForbidden)
 		return
 	}
+	/*
+		sourcePath := fmt.Sprintf("%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
 
-	sourcePath := fmt.Sprintf(
-		"%s/%s%s.%s",
-		os.Getenv("BASE_DIR"),
-		docInfo["documentPath"],
-		docInfo["documentName"],
-		docInfo["documentExt"],
-	)
+		// ===== Validar archivo original =====
+		if _, err := os.Stat(sourcePath); err != nil {
+			http.Error(respWriter, "El archivo original no existe", http.StatusNotFound)
+			return
+		}
+
+		// ===== Validar hash =====
+		if h, err := utilities.GetHash(sourcePath, configs.HashConf); err != nil || h != hashDoc {
+			http.Error(respWriter, "El hash del archivo no coincide", http.StatusBadRequest)
+			return
+		}
+
+		// ===== Copiar archivo al contenedor ASiC-E =====
+		srcFile, err := os.Open(sourcePath)
+		if err != nil {
+			srcFile.Close()
+			http.Error(respWriter, "Error abriendo archivo original", http.StatusInternalServerError)
+			return
+		}
+
+		basePath := fmt.Sprintf("%s/%s/%s/%s/", os.Getenv("GENERIC_FOLDER_PATH"), idInst, idFolder, idDocument)
+		if _, err := os.Stat(basePath); err != nil {
+			http.Error(respWriter, "No existe el folder solicitado", http.StatusBadRequest)
+			return
+		}
+		destPath := fmt.Sprintf("%s%s.%s", basePath, docInfo["documentName"], docInfo["documentExt"])
+
+		dstFile, err := os.Create(destPath)
+		if err != nil {
+			http.Error(respWriter, "Error creando archivo en ASiC-E", http.StatusInternalServerError)
+			return
+		}
+		defer dstFile.Close()
+
+		_, err = io.Copy(dstFile, srcFile)
+		if err != nil {
+			dstFile.Close()
+			http.Error(respWriter, "Error copiando archivo al ASiC-E", http.StatusInternalServerError)
+			return
+		}
+		// cerrar archivos antes de que los use 7z
+		dstFile.Close()
+		srcFile.Close()
+		// ===== Comprimir folder =====
+		zipPath := fmt.Sprintf("%s%s", basePath, docInfo["documentName"]+".zip")
+
+		if !utilities.CompressZip(basePath+"*", zipPath) {
+			http.Error(respWriter, "Error comprimiendo ASiC-E", http.StatusInternalServerError)
+			return
+		}
+	*/
+	sourcePath := fmt.Sprintf("%s%s.%s", docInfo["documentPath"], docInfo["documentName"], docInfo["documentExt"])
 
 	// ===== Validar archivo original =====
 	if _, err := os.Stat(sourcePath); err != nil {
@@ -1026,45 +1130,63 @@ func BuildAsice(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// ===== Validar hash =====
-	if h, err := utilities.GetHash(sourcePath, configs.HashConf); err != nil || h != hashDoc {
+	// OJO: Asegúrate de que utilities.GetHash ahora use DecryptFile internamente
+	if h, err := utilities.GetHash(sourcePath, configs.HashConf, true); err != nil || h != hashDoc {
 		http.Error(respWriter, "El hash del archivo no coincide", http.StatusBadRequest)
 		return
 	}
 
-	// ===== Copiar archivo al contenedor ASiC-E =====
-	srcFile, err := os.Open(sourcePath)
-	if err != nil {
-		srcFile.Close()
-		http.Error(respWriter, "Error abriendo archivo original", http.StatusInternalServerError)
-		return
-	}
-
-	basePath := fmt.Sprintf("%s/folders/%s/%s/%s/", os.Getenv("BASE_DIR"), idInst, idFolder, idDocument)
+	// ===== Preparar rutas de destino =====
+	basePath := fmt.Sprintf("%s/%s/%s/%s/", os.Getenv("GENERIC_FOLDER_PATH"), idInst, idFolder, idDocument)
 	if _, err := os.Stat(basePath); err != nil {
 		http.Error(respWriter, "No existe el folder solicitado", http.StatusBadRequest)
 		return
 	}
 	destPath := fmt.Sprintf("%s%s.%s", basePath, docInfo["documentName"], docInfo["documentExt"])
 
+	// ===== Proceso de copia con Desencriptación "al vuelo" =====
+	srcFile, err := os.Open(sourcePath)
+	if err != nil {
+		http.Error(respWriter, "Error abriendo archivo original", http.StatusInternalServerError)
+		return
+	}
+	defer srcFile.Close()
+
 	dstFile, err := os.Create(destPath)
 	if err != nil {
 		http.Error(respWriter, "Error creando archivo en ASiC-E", http.StatusInternalServerError)
 		return
 	}
-	defer dstFile.Close()
 
-	_, err = io.Copy(dstFile, srcFile)
+	// Usamos el Pipe para no cargar el archivo en RAM
+	pr, pw := io.Pipe()
+
+	go func() {
+		// DecryptFile lee de srcFile y escribe lo descifrado en pw
+		err := utilities.DecryptFile(srcFile, pw)
+		if err != nil {
+			pw.CloseWithError(err)
+			return
+		}
+		pw.Close()
+	}()
+
+	// io.Copy lee del extremo del pipe (datos descifrados) y escribe en el archivo destino
+	_, err = io.Copy(dstFile, pr)
 	if err != nil {
 		dstFile.Close()
-		http.Error(respWriter, "Error copiando archivo al ASiC-E", http.StatusInternalServerError)
+		http.Error(respWriter, "Error al descifrar y copiar archivo", http.StatusInternalServerError)
 		return
 	}
-	// cerrar archivos antes de que los use 7z
+
+	// Cerramos manualmente antes de comprimir para que el SO libere el lock
 	dstFile.Close()
 	srcFile.Close()
+
 	// ===== Comprimir folder =====
 	zipPath := fmt.Sprintf("%s%s", basePath, docInfo["documentName"]+".zip")
 
+	// Ahora CompressZip leerá el archivo ya descifrado que guardamos en destPath
 	if !utilities.CompressZip(basePath+"*", zipPath) {
 		http.Error(respWriter, "Error comprimiendo ASiC-E", http.StatusInternalServerError)
 		return

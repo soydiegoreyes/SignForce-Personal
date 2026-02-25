@@ -170,13 +170,13 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 		}
 
 		documentFullName := fmt.Sprintf("%s.%s", doc["documentName"], doc["documentExt"])
-		filePath := fmt.Sprintf("./%s%s", doc["documentPath"], documentFullName)
+		filePath := fmt.Sprintf("%s%s", doc["documentPath"], documentFullName)
 
 		if _, err := os.Stat(filePath); os.IsNotExist(err) {
 			return nil, fmt.Errorf("archivo no encontrado en el sistema: %s", filePath)
 		}
 
-		hash, err := utilities.GetHash(filePath, configs.HashConf)
+		hash, err := utilities.GetHash(filePath, configs.HashConf, true)
 		if err != nil {
 			return nil, fmt.Errorf("error al obtener hash: %v", err)
 		}
@@ -187,15 +187,15 @@ func LoadInviteInfo(idInvite string) (*models.InviteInfoResp, error) {
 
 		inviteDoc := models.InviteDoc{
 			Doc: models.Document{
-				IdDocument:       docId,
-				ActiveDoc:        doc["activeDoc"],
-				AuthRoleStatus:   doc["authRoleStatus"],
-				AuthUseStatus:    doc["authUseStatus"],
-				CreatedAtDoc:     doc["createdAtDoc"],
-				DocumentExt:      doc["documentExt"],
-				DocumentHash:     doc["documentHash"],
-				DocumentName:     doc["documentName"],
-				DocumentPath:     doc["documentPath"],
+				IdDocument:     docId,
+				ActiveDoc:      doc["activeDoc"],
+				AuthRoleStatus: doc["authRoleStatus"],
+				AuthUseStatus:  doc["authUseStatus"],
+				CreatedAtDoc:   doc["createdAtDoc"],
+				DocumentExt:    doc["documentExt"],
+				DocumentHash:   doc["documentHash"],
+				DocumentName:   doc["documentName"],
+				//DocumentPath:     doc["documentPath"],
 				DocumentFullName: documentFullName,
 				Abstract:         doc["abstractDoc"],
 				LastModifiedDoc:  doc["lastModifiedDoc"],

@@ -23,12 +23,15 @@ type UserDataReq struct {
 	LastName   string    `json:"lastname"`
 	Alias      string    `json:"alias"`
 	Email      string    `json:"email"`
+	PhoneCode  string    `json:"phonecode"`
 	Phone      string    `json:"phone"`
 	TaxNum     string    `json:"rfc"`
 	PobUid     string    `json:"curp"`
 	Role       string    `json:"role"`
-	IsAlive    bool      `json:"alive"`
-	FaceVector []float32 `json:"facevector"`
+	IsAlive    bool      `json:"alive,omitempty"`
+	FaceVector []float32 `json:"facevector,omitempty"`
+	OldPass    string    `json:"oldpass,omitempty"`
+	NewPass    string    `json:"newpass,omitempty"`
 }
 
 type GetUserRequest struct {
@@ -83,6 +86,8 @@ type DocDataRequest struct {
 	IdDocs   []string `json:"idDocs,omitempty"`
 	Type     string   `json:"type,omitempty"`
 	PathDocs []string `json:"paths,omitempty"`
+	HashDocs []string `json:"hashDocs,omitempty"`
+	Tags     []string `json:"tags,omitempty"`
 	DateFrom string   `json:"date_from,omitempty"`
 	DateTo   string   `json:"date_to,omitempty"`
 	Page     int      `json:"page,omitempty"`
@@ -137,6 +142,8 @@ type SignDoc struct {
 type RegisterResponse struct {
 	Check  bool   `json:"check"`
 	InstId string `json:"instId"`
+	IdUser string `json:"userId"`
+	Role   string `json:"role"`
 	Error  string `json:"error"`
 }
 
@@ -236,6 +243,7 @@ type UserDataResp struct {
 	Role         string `json:"role"`
 	SignedDocs   int    `json:"signed,omitempty"`
 	TotalSigns   int    `json:"totalsigns,omitempty"`
+	PendSigns    int    `json:"pending"`
 	Kyc          string `json:"kyc,omitempty"`
 	IsAlive      bool   `json:"isAlive"`
 	CreatedAt    string `json:"createdat"`

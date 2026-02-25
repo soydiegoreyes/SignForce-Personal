@@ -5,13 +5,17 @@ import (
 	"fmt"
 	"net/http"
 	"sfmiddle/auth"
+	"sfmiddle/configs"
 	"sfmiddle/db"
+	"strings"
 
 	"sfmiddle/models"
 	"sfmiddle/objects"
 	"sfmiddle/utilities"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // ==========================================================================================================
@@ -21,6 +25,7 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
 		return
 	}
+
 	var reqUser models.UserDataReq
 	err := json.NewDecoder(request.Body).Decode(&reqUser)
 	if err != nil {
@@ -29,6 +34,31 @@ func CreateUser(respWriter http.ResponseWriter, request *http.Request) {
 	var registerResp models.RegisterResponse
 	registerResp = objects.CreateUser(reqUser)
 
+	// se obtiene el estatus de la institución
+	instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", []string{"statusInst_fk", "activeInst"}, map[string][]string{"idInstitution": {registerResp.InstId}})
+
+	// Generar JWT
+	if instData[registerResp.InstId]["activeInst"] == "1" {
+		token, err := auth.GenerateJWT(registerResp.IdUser, registerResp.Role, registerResp.InstId, instData[registerResp.InstId]["statusInst_fk"]) // role root y statusinst
+		if err != nil {
+			http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
+			return
+		}
+
+		// Setear cookie con el token
+		http.SetCookie(respWriter, &http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true, // poner en true en producción con HTTPS
+			SameSite: http.SameSiteStrictMode,
+			Expires:  time.Now().Add(1 * time.Hour),
+		})
+	}
+
+	registerResp.IdUser = ""
+	registerResp.Role = ""
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.Header().Set("X-Content-Type-Options", "nosniff")
 	respWriter.WriteHeader(http.StatusOK)
@@ -155,11 +185,12 @@ func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	authInst, ok3 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	roleapp, ok4 := claims["role"].(string)
+	if !ok1 || !ok2 || !ok3 || !ok4 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
-	if !(authInst == "6" || authInst == "7") {
+	if !(authInst == "2" || authInst == "6" || authInst == "7") {
 		http.Error(respWriter, "Actualice su pago para acceder", http.StatusPaymentRequired)
 		return
 	}
@@ -174,7 +205,11 @@ func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	// se reutiliza el UserDataReq para aprovechar los mismos campos que en create User
 	var reqUpdate models.UserDataReq
 	json.NewDecoder(request.Body).Decode(&reqUpdate)
-	reqUpdate.Role = ""
+	reqUpdate.Role = roleapp
+	if authInst == "2" {
+		fmt.Println("Usuario está en validacion: ", idUser)
+		reqUpdate.OldPass = strings.ReplaceAll(reqUpdate.IdInvite, "-", "")
+	}
 	updateResp, err := objects.UpdateUser(reqUpdate, idUser)
 	if err != nil {
 		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
@@ -182,12 +217,6 @@ func UpdateUserStatus(respWriter http.ResponseWriter, request *http.Request) {
 	}
 	if !updateResp {
 		http.Error(respWriter, "Error al actualizar datos del usuario", http.StatusInternalServerError)
-		return
-	}
-
-	// se actualiza que se resolvió la invitación
-	if err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{reqUpdate.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}}); err != nil {
-		http.Error(respWriter, "Error al aceptar la invitación: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -273,8 +302,8 @@ func InviteUser(respWriter http.ResponseWriter, request *http.Request) {
 	} else {
 		fmt.Println("Email sin registro previo bajo mismo cliente")
 	}
-
-	idInvite, err := objects.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser)
+	idInvite := uuid.NewString()
+	err = objects.InviteNewUser(invite.IdUserDest, invite.EmailDest, invite.RoleApp, idUser, idInvite)
 	if err != nil {
 		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		return
@@ -315,27 +344,46 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 	wheres = map[string][]string{
 		"emailUser":        {invData[idInvite]["emailDest"]},
 		"idInstitution_fk": {ownnerData["idInstitution"]},
-		"LOGIC":            {"idInstitution_fk AND emailUser"},
 	}
-	invUser, err := db.DB_con.GenericSelect("users", "idUser", []string{"nameUser", "emailUser", "activeUser"}, wheres)
+	invUser, err := db.DB_con.GenericSelect("users", "idUser", []string{"nameUser", "emailUser", "activeUser", "roleAppUser_fk"}, wheres)
 	if err != nil {
 		http.Error(respWriter, "Error obteniendo datos de usuario para invitacion", http.StatusInternalServerError)
 		return
 	}
 	// el usuario existe
 	if len(invUser) == 1 {
-		for idInvUser := range invUser {
+		for idUserInv := range invUser {
 			// si es el mismo usuario root de la institucion el que envía la invitación entonces está en el proceso de registro
-			if ownnerData["rootUser_fk"] == invData[idInvite]["idUser"] && idInvUser == ownnerData["rootUser_fk"] {
-				ownnerData["exists"] = invData[idInvite]["idUser"]
+			if ownnerData["rootUser_fk"] == invData[idInvite]["idUser"] && idUserInv == ownnerData["rootUser_fk"] {
+				ownnerData["exists"] = "1" // es primera vez que edita sus datos
+			} else {
+				ownnerData["exists"] = "-1" // no es primera vez que edita sus datos
 			}
 			break
 		}
+		// si el usuario existe y es único se le da un token para que pueda actualizar sus datos en updateUserStatus
+		token, err := auth.GenerateJWT(invData[idInvite]["idUser"], invData[idInvite]["roleAppUser_fk"], ownnerData["idInstitution"], ownnerData["statusInst_fk"]) // role root y statusinst
+		if err != nil {
+			http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
+			return
+		}
+
+		// Setear cookie con el token
+		http.SetCookie(respWriter, &http.Cookie{
+			Name:     "token",
+			Value:    token,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true, // poner en true en producción con HTTPS
+			SameSite: http.SameSiteStrictMode,
+			Expires:  time.Now().Add(1 * time.Hour),
+		})
 
 	} else if len(invUser) > 1 {
 		http.Error(respWriter, "Error Usuario cuenta con mas de un correo registrado bajo el mismo cliente", http.StatusNotAcceptable)
 		return
 	} else {
+		ownnerData["exists"] = "0" // nunca ha introducido sus datos
 		fmt.Println("Email sin registro previo bajo mismo cliente")
 	}
 
@@ -366,38 +414,6 @@ func GetInviteUser(respWriter http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// Función para obtener estadísticas de uso de la plataforma para dashboard
-func StatsDash(respWriter http.ResponseWriter, request *http.Request) {
-	if request.Method != http.MethodGet {
-		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
-		return
-	}
-	cookie, err := request.Cookie("token")
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	claims, err := auth.ValidateJWT(cookie.Value)
-	if err != nil {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-
-	idUser, ok1 := claims["uid"].(string)
-	idInst, ok2 := claims["iid"].(string)
-	authInst, ok3 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	if authInst != "7" {
-		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
-		return
-	}
-	fmt.Println("JWT claims:", idUser, idInst, authInst)
-
-}
-
 func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 	if request.Method != http.MethodPost {
 		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
@@ -416,7 +432,9 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 	idUser, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	_, ok3 := claims["authInst"].(string)
-	if !ok1 || !ok2 || !ok3 {
+	_, ok4 := claims["role"].(string)
+	jti, ok5 := claims["jti"].(string)
+	if !ok1 || !ok2 || !ok3 || !ok4 || !ok5 {
 		http.Error(respWriter, "No autorizado", http.StatusUnauthorized)
 		return
 	}
@@ -444,7 +462,10 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 
 	b64emb := fvData[userData[idUser]["kycUser_fk"]]["embedding"]
 	var storedVector = utilities.B642ArrFloat(b64emb)
-
+	embhash, err := utilities.GetHash([]byte(b64emb), configs.HashConf, false)
+	if err != nil {
+		fmt.Println("Error decodificando embedding")
+	}
 	// 2. Decodificar el vector que viene del Frontend
 	var inputData struct {
 		FaceVector []float32 `json:"facevector"`
@@ -460,10 +481,27 @@ func ValidateFace(respWriter http.ResponseWriter, request *http.Request) {
 	// 4. Umbral (Threshold)
 	// En face-api.js / tensorflow, un umbral de 0.6 suele ser el estándar
 	samePerson := distancia < 0.6
-
 	fmt.Printf("Distancia calculada: %f - Match: %v\n", distancia, samePerson)
-
+	if !samePerson {
+		http.Error(respWriter, "Biometría inválida", http.StatusUnauthorized)
+		return
+	}
+	biotoken, err := auth.GenerateJWTBio(embhash, jti)
+	if err != nil {
+		http.Error(respWriter, "Error generando biotoken", http.StatusInternalServerError)
+		return
+	}
 	// Enviar respuesta
+	// Setear cookie con el token
+	http.SetCookie(respWriter, &http.Cookie{
+		Name:     "biotoken",
+		Value:    biotoken,
+		Path:     "/signDocument",
+		HttpOnly: true,
+		Secure:   true, // poner en true en producción con HTTPS
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Now().Add(5 * time.Minute),
+	})
 	respWriter.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(respWriter).Encode(map[string]interface{}{
 		"match":    samePerson,

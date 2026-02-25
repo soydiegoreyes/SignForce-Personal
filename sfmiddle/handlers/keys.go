@@ -10,6 +10,7 @@ import (
 	"sfmiddle/configs"
 	"sfmiddle/db"
 	"sfmiddle/models"
+	"time"
 
 	"sfmiddle/utilities"
 	"strconv"
@@ -118,13 +119,13 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Guardar archivo de llave
 	//keyPath := fmt.Sprintf("%s/%s", basePath, keyHeader.Filename)
-	filePath, err := utilities.GuardarArchivo(keyFile, basePath, keyHeader.Filename, idInst, idUser, false)
+	filePath, err := utilities.GuardarArchivo(keyFile, basePath, keyHeader.Filename, false)
 	if err != nil {
 		http.Error(respWriter, "Error creando archivo de llave", http.StatusInternalServerError)
 		return
 	}
 	// Calcular hash de los archivos
-	keyHash, err := utilities.GetHash(filePath, configs.HashConf)
+	keyHash, err := utilities.GetHash(filePath, configs.HashConf, false)
 	if err != nil {
 		http.Error(respWriter, "Error obteniendo hash de la llave", http.StatusInternalServerError)
 		return
@@ -132,12 +133,12 @@ func Uploadk(respWriter http.ResponseWriter, request *http.Request) {
 
 	// Guardar archivo de certificado
 	//certPath := fmt.Sprintf("%s/%s", basePath, certHeader.Filename)
-	filePath, err = utilities.GuardarArchivo(certFile, basePath, certHeader.Filename, idInst, idUser, false)
+	filePath, err = utilities.GuardarArchivo(certFile, basePath, certHeader.Filename, false)
 	if err != nil {
 		http.Error(respWriter, "Error creando archivo de certificado", http.StatusInternalServerError)
 		return
 	}
-	certHash, err := utilities.GetHash(filePath, configs.HashConf)
+	certHash, err := utilities.GetHash(filePath, configs.HashConf, false)
 	if err != nil {
 		http.Error(respWriter, "Error obteniendo hash del certificado", http.StatusInternalServerError)
 		return
@@ -261,7 +262,6 @@ func Logink(respWriter http.ResponseWriter, request *http.Request) {
 	wheres := map[string][]string{
 		"idUser":           {idUser},
 		"idInstitution_fk": {idInst},
-		//"idTeam_fk":        {idTeam},
 	}
 	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
 	if err != nil {
@@ -345,6 +345,17 @@ func Logink(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error al codificar respuesta.", http.StatusInternalServerError)
 		return
 	}
+	// Setear cookie con el token
+	http.SetCookie(respWriter, &http.Cookie{
+		Name:     "authk",
+		Value:    authk.Token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true, // poner en true en producción con HTTPS
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Now().Add(10 * time.Minute),
+	})
+	authk.Token = "OK"
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(&authk)
@@ -420,6 +431,17 @@ func Logoutk(respWriter http.ResponseWriter, request *http.Request) {
 		http.Error(respWriter, "Error en logout de firma", http.StatusInternalServerError)
 		return
 	}
+
+	http.SetCookie(respWriter, &http.Cookie{
+		Name:     "authk",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true, // true en producción con https
+		SameSite: http.SameSiteStrictMode,
+		Expires:  time.Unix(0, 0), // fecha en el pasado
+		MaxAge:   -1,              // MUY IMPORTANTE
+	})
 	respWriter.Header().Set("Content-Type", "application/json")
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(map[string]string{"message": "OK"})

@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"sfmiddle/db"
 	"sfmiddle/models"
+	"strings"
 )
 
 func GetAbstractDoc(idDoc string) {
@@ -19,7 +21,7 @@ func GetAbstractDoc(idDoc string) {
 
 	docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
 	if err == nil && len(docData) > 0 {
-		fileName := fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
+		fileName := fmt.Sprintf("%s%s.%s", docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
 		_, err = os.Stat(fileName)
 		if err != nil {
 			fmt.Println("No se encontró el archivo: ", fileName)
@@ -86,11 +88,88 @@ func GetAbstractDoc(idDoc string) {
 					fmt.Println("No se insertó el resumen en documento: ", idDoc)
 					return
 				}
+
+				// se llama a la función de tag con el resumen generado
+				ntags := TagText(idDoc, llamaresp.Message)
+				if ntags > 0 {
+					fmt.Println("Tags insertados: ", ntags)
+				}
 			}
 		}
 	} else {
 		fmt.Println("Error en obtener datos de documentos o no hay información")
 	}
+}
+
+func TagText(idDoc, text string) int8 {
+	var check int8
+	match, _ := regexp.Compile(`^(?:\w{2,},)*\w{2,}$`)
+	wheres := map[string][]string{
+		"nameApp": {"iaServ"},
+	}
+
+	appData, err := db.DB_con.GenericSelect("microapps", "idapp", []string{"domainApp", "portApp"}, wheres)
+	if err != nil {
+		return check
+	}
+
+	// Modelo para request a api de LLM
+	payload := models.LLMrequest{
+		Prompt: text,
+		Action: 9,
+	}
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Println("Error al convertir a JSON:", err)
+		return check
+	}
+	var host, port string
+	for _, v := range appData {
+		host = v["domainApp"]
+		port = v["portApp"]
+		break
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/actions", host, port), bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		fmt.Println("Error en request: ", err)
+		return check
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("token", "3") // cambiar por bearer************************** importante!!
+
+	// Ejecutar petición
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error en respuesta: ", err)
+		return check
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		var llamaresp = models.LLMresp{}
+		err := json.NewDecoder(resp.Body).Decode(&llamaresp)
+		if err != nil {
+			fmt.Println("Error al convertir respuesta a JSON:", err)
+			return check
+		}
+		if match.Match([]byte(llamaresp.Message)) {
+			tags := strings.Split(llamaresp.Message, ",")
+			cols := []string{"idDocument", "tag"}
+
+			for _, t := range tags {
+				values := []interface{}{idDoc, t}
+				idTag, err := db.DB_con.GenericInsert("tagsdocuments", cols, values)
+				if err != nil {
+					fmt.Println("No se insertaron los tags del documento.")
+				}
+				fmt.Println("tag insertado: ", idTag)
+				check += 1
+			}
+		}
+	}
+	return check
 }
 
 func InteractDoc(idDoc, idInst, idUser, prompt, typeIA string) *models.LLMresp {
@@ -103,7 +182,7 @@ func InteractDoc(idDoc, idInst, idUser, prompt, typeIA string) *models.LLMresp {
 
 		docData, err := db.DB_con.GenericSelect("documents", "idDocument", attrs, wheres)
 		if err == nil && len(docData) > 0 {
-			fileName = fmt.Sprintf("%s/%s%s.%s", os.Getenv("BASE_DIR"), docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
+			fileName = fmt.Sprintf("%s%s.%s", docData[idDoc]["documentPath"], docData[idDoc]["documentName"], docData[idDoc]["documentExt"])
 			_, err = os.Stat(fileName)
 			if err != nil {
 				fmt.Println("No se encontró el archivo: ", fileName)

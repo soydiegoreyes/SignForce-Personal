@@ -10,15 +10,13 @@ import (
 	"sfmiddle/utilities"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct{}
 
 func UserInstJoin(idUser string) map[string]string {
 	attrs1 := []string{"idUser", "nameUser", "lastNameUser", "emailUser", "aliasUser", "activeUser"}
-	attrs2 := []string{"idInstitution", "legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst", "activeInst", "rootUser_fk"}
+	attrs2 := []string{"idInstitution", "legalNameInst", "aliasNameInst", "contactEmailInst", "taxNumInst", "activeInst", "rootUser_fk", "statusInst_fk"}
 	userData, err := db.DB_con.GenericJoinSelect("users", "institutions", "users.idInstitution_fk = institutions.idInstitution", "idUser", []string{idUser}, attrs1, attrs2)
 	if err != nil {
 		fmt.Printf("%s", err)
@@ -29,11 +27,6 @@ func UserInstJoin(idUser string) map[string]string {
 
 // PRIMER FUNCION PARA REGISTRAR UN NUEVO CLIENTE
 func RegisterRootUser(registerReq *models.RegisterRequest, idInst, passHash string) (string, error) {
-
-	idInstHash, err := utilities.GetHash([]byte(idInst), configs.HashConf)
-	if err != nil {
-		return "", err
-	}
 
 	columns := []string{
 		"nameUser",
@@ -51,7 +44,7 @@ func RegisterRootUser(registerReq *models.RegisterRequest, idInst, passHash stri
 	values := []interface{}{
 		registerReq.LegalSignupName,
 		registerReq.LegalSignupLastname,
-		fmt.Sprintf("root_%s", idInstHash),
+		fmt.Sprintf("root_%s", strings.ReplaceAll(registerReq.AliasNameInst, " ", "_")),
 		registerReq.ContactEmailInst,
 		registerReq.ContactPhoneInst,
 		"52", // codigo de México
@@ -97,8 +90,9 @@ func RegisterRootUser(registerReq *models.RegisterRequest, idInst, passHash stri
 }
 
 func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
-	registerResp := models.RegisterResponse{Check: false, InstId: "", Error: ""}
+	registerResp := models.RegisterResponse{Check: false, InstId: "", IdUser: "", Role: "", Error: ""}
 
+	// se busca al usuario que hizo la invitación
 	uinv, err := db.DB_con.GenericJoinSelect("userinvites", "users", "userinvites.idUser=users.idUser", "idUserInvite", []string{reqUser.IdInvite}, []string{"roleApp", "acceptedAt"}, []string{"idUser", "idInstitution_fk"})
 	if err != nil {
 		registerResp.Error = "error al buscar invitacion"
@@ -117,18 +111,18 @@ func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
 	if reqUser.IsAlive {
 		isAlive = 1
 	}
-
+	// obtenemos el id del usuario que manda la invitacion
 	ownnerUser := uinv[reqUser.IdInvite]["idUser"]
 
-	tempPass := utilities.PassGenerator(12)
-	hashed, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
+	// se inserta el embedding y el password
+	hashed, err := utilities.GetHash([]byte(reqUser.NewPass), configs.HashConf, false)
 	if err != nil {
 		registerResp.Error = err.Error()
 		return registerResp
 	}
 
-	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "appPassHash", "activeUser", "isAliveUser", "roleAppUser_fk", "idInstitution_fk"}
-	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, hashed, 1, isAlive, uinv[reqUser.IdInvite]["roleApp"], uinv[reqUser.IdInvite]["idInstitution_fk"]}
+	cols := []string{"nameUser", "lastNameUser", "taxNumUser", "pobUidUser", "aliasUser", "emailUser", "phoneUser", "activeUser", "isAliveUser", "roleAppUser_fk", "appPassHash", "idInstitution_fk"}
+	values := []interface{}{reqUser.Name, reqUser.LastName, reqUser.TaxNum, reqUser.PobUid, reqUser.Alias, reqUser.Email, reqUser.Phone, 1, isAlive, uinv[reqUser.IdInvite]["roleApp"], hashed, uinv[reqUser.IdInvite]["idInstitution_fk"]}
 	idNewUser, err := db.DB_con.GenericInsert("users", cols, values)
 	if err != nil {
 		registerResp.Error = err.Error()
@@ -143,52 +137,19 @@ func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
 		registerResp.Error = err.Error()
 		return registerResp
 	}
+
 	updates := map[string]map[string]interface{}{
-		idNewUser: {"kycUser_fk": idUserEmb},
+		idNewUser: {
+			"kycUser_fk": idUserEmb,
+		},
 	}
 	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
 	if err != nil {
 		registerResp.Error = err.Error()
 		return registerResp
 	}
-	// invitacion de usuario por email
-	binDoc, err := os.ReadFile("./templates/welcome_register.html")
-	if err != nil {
-		registerResp.Error = err.Error()
-		return registerResp
-	}
 
-	body := string(binDoc)
-	body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", reqUser.Email)
-	body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
-	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-	body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-	//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
-
-	payload := models.EmailRequest{
-		IdUser:   "1",
-		Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", reqUser.Name),
-		Body:     body,
-		Dest:     []string{reqUser.Email},
-		MimeType: "html",
-	}
-
-	err = coms.EmailCli.SendMail(&payload)
-	if err != nil {
-		registerResp.Error = err.Error()
-		return registerResp
-	}
-
-	dataRole, err := db.DB_con.GenericSelect("userroles", "idUser", []string{"idRole"}, map[string][]string{"idUser": {idNewUser}, "idRole": {"1"}})
-	if err != nil {
-		registerResp.Error = err.Error()
-		return registerResp
-	}
-	if len(dataRole) != 0 {
-		registerResp.Error = "colision de usuario y rol. El usuario ya existe"
-		return registerResp
-	}
-	_, err = db.DB_con.GenericInsert("userroles", []string{"idUser", "idRole", "grantedBy"}, []interface{}{idNewUser, 1, ownnerUser})
+	_, err = db.DB_con.GenericInsert("userroles", []string{"idUser", "idRole", "grantedBy"}, []interface{}{idNewUser, uinv[reqUser.IdInvite]["roleApp"], ownnerUser})
 	if err != nil {
 		registerResp.Error = err.Error()
 		return registerResp
@@ -198,6 +159,8 @@ func CreateUser(reqUser models.UserDataReq) models.RegisterResponse {
 		registerResp.Error = err.Error()
 		return registerResp
 	}
+	registerResp.IdUser = idNewUser
+	registerResp.Role = uinv[reqUser.IdInvite]["roleApp"]
 	registerResp.Check = true
 	return registerResp
 }
@@ -207,18 +170,37 @@ func UpdateUser(userReq models.UserDataReq, idUser string) (bool, error) {
 
 	var updates = make(map[string]map[string]interface{})
 	var values = map[string]interface{}{
-		"nameUser":     userReq.Name,
-		"lastNameUser": userReq.LastName,
-		"aliasUser":    userReq.Alias,
-		"emailUser":    userReq.Email,
-		"phoneUser":    userReq.Phone,
-		"taxNumUser":   userReq.TaxNum,
-		"pobUidUser":   userReq.PobUid,
+		"nameUser":         userReq.Name,
+		"lastNameUser":     userReq.LastName,
+		"aliasUser":        userReq.Alias,
+		"emailUser":        userReq.Email,
+		"countryPhoneCode": userReq.PhoneCode,
+		"phoneUser":        userReq.Phone,
+		"taxNumUser":       userReq.TaxNum,
+		"pobUidUser":       userReq.PobUid,
 	}
-	// los valores a actualizar no deben venir vacíos y deben ser mayores a 3 caracteres
+
+	attrs := []string{"taxNumUser", "pobUidUser", "nameUser",
+		"lastNameUser", "aliasUser", "emailUser", "phoneUser",
+		"countryPhoneCode", "activeUser", "roleAppUser_fk",
+		"idKeysUser_fk", "appPassHash", "isAliveUser"}
+	wheres := map[string][]string{
+		"idUser": {idUser},
+	}
+
+	// obtenemos los embeddings del usuario
+	userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+	if err != nil {
+		return false, err
+	}
+	// validaciones
+	if userData[idUser]["activeUser"] != "1" {
+		return false, fmt.Errorf("Usuario no autorizado")
+	}
+	// los valores a actualizar no deben venir vacíos y no deben ser iguales a los anteriores valores
 	for k, v := range values {
 		val, _ := v.(string)
-		if val == "" || len(val) < 3 {
+		if val == "" || val == userData[idUser][k] {
 			delete(values, k)
 		}
 	}
@@ -284,9 +266,31 @@ func UpdateUser(userReq models.UserDataReq, idUser string) (bool, error) {
 			values["isAliveUser"] = 1
 		}
 	}
+
+	// en caso de que se quiera cambiar el password
+	if userReq.NewPass != "" {
+		fmt.Println("se intenta cambiar password", userReq.OldPass, userReq.NewPass)
+		oldHash, err := utilities.GetHash([]byte(userReq.OldPass), configs.HashConf, false)
+		if oldHash == userData[idUser]["appPassHash"] {
+			newHash, err := utilities.GetHash([]byte(userReq.NewPass), configs.HashConf, false)
+			if err != nil {
+				return false, err
+			}
+			values["appPassHash"] = newHash
+			fmt.Println("Password anterior válido")
+		}
+		if err != nil {
+			return false, err
+		}
+	}
 	// se inserta hasta el final para validar que el usuario está vivo en caso de que facevector sea correcto
 	updates[idUser] = values
-	err := db.DB_con.GenericBatchUpdate("users", "idUser", updates)
+	err = db.DB_con.GenericBatchUpdate("users", "idUser", updates)
+	if err != nil {
+		return false, err
+	}
+	// se actualiza que se resolvió la invitación
+	err = db.DB_con.GenericBatchUpdate("userinvites", "idUserInvite", map[string]map[string]interface{}{userReq.IdInvite: {"acceptedAt": time.Now().Format("2006-01-02 15:04:05")}})
 	if err != nil {
 		return false, err
 	}
@@ -294,14 +298,14 @@ func UpdateUser(userReq models.UserDataReq, idUser string) (bool, error) {
 }
 
 // Envía una invitación a un correo para que se una a signforce
-func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) (string, error) {
-
-	userData := UserInstJoin(idUser) // info del usuario que invita
+func InviteNewUser(idUserDest, emailDest, roleApp, idUser, idInviteUser string) error {
+	// info del usuario que invita
+	userData := UserInstJoin(idUser)
 	var guestData map[string]string
 	binDoc, err := os.ReadFile("./templates/invite_user.html")
 	if err != nil {
 		fmt.Printf("%s", err)
-		return "", err
+		return err
 	}
 
 	if idUserDest == "" {
@@ -318,7 +322,6 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) (string, error
 		guestData = UserInstJoin(idUserDest)
 	}
 
-	idInviteUser := uuid.NewString()
 	hostFullName := fmt.Sprintf("%s %s", userData["nameUser"], userData["lastNameUser"])
 
 	// fecha de expiración de la invitación
@@ -333,7 +336,6 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) (string, error
 	body = strings.ReplaceAll(body, "{HOST_EMAIL}", userData["emailUser"])
 	body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", tExp)
 	body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("%s/edituser?id=%s", os.Getenv("API_IP"), idInviteUser))
-	//body = strings.ReplaceAll(body, "{URL_ACCEPT}", fmt.Sprintf("http://%s:%s/edituser?id=%s", os.Getenv("API_IP"), os.Getenv("API_PORT"), idInviteUser))
 
 	payload := models.EmailRequest{
 		IdUser:   idUserDest,
@@ -346,14 +348,14 @@ func InviteNewUser(idUserDest, emailDest, roleApp, idUser string) (string, error
 	err = coms.EmailCli.SendMail(&payload)
 	if err != nil {
 		fmt.Println("No se envió el email de la invitación: ", idInviteUser, err)
-		return "", err
+		return err
 	} else {
 		cols := []string{"idUserInvite", "idUser", "emailDest", "expirationDate", "roleApp"}
 		_, err = db.DB_con.GenericInsert("userinvites", cols, []interface{}{idInviteUser, idUser, emailDest, tExp, roleApp})
 		if err != nil {
 			fmt.Printf("%s", err)
-			return "", err
+			return err
 		}
 	}
-	return idInviteUser, nil
+	return nil
 }

@@ -68,11 +68,12 @@ func Latin1ToUTF8(input []byte) string {
 }
 
 // Función para guardar archivos en el sistema
-func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser string, hasUniqueName bool) (string, error) {
+
+func GuardarArchivo(file multipart.File, savepath, filename string, hasUniqueName bool) (string, error) {
 	// Crear directorio si no existe
 	var uploadDir string
 	if savepath == "" {
-		uploadDir = fmt.Sprintf("%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+		return "", fmt.Errorf("%sNo se proporcionó una ruta", "")
 	} else {
 		savepath, _ = strings.CutSuffix(savepath, "/")
 		uploadDir = fmt.Sprintf("%s/", savepath)
@@ -111,6 +112,53 @@ func GuardarArchivo(file multipart.File, savepath, filename, idInst, idUser stri
 	_, err = io.Copy(dst, file)
 	if err != nil {
 		return "", err
+	}
+
+	return filePath, nil
+}
+
+func GuardarArchivo_cript(file multipart.File, savepath, filename string, hasUniqueName bool, encrypt bool) (string, error) {
+
+	// --- Lógica de directorios y nombres (se mantiene igual) ---
+	savepath = strings.TrimSuffix(savepath, "/")
+	uploadDir := savepath + "/"
+
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		return "", err
+	}
+
+	name := filename
+	if hasUniqueName {
+		name = fmt.Sprintf("%d_%s", time.Now().UnixNano(), filename)
+	}
+
+	filePath := path.Join(uploadDir, name)
+	if _, err := os.Stat(filePath); err == nil {
+		return filePath, nil // El archivo ya existe
+	}
+
+	// 2. Crear el archivo destino
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
+
+	// 3. Decidir cómo guardar el contenido
+	if encrypt {
+		// Regresar al inicio del reader por si acaso fue leído antes
+		file.Seek(0, io.SeekStart)
+
+		err = EncryptFile(file, dst)
+		if err != nil {
+			return "", fmt.Errorf("error al encriptar: %v", err)
+		}
+	} else {
+		file.Seek(0, io.SeekStart)
+		_, err = io.Copy(dst, file)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	return filePath, nil

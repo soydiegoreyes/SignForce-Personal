@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"sfmiddle/auth"
-	"sfmiddle/coms"
 	"sfmiddle/configs"
 	"sfmiddle/db"
 
@@ -15,6 +14,8 @@ import (
 	"sfmiddle/utilities"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // ==========================================================================================================
@@ -181,14 +182,31 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 
 			registerResp.InstId = idInst
-
-			// se genera un password temporal y se hashea
-			tempPass := utilities.PassGenerator(12)
-			passHash, err := utilities.GetHash([]byte(tempPass), configs.HashConf)
+			tempPass := uuid.NewString()
+			passHash, err := utilities.GetHash([]byte(strings.ReplaceAll(tempPass, "-", "")), configs.HashConf, false)
 			if err != nil {
 				registerResp.Error = "Error: No se pudo generar el password temporal"
 				json.NewEncoder(respWriter).Encode(registerResp)
 				return
+			}
+
+			attrs := []string{"activeUser"}
+			wheres := map[string][]string{
+				"idInstitution_fk": {idInst},
+				"emailUser":        {registerReq.ContactEmailInst},
+				//"appPassHash":      {passHash},
+			}
+
+			// obtenemos los embeddings del usuario
+			userData, err := db.DB_con.GenericSelect("users", "idUser", attrs, wheres)
+			if err != nil {
+				registerResp.Error = "Error consultando datos de institución"
+				json.NewEncoder(respWriter).Encode(registerResp)
+				return
+			}
+
+			if len(userData) > 0 {
+				// aqui va una logica aun no definida para vincular a un usuario con multiples empresas sin hacer el password como identidad
 			}
 
 			// se registra el usuario root
@@ -201,12 +219,13 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 
 			// el mismo usuario root se invita para llenar sus datos faltantes (solucion temporal)
-			idInvite, err := objects.InviteNewUser(idUser, registerReq.ContactEmailInst, "1", idUser)
+			// el link de la invitacion es el pass temporal que dura hasta que la invitacion expire
+			err = objects.InviteNewUser(idUser, registerReq.ContactEmailInst, "1", idUser, tempPass) // idInvite es tempPass
 			if err != nil {
 				http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			fmt.Println("invitación de nuevo usuario root: ", idInvite)
+			fmt.Println("invitación de nuevo usuario root ", idUser)
 			updates := map[string]map[string]interface{}{
 				idInst: {
 					"rootUser_fk": idUser,
@@ -220,36 +239,8 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 			}
 			fmt.Println("Usuario registrado ", idUser, " Inst: ", idInst)
 
-			binDoc, err := os.ReadFile("./templates/welcome_register.html")
-			if err != nil {
-				registerResp.Error = fmt.Sprintf("%s", err)
-				json.NewEncoder(respWriter).Encode(registerResp)
-			}
-
-			body := string(binDoc)
-			body = strings.ReplaceAll(body, "{TEMPORAL_USERNAME}", registerReq.ContactEmailInst)
-			body = strings.ReplaceAll(body, "{TEMPORAL_PASS}", tempPass)
-			body = strings.ReplaceAll(body, "{EXPIRATION_TIME}", time.Now().Add(30*24*time.Hour).Format("2006-01-02 15:04:05"))
-			body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
-
-			payload := models.EmailRequest{
-				IdUser:   "1",
-				Subject:  fmt.Sprintf("¡Bienvenido a Signforce! Correo de verificación %s", registerReq.TaxNumInst),
-				Body:     body,
-				Dest:     []string{registerReq.ContactEmailInst},
-				MimeType: "html",
-			}
-
-			err = coms.EmailCli.SendMail(&payload)
-			if err != nil {
-				registerResp.Error = fmt.Sprintf("%s", err)
-				json.NewEncoder(respWriter).Encode(registerResp)
-				return
-			}
-
 			// Generar JWT
-			token, err := auth.GenerateJWT(idUser, "1", idInst, "2")
+			token, err := auth.GenerateJWT(idUser, "1", idInst, "2") // role root y statusinst pendiente registro (2)
 			if err != nil {
 				http.Error(respWriter, "Error generando token", http.StatusInternalServerError)
 				return
@@ -261,7 +252,7 @@ func RegisterInst(respWriter http.ResponseWriter, request *http.Request) {
 				Value:    token,
 				Path:     "/",
 				HttpOnly: true,
-				Secure:   false, // poner en true en producción con HTTPS
+				Secure:   true, // poner en true en producción con HTTPS
 				SameSite: http.SameSiteStrictMode,
 				Expires:  time.Now().Add(1 * time.Hour),
 			})
@@ -385,11 +376,12 @@ func GetValidationData(respWriter http.ResponseWriter, request *http.Request) {
 			if ptr, exists := documentClasses[docClass]; exists && ptr != nil {
 				// Concatenamos los valores que necesitamos.
 				// Nos aseguramos de que cada clave exista antes de usarla.
-				path := row["documentPath"]
+				//path := row["documentPath"]
 				name := row["documentName"]
 				ext := row["documentExt"]
 
-				concatenated := fmt.Sprintf("%s%s.%s", path, name, ext)
+				//concatenated := fmt.Sprintf("%s%s.%s", path, name, ext)
+				concatenated := fmt.Sprintf("%s.%s", name, ext)
 
 				// Guardamos el resultado en el campo correspondiente de valResp
 				*ptr = concatenated
@@ -490,8 +482,10 @@ func UpdateValidationData(respWriter http.ResponseWriter, request *http.Request)
 				}
 				defer file.Close()
 
+				uploadDir := fmt.Sprintf("%s/%s/%s/", os.Getenv("TEMP_BASE_PATH"), idInst, idUser)
+
 				// Guardar el archivo y obtener la ruta
-				filePath, err := utilities.GuardarArchivo(file, "", files[0].Filename, idInst, idUser, false)
+				filePath, err := utilities.GuardarArchivo_cript(file, uploadDir, files[0].Filename, false, true)
 				if err != nil {
 					fmt.Println("Error guardando archivo:", err)
 					http.Error(respWriter, "Error guardando archivo", http.StatusInternalServerError)
@@ -579,14 +573,32 @@ func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 	// Obtener user ID e institution ID
 	// si la instutucion signforce hace la actualizacion de alguien entonces debe mandar id
 	// si no manda id o la institucion no es signforce entonces se esta haciendo un update de ella misma
+	/*
+		var attrs = []string{"legalNameInst", "contactEmailInst", "deletedAtInst", "statusInst_fk", "activeInst"}
+		var wheres = map[string][]string{
+			"idInstitution": {idInst},
+		}
+		if idInst == "1" {
+			wheres["idInstitution"] = append(wheres["idInstitution"], statusData.IdInst)
+		}
+		instData, err := db.DB_con.GenericSelect("institutions", "idInstitution", attrs, wheres)
+		if err != nil {
+			http.Error(respWriter, err.Error(), http.StatusBadRequest)
+			return
+		}
+	*/
 	var status string
 	// signforce acepta o rechaza documentos
 	if idInst == "1" {
+		if statusData.IdInst == "" {
+			statusData.IdInst = idInst
+		}
 		if statusData.Status {
 			status = "5"
 		} else {
 			status = "4"
 		}
+
 	} else { // usuario acepta su promoción a revisión de documentos
 		if statusData.Status {
 			status = "3"
@@ -594,6 +606,7 @@ func CompleteValidation(respWriter http.ResponseWriter, request *http.Request) {
 			statusData.IdInst = idInst
 		}
 	}
+
 	updates := map[string]map[string]interface{}{
 		statusData.IdInst: {
 			"statusInst_fk": status,
@@ -635,7 +648,7 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 	}
 
 	// Obtener datos de la base de datos usando el user ID
-	idUser, ok1 := claims["uid"].(string)
+	_, ok1 := claims["uid"].(string)
 	idInst, ok2 := claims["iid"].(string)
 	_, ok3 := claims["authInst"].(string)
 	if !ok1 || !ok2 || !ok3 {
@@ -710,11 +723,12 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 				if ptr, exists := documentClasses[docClass]; exists && ptr != nil {
 					// Concatenamos los valores que necesitamos.
 					// Nos aseguramos de que cada clave exista antes de usarla.
-					path := row["documentPath"]
+					//path := row["documentPath"]
 					name := row["documentName"]
 					ext := row["documentExt"]
 
-					concatenated := fmt.Sprintf("%s@%s%s.%s", docHash, path, name, ext)
+					//concatenated := fmt.Sprintf("%s@%s%s.%s", docHash, path, name, ext)
+					concatenated := fmt.Sprintf("%s@%s.%s", docHash, name, ext)
 
 					// Guardamos el resultado en el campo correspondiente de valResp
 					*ptr = concatenated
@@ -726,29 +740,6 @@ func Approvals(respWriter http.ResponseWriter, request *http.Request) {
 		//==========================
 		arrayResp[instId] = valResp
 
-		binDoc, err := os.ReadFile("./templates/congrats_welcome.html")
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			body := string(binDoc)
-			body = strings.ReplaceAll(body, "{LEGAL_NAME}", valResp.LegalName)
-			body = strings.ReplaceAll(body, "{URL_LINK}", fmt.Sprintf("%s/login", os.Getenv("API_IP")))
-			//body = strings.ReplaceAll(body, "{URL_COMPLETAR_REGISTRO}", fmt.Sprintf("http://%s:%s/login", os.Getenv("API_IP"), os.Getenv("API_PORT")))
-
-			payload := models.EmailRequest{
-				IdUser:   idUser,
-				Subject:  fmt.Sprintf("¡Solicitud  Aprobada! ya eres parte de Signforce %s", ":)"),
-				Body:     body,
-				Dest:     []string{instData["contactEmailInst"]},
-				MimeType: "html",
-			}
-
-			err = coms.EmailCli.SendMail(&payload)
-			if err != nil {
-				fmt.Println(err)
-			}
-
-		}
 	}
 
 	// Configurar headers de seguridad
