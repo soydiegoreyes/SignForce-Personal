@@ -9,7 +9,7 @@ import re
 import json
 import subprocess
 
-path_match = r'(?:[^\s/\\]+[/|\\])*(\w+\.\w{2,10})'
+path_match = r'(?:[^\s/\\]+[/|\\])*(\w+\.\w{2,8})'
 pmatch =re.compile(path_match)
 
 def create_template_entrypoint(**kwargs):
@@ -19,14 +19,25 @@ def create_template_entrypoint(**kwargs):
     - Caso 2 (común cuando el modelo "aplana" el objeto): kwargs contiene 'output_path' y keys como 'header','body',... -> construye data dict.
     """
     print("FUNC: create_template_entrypoint args:", kwargs)
-    # Validación mínima
-    if 'output_path' not in kwargs:
-        return {
-            "status": "error",
-            "message": "Falta 'output_path' en argumentos para create_template."
-        }
 
-    output_path = kwargs.get('output_path')
+    # Si el modelo no mandó output_path, generamos uno automáticamente
+    if 'output_path' not in kwargs:
+        # Intentamos derivar el nombre del header
+        raw_header = (
+            kwargs.get('header')
+            or (kwargs.get('data') or {}).get('header', '')
+            or 'documento_generado'
+        )
+        safe_name = re.sub(r'[^\w\s-]', '', raw_header[:40]).strip().replace(' ', '_').lower()
+        safe_name = safe_name or 'documento_generado'
+        kwargs['output_path'] = os.path.join(os.path.abspath('.'), f'{safe_name}.docx')
+        print(f"[create_template] output_path no proporcionado, usando: {kwargs['output_path']}")
+
+    # Si output_path es solo un nombre (relativo), lo anclamos al cwd
+    output_path = kwargs['output_path']
+    if not os.path.isabs(output_path):
+        output_path = os.path.join(os.path.abspath('.'), output_path)
+        kwargs['output_path'] = output_path
 
     # Si ya viene 'data' como dict -> úsalo
     if 'data' in kwargs and isinstance(kwargs['data'], dict):
@@ -60,6 +71,7 @@ def create_template_entrypoint(**kwargs):
         }
 
     return create_template(output_path, data)
+
 # recibe una ruta donde se guarda el template y el contenido que ira en cada sección del documento.
 # ej. output_path = "C:/USERS/USER/Desktop/mi_plantilla.docx"
 # ej. data = {"header": "Contrato de compraventa {TITULO_CONTRATO}", "body": "Esto es un contrato entre {COMPRADOR} y {VENDEDOR}.", "footer": "Pie de pagina"}
@@ -113,7 +125,6 @@ def create_template(output_path: str, data: dict):
     
 
 # recibe una ruta de entrada que es una plantilla y una ruta de salida donde se deposita la plantilla con los {PLACEHOLDERS} sustituidos con el dato real
-
 def format_doc(input_path: str, output_path: str, data: dict):
     print("FUNC: format_doc", input_path, output_path, data)
     if os.path.exists(input_path):
@@ -128,13 +139,6 @@ def format_doc(input_path: str, output_path: str, data: dict):
                 key = match[1:-1]
                 if key in data_dict:
                     run.text = run.text.replace(match, data_dict[key])
-        
-        for m in re.findall('{\w+}', paragraph.text):
-            try:
-                paragraph.text=paragraph.text.replace(m, data[m[1:-1]])
-                
-            except Exception as e:
-                print(f"Atributo {paragraph.text} no encontrado en parrafo para sustituir. {e}")
 
     # Reemplazo en párrafos normales
     for paragraph in doc.paragraphs:
@@ -181,62 +185,85 @@ def word_to_pdf(input_path: str, output_path: str):
     # ruta_dest es la ruta absoluta con nombre donde se guardará el pdf -> C:/Users/OtherFolder/mi_documento.pdf
     # el flujo es C:/Users/SomeFolder/mi_documento.docx -> ./mi_documento.pdf -> C:/Users/OtherFolder/mi_documento.pdf
     print("FUNC: word_to_pdf")
+
+    # Resolver rutas relativas
+    if not os.path.isabs(input_path):
+        input_path = os.path.join(os.path.abspath('.'), input_path)
+    if not os.path.isabs(output_path):
+        output_path = os.path.join(os.path.abspath('.'), output_path)
+
+    if not os.path.exists(input_path):
+        return f"Falla al convertir a pdf: no existe el archivo de entrada '{input_path}'"
+
     try:
         cmd = ['soffice', '--headless', '--convert-to', 'pdf', input_path]
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.communicate()
-        # Esto lanzará un error si el proceso falla
         print(f"Return code: {p.returncode}")
         if p.returncode not in [0, None]:
-            raise Exception  
-        
-        name, *_ = re.match('(?:.+[/\\\])?(.+)(?:\.\w{2,4})$', input_path).groups()
+            raise Exception(f"soffice retornó {p.returncode}")
+
+        name, *_ = re.match(r'(?:.+[/\\])?(.+)(?:\.\w{2,4})$', input_path).groups()
     except Exception as e:
-        return f"Falla al convertir a pdf {input_path} . {e}"
-    
+        return f"Falla al convertir a pdf {input_path}: {e}"
+
     try:
-        # se valida que el pdf se haya creado con éxito en la ruta local    
-        if os.path.exists(f'{os.path.abspath(".")}\\{name}.pdf'):
-            with open(name+'.pdf', 'rb') as fr, open(output_path, 'wb') as fw:
-                fw.write(fr.read())
-            # se elimina el documento creado en la carpeta local
-            #os.remove(f'{os.path.abspath(".")}\\{name}.pdf')
-            #os.remove(ruta_dest+'.docx')
-        if p.returncode:
-            return f"Hubo un error al guardar el documento word, revise rutas del archivo {output_path}"
-        else:
-            return {
-                "status": "ok",
-                "ruta": output_path
-            }
-        
+        local_pdf = os.path.join(os.path.abspath("."), name + ".pdf")
+        if not os.path.exists(local_pdf):
+            return f"Falla al convertir: LibreOffice no generó el PDF en '{local_pdf}'"
+
+        with open(local_pdf, 'rb') as fr, open(output_path, 'wb') as fw:
+            fw.write(fr.read())
+        if local_pdf != output_path:
+            os.remove(local_pdf)
+
+        return {"status": "ok", "ruta": output_path}
+
     except Exception as e:
-        return f"Falla al guardar archivo {output_path} -> {e}"
+        return f"Falla al guardar archivo {output_path}: {e}"
     
 
 # sfia cuenta con un directorio local con los artefactos generados para el usuario donde otros programas obtendrán esa info
 def copiar_a_destino(input_path, idInst, idUser: str):
-    r = {"status":"", "ruta":""}
-    destino ="temp"
+    r = {"status": "", "ruta": ""}
+
+    if not input_path or not idInst or not idUser:
+        r["status"] = "error: falta input_path, idInst o idUser"
+        r["ruta"] = input_path or ""
+        return r
+
+    # Resolver a ruta absoluta
+    if not os.path.isabs(input_path):
+        input_path = os.path.join(os.path.abspath('.'), input_path)
+
+    if not os.path.exists(input_path):
+        r["status"] = f"error: Archivo no encontrado en '{input_path}'"
+        r["ruta"] = input_path
+        return r
+
+    destino = "temp"
     base_path = os.path.abspath(".")
     if input_path.endswith(".docx"):
         destino = "templates"
     elif input_path.endswith(".pdf"):
         destino = "documents"
-    ruta_destino= f"{base_path}/{idInst}/{idUser}/{destino}/"
-    os.makedirs(ruta_destino, 644, exist_ok=True)
-    g =pmatch.match(input_path).groups()
-    if len(g) > 0:
-        ruta_destino+=g[0]
-        with open(input_path, "rb") as fr, open(ruta_destino, "wb") as fw:
-            fw.write(fr.read())
-        r["status"]= "ok"
-        r["ruta"]= ruta_destino
-        os.remove(input_path)
-    else:
-        r["status"]= "error: Path no fue correctamente formado"
+
+    ruta_dir = os.path.join(base_path, idInst, idUser, destino)
+    os.makedirs(ruta_dir, 0o755, exist_ok=True)
+
+    # Si ya está en el directorio correcto no hay nada que mover
+    if os.path.abspath(os.path.dirname(input_path)) == os.path.abspath(ruta_dir):
+        r["status"] = "ok"
         r["ruta"] = input_path
-    
+        return r
+
+    filename = os.path.basename(input_path)
+    ruta_destino = os.path.join(ruta_dir, filename)
+    with open(input_path, "rb") as fr, open(ruta_destino, "wb") as fw:
+        fw.write(fr.read())
+    r["status"] = "ok"
+    r["ruta"] = ruta_destino
+    os.remove(input_path)
     return r
         
 
@@ -324,76 +351,88 @@ tools_definition = [
 ]
 
 
-def run_agent(prompt, idInst, idUser, model):
+def run_agent(prompt, idInst, idUser, model, path=None):
+    base_dir = os.path.abspath('.')
+    templates_dir = os.path.join(base_dir, idInst, idUser, 'templates')
+    documents_dir = os.path.join(base_dir, idInst, idUser, 'documents')
+    os.makedirs(templates_dir, exist_ok=True)
+    os.makedirs(documents_dir, exist_ok=True)
+
+    system_lines = [
+        "Eres un redactor profesional de documentos legales.",
+        "OBJETIVO: Genera documentos COMPLETOS, coherentes y útiles para un humano.",
+        "PLACEHOLDERS: Usa {EN_MAYUSCULAS} SOLO para datos variables concretos (nombres, montos, fechas).",
+        "  NO rellenes todo con placeholders; el documento debe tener contenido real.",
+        "",
+        "DIRECTORIOS DE TRABAJO — usa SIEMPRE rutas absolutas de estos directorios:",
+        f"  Plantillas .docx → {templates_dir}",
+        f"  Documentos PDF  → {documents_dir}",
+        "",
+        "FLUJO PARA NUEVA PLANTILLA:",
+        "  1. Redacta header, body y footer del documento.",
+        f" 2. Llama a 'create_template' con output_path='{templates_dir}/<nombre>.docx'",
+        "  3. Si se solicita PDF, llama a 'word_to_pdf' usando el .docx recién creado.",
+        "  Ejecuta los pasos uno por uno esperando el resultado anterior.",
+    ]
+
+    if path and os.path.exists(path):
+        stem = os.path.splitext(os.path.basename(path))[0]
+        system_lines += [
+            "",
+            f"ARCHIVO EXISTENTE: {path}",
+            "FLUJO PARA USAR ARCHIVO EXISTENTE:",
+            f"  · Para LLENAR placeholders: 'format_doc' con input_path='{path}'"
+            f" y output_path='{documents_dir}/{stem}_relleno.docx'",
+            f"  · Para CONVERTIR a PDF: 'word_to_pdf' con input_path='{path}'"
+            f" y output_path='{documents_dir}/{stem}.pdf'",
+            "  · Si se pide llenar Y convertir: primero 'format_doc', luego 'word_to_pdf' con el docx resultante.",
+        ]
+
     results = dict()
     messages = [
-        {
-            'role': 'system', 
-            'content': (
-                '''Eres un redactor profesional de documentos legales.
-                OBJETIVO PRINCIPAL:
-                - Genera un documento COMPLETO, coherente y útil para un humano.
-                - El texto debe poder leerse y entenderse incluso sin rellenar datos.
-                - El documento poder convertirse de word (.docx) a (.pdf) y NO DEBE TENER ningún path, solo nombre con extensión ej. mi_documento.docx'
-                USO DE PLACEHOLDERS:
-                - SOLO usa placeholders {EN_MAYUSCULAS} cuando un dato específico sea variable y no sea una ruta, path o nombre de un archivo.
-                - NO reemplaces todo el texto por placeholders.
-                - El documento debe contener frases, cláusulas, datos útiles y contexto real.
-                FLUJO:
-                0. Si se pide explicitamente una tarea que se resuelve con el llamado a una función concreta, omitir el flujo.
-                1. Redacta el texto completo del documento (header, body y footer).
-                2. Inserta placeholders SOLO para datos variables (nombres, montos, fechas, ubicaciones, o datos específicados explícitamente).
-                3. Llama a 'create_template' con el texto generado.
-                4. Si hay una lista de placeholders devuelta, usalos para llamar a 'format_doc'.
-                5. Si EXPLICITAMENTE se indica que un documento debe convertirse a pdf, usa 'word_to_pdf' y por default con output_path y nombre de documento igual a la de entrada pero con extensión pdf.
-                6. Ejecuta los pasos uno por uno, esperando el resultado anterior.'''
-            )
-        },
-        {'role': 'user', 'content': prompt}
+        {'role': 'system', 'content': '\n'.join(system_lines)},
+        {'role': 'user', 'content': prompt},
     ]
-   
-    # Bucle de ejecución (máximo 5 iteraciones para evitar bucles infinitos)
-    for i in range(5):
+
+    # Bucle de ejecución (máximo 6 iteraciones para cubrir create+format+pdf)
+    for i in range(6):
         response = ollama.chat(model=model, messages=messages, tools=tools_definition)
-        #print(response)
-        # Si el modelo ya no quiere llamar a más funciones, terminamos
         if not response["message"].get("tool_calls"):
             return response["message"]["content"]
 
-        # Si hay llamadas a funciones
         messages.append(response["message"])
-        # se saca la función y los argumentos que el modelo decidió usar
         for call in response["message"]["tool_calls"]:
             function_name = call["function"]["name"]
             args = call["function"]["arguments"]
-            if function_name not in results:
-                results[function_name] = dict()
-            results[function_name]["args"] = args
+            results.setdefault(function_name, {})["args"] = args
 
             print(f"--- Paso {i+1}: Ejecutando {function_name} ---")
-            
-            # Buscamos la función en nuestro diccionario
-            # OJO: Asegúrate de que 'create_template' esté en available_functions
+
+            if function_name not in available_functions:
+                print(f"--- Función desconocida: {function_name} ---")
+                result = f"Error: función '{function_name}' no existe. Usa solo: {list(available_functions.keys())}"
+                messages.append({'role': 'tool', 'content': result, 'name': function_name})
+                continue
+
             result = available_functions[function_name](**args)
-            
-            # si se generá un documento resultante 
-            if "ruta" in result:
-                if pmatch.match(result["ruta"]):
+
+            # Mover a directorio del usuario SOLO si el archivo quedó fuera de él
+            if isinstance(result, dict) and result.get("status") == "ok" and "ruta" in result:
+                ruta_abs = os.path.abspath(result["ruta"])
+                ruta_dir = os.path.abspath(os.path.dirname(ruta_abs))
+                user_dirs = {os.path.abspath(templates_dir), os.path.abspath(documents_dir)}
+                if ruta_dir not in user_dirs:
                     r = copiar_a_destino(result["ruta"], idInst=idInst, idUser=idUser)
                     result["ruta"] = r["ruta"]
-            
-            results["result"] = result
 
+            results["result"] = result
             messages.append({
                 'role': 'tool',
                 'content': json.dumps(result),
-                'name': function_name
+                'name': function_name,
             })
-            
-        # El bucle continúa: enviamos los resultados de vuelta a Ollama 
-        # para que decida qué sigue (ej. ya creó la plantilla, ahora le toca llenarla).
-    
-    return messages
+
+    return "El agente completó las iteraciones sin producir una respuesta de texto final."
 
 if __name__=="__main__":
     # Prueba tu agentez
