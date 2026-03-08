@@ -169,6 +169,23 @@
             .glass-header { padding: 0 1rem !important; }
             aside { display: none; }
         }
+
+        /* Sidebar nav links */
+        .sf-nav-link:hover {
+            color: rgba(255,255,255,0.85) !important;
+            background: rgba(255,255,255,0.04) !important;
+        }
+        .sf-nav-link.active {
+            color: #c8ff00 !important;
+            background: rgba(200,255,0,0.08) !important;
+            border-color: rgba(200,255,0,0.12) !important;
+        }
+
+        /* Chart bar colors */
+        .stat-card .bg-blue-500\/20 { background: rgba(14,165,233,0.12) !important; }
+        .stat-card .bg-green-500\/20 { background: rgba(16,185,129,0.12) !important; }
+        .stat-card .bg-yellow-500\/20 { background: rgba(245,158,11,0.12) !important; }
+        .stat-card .bg-purple-500\/20 { background: rgba(124,58,237,0.12) !important; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../signforce-global.css">
@@ -207,38 +224,58 @@
     <!-- Contenido principal -->
     <div class="bg flex min-h-screen pt-24 pb-8 px-8">
         <!-- Panel izquierdo -->
-        <aside class="w-64 glass-panel mr-6 flex flex-col">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Panel</h1>
-            </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#" data-tab="dashboard">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="user-management">
-                    <span class="material-symbols-outlined">group</span>
-                    <span>Gestión Usuarios</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="document-stats">
-                    <span class="material-symbols-outlined">description</span>
-                    <span>Estadísticas Docs</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="activity-logs">
-                    <span class="material-symbols-outlined">history</span>
-                    <span>Logs Actividad</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="system-settings">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Configuración</span>
-                </a>
-            </nav>
-            <div class="p-4 mt-auto border-t border-white/10">
-                <div class="text-xs text-secondary">
-                    <p>Versión: 2.1.0</p>
-                    <p class="mt-1">Usuarios activos: <span id="activeUsersCount" class="text-green-400 font-bold">0</span></p>
+        <aside class="w-72 mr-6 flex flex-col gap-4" style="min-height: calc(100vh - 120px);">
+            <!-- Logo + título -->
+            <div style="background: rgba(15,21,36,0.5); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.25rem 1.5rem;">
+                <div class="flex items-center gap-3">
+                    <div style="width: 36px; height: 36px; background: #c8ff00; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; color: #0a0f1e; box-shadow: 0 0 20px rgba(200,255,0,0.2);">S</div>
+                    <div>
+                        <h1 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: 0.03em;">Panel Admin</h1>
+                        <p style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin: 0; margin-top: 2px;">SignForce Platform</p>
+                    </div>
                 </div>
             </div>
+
+            <!-- Navegación -->
+            <nav style="background: rgba(15,21,36,0.4); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 0.75rem; flex: 1; display: flex; flex-direction: column;">
+                <p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); padding: 0.5rem 0.75rem 0.5rem; font-weight: 600; margin: 0;">Navegación</p>
+                
+                <a class="sf-nav-link active" href="#" data-tab="dashboard" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: #c8ff00; background: rgba(200,255,0,0.08); border: 1px solid rgba(200,255,0,0.12); margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+                <a class="sf-nav-link" href="#" data-tab="user-management" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.55); background: transparent; border: 1px solid transparent; margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">group</span>
+                    <span>Gestión Usuarios</span>
+                </a>
+                <a class="sf-nav-link" href="#" data-tab="document-stats" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.55); background: transparent; border: 1px solid transparent; margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">description</span>
+                    <span>Estadísticas Docs</span>
+                </a>
+                <a class="sf-nav-link" href="#" data-tab="activity-logs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.55); background: transparent; border: 1px solid transparent; margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">history</span>
+                    <span>Logs Actividad</span>
+                </a>
+                <a class="sf-nav-link" href="#" data-tab="system-settings" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: rgba(255,255,255,0.55); background: transparent; border: 1px solid transparent; margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">settings</span>
+                    <span>Configuración</span>
+                </a>
+
+                <!-- Spacer -->
+                <div style="flex: 1;"></div>
+
+                <!-- Footer info -->
+                <div style="border-top: 1px solid rgba(255,255,255,0.06); padding: 0.85rem 0.75rem 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.65rem; color: rgba(255,255,255,0.25);">v2.1.0</span>
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px rgba(16,185,129,0.4);"></span>
+                            <span id="activeUsersCount" style="font-size: 0.7rem; color: #34d399; font-weight: 600;">0</span>
+                            <span style="font-size: 0.65rem; color: rgba(255,255,255,0.3);">activos</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
         </aside>
 
         <!-- Contenido principal dinámico -->
@@ -326,42 +363,50 @@
                 </div>
 
                 <!-- Gráfico de actividad reciente -->
-                <div class="glass-panel mb-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-primary">Actividad Reciente</h3>
-                        <select class="input-field custom-select w-48 h-10">
+                <div style="background: rgba(15,21,36,0.45); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.75rem; margin-bottom: 1.5rem;">
+                    <div class="flex justify-between items-center mb-5">
+                        <div class="flex items-center gap-3">
+                            <div style="width: 32px; height: 32px; background: rgba(14,165,233,0.12); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;">monitoring</span>
+                            </div>
+                            <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">Actividad Reciente</h3>
+                        </div>
+                        <select class="input-field custom-select" style="width: 180px; height: 38px; font-size: 0.8rem; border-radius: 10px; padding: 0 12px;">
                             <option>Últimas 24 horas</option>
                             <option>Última semana</option>
                             <option>Último mes</option>
                         </select>
                     </div>
-                    <div class="h-64 flex items-center justify-center text-secondary" id="activityChart">
-                        <!-- Gráfico se cargará aquí -->
+                    <div style="height: 260px; display: flex; align-items: center; justify-content: center;" id="activityChart">
                         <div class="spinner"></div>
                     </div>
                 </div>
 
                 <!-- Usuarios recientes -->
-                <div class="glass-panel">
-                    <h3 class="text-xl font-bold text-primary mb-6">Usuarios Recientes</h3>
-                    <div class="overflow-x-auto">
+                <div style="background: rgba(15,21,36,0.45); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.75rem;">
+                    <div class="flex items-center gap-3 mb-5">
+                        <div style="width: 32px; height: 32px; background: rgba(200,255,0,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #c8ff00;">group</span>
+                        </div>
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">Usuarios Recientes</h3>
+                    </div>
+                    <div class="overflow-x-auto" style="border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);">
                         <table class="w-full">
                             <thead>
-                                <tr class="border-b border-white/10">
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Usuario</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Email</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Rol</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Fecha Registro</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Estado</th>
-                                    <th class="px-4 py-3 text-left text-sm font-medium text-secondary">Acciones</th>
+                                <tr style="background: rgba(255,255,255,0.03);">
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Usuario</th>
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Email</th>
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Rol</th>
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Fecha Registro</th>
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Estado</th>
+                                    <th style="padding: 0.7rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid rgba(255,255,255,0.06);">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="recentUsersTable">
-                                <!-- Datos se cargarán dinámicamente -->
                                 <tr>
-                                    <td colspan="6" class="px-4 py-8 text-center text-secondary">
-                                        <div class="spinner mx-auto"></div>
-                                        <p class="mt-2">Cargando usuarios...</p>
+                                    <td colspan="6" style="padding: 2.5rem 1rem; text-align: center;">
+                                        <div class="spinner" style="margin: 0 auto;"></div>
+                                        <p style="margin-top: 0.75rem; color: rgba(255,255,255,0.4); font-size: 0.85rem;">Cargando usuarios...</p>
                                     </td>
                                 </tr>
                             </tbody>
@@ -644,12 +689,17 @@
                 e.preventDefault();
                 const targetTab = link.dataset.tab;
                 
-                // Actualizar clases activas
-                navLinks.forEach(l => l.classList.remove('bg-gradient-to-r', 'from-blue-500', 'to-purple-600', 'text-white'));
-                navLinks.forEach(l => l.classList.add('text-secondary', 'hover:bg-white/10'));
-                
-                link.classList.remove('text-secondary', 'hover:bg-white/10');
-                link.classList.add('bg-gradient-to-r', 'from-blue-500', 'to-purple-600', 'text-white');
+                // Actualizar sidebar links
+                document.querySelectorAll('.sf-nav-link').forEach(l => {
+                    l.classList.remove('active');
+                    l.style.color = 'rgba(255,255,255,0.55)';
+                    l.style.background = 'transparent';
+                    l.style.borderColor = 'transparent';
+                });
+                link.classList.add('active');
+                link.style.color = '#c8ff00';
+                link.style.background = 'rgba(200,255,0,0.08)';
+                link.style.borderColor = 'rgba(200,255,0,0.12)';
                 
                 // Mostrar sección correspondiente
                 sections.forEach(section => {
