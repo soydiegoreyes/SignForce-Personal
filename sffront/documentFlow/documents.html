@@ -146,83 +146,28 @@
             </button>
         </div>
     </header>
-    <div class="bg flex min-h-screen pt-24 pb-8 px-8">
-        <aside class="w-64 glass-panel mr-6 flex flex-col max-h-[calc(100vh-8rem)]">
-            <div class="p-6 pb-2">
-                <h1 class="text-2xl font-bold text-primary">Documentos</h1>
+    <div class="bg flex min-h-screen pt-24 pb-8 px-8" style="gap:1.25rem;">
+        <aside style="width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem;">
+            <div style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.1rem 1.25rem;">
+              <div style="display:flex;align-items:center;gap:.6rem;">
+                <div style="width:32px;height:32px;background:rgba(181,196,19,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                  <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">description</span>
+                </div>
+                <div><div style="font-size:.95rem;font-weight:700;">Panel</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">SignForce</div></div>
+              </div>
             </div>
-            
-            <!-- Navegación principal -->
-            <nav class="flex-none px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="uploaded">
-                    <span class="material-symbols-outlined">upload</span>
-                    <span>Subidos</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white  rounded-lg" href="#" data-tab="inprocess">
-                    <span class="material-symbols-outlined">hourglass_empty</span>
-                    <span>En Proceso</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="shared">
-                    <span class="material-symbols-outlined">share</span>
-                    <span>Compartidos</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-tab="finished">
-                    <span class="material-symbols-outlined">check_circle</span>
-                    <span>Finalizados/Cancelados</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="/upload">
-                    <span class="material-symbols-outlined">upload_file</span>
-                    <span>Subir Documentos</span>
-                </a>
+            <nav style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:.75rem;flex:1;display:flex;flex-direction:column;">
+              <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem;">Navegación</div>
+              <a href="/" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">home</span> Home</a>
+              <a href="/mydocs" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:#B5C413;background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.12);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">description</span> Documentos</a>
+              <a href="/myfolders" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">folder</span> Folders</a>
+              <a href="/mykeys" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">key</span> Mis Llaves</a>
             </nav>
-
-            <!-- Separador -->
-            <div class="my-2 border-t border-white/10 mx-4"></div>
-
-            <!-- Sección de Chat Integrada en Sidebar -->
-            <div class="flex-1 flex flex-col px-4 pb-4 overflow-hidden">
-                
-                <!-- Botón activador (oculto por defecto hasta seleccionar doc) -->
-                <div id="consultDocBtnContainer" class="hidden mb-2">
-                    <button id="btnConsultarDoc" onclick="openDocChat()" 
-                        class="w-full py-2 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all">
-                        <span class="material-symbols-outlined text-lg">chat</span>
-                        Consultar Documento
-                    </button>
-                </div>
-
-                <!-- Contenedor del Chat (oculto por defecto) -->
-                <div id="leftSidebarChat" class="flex-1 flex flex-col bg-black/20 rounded-lg overflow-hidden border border-white/10 hidden transition-all">
-                    <!-- Cabecera del chat -->
-                    <div class="px-3 py-2 bg-white/5 border-b border-white/10 flex justify-between items-center shrink-0">
-                        <span class="text-xs font-bold text-primary truncate max-w-[120px]" id="chatDocTitle">Chat</span>
-                        <button onclick="closeDocChat()" class="text-secondary hover:text-red-400">
-                            <span class="material-symbols-outlined text-sm">close</span>
-                        </button>
-                    </div>
-
-                    <!-- Mensajes -->
-                    <div id="docChatMessages" class="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar text-sm">
-                        <!-- Mensajes dinámicos -->
-                        <div class="text-center text-xs text-secondary mt-2">
-                            Haz una pregunta sobre el documento seleccionado.
-                        </div>
-                    </div>
-
-                    <!-- Input -->
-                    <div class="p-2 border-t border-white/10 bg-white/5 shrink-0">
-                        <div class="relative">
-                            <input id="docChatInput" type="text" 
-                                placeholder="Escribe..." 
-                                class="w-full bg-black/40 text-primary text-xs rounded px-2 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-purple-500 border border-white/10">
-                            <button onclick="sendDocChatMessage()" class="absolute right-1 top-1/2 -translate-y-1/2 text-purple-400 hover:text-purple-300">
-                                <span class="material-symbols-outlined text-sm">send</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
+          </aside>
 
         <main class="flex-1">
             <div class="flex justify-between items-center mb-8">

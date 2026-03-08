@@ -1,435 +1,148 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Dashboard - SignForce</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-    :root {
-        --color-background: #060a14;
-        --color-card: rgba(255, 255, 255, 0.05);
-        --color-text-primary: #ffffff;
-        --color-text-secondary: rgba(255, 255, 255, 0.7);
-        --color-accent: rgba(255, 255, 255, 0.5);
-        --color-shadow: rgba(0, 0, 0, 0.3);
-        --color-blue-dark: #1e2c4b;
-        --color-blue-light: #93bde5;
-        --color-gold: #e5b019;
-        --color-red-wine: #74273a;
-    }
-
-    body {
-        background: var(--color-background);
-        min-height: 100vh;
-        background-attachment: fixed;
-        font-family: 'DM Sans', system-ui, sans-serif;
-        color: var(--color-text-primary);
-    }
-
-    .bg {
-        background: 
-            radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
-            radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
-            radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
-    }
-
-    h1, h2, h3, h4 {
-        font-family: 'DM Sans', sans-serif;
-        color: var(--color-text-primary);
-    }
-
-
-    .material-symbols-outlined {
-        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
-    }
-
-    .glass-panel {
-        background: rgba(1, 0, 28, 0.1);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-    }
-
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-    }
-
-    .glass-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0px 0px 20px 1px rgba(255, 255, 255, 0.1);
-    }
-
-    .text-primary {
-        color: #ffffff;
-    }
-
-    .text-secondary {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    .hover-glow:hover {
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .fade-in {
-        animation: fadeIn 0.8s ease forwards;
-    }
-
-    .delay-1 { animation-delay: 0.2s; }
-    .delay-2 { animation-delay: 0.4s; }
-    .delay-3 { animation-delay: 0.6s; }
-
-    .btn-primary {
-        background: linear-gradient(#faf9f6, #dcd7ce, #aca69a);
-        color: black;
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 50px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(0, 204, 255, 0.3);
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 50px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-
-    .glass-header {
-        position: fixed;
-        top: 25px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 70%;
-        height: 62.5px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        border-radius: 50px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 
-        0 8px 32px 0 rgba(255, 255, 255, 0.1),
-        0 0 10px 1px rgba(200, 90, 255, 0.4);
-        z-index: 1000;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 25px;
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow: hidden;
-    }
-
-    .liquid-bubble {
-        position: fixed;
-        width: 120px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        backdrop-filter: blur(0px);
-        -webkit-backdrop-filter: blur(0px);
-        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: -1;
-        box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
-    }
-
-    .nav-item {
-        position: relative;
-        padding: 8px 16px;
-        transition: color 0.3s ease;
-    }
-
-    .nav-item:hover {
-        color: rgb(255, 255, 255) !important;
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(5px);
-    }
-
-    .modal-content {
-        background: rgba(1, 0, 28, 0.9);
-        margin: 5% auto;
-        padding: 20px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        width: 80%;
-        max-width: 800px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-        position: relative;
-    }
-
-    .close-modal {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        position: absolute;
-        right: 15px;
-        top: 10px;
-    }
-
-    .close-modal:hover {
-        color: white;
-    }
-
-    .document-viewer {
-        width: 100%;
-        height: 70vh;
-        border: none;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-
-    .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 200px;
-    }
-
-    .spinner {
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top: 4px solid white;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* ═══ SignForce Design Override ═══ */
-    body { background: #060a14 !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
-    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
-    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
-    p { color: rgba(255,255,255,.6) !important; }
-    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
-      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
-      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
-      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
-      box-shadow:none !important; padding:0 1.5rem !important; }
-    .glass-header::before { display:none !important; }
-    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
-      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
-    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
-      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
-    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:14px !important; transition:all .3s ease; }
-    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
-    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
-    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
-      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
-    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
-    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
-    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
-      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
-    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
-    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
-    input[type="date"], input[type="file"], textarea, select {
-      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
-      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
-    input:focus, textarea:focus, select:focus, .input-field:focus {
-      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
-    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
-    select option { background:#0f1524; color:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
-      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
-    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
-    tr:hover td { background:rgba(255,255,255,.02); }
-    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
-    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
-    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
-    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
-    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:20px !important; }
-    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
-    .close-modal:hover { color:#fff; }
-    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
-      width:30px; height:30px; animation:spin .7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .bg { background:none !important; }
-    .main-container, .content, main { position:relative; z-index:1; }
-    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
-    .text-primary { color:#fff !important; }
-    .text-secondary { color:rgba(255,255,255,.55) !important; }
-    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
-    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
-    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
-    /* end override */
-
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Aprobaciones</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
   <meta name="theme-color" content="#060a14">
-  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
-  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
-  <meta property="og:type" content="website">
+  <style>
+    body{background:#060a14;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-logo-s{width:30px;height:30px;background:#B5C413;color:#060a14;font-weight:900;font-size:.9rem;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(181,196,19,.2)}
+    .sf-logo-text{font-weight:800;font-size:1.1rem;letter-spacing:.05em;color:#fff;margin-left:6px}
+    .sf-btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:.4rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
+    .sf-sidebar{width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem}
+    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
+    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
+    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s;text-decoration:none;margin-bottom:2px}
+    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;overflow:hidden;position:relative}
+    .sf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none;z-index:1}
+    table{width:100%;border-collapse:collapse}
+    th{background:rgba(255,255,255,.03);font-size:.7rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;padding:.65rem 1rem;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+    td{padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:.85rem}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .glass-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:.75rem;margin-bottom:.5rem;transition:all .25s}
+    .glass-card:hover{background:rgba(181,196,19,.04);border-color:rgba(181,196,19,.12)}
+    .btn-primary{background:#B5C413!important;color:#060a14!important;font-weight:700;border:none;border-radius:10px}
+    .btn-primary:hover{background:#c5d41a!important;box-shadow:0 0 20px rgba(181,196,19,.2)}
+    .btn-secondary{background:rgba(255,255,255,.06)!important;color:#fff!important;border:1px solid rgba(255,255,255,.1)!important;border-radius:10px}
+    .text-primary{color:#fff!important}.text-secondary{color:rgba(255,255,255,.55)!important}
+    .modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(5px)}
+    .modal-content{background:rgba(10,15,30,.96);border:1px solid rgba(255,255,255,.08);border-radius:20px;margin:5% auto;padding:2rem;width:90%;max-width:800px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column}
+    .document-viewer{width:100%;flex:1;min-height:500px;border:none;border-radius:10px}
+    .close-modal{color:rgba(255,255,255,.4);cursor:pointer;font-size:1.5rem;float:right}.close-modal:hover{color:#fff}
+    .spinner{border:3px solid rgba(255,255,255,.08);border-top-color:#B5C413;border-radius:50%;width:30px;height:30px;animation:spin .7s linear infinite;margin:2rem auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading{display:flex;justify-content:center;padding:2rem}
+    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%}}
+  </style>
 </head>
-<body class="">
-    <div class="top-accent"></div>
-  <!-- SignForce Orbs -->
-  <div class="sf-orb sf-orb-1"></div>
-  <div class="sf-orb sf-orb-2"></div>
-  <div class="sf-orb sf-orb-3"></div>
+<body>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
 
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <span class="logo-s" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:0.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,0.25);">S</span>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-            </div>
-            <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/users">Usuarios</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mydocs">Documentos</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/myfolders">Folders</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="/mykeys">Mis llaves</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="/mytemplates">Plantillas</a>
-            </div>
-        </div>
-    </header>
-
-    <div class="bg flex min-h-screen pt-24 pb-8 px-8">
-        <aside class="w-64 glass-panel mr-6 flex flex-col">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Dashboard</h1>
-            </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">group</span>
-                    <span>Clientes</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white  rounded-lg" href="#">
-                    <span class="material-symbols-outlined">folder_shared</span>
-                    <span>Solicitudes</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">description</span>
-                    <span>Documentos</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Configuración</span>
-                </a>
-            </nav>
-        </aside>
-        <main class="flex-1">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-primary fade-in">Nuevas Solicitudes de Clientes</h2>
-                <div id="messageContainer"></div>
-            </div>
-            <div class="glass-panel overflow-hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-[1fr_auto]">
-                    <div class="p-6">
-                        <div class="overflow-x-auto">
-                            <table class="w-full" id="requestsTable">
-                                <thead>
-                                    <tr class="border-b border-gray-200 dark:border-gray-800">
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Cliente</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Dirección</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 dark:divide-gray-800" id="requestsTableBody">
-                                    <!-- Los datos se cargarán dinámicamente aquí -->
-                                    <tr>
-                                        <td colspan="3" class="text-center py-8">
-                                            <div class="loading">
-                                                <div class="spinner"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="p-6 border-l border-gray-200 dark:border-gray-800" id="sidebarDetails">
-                        <div class="flex flex-col h-full">
-                            <div class="flex-shrink-0">
-                                <div class="flex items-center space-x-4 mb-6">
-                                    <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
-                                        <span class="material-symbols-outlined text-3xl text-white">person</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-xl font-semibold text-primary" id="sidebarName">Seleccione un cliente</h3>
-                                        <p class="text-sm text-secondary" id="sidebarEmail">-</p>
-                                        <p class="text-sm text-secondary" id="sidebarTaxNum">-</p>
-                                    </div>
-                                </div>
-                                <h4 class="text-lg font-semibold text-primary mb-4">Documentos Enviados</h4>
-                                <div class="space-y-4" id="sidebarDocuments">
-                                    <!-- Los documentos se cargarán dinámicamente aquí -->
-                                    <p class="text-secondary text-center py-4">Seleccione un cliente para ver sus documentos</p>
-                                </div>
-                            </div>
-                            <div class="mt-auto pt-6 flex gap-4" id="sidebarActions" style="display: none;">
-                                <button class="w-full py-3 px-4 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold btn-secondary" id="rejectBtn">Rechazar</button>
-                                <button class="w-full py-3 px-4 rounded-lg  hover:from-blue-600 hover:to-purple-700 text-white font-semibold btn-primary" id="approveBtn">Aprobar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <header class="sf-header" id="mainHeader">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="color:#fff;"><span class="sf-logo-s">S</span><span class="sf-logo-text">IGNFORCE</span></a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/dashboards/dashboard_admin.html"><span class="material-symbols-outlined" style="font-size:16px;">dashboard</span> Dashboard</a>
+        <a href="#"><span class="material-symbols-outlined" style="font-size:16px;">folder_shared</span> Solicitudes</a>
+      </nav>
     </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <button class="sf-btn-ghost" onclick="window.location.href='/login'"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</button>
+    </div>
+  </header>
 
-    <!-- Modal para visualizar documentos -->
+  <div class="sf-layout">
+    <aside class="sf-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div style="width:32px;height:32px;background:rgba(181,196,19,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">folder_shared</span>
+          </div>
+          <div><div style="font-size:.95rem;font-weight:700;">Aprobaciones</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">Validación de clientes</div></div>
+        </div>
+      </div>
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link" href="/dashboards/dashboard_admin.html"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">group</span> Clientes</a>
+        <a class="sf-nav-link active" href="#"><span class="material-symbols-outlined">folder_shared</span> Solicitudes</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">description</span> Documentos</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">settings</span> Configuración</a>
+      </nav>
+    </aside>
+
+    <main style="flex:1;display:flex;flex-direction:column;gap:1.25rem;">
+      <!-- Hero title -->
+      <div style="background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none;"></div>
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.25),transparent);pointer-events:none;"></div>
+        <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <div style="width:36px;height:36px;background:rgba(181,196,19,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+              <span class="material-symbols-outlined" style="font-size:1.2rem;color:#B5C413;">how_to_reg</span>
+            </div>
+            <div><h2 style="font-size:1.4rem;font-weight:700;margin:0;">Nuevas Solicitudes</h2>
+              <p style="font-size:.82rem;color:rgba(255,255,255,.4);margin:0;">Validación de clientes empresariales</p></div>
+          </div>
+          <div id="messageContainer"></div>
+        </div>
+      </div>
+
+      <!-- Main panel: table + sidebar -->
+      <div class="sf-card">
+        <div style="display:grid;grid-template-columns:1fr auto;">
+          <div style="padding:1.5rem;">
+            <table id="requestsTable">
+              <thead><tr>
+                <th>Cliente</th><th>Dirección</th><th>Estado</th>
+              </tr></thead>
+              <tbody id="requestsTableBody">
+                <tr><td colspan="3" style="text-align:center;padding:2rem;"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:1.5rem;border-left:1px solid rgba(255,255,255,.06);min-width:320px;" id="sidebarDetails">
+            <div style="display:flex;flex-direction:column;height:100%;">
+              <div>
+                <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;">
+                  <div style="width:48px;height:48px;border-radius:50%;background:rgba(181,196,19,.1);display:flex;align-items:center;justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:1.5rem;color:#B5C413;">person</span>
+                  </div>
+                  <div>
+                    <h3 style="font-size:1rem;font-weight:700;margin:0;" id="sidebarName">Seleccione un cliente</h3>
+                    <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin:0;" id="sidebarEmail">-</p>
+                    <p style="font-size:.8rem;color:rgba(255,255,255,.4);margin:0;" id="sidebarTaxNum">-</p>
+                  </div>
+                </div>
+                <h4 style="font-size:.9rem;font-weight:700;margin-bottom:.75rem;">Documentos Enviados</h4>
+                <div id="sidebarDocuments" style="display:flex;flex-direction:column;gap:.5rem;">
+                  <p style="color:rgba(255,255,255,.3);text-align:center;padding:1rem;font-size:.85rem;">Seleccione un cliente</p>
+                </div>
+              </div>
+              <div style="margin-top:auto;padding-top:1.5rem;display:flex;gap:.75rem;" id="sidebarActions">
+                <button style="flex:1;padding:.6rem;border-radius:10px;background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.2);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .25s;" id="rejectBtn">Rechazar</button>
+                <button style="flex:1;padding:.6rem;border-radius:10px;background:#B5C413;color:#060a14;border:none;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .25s;" id="approveBtn">Aprobar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal para visualizar documentos -->
     <div id="documentModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>

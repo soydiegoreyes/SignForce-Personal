@@ -133,22 +133,28 @@
         </div>
     </header>
 
-    <div class="bg flex min-h-screen pt-24 pb-8 px-8">
-        <aside class="w-64 glass-panel mr-6 flex flex-col">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold">Folders</h1>
+    <div class="bg flex min-h-screen pt-24 pb-8 px-8" style="gap:1.25rem;">
+        <aside style="width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem;">
+            <div style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.1rem 1.25rem;">
+              <div style="display:flex;align-items:center;gap:.6rem;">
+                <div style="width:32px;height:32px;background:rgba(181,196,19,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                  <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">description</span>
+                </div>
+                <div><div style="font-size:.95rem;font-weight:700;">Panel</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">SignForce</div></div>
+              </div>
             </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-white  rounded-lg" href="#" data-folder-type="user">
-                    <span class="material-symbols-outlined">folder</span>
-                    <span>Mis Folders</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#" data-folder-type="shared">
-                    <span class="material-symbols-outlined">share</span>
-                    <span>Compartidos conmigo</span>
-                </a>
+            <nav style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:.75rem;flex:1;display:flex;flex-direction:column;">
+              <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem;">Navegación</div>
+              <a href="/" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">home</span> Home</a>
+              <a href="/mydocs" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:#B5C413;background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.12);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">description</span> Documentos</a>
+              <a href="/myfolders" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">folder</span> Folders</a>
+              <a href="/mykeys" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;">
+                <span class="material-symbols-outlined" style="font-size:1.15rem;">key</span> Mis Llaves</a>
             </nav>
-        </aside>
+          </aside>
         <main class="flex-1">
             <div class="flex justify-between items-center mb-8">
                 <h2 class="text-3xl font-bold fade-in" id="sectionTitle">Mis Folders</h2>
