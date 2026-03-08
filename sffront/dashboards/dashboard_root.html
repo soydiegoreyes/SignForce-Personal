@@ -1,235 +1,238 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <title>SignForce</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Dashboard Root</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <style>
+    body { background: #0a0f1e; font-family: 'DM Sans', sans-serif; color: #fff; margin: 0; min-height: 100vh; }
+    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0); background-size: 48px 48px; }
+
+    .sf-header { position:fixed; top:3px; left:0; right:0; z-index:1000; height:60px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 1.5rem;
+      background:rgba(10,15,30,0.85); backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.06); }
+    .sf-header a { text-decoration:none; color:rgba(255,255,255,0.55); font-size:0.85rem; font-weight:500;
+      padding:0.4rem 0.8rem; border-radius:8px; transition:all 0.25s ease; display:inline-flex; align-items:center; gap:6px; }
+    .sf-header a:hover { color:#fff; background:rgba(255,255,255,0.05); }
+    .sf-logo-s { width:30px; height:30px; background:#B5C413; color:#0a0f1e; font-weight:900; font-size:0.9rem;
+      border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(181,196,19,0.2); }
+    .sf-logo-text { font-weight:800; font-size:1.1rem; letter-spacing:0.05em; color:#fff; margin-left:6px; }
+    .sf-btn-ghost { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.08); color:#fff;
+      padding:0.4rem 1rem; border-radius:8px; font-size:0.8rem; font-weight:600; cursor:pointer;
+      transition:all 0.25s ease; display:inline-flex; align-items:center; gap:6px; }
+    .sf-btn-ghost:hover { background:rgba(255,255,255,0.1); border-color:rgba(181,196,19,0.2); }
+
+    .sf-layout { display:flex; min-height:100vh; padding:80px 1.5rem 2rem; gap:1.25rem; position:relative; z-index:1; }
+
+    .sf-sidebar { width:250px; flex-shrink:0; display:flex; flex-direction:column; gap:0.75rem; }
+    .sf-sidebar-card { background:rgba(15,21,36,0.4); backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:1rem; }
+    .sf-sidebar-title { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.12em;
+      color:rgba(255,255,255,0.3); padding:0.4rem 0.6rem; font-weight:600; margin-bottom:0.25rem; }
+    .sf-nav-link { display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:10px;
+      font-size:0.85rem; font-weight:500; color:rgba(255,255,255,0.55); border:1px solid transparent;
+      transition:all 0.25s ease; text-decoration:none; margin-bottom:2px; }
+    .sf-nav-link:hover { color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.04); }
+    .sf-nav-link.active { color:#B5C413; background:rgba(181,196,19,0.08); border-color:rgba(181,196,19,0.12); }
+    .sf-nav-link .material-symbols-outlined { font-size:1.15rem; }
+
+    .sf-content { flex:1; display:flex; flex-direction:column; gap:1.25rem; }
+    .sf-card { background:rgba(15,21,36,0.45); backdrop-filter:blur(16px);
+      border:1px solid rgba(255,255,255,0.06); border-radius:20px; padding:1.75rem; }
+    .sf-card-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem; }
+    .sf-card-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .sf-card-title { font-size:1.05rem; font-weight:700; }
+
+    .sf-welcome { padding:2rem; }
+    .sf-welcome h1 { font-size:1.6rem; font-weight:700; margin-bottom:0.4rem; }
+    .sf-welcome p { color:rgba(255,255,255,0.45); font-size:0.9rem; }
+
+    .sf-actions { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem; }
+    .sf-action-card { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:16px;
+      padding:1.5rem; cursor:pointer; transition:all 0.3s ease; }
+    .sf-action-card:hover { border-color:rgba(181,196,19,0.15); background:rgba(181,196,19,0.03); transform:translateY(-3px);
+      box-shadow:0 12px 40px rgba(0,0,0,0.3); }
+    .sf-action-card h3 { font-size:0.95rem; font-weight:700; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px; }
+    .sf-action-card p { font-size:0.82rem; color:rgba(255,255,255,0.4); line-height:1.5; margin-bottom:1rem; }
+    .sf-action-btn { padding:0.5rem 1.2rem; border-radius:8px; font-size:0.8rem; font-weight:600;
+      cursor:pointer; transition:all 0.25s ease; border:none; display:inline-flex; align-items:center; gap:6px;
+      font-family:'DM Sans', sans-serif; text-decoration:none; }
+    .sf-action-btn-primary { background:#B5C413; color:#0a0f1e; }
+    .sf-action-btn-primary:hover { background:#c5d41a; box-shadow:0 0 20px rgba(181,196,19,0.2); }
+    .sf-action-btn-ghost { background:rgba(255,255,255,0.06); color:#fff; border:1px solid rgba(255,255,255,0.1); }
+    .sf-action-btn-ghost:hover { background:rgba(181,196,19,0.08); border-color:rgba(181,196,19,0.2); }
+
+    .sf-teams-empty { text-align:center; padding:2.5rem; color:rgba(255,255,255,0.3); font-size:0.88rem; }
+    .sf-team-item { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem;
+      border:1px solid rgba(255,255,255,0.05); border-radius:12px; background:rgba(255,255,255,0.02);
+      transition:all 0.25s ease; margin-bottom:0.5rem; }
+    .sf-team-item:hover { background:rgba(181,196,19,0.03); border-color:rgba(181,196,19,0.1); }
+    .sf-team-item h3 { font-size:0.9rem; font-weight:600; margin-bottom:2px; }
+    .sf-team-item p { font-size:0.78rem; color:rgba(255,255,255,0.4); margin:0; }
+    .sf-team-badge { font-size:0.72rem; color:rgba(255,255,255,0.4); background:rgba(255,255,255,0.04);
+      padding:4px 10px; border-radius:20px; }
+
+    .spinner { border:3px solid rgba(255,255,255,0.08); border-top-color:#B5C413; border-radius:50%;
+      width:30px; height:30px; animation:spin 0.7s linear infinite; margin:0 auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    @media (max-width:900px) {
+      .sf-layout { flex-direction:column; padding:75px 1rem 2rem; }
+      .sf-sidebar { width:100%; }
+      .sf-actions { grid-template-columns:1fr; }
+    }
+  </style>
 </head>
 <body>
-    <div class="top-accent"></div>
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <span class="logo-s" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:0.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,0.25);">S</span>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-            </div>
-            <div class="flex items-center gap-9">
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="reports">Reportes</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
-            </div>
-        </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <div class="user-info flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-                </svg>
-                <span id="nombreUsuario">Usuario ROOT</span>
-            </div>
-            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </header>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;box-shadow:0 0 20px rgba(181,196,19,0.22);"></div>
 
-    <div class="main-container">
-        <aside class="sidebar glass-panel">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">SignForce</h1>
-            </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <span>Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="./../administracion/crear_equipo.html">
-                    <span class="material-symbols-outlined">group_add</span>
-                    <span>Crear Equipo</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">assessment</span>
-                    <span>Reportes</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Configuración</span>
-                </a>
-            </nav>
-        </aside>
-        
-        <main class="content">
-            <div class="welcome glass-panel p-6 mb-6 fade-in">
-                <h1 id="tituloBienvenida" class="text-3xl font-bold text-primary mb-2">Bienvenido, Usuario ROOT</h1>
-                <p class="text-secondary">Desde aquí puedes gestionar los equipos de tu empresa.</p>
-            </div>
-            
-            <div class="actions-grid">
-                <div class="action-card" onclick="window.location.href='./../administracion/crear_equipo.html'">
-                    <h3>Crear Nuevo Equipo</h3>
-                    <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
-                    <a href="./../administracion/crear_equipo.html" class="btn-primary text-center">Crear Equipo</a>
-                </div>
-                <div class="action-card" onclick="window.location.href='#'">
-                    <h3>Ver Reportes</h3>
-                    <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
-                    <a href="#" class="btn-secondary text-center">Ver Reportes</a>
-                </div>
-                <div class="action-card" onclick="window.location.href='#'">
-                    <h3>Configuración de Empresa</h3>
-                    <p>Actualiza la información general de tu empresa.</p>
-                    <a href="#" class="btn-secondary text-center">Configurar</a>
-                </div>
-            </div>
-            
-            <div class="equipos-list glass-panel p-6">
-                <h2 class="text-2xl font-bold text-primary mb-4">Tus Equipos</h2>
-                <div id="listaEquipos">
-                    <!-- Los equipos se cargarán dinámicamente -->
-                    <div class="loading">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-            </div>
-        </main>
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="display:flex;align-items:center;gap:0;color:#fff;">
+        <span class="sf-logo-s">S</span><span class="sf-logo-text">IGNFORCE</span>
+      </a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/users"><span class="material-symbols-outlined" style="font-size:16px;">group</span> Usuarios</a>
+        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
+        <a href="/mykeys"><span class="material-symbols-outlined" style="font-size:16px;">key</span> Mis Llaves</a>
+      </nav>
     </div>
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <span id="nombreUsuario" style="font-size:0.82rem;color:rgba(255,255,255,0.45);">Usuario ROOT</span>
+      <button class="sf-btn-ghost" onclick="logout()">
+        <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
+      </button>
+    </div>
+  </header>
 
-    <script>
-        // Cargar información del usuario
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-        
-        /*if (!currentUser || currentUser.tipo !== 'root') {
-            window.location.href = './../registro/login.html';
-        }*/
-        
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Usuario ROOT';
-        document.getElementById('tituloBienvenida').textContent = `Bienvenido, ${currentUser.nombre || 'Usuario ROOT'}`;
-        
-        // Efecto liquid glass para la burbuja del menú
-        const liquidBubble = document.getElementById('liquidBubble');
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        const itemPositions = {};
-        
-        function calculatePositions() {
-            navItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                
-                itemPositions[item.dataset.item] = {
-                    left: rect.left - headerRect.left,
-                    width: rect.width
-                };
-            });
-            
-            moveBubble('dashboard');
-        }
-        
-        function moveBubble(itemName) {
-            const item = itemPositions[itemName];
-            if (item && liquidBubble) {
-                liquidBubble.style.left = `${item.left - 10}px`;
-                liquidBubble.style.width = `${item.width + 20}px`;
-            }
-        }
-        
-        navItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                moveBubble(item.dataset.item);
-            });
-        });
+  <div class="sf-layout">
+    <!-- Sidebar -->
+    <aside class="sf-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:0.6rem;">
+          <div style="width:32px;height:32px;background:rgba(181,196,19,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">admin_panel_settings</span>
+          </div>
+          <div>
+            <div style="font-size:0.95rem;font-weight:700;">Panel Root</div>
+            <div style="font-size:0.68rem;color:rgba(255,255,255,0.35);">Gestión de empresa</div>
+          </div>
+        </div>
+      </div>
 
-        window.addEventListener('load', calculatePositions);
-        window.addEventListener('resize', calculatePositions);
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link active" href="#"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+        <a class="sf-nav-link" href="./../administracion/crear_equipo.html"><span class="material-symbols-outlined">group_add</span> Crear Equipo</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">assessment</span> Reportes</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">settings</span> Configuración</a>
 
-        // Toggle de tema claro/oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                
-                const icon = themeToggle.querySelector('i');
-                if (document.body.classList.contains('light-theme')) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                } else {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
-                }
-            });
-        }
+        <div style="flex:1;"></div>
+        <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:0.75rem;margin-top:0.75rem;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.4);"></span>
+            <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);">v2.1.0 — En línea</span>
+          </div>
+        </div>
+      </nav>
+    </aside>
 
-        // Intersection Observer para animaciones
-        const observerOptions = {
-            threshold: 0.1
-        };
+    <!-- Main -->
+    <main class="sf-content">
+      <!-- Welcome -->
+      <div class="sf-card sf-welcome">
+        <h1 id="tituloBienvenida">Bienvenido, Usuario ROOT</h1>
+        <p>Desde aquí puedes gestionar los equipos y la configuración de tu empresa.</p>
+      </div>
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('fade-in');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
+      <!-- Actions -->
+      <div class="sf-actions">
+        <div class="sf-action-card" onclick="window.location.href='./../administracion/crear_equipo.html'">
+          <h3>
+            <span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">group_add</span>
+            Crear Nuevo Equipo
+          </h3>
+          <p>Crea un nuevo equipo dentro de tu empresa y asigna un usuario maestro para gestionarlo.</p>
+          <a href="./../administracion/crear_equipo.html" class="sf-action-btn sf-action-btn-primary">
+            <span class="material-symbols-outlined" style="font-size:14px;">add</span> Crear Equipo
+          </a>
+        </div>
 
-        document.querySelectorAll('.fade-in').forEach(element => {
-            observer.observe(element);
-        });
-        
-        // Cargar equipos de la empresa
-        function cargarEquipos() {
-            // Simular carga de equipos
-            // En un caso real sería un fetch a la API
-            /*
-            fetch(`/api/empresas/${currentUser.empresaId}/equipos`)
-            .then(response => response.json())
-            .then(data => {
-                // Mostrar equipos
-            });
-            */
-            
-            // Usar datos en memoria
-            let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
-            
-            const equiposEmpresa = equipos.filter(e => e.instId === currentUser.instId);
-            
-            if (equiposEmpresa.length > 0) {
-                let html = '';
-                equiposEmpresa.forEach(equipo => {
-                    html += `
-                        <div class="equipo-item fade-in">
-                            <div>
-                                <h3 class="text-primary font-semibold">${equipo.nombre}</h3>
-                                <p class="text-secondary">Usuario maestro: ${equipo.usuarioMaestroEmail}</p>
-                            </div>
-                            <div>
-                                <span class="text-secondary">Miembros: ${equipo.miembros ? equipo.miembros.length : 0}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('listaEquipos').innerHTML = html;
-            } else {
-                document.getElementById('listaEquipos').innerHTML = '<p class="text-secondary text-center py-4">No hay equipos creados aún. Crea tu primer equipo para comenzar.</p>';
-            }
-        }
-        
-        cargarEquipos();
-        
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = '/login';
-        }
-    </script>
+        <div class="sf-action-card" onclick="window.location.href='#'">
+          <h3>
+            <span class="material-symbols-outlined" style="font-size:18px;color:#60a5fa;">assessment</span>
+            Ver Reportes
+          </h3>
+          <p>Consulta reportes y estadísticas de todos los equipos de tu empresa.</p>
+          <a href="#" class="sf-action-btn sf-action-btn-ghost">
+            <span class="material-symbols-outlined" style="font-size:14px;">visibility</span> Ver Reportes
+          </a>
+        </div>
+
+        <div class="sf-action-card" onclick="window.location.href='#'">
+          <h3>
+            <span class="material-symbols-outlined" style="font-size:18px;color:#a78bfa;">settings</span>
+            Configuración
+          </h3>
+          <p>Actualiza la información general de tu empresa y configuración de la plataforma.</p>
+          <a href="#" class="sf-action-btn sf-action-btn-ghost">
+            <span class="material-symbols-outlined" style="font-size:14px;">tune</span> Configurar
+          </a>
+        </div>
+      </div>
+
+      <!-- Teams list -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,0.1);">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">groups</span>
+          </div>
+          <div class="sf-card-title">Tus Equipos</div>
+        </div>
+        <div id="listaEquipos">
+          <div class="sf-teams-empty">
+            <span class="material-symbols-outlined" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:0.5rem;">groups</span>
+            No hay equipos creados aún. Crea tu primer equipo para comenzar.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+    if (currentUser.nombre) {
+      document.getElementById('nombreUsuario').textContent = currentUser.nombre;
+      document.getElementById('tituloBienvenida').textContent = 'Bienvenido, ' + currentUser.nombre;
+    }
+
+    function cargarEquipos() {
+      let equipos = JSON.parse(sessionStorage.getItem('equipos') || '[]');
+      const container = document.getElementById('listaEquipos');
+      const equiposEmpresa = equipos.filter(e => e.instId === currentUser.instId);
+
+      if (equiposEmpresa.length > 0) {
+        container.innerHTML = equiposEmpresa.map(eq => `
+          <div class="sf-team-item">
+            <div>
+              <h3>${eq.nombre}</h3>
+              <p>Administrador: ${eq.usuarioMaestroEmail || 'Sin asignar'}</p>
+            </div>
+            <span class="sf-team-badge">${eq.miembros ? eq.miembros.length : 0} miembros</span>
+          </div>
+        `).join('');
+      }
+    }
+    cargarEquipos();
+
+    function logout() {
+      sessionStorage.removeItem('currentUser');
+      window.location.href = '/login';
+    }
+  </script>
 </body>
 </html>
