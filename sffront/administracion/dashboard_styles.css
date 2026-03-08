@@ -1,2 +1,1 @@
-/* Redirect to shared styles */
-@import url('../dashboards/dashboard_styles.css');
+/* Inherits from signforce-global.css */

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Página no encontrada</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#060a14;font-family:'DM Sans',sans-serif;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;
+      background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none}
+    .orb-1{width:400px;height:400px;background:rgba(181,196,19,.06);top:-100px;left:-80px;animation:d1 20s ease-in-out infinite}
+    .orb-2{width:300px;height:300px;background:rgba(248,113,113,.04);bottom:-80px;right:-60px;animation:d2 24s ease-in-out infinite}
+    @keyframes d1{0%,100%{transform:translate(0,0)}50%{transform:translate(60px,40px)}}
+    @keyframes d2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-30px)}}
+    .topbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999}
+    .card{position:relative;z-index:1;text-align:center;max-width:480px;padding:3rem;
+      background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:24px;overflow:hidden}
+    .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.25),transparent);pointer-events:none}
+    .code{font-size:6rem;font-weight:700;color:rgba(181,196,19,.15);line-height:1;margin-bottom:.5rem;position:relative}
+    h1{font-size:1.4rem;font-weight:700;margin-bottom:.5rem;position:relative}
+    p{color:rgba(255,255,255,.45);font-size:.9rem;margin-bottom:2rem;position:relative}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:.7rem 1.8rem;border-radius:10px;font-size:.88rem;
+      font-weight:700;text-decoration:none;transition:all .25s;position:relative;font-family:'DM Sans',sans-serif;
+      background:#B5C413;color:#060a14;border:none;cursor:pointer}
+    .btn:hover{background:#c5d41a;box-shadow:0 0 30px rgba(181,196,19,.25);transform:translateY(-2px)}
+    .logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2rem;position:relative}
+    .logo-s{width:36px;height:36px;background:#B5C413;color:#060a14;font-weight:900;font-size:1.1rem;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(181,196,19,.2)}
+    .logo-text{font-weight:800;font-size:1.1rem;letter-spacing:.06em}
+  </style>
+</head>
+<body>
+  <div class="topbar"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="card">
+    <div class="logo"><span class="logo-s">S</span><span class="logo-text">IGNFORCE</span></div>
+    <div class="code">404</div>
+    <h1>Página no encontrada</h1>
+    <p>La página que buscas no existe o fue movida. Verifica la URL o regresa al inicio.</p>
+    <a href="/" class="btn"><span class="material-symbols-outlined" style="font-size:18px;">home</span> Volver al inicio</a>
+  </div>
+</body>
+</html>
