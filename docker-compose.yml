@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # ═══ MySQL Database ═══
+  signforce-db:
+    image: mysql:8.0
+    container_name: signforce-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: SignF0rc3_R00t_2026!
+      MYSQL_DATABASE: signforceapi
+      MYSQL_USER: sfuser
+      MYSQL_PASSWORD: SignF0rc3_Us3r_2026!
+    volumes:
+      - signforce-db-data:/var/lib/mysql
+      - ./signforce_db.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "127.0.0.1:3307:3306"
+    networks:
+      - signforce-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSignF0rc3_R00t_2026!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ═══ Backend - Crypto/Signing API ═══
+  signforce-back:
+    build:
+      context: ./sfback
+      dockerfile: Dockerfile
+    container_name: signforce-back
+    restart: unless-stopped
+    depends_on:
+      signforce-db:
+        condition: service_healthy
+    environment:
+      API_PORT: "5001"
+      DB_USER: sfuser
+      DB_PASS: "SignF0rc3_Us3r_2026!"
+      DB_IP: "signforce-db:3306"
+      DB_NAME: signforceapi
+      JWT_KEY: "sf_jwt_secret_key_2026_demo_x7k9m2p4"
+      JWT_EXP: "60"
+      DOCS_KEY: "sf_docs_encryption_key_2026_demo"
+      BASE_DIR: "/app/data"
+      GENERIC_FOLDER_PATH: "/app/data/folders"
+      KEYS_PATH: "/app/data/keys"
+      QR_URL_BASE: "https://testsignforce.luxspace.org/"
+    volumes:
+      - signforce-data:/app/data
+    networks:
+      - signforce-net
+
+  # ═══ Middleware - Web Gateway ═══
+  signforce-middle:
+    build:
+      context: ./sfmiddle
+      dockerfile: Dockerfile
+    container_name: signforce-middle
+    restart: unless-stopped
+    depends_on:
+      signforce-db:
+        condition: service_healthy
+      signforce-back:
+        condition: service_started
+    environment:
+      API_PORT: "5002"
+      DB_USER: sfuser
+      DB_PASS: "SignF0rc3_Us3r_2026!"
+      DB_IP: "signforce-db:3306"
+      DB_NAME: signforceapi
+      JWT_KEY: "sf_jwt_secret_key_2026_demo_x7k9m2p4"
+      JWT_EXP: "300"
+      BACK_URL: "http://signforce-back:5001"
+      DOCS_KEY: "sf_docs_encryption_key_2026_demo"
+      BASE_DIR: "/app/data"
+      GENERIC_FOLDER_PATH: "/app/data/folders"
+      GENERIC_DOC_PATH: "/app/data/docs"
+      GENERIC_IMG_PATH: "/app/data/images"
+      TEMP_BASE_PATH: "/app/data/temp"
+      TEMPLATE_DOC_PATH: "/app/data/templates"
+      KEYS_PATH: "/app/data/keys"
+      MAX_UPLOAD_MEM: "104857600"
+      QR_URL_BASE: "https://testsignforce.luxspace.org/"
+      EMAIL_USER: "noreply@sign-force.com"
+      EMAIL_PASS: "changeme"
+      SMTP_SERVER: "smtp.gmail.com"
+      EMAIL_DIR: "/app/data/emails"
+    volumes:
+      - signforce-data:/app/data
+      - ./sffront:/app/frontend:ro
+    ports:
+      - "127.0.0.1:5002:5002"
+    networks:
+      - signforce-net
+
+  # ═══ Frontend - Nginx ═══
+  signforce-web:
+    image: nginx:alpine
+    container_name: signforce-web
+    restart: unless-stopped
+    depends_on:
+      - signforce-middle
+    volumes:
+      - ./sffront:/usr/share/nginx/html:ro
+      - ./nginx-full.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:8090:80"
+    networks:
+      - signforce-net
+
+volumes:
+  signforce-db-data:
+  signforce-data:
+
+networks:
+  signforce-net:
+    driver: bridge
