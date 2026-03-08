@@ -1,0 +1,60 @@
+# ═══ SignForce .gitignore ═══
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+mailservice.exe
+
+# Go
+/sfback/sfback
+/sfmiddle/sfmiddle
+/emailServ/emailServ
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Environment & Secrets
+.env
+.env.*
+*.pem
+*.key
+*.der
+*.p12
+*.pfx
+!sffront/**
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
