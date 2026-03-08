@@ -260,7 +260,7 @@
     }
 
     h1 {
-      font-family: 'Michroma', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       font-size: clamp(2.5rem, 5vw, 4rem);
       font-weight: 700;
       line-height: 1.08;
@@ -1018,7 +1018,70 @@
 
     /* ── SELECTION COLOR ── */
     ::selection { background: rgba(181,196,19,0.3); color: white; }
-  </style>
+  
+    /* ═══ SignForce Design Override ═══ */
+    body { background: #0a0f1e !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
+    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
+    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
+    p { color: rgba(255,255,255,.6) !important; }
+    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
+      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
+      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
+      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
+      box-shadow:none !important; padding:0 1.5rem !important; }
+    .glass-header::before { display:none !important; }
+    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
+      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
+    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
+      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
+    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
+      border-radius:14px !important; transition:all .3s ease; }
+    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
+    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
+    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
+      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
+    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
+    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
+    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
+      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
+    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
+    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
+    input[type="date"], input[type="file"], textarea, select {
+      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
+      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
+    input:focus, textarea:focus, select:focus, .input-field:focus {
+      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
+    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
+    select option { background:#0f1524; color:#fff; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
+      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
+    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
+    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
+      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
+    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
+    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
+    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:20px !important; }
+    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
+    .close-modal:hover { color:#fff; }
+    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
+      width:30px; height:30px; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .bg { background:none !important; }
+    .main-container, .content, main { position:relative; z-index:1; }
+    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
+    .text-primary { color:#fff !important; }
+    .text-secondary { color:rgba(255,255,255,.55) !important; }
+    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
+    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
+    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
+    /* end override */
+
+    </style>
     <link rel="stylesheet" href="../signforce-global.css">
 </head>
 <body>

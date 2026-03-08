@@ -20,7 +20,7 @@ body {
 }
 
 h1, h2, h3, h4 {
-  font-family: "Michroma", sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 h1 {
@@ -623,7 +623,7 @@ body.light-theme body.light-theme .testimonial-card {
     color: white;
     font-size: 1.5rem;
     font-weight: bold;
-    font-family: 'Michroma', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
 
 .close-modal {
