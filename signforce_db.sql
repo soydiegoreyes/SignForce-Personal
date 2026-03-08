@@ -1,3 +1,13 @@
+-- ═══════════════════════════════════════════════════════════
+-- SignForce — Database Schema (MySQL 8.0)
+-- ═══════════════════════════════════════════════════════════
+-- Contains: Users, institutions, documents, signatures,
+--           teams, payments, and audit tables.
+--
+-- ⚠️  SECURITY NOTE: payment table stores card data.
+--     Must implement tokenization before production.
+-- ═══════════════════════════════════════════════════════════
+
 CREATE DATABASE  IF NOT EXISTS `signforceapi` /*!40100 DEFAULT CHARACTER SET utf8mb3 */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `signforceapi`;
 -- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)

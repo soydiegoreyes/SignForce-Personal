@@ -1,3 +1,15 @@
+/* ═══════════════════════════════════════════════════════════
+ * SignForce — Unified Design System (signforce-global.css)
+ * ═══════════════════════════════════════════════════════════
+ * Brand:       #B5C413 (R181 G196 B19)
+ * Background:  #060a14 (deep black)
+ * Font:        DM Sans
+ * Glass:       rgba(15,21,36,0.45) + backdrop-blur(16px)
+ *
+ * This file is the single source of truth for all
+ * visual styles across the SignForce platform.
+ * ═══════════════════════════════════════════════════════════ */
+
 /* ═══════════════════════════════════════════════════════════════
    SIGNFORCE — UNIFIED DESIGN SYSTEM v1.0
    Base: Index/Login theme (dark + lime accent + glassmorphism)

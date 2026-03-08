@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// SignForce — Middleware Gateway (sfmiddle)
+// ═══════════════════════════════════════════════════════════
+// Service:     sfmiddle
+// Port:        ${API_PORT} (default 5002)
+// Description: Authentication gateway, session management,
+//              request routing, and JWT token handling.
+//              Proxies requests to sfback API.
+// ═══════════════════════════════════════════════════════════
+
 package main
 
 import (

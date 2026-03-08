@@ -1,3 +1,14 @@
+// ═══════════════════════════════════════════════════════════
+// SignForce — Database Connection Layer
+// ═══════════════════════════════════════════════════════════
+// Handles MySQL connections, query execution, and data
+// access patterns. Uses connection pooling.
+//
+// ⚠️  SECURITY NOTE: GenericInsert and GenericJoinSelect
+//     use string interpolation for queries. These MUST be
+//     migrated to prepared statements before production.
+// ═══════════════════════════════════════════════════════════
+
 package db
 
 import (

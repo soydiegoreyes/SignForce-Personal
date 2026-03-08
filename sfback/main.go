@@ -1,3 +1,13 @@
+// ═══════════════════════════════════════════════════════════
+// SignForce — Core Cryptographic API (sfback)
+// ═══════════════════════════════════════════════════════════
+// Service:     sfback
+// Port:        ${API_PORT} (default 5001)
+// Description: Handles document encryption (AES-256-GCM),
+//              digital signatures (XAdES-BES), certificate
+//              validation (X.509), and database operations.
+// ═══════════════════════════════════════════════════════════
+
 package main
 
 import (

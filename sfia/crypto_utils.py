@@ -1,3 +1,11 @@
+# ═══════════════════════════════════════════════════════════
+# SignForce — AES-256-GCM Decryption Utilities
+# ═══════════════════════════════════════════════════════════
+# Compatible with sfmiddle/utilities/cryptoutils.go
+# Key source: DOCS_KEY environment variable (required)
+# Algorithm: SHA-256(DOCS_KEY) → 32-byte AES key
+# ═══════════════════════════════════════════════════════════
+
 """
 Desencriptación AES-GCM compatible con sfmiddle/utilities/cryptoutils.go.
 
@@ -12,6 +20,7 @@ Algoritmo:
 """
 
 import hashlib
+import os
 
 try:
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -44,7 +53,7 @@ def decrypt_bytes(data: bytes) -> bytes | None:
     """
     if not _CRYPTO_AVAILABLE:
         return None
-    key_env = "oVS0Y2@%k7OzR*[tMP>GaU|K1Ijsg&2@%$".encode()
+    key_env = os.getenv("DOCS_KEY", "").encode()
     if not key_env:
         return None
     if len(data) < _NONCE_SIZE + 16:
