@@ -1,1708 +1,400 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SIGNFORCE — Firma Digital Avanzada</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Michroma:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Firma Electrónica Avanzada</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <style>
-    :root {
-      --bg-primary: #0a0f1e;
-      --bg-secondary: #111827;
-      --bg-card: #0f1524;
-      --bg-card-hover: #151d30;
-      --surface: rgba(255,255,255,0.03);
-      --surface-elevated: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.06);
-      --border-strong: rgba(255,255,255,0.12);
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255,255,255,0.65);
-      --text-muted: rgba(255,255,255,0.35);
-      --lime: #B5C413;
-      --lime-dim: rgba(181,196,19,0.7);
-      --lime-glow: rgba(181,196,19,0.15);
-      --lime-glow-strong: rgba(181,196,19,0.25);
-      --green: #10b981;
-      --green-glow: rgba(16,185,129,0.15);
-      --blue: #0ea5e9;
-      --purple: #7c3aed;
-      --red: #f43f5e;
-      --amber: #f59e0b;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-      --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      --radius-xl: 28px;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:#060a14;color:#fff;font-family:'DM Sans',sans-serif;overflow-x:hidden;line-height:1.6}
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    /* ═══ Background ═══ */
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.03) 1px,transparent 0);background-size:48px 48px}
+    .orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+    .orb-1{width:500px;height:500px;background:rgba(181,196,19,.06);top:-150px;left:-100px;animation:drift1 20s ease-in-out infinite}
+    .orb-2{width:400px;height:400px;background:rgba(52,211,153,.04);bottom:-100px;right:-100px;animation:drift2 25s ease-in-out infinite}
+    .orb-3{width:300px;height:300px;background:rgba(96,165,250,.03);top:40%;right:10%;animation:drift3 18s ease-in-out infinite}
+    @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
+    @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-40px)}}
+    @keyframes drift3{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
 
-    body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
+    /* ═══ Top bar ═══ */
+    .topbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;box-shadow:0 0 20px rgba(181,196,19,.22)}
 
-    /* ── TOP ACCENT BAR ── */
-    .top-accent {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--lime), #d4e157, var(--lime));
-      z-index: 200;
-      box-shadow: 0 0 20px var(--lime-glow-strong), 0 0 60px var(--lime-glow);
-    }
+    /* ═══ Nav ═══ */
+    .nav{position:fixed;top:3px;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;
+      background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);transition:all .4s}
+    .nav.scrolled{background:rgba(6,10,20,.96);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+    .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff}
+    .logo-s{width:34px;height:34px;background:#B5C413;color:#060a14;font-weight:900;font-size:1rem;border-radius:9px;
+      display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(181,196,19,.25)}
+    .logo-text{font-weight:800;font-size:1.15rem;letter-spacing:.06em}
+    .nav-links{display:flex;gap:1.5rem;list-style:none}
+    .nav-links a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .3s;padding:.4rem .6rem;border-radius:6px}
+    .nav-links a:hover{color:#fff}
+    .nav-cta{background:#B5C413;color:#060a14;padding:.5rem 1.3rem;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;transition:all .25s}
+    .nav-cta:hover{background:#c5d41a;box-shadow:0 0 24px rgba(181,196,19,.25)}
 
-    /* ── ANIMATED BACKGROUND ── */
-    .bg-grid {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image:
-        radial-gradient(circle at 1px 1px, rgba(255,255,255,0.03) 1px, transparent 0);
-      background-size: 48px 48px;
-    }
-    .bg-grid::after {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        radial-gradient(ellipse 70% 50% at 20% 0%, rgba(181,196,19,0.04) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 50% at 80% 100%, rgba(16,185,129,0.03) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 40% at 60% 50%, rgba(14,165,233,0.02) 0%, transparent 50%);
-    }
+    /* ═══ Sections ═══ */
+    section{position:relative;z-index:1}
+    .container{max-width:1140px;margin:0 auto;padding:0 2rem}
 
-    /* ── FLOATING PARTICLES ── */
-    .particles {
-      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-    }
-    .particle {
-      position: absolute;
-      border-radius: 50%;
-      background: var(--lime);
-      opacity: 0;
-      animation: floatUp linear infinite;
-    }
-    @keyframes floatUp {
-      0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
-      10% { opacity: 0.6; transform: translateY(80vh) scale(1); }
-      90% { opacity: 0.3; }
-      100% { transform: translateY(-10vh) translateX(50px) scale(0.5); opacity: 0; }
-    }
+    /* ═══ Hero ═══ */
+    .hero{padding:10rem 0 6rem;text-align:center}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:.4rem 1rem;border-radius:20px;
+      background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.15);font-size:.75rem;font-weight:600;color:#B5C413;margin-bottom:2rem}
+    .hero h1{font-size:3.8rem;font-weight:700;line-height:1.1;max-width:700px;margin:0 auto 1.5rem}
+    .hero h1 .accent{color:#B5C413;position:relative}
+    .hero h1 .accent::after{content:'';position:absolute;bottom:4px;left:0;right:0;height:3px;background:#B5C413;opacity:.3;border-radius:2px}
+    .hero p{font-size:1.15rem;color:rgba(255,255,255,.5);max-width:540px;margin:0 auto 2.5rem}
+    .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .btn-lg{padding:.85rem 2rem;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .3s;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
+    .btn-primary{background:#B5C413;color:#060a14}
+    .btn-primary:hover{background:#c5d41a;box-shadow:0 0 30px rgba(181,196,19,.25);transform:translateY(-2px)}
+    .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12)}
+    .btn-ghost:hover{background:rgba(255,255,255,.06);border-color:rgba(181,196,19,.25)}
+    .hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:4rem}
+    .stat{text-align:center}
+    .stat-num{font-size:2.2rem;font-weight:700;color:#B5C413}
+    .stat-label{font-size:.78rem;color:rgba(255,255,255,.35);margin-top:.2rem}
 
-    /* ── GLOW ORB BACKGROUND ── */
-    .glow-orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .glow-orb-1 {
-      width: 500px; height: 500px;
-      background: rgba(181,196,19,0.06);
-      top: -150px; left: -100px;
-      animation: orbDrift1 20s ease-in-out infinite;
-    }
-    .glow-orb-2 {
-      width: 400px; height: 400px;
-      background: rgba(16,185,129,0.04);
-      bottom: -100px; right: -100px;
-      animation: orbDrift2 25s ease-in-out infinite;
-    }
-    .glow-orb-3 {
-      width: 300px; height: 300px;
-      background: rgba(14,165,233,0.03);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      animation: orbDrift3 18s ease-in-out infinite;
-    }
-    @keyframes orbDrift1 {
-      0%, 100% { transform: translate(0, 0); }
-      33% { transform: translate(80px, 60px); }
-      66% { transform: translate(-40px, 30px); }
-    }
-    @keyframes orbDrift2 {
-      0%, 100% { transform: translate(0, 0); }
-      33% { transform: translate(-60px, -40px); }
-      66% { transform: translate(30px, -60px); }
-    }
-    @keyframes orbDrift3 {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); }
-      50% { transform: translate(-50%, -50%) scale(1.3); }
-    }
+    /* ═══ Ticker ═══ */
+    .ticker{overflow:hidden;padding:2rem 0;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);margin:2rem 0}
+    .ticker-track{display:flex;gap:3rem;animation:scroll 30s linear infinite;white-space:nowrap}
+    .ticker-item{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;display:flex;align-items:center;gap:8px}
+    .ticker-dot{width:4px;height:4px;border-radius:50%;background:rgba(181,196,19,.3)}
+    @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-    /* ── NAVIGATION ── */
-    nav {
-      position: fixed; top: 3px; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 3rem;
-      height: 64px;
-      background: rgba(10,15,30,0.8);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      transition: all 0.4s ease;
-    }
-    nav.scrolled {
-      background: rgba(10,15,30,0.95);
-      box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-    }
-    .nav-logo {
-      font-family: 'Syncopate', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.15em;
-      color: var(--text-primary);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .nav-logo .logo-s {
-      color: var(--lime);
-      text-shadow: 0 0 20px var(--lime-glow);
-    }
-    .nav-links {
-      display: flex; align-items: center; gap: 2rem;
-      list-style: none;
-    }
-    .nav-links a {
-      font-size: 0.8rem;
-      font-weight: 500;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      text-decoration: none;
-      transition: color 0.3s, text-shadow 0.3s;
-      position: relative;
-    }
-    .nav-links a:hover {
-      color: var(--lime);
-      text-shadow: 0 0 15px var(--lime-glow);
-    }
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -4px; left: 0;
-      width: 0; height: 1px;
-      background: var(--lime);
-      transition: width 0.3s ease;
-    }
-    .nav-links a:hover::after { width: 100%; }
-    .nav-cta {
-      background: var(--lime) !important;
-      color: var(--bg-primary) !important;
-      padding: 0.5rem 1.25rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.78rem !important;
-      font-weight: 700 !important;
-      transition: all 0.3s !important;
-      box-shadow: 0 0 20px var(--lime-glow);
-    }
-    .nav-cta:hover {
-      box-shadow: 0 0 30px var(--lime-glow-strong), 0 4px 15px rgba(181,196,19,0.3) !important;
-      transform: translateY(-1px);
-    }
-    .nav-cta::after { display: none !important; }
+    /* ═══ Features ═══ */
+    .features{padding:6rem 0}
+    .section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:#B5C413;font-weight:600;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+    .section-label::before{content:'';width:20px;height:1px;background:#B5C413}
+    .section-title{font-size:2.2rem;font-weight:700;margin-bottom:.75rem;max-width:500px}
+    .section-sub{color:rgba(255,255,255,.45);font-size:1rem;max-width:480px;margin-bottom:3rem}
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .f-card{background:rgba(15,21,36,.4);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:2rem;
+      position:relative;overflow:hidden;transition:all .3s}
+    .f-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,196,19,.2),transparent);pointer-events:none}
+    .f-card:hover{border-color:rgba(181,196,19,.15);transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.3)}
+    .f-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
+    .f-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+    .f-card p{font-size:.85rem;color:rgba(255,255,255,.4);line-height:1.6}
 
-    /* Mobile menu toggle */
-    .nav-toggle {
-      display: none;
-      background: none; border: none;
-      color: var(--text-primary);
-      font-size: 1.5rem;
-      cursor: pointer;
-      padding: 4px;
-    }
+    /* ═══ How it works ═══ */
+    .how{padding:6rem 0}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:3rem}
+    .step{text-align:center;padding:2rem 1.5rem;background:rgba(15,21,36,.3);border:1px solid rgba(255,255,255,.05);border-radius:20px;position:relative;transition:all .3s}
+    .step:hover{border-color:rgba(181,196,19,.12);background:rgba(181,196,19,.03)}
+    .step-num{width:36px;height:36px;border-radius:10px;background:rgba(181,196,19,.1);color:#B5C413;
+      font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+    .step h4{font-size:.95rem;font-weight:700;margin-bottom:.4rem}
+    .step p{font-size:.8rem;color:rgba(255,255,255,.4);line-height:1.5}
+    .step-arrow{position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.1);font-size:1.5rem}
 
-    /* ── HERO ── */
-    .hero {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      display: flex; align-items: center;
-      padding: 0;
-      overflow: hidden;
-    }
-    .hero-inner {
-      display: grid;
-      grid-template-columns: 1fr 480px;
-      gap: 4rem;
-      align-items: center;
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 120px 3rem 60px;
-      width: 100%;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--surface-elevated);
-      border: 1px solid var(--border-strong);
-      border-radius: 100px;
-      padding: 0.4rem 1.2rem;
-      font-size: 0.72rem;
-      font-family: 'Share Tech Mono', monospace;
-      letter-spacing: 0.12em;
-      color: var(--lime);
-      margin-bottom: 2rem;
-      backdrop-filter: blur(10px);
-    }
-    .hero-badge .dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--lime);
-      box-shadow: 0 0 10px var(--lime), 0 0 20px var(--lime-glow);
-      animation: pulse-dot 2s infinite;
-    }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--lime), 0 0 20px var(--lime-glow); }
-      50% { opacity: 0.4; box-shadow: 0 0 5px var(--lime-glow); }
-    }
+    /* ═══ Security ═══ */
+    .security{padding:6rem 0}
+    .security-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+    .security-visual{background:rgba(15,21,36,.4);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:3rem;
+      position:relative;overflow:hidden;text-align:center}
+    .security-visual::before{content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .shield-icon{font-size:5rem;color:rgba(181,196,19,.5);margin-bottom:1.5rem}
+    .sec-list{display:flex;flex-direction:column;gap:1rem}
+    .sec-item{display:flex;align-items:flex-start;gap:.85rem;padding:1rem;border-radius:14px;border:1px solid rgba(255,255,255,.05);transition:all .3s}
+    .sec-item:hover{background:rgba(181,196,19,.03);border-color:rgba(181,196,19,.1)}
+    .sec-check{width:28px;height:28px;border-radius:7px;background:rgba(181,196,19,.1);color:#B5C413;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sec-item h4{font-size:.9rem;font-weight:600;margin-bottom:.15rem}
+    .sec-item p{font-size:.8rem;color:rgba(255,255,255,.4)}
 
-    h1 {
-      font-family: 'DM Sans', sans-serif;
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      font-weight: 700;
-      line-height: 1.08;
-      letter-spacing: -0.02em;
-      color: var(--text-primary);
-      margin-bottom: 1.5rem;
-    }
-    h1 .line-accent {
-      color: transparent;
-      -webkit-text-stroke: 2px var(--lime);
-      filter: drop-shadow(0 0 15px var(--lime-glow));
-    }
-    .hero-sub {
-      font-size: 1.05rem;
-      color: var(--text-secondary);
-      max-width: 520px;
-      line-height: 1.75;
-      margin-bottom: 2.5rem;
-    }
-    .hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    /* ═══ CTA ═══ */
+    .cta{padding:6rem 0;text-align:center}
+    .cta-card{background:rgba(15,21,36,.5);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:4rem;
+      position:relative;overflow:hidden}
+    .cta-card::before{content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .cta-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,196,19,.3),transparent);pointer-events:none}
+    .cta h2{font-size:2.2rem;font-weight:700;margin-bottom:.75rem;position:relative}
+    .cta p{color:rgba(255,255,255,.45);font-size:1.05rem;margin-bottom:2rem;position:relative}
 
-    .btn-primary {
-      background: var(--lime);
-      color: var(--bg-primary);
-      border: none;
-      padding: 0.9rem 2rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.02em;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      display: inline-flex; align-items: center; gap: 8px;
-      box-shadow: 0 0 25px var(--lime-glow), 0 4px 15px rgba(0,0,0,0.3);
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 40px var(--lime-glow-strong), 0 8px 30px rgba(181,196,19,0.2);
-    }
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-primary);
-      border: 1px solid var(--border-strong);
-      padding: 0.9rem 2rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-flex; align-items: center; gap: 8px;
-      backdrop-filter: blur(10px);
-    }
-    .btn-ghost:hover {
-      background: var(--surface-elevated);
-      border-color: var(--lime-dim);
-      color: var(--lime);
-    }
+    /* ═══ Compliance ═══ */
+    .compliance{padding:4rem 0;border-top:1px solid rgba(255,255,255,.04)}
+    .compliance-row{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap}
+    .comp-item{display:flex;align-items:center;gap:.6rem;color:rgba(255,255,255,.3);font-size:.78rem;font-weight:500}
 
-    /* ── HERO PANEL ── */
-    .hero-panel {
-      background: var(--bg-card);
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg), 0 0 40px rgba(181,196,19,0.03);
-      position: relative;
-      transition: all 0.4s ease;
-    }
-    .hero-panel:hover {
-      box-shadow: var(--shadow-lg), 0 0 60px rgba(181,196,19,0.06);
-      border-color: rgba(181,196,19,0.15);
-    }
-    .panel-header {
-      display: flex; align-items: center; gap: 10px;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-    }
-    .panel-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .panel-title {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      flex: 1;
-      text-align: center;
-    }
-    .panel-body { padding: 1.5rem; }
+    /* ═══ Footer ═══ */
+    .footer{padding:3rem 0;border-top:1px solid rgba(255,255,255,.04);text-align:center}
+    .footer p{color:rgba(255,255,255,.2);font-size:.78rem}
+    .footer-links{display:flex;justify-content:center;gap:2rem;margin-bottom:1rem}
+    .footer-links a{color:rgba(255,255,255,.35);text-decoration:none;font-size:.78rem;transition:color .3s}
+    .footer-links a:hover{color:#B5C413}
 
-    .sig-specimen {
-      background: rgba(255,255,255,0.02);
-      border-radius: var(--radius-md);
-      padding: 2rem;
-      text-align: center;
-      margin-bottom: 1.25rem;
-      border: 1px dashed var(--border-strong);
-      position: relative;
-    }
-    .sig-specimen svg { width: 100%; height: 80px; overflow: visible; }
-    .sig-line {
-      stroke: var(--text-primary);
-      stroke-width: 2.5;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 400;
-      stroke-dashoffset: 400;
-      animation: draw-sig 2s ease forwards 0.5s;
-    }
-    @keyframes draw-sig { to { stroke-dashoffset: 0; } }
+    /* ═══ Animations ═══ */
+    .reveal{opacity:0;transform:translateY(20px);transition:all .7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
 
-    .sig-verified {
-      position: absolute; top: 10px; right: 10px;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--lime);
-      background: var(--lime-glow);
-      padding: 3px 10px;
-      border-radius: 4px;
-      border: 1px solid rgba(181,196,19,0.25);
-      letter-spacing: 0.05em;
-    }
-    .sig-hash {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      word-break: break-all;
-      line-height: 1.8;
-    }
-    .sig-hash span { color: var(--lime); }
+    /* ═══ Scrollbar ═══ */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(181,196,19,.2);border-radius:3px}
 
-    .mini-metrics {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
-      margin-top: 1.25rem;
-    }
-    .mini-metric {
-      background: rgba(255,255,255,0.03);
-      border-radius: var(--radius-sm);
-      padding: 0.85rem;
-      border: 1px solid var(--border);
-      transition: all 0.3s ease;
-    }
-    .mini-metric:hover {
-      border-color: var(--border-strong);
-      background: rgba(255,255,255,0.05);
-    }
-    .mini-metric-val {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .mini-metric-label {
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .mini-metric.green .mini-metric-val { color: var(--green); }
-    .mini-metric.lime .mini-metric-val { color: var(--lime); }
-    .mini-metric.blue .mini-metric-val { color: var(--blue); }
-
-    /* ── SCROLLING TICKER ── */
-    .ticker-wrap {
-      position: relative; z-index: 1;
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      overflow: hidden;
-      height: 44px;
-      display: flex; align-items: center;
-    }
-    .ticker-track {
-      display: flex; gap: 3rem;
-      animation: ticker 35s linear infinite;
-      white-space: nowrap;
-    }
-    .ticker-item {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      display: flex; align-items: center; gap: 12px;
-    }
-    .ticker-item strong { color: var(--text-secondary); }
-    .ticker-sep { color: var(--lime-dim); }
-    @keyframes ticker {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    /* ── SECTION SHARED ── */
-    section { position: relative; z-index: 1; }
-    .section-inner {
-      max-width: 1300px; margin: 0 auto;
-      padding: 6rem 3rem;
-    }
-    .section-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--lime);
-      margin-bottom: 0.75rem;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .section-label::before {
-      content: '';
-      width: 28px; height: 2px;
-      background: var(--lime);
-      box-shadow: 0 0 8px var(--lime-glow);
-    }
-    h2 {
-      font-family: 'Syncopate', sans-serif;
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
-      font-weight: 700;
-      line-height: 1.15;
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-    }
-    .section-sub {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      max-width: 520px;
-      line-height: 1.75;
-    }
-
-    /* ── LIVE DASHBOARD ── */
-    #dashboard { background: var(--bg-secondary); }
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    .chart-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-      transition: all 0.3s ease;
-    }
-    .chart-card:hover {
-      border-color: var(--border-strong);
-      box-shadow: 0 0 30px rgba(181,196,19,0.03);
-    }
-    .chart-header {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 1.5rem;
-    }
-    .chart-title {
-      font-size: 0.72rem;
-      font-family: 'Share Tech Mono', monospace;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-    }
-    .chart-live {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--lime);
-      background: var(--lime-glow);
-      padding: 3px 10px; border-radius: 4px;
-      border: 1px solid rgba(181,196,19,0.2);
-      animation: pulse-dot 2s infinite;
-    }
-    canvas { width: 100% !important; }
-
-    .kpi-stack { display: flex; flex-direction: column; gap: 1rem; }
-    .kpi-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 1.25rem 1.5rem;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: default;
-    }
-    .kpi-card:hover {
-      border-color: rgba(181,196,19,0.2);
-      box-shadow: 0 0 25px var(--lime-glow);
-      transform: translateX(6px);
-      background: var(--bg-card-hover);
-    }
-    .kpi-top {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 0.5rem;
-    }
-    .kpi-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-    .kpi-delta {
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--lime);
-    }
-    .kpi-value {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-    }
-    .kpi-bar {
-      height: 3px; background: var(--border); border-radius: 2px;
-      margin-top: 0.75rem; overflow: hidden;
-    }
-    .kpi-bar-fill {
-      height: 100%; border-radius: 2px;
-      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* ── FEATURE CARDS (Specimens) ── */
-    #specimens { background: var(--bg-primary); }
-    .specimens-header {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 2rem; align-items: end;
-      margin-bottom: 3rem;
-    }
-    .specimen-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-    }
-    .specimen-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-    }
-    .specimen-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-    }
-    .specimen-visual {
-      height: 200px;
-      position: relative;
-      overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .specimen-visual .lab-bg {
-      position: absolute; inset: 0;
-      transition: opacity 0.4s, transform 0.6s;
-    }
-    .specimen-card:hover .lab-bg { opacity: 0.15; transform: scale(1.1); }
-    .spec-icon {
-      font-size: 4rem;
-      position: relative; z-index: 1;
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      filter: saturate(0.7);
-    }
-    .specimen-card:hover .spec-icon { transform: scale(0.55) translateY(-25px); filter: saturate(1); }
-
-    .specimen-overlay {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      z-index: 2;
-    }
-    .specimen-card:hover .specimen-overlay { opacity: 1; }
-    .overlay-tag {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
-    .overlay-title {
-      font-family: 'Syncopate', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-bottom: 0.75rem;
-      line-height: 1.3;
-    }
-    .overlay-data { display: flex; flex-direction: column; gap: 0.4rem; }
-    .overlay-row {
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-    }
-    .overlay-key { color: rgba(255,255,255,0.5); }
-    .overlay-val { font-weight: 600; color: white; }
-
-    .specimen-info {
-      padding: 1.25rem;
-      border-top: 1px solid var(--border);
-    }
-    .specimen-name {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 0.25rem;
-    }
-    .specimen-desc {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      line-height: 1.55;
-    }
-
-    /* Specimen color themes */
-    .spec-lime .lab-bg { background: linear-gradient(135deg, #365314, #84cc16, #bef264); }
-    .spec-lime .specimen-overlay { background: linear-gradient(135deg, rgba(54,83,20,0.95), rgba(132,204,22,0.9)); }
-    .spec-lime .overlay-tag { color: #bef264; }
-    .spec-lime .overlay-title { color: white; }
-    .spec-lime:hover { border-color: var(--lime); box-shadow: 0 30px 60px var(--lime-glow), 0 0 0 1px var(--lime); }
-
-    .spec-green .lab-bg { background: linear-gradient(135deg, #064e3b, #10b981, #6ee7b7); }
-    .spec-green .specimen-overlay { background: linear-gradient(135deg, rgba(6,78,59,0.95), rgba(16,185,129,0.9)); }
-    .spec-green .overlay-tag { color: #6ee7b7; }
-    .spec-green .overlay-title { color: white; }
-    .spec-green:hover { border-color: var(--green); box-shadow: 0 30px 60px var(--green-glow), 0 0 0 1px var(--green); }
-
-    .spec-blue .lab-bg { background: linear-gradient(135deg, #0c4a6e, #0ea5e9, #7dd3fc); }
-    .spec-blue .specimen-overlay { background: linear-gradient(135deg, rgba(12,74,110,0.95), rgba(14,165,233,0.9)); }
-    .spec-blue .overlay-tag { color: #7dd3fc; }
-    .spec-blue .overlay-title { color: white; }
-    .spec-blue:hover { border-color: var(--blue); box-shadow: 0 30px 60px rgba(14,165,233,0.15), 0 0 0 1px var(--blue); }
-
-    .spec-amber .lab-bg { background: linear-gradient(135deg, #78350f, #f59e0b, #fde68a); }
-    .spec-amber .specimen-overlay { background: linear-gradient(135deg, rgba(120,53,15,0.95), rgba(245,158,11,0.9)); }
-    .spec-amber .overlay-tag { color: #fde68a; }
-    .spec-amber .overlay-title { color: white; }
-    .spec-amber:hover { border-color: var(--amber); box-shadow: 0 30px 60px rgba(245,158,11,0.15), 0 0 0 1px var(--amber); }
-
-    .spec-rose .lab-bg { background: linear-gradient(135deg, #881337, #f43f5e, #fda4af); }
-    .spec-rose .specimen-overlay { background: linear-gradient(135deg, rgba(136,19,55,0.95), rgba(244,63,94,0.9)); }
-    .spec-rose .overlay-tag { color: #fda4af; }
-    .spec-rose .overlay-title { color: white; }
-    .spec-rose:hover { border-color: var(--red); box-shadow: 0 30px 60px rgba(244,63,94,0.15), 0 0 0 1px var(--red); }
-
-    .spec-slate .lab-bg { background: linear-gradient(135deg, #1e293b, #475569, #cbd5e1); }
-    .spec-slate .specimen-overlay { background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(71,85,105,0.9)); }
-    .spec-slate .overlay-tag { color: #cbd5e1; }
-    .spec-slate .overlay-title { color: white; }
-    .spec-slate:hover { border-color: #64748b; box-shadow: 0 30px 60px rgba(100,116,139,0.2), 0 0 0 1px #64748b; }
-
-    /* ── SECURITY SECTION ── */
-    #security { background: var(--bg-secondary); }
-    .security-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    .security-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 2rem;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-    }
-    .security-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--lime);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .security-card:hover::before { opacity: 1; }
-    .security-card:hover {
-      border-color: rgba(181,196,19,0.15);
-      background: var(--bg-card-hover);
-      transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 30px var(--lime-glow);
-    }
-    .security-icon {
-      width: 48px; height: 48px;
-      background: var(--lime-glow);
-      border: 1px solid rgba(181,196,19,0.2);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 1.25rem;
-      transition: all 0.4s ease;
-    }
-    .security-card:hover .security-icon {
-      background: rgba(181,196,19,0.2);
-      box-shadow: 0 0 20px var(--lime-glow);
-    }
-    .security-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-    }
-    .security-desc {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-    }
-
-    /* ── PROCESS STEPS ── */
-    #process { background: var(--bg-primary); }
-    .process-steps {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0;
-      margin-top: 3rem;
-      position: relative;
-    }
-    .process-steps::before {
-      content: '';
-      position: absolute;
-      top: 2rem;
-      left: calc(12.5%);
-      right: calc(12.5%);
-      height: 1px;
-      background: linear-gradient(90deg, var(--lime), var(--green), var(--blue), var(--lime));
-      opacity: 0.5;
-    }
-    .step-card {
-      padding: 1.5rem;
-      text-align: center;
-      position: relative;
-      transition: all 0.3s ease;
-    }
-    .step-card:hover { transform: translateY(-4px); }
-    .step-number {
-      width: 44px; height: 44px;
-      background: var(--bg-card);
-      border: 2px solid var(--border-strong);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 1.5rem;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      position: relative; z-index: 1;
-      transition: all 0.4s ease;
-    }
-    .step-card:hover .step-number {
-      box-shadow: 0 0 20px var(--lime-glow);
-    }
-    .step-card:nth-child(1) .step-number { border-color: var(--lime); color: var(--lime); }
-    .step-card:nth-child(2) .step-number { border-color: var(--green); color: var(--green); }
-    .step-card:nth-child(3) .step-number { border-color: var(--blue); color: var(--blue); }
-    .step-card:nth-child(4) .step-number { border-color: var(--lime); color: var(--lime); }
-    .step-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
-    }
-    .step-desc {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-    .step-icon { font-size: 1.6rem; margin-bottom: 0.75rem; }
-
-    /* ── CTA SECTION ── */
-    .cta-section {
-      position: relative; z-index: 1;
-      background: var(--bg-secondary);
-      overflow: hidden;
-    }
-    .cta-inner {
-      max-width: 800px; margin: 0 auto;
-      padding: 6rem 3rem;
-      text-align: center;
-      position: relative;
-    }
-    .cta-glow {
-      position: absolute;
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, var(--lime-glow) 0%, transparent 70%);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      animation: ctaPulse 4s ease-in-out infinite;
-    }
-    @keyframes ctaPulse {
-      0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
-    }
-    .cta-section h2 { margin-bottom: 1rem; position: relative; }
-    .cta-section .section-sub {
-      max-width: 600px; margin: 0 auto 2.5rem;
-      position: relative;
-    }
-    .cta-section .btn-primary { position: relative; font-size: 1rem; padding: 1rem 2.5rem; }
-
-    /* ── COMPLIANCE ── */
-    .compliance {
-      background: var(--bg-primary);
-      padding: 3rem;
-      position: relative; z-index: 1;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .compliance-inner {
-      max-width: 1300px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 2rem; flex-wrap: wrap;
-    }
-    .compliance-label {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.68rem; letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-    }
-    .compliance-title {
-      font-family: 'Syncopate', sans-serif;
-      font-size: 1.05rem;
-      color: var(--text-primary);
-    }
-    .compliance-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-    .badge {
-      background: var(--surface-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 0.55rem 1.15rem;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--text-secondary);
-      transition: all 0.3s ease;
-    }
-    .badge:hover {
-      background: var(--lime-glow);
-      border-color: rgba(181,196,19,0.25);
-      color: var(--lime);
-      box-shadow: 0 0 15px var(--lime-glow);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      position: relative; z-index: 1;
-      background: var(--bg-secondary);
-      border-top: 1px solid var(--border);
-      padding: 3rem;
-    }
-    .footer-inner {
-      max-width: 1300px; margin: 0 auto;
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 2rem; flex-wrap: wrap;
-    }
-    .footer-brand {
-      font-family: 'Syncopate', sans-serif;
-      font-size: 0.85rem; font-weight: 700;
-      letter-spacing: 0.15em;
-      color: var(--text-primary);
-    }
-    .footer-brand .logo-s { color: var(--lime); }
-    .footer-copy {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-    .footer-links { display: flex; gap: 2rem; list-style: none; }
-    .footer-links a {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.3s;
-    }
-    .footer-links a:hover { color: var(--lime); }
-
-    /* ── ANIMATIONS ── */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .reveal.visible { opacity: 1; transform: translateY(0); }
-    .reveal-delay-1 { transition-delay: 0.1s; }
-    .reveal-delay-2 { transition-delay: 0.2s; }
-    .reveal-delay-3 { transition-delay: 0.3s; }
-    .reveal-delay-4 { transition-delay: 0.4s; }
-
-    /* Stagger animation for grids */
-    .specimen-card.reveal:nth-child(1) { transition-delay: 0.05s; }
-    .specimen-card.reveal:nth-child(2) { transition-delay: 0.12s; }
-    .specimen-card.reveal:nth-child(3) { transition-delay: 0.19s; }
-    .specimen-card.reveal:nth-child(4) { transition-delay: 0.26s; }
-    .specimen-card.reveal:nth-child(5) { transition-delay: 0.33s; }
-    .specimen-card.reveal:nth-child(6) { transition-delay: 0.4s; }
-
-    .security-card.reveal:nth-child(1) { transition-delay: 0.05s; }
-    .security-card.reveal:nth-child(2) { transition-delay: 0.15s; }
-    .security-card.reveal:nth-child(3) { transition-delay: 0.25s; }
-
-    /* ── CUSTOM SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: rgba(181,196,19,0.2); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(181,196,19,0.35); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .hero-inner { grid-template-columns: 1fr; gap: 3rem; padding: 100px 2rem 40px; }
-      .hero-panel { max-width: 520px; }
-      .dashboard-grid { grid-template-columns: 1fr; }
-      .specimen-grid { grid-template-columns: 1fr 1fr; }
-      .security-grid { grid-template-columns: 1fr 1fr; }
-      .process-steps { grid-template-columns: 1fr 1fr; }
-      .process-steps::before { display: none; }
-      .specimens-header { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 768px) {
-      nav { padding: 0 1.5rem; }
-      .nav-links {
-        display: none;
-        position: absolute;
-        top: 64px; left: 0; right: 0;
-        background: rgba(10,15,30,0.97);
-        backdrop-filter: blur(24px);
-        flex-direction: column;
-        padding: 1.5rem;
-        gap: 1rem;
-        border-bottom: 1px solid var(--border);
-      }
-      .nav-links.active { display: flex; }
-      .nav-toggle { display: block; }
-      .hero-inner { padding: 100px 1.5rem 40px; }
-      .hero-panel { display: none; }
-      .section-inner { padding: 4rem 1.5rem; }
-      .specimen-grid { grid-template-columns: 1fr; }
-      .security-grid { grid-template-columns: 1fr; }
-      .process-steps { grid-template-columns: 1fr; gap: 1rem; }
-      .compliance-inner { flex-direction: column; text-align: center; }
-      .compliance-badges { justify-content: center; }
-      .footer-inner { flex-direction: column; text-align: center; }
-      .footer-links { justify-content: center; }
-      h1 { font-size: clamp(2rem, 7vw, 3rem); }
-      .cta-inner { padding: 4rem 1.5rem; }
-    }
-
-    @media (max-width: 480px) {
-      nav { padding: 0 1rem; }
-      .hero-inner { padding: 90px 1rem 30px; }
-      .hero-actions { flex-direction: column; width: 100%; }
-      .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
-      .section-inner { padding: 3rem 1rem; }
-      .mini-metrics { grid-template-columns: 1fr; }
-    }
-
-    /* ── SELECTION COLOR ── */
-    ::selection { background: rgba(181,196,19,0.3); color: white; }
-  
-    /* ═══ SignForce Design Override ═══ */
-    body { background: #0a0f1e !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
-    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
-    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
-    p { color: rgba(255,255,255,.6) !important; }
-    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
-      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
-      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
-      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
-      box-shadow:none !important; padding:0 1.5rem !important; }
-    .glass-header::before { display:none !important; }
-    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
-      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
-    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
-      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
-    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:14px !important; transition:all .3s ease; }
-    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
-    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
-    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
-      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
-    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
-    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
-    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
-      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
-    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
-    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
-    input[type="date"], input[type="file"], textarea, select {
-      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
-      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
-    input:focus, textarea:focus, select:focus, .input-field:focus {
-      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
-    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
-    select option { background:#0f1524; color:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
-      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
-    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
-    tr:hover td { background:rgba(255,255,255,.02); }
-    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
-    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
-    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
-    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
-    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:20px !important; }
-    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
-    .close-modal:hover { color:#fff; }
-    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
-      width:30px; height:30px; animation:spin .7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .bg { background:none !important; }
-    .main-container, .content, main { position:relative; z-index:1; }
-    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
-    .text-primary { color:#fff !important; }
-    .text-secondary { color:rgba(255,255,255,.55) !important; }
-    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
-    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
-    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
-    /* end override */
-
-    </style>
-    <link rel="stylesheet" href="../signforce-global.css">
+    /* ═══ Responsive ═══ */
+    @media(max-width:900px){
+      .nav{padding:0 1.25rem}.nav-links{display:none}
+      .hero h1{font-size:2.4rem}.hero{padding:8rem 0 4rem}
+      .features-grid{grid-template-columns:1fr}
+      .steps{grid-template-columns:1fr 1fr}.step-arrow{display:none}
+      .security-grid{grid-template-columns:1fr}
+      .hero-stats{gap:1.5rem}.stat-num{font-size:1.6rem}
+    }
+    @media(max-width:600px){
+      .hero h1{font-size:1.9rem}
+      .steps{grid-template-columns:1fr}
+      .container{padding:0 1.25rem}
+      .cta-card{padding:2.5rem 1.5rem}
+    }
+  </style>
 </head>
 <body>
+  <div class="topbar"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-  <!-- TOP ACCENT BAR -->
-  <div class="top-accent"></div>
-
-  <!-- BACKGROUND EFFECTS -->
-  <div class="bg-grid"></div>
-  <div class="glow-orb glow-orb-1"></div>
-  <div class="glow-orb glow-orb-2"></div>
-  <div class="glow-orb glow-orb-3"></div>
-  <div class="particles" id="particles"></div>
-
-  <!-- NAV -->
-  <nav id="mainNav">
-    <div class="nav-logo">
-      <span class="logo-s">S</span>IGNFORCE
-    </div>
-    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú">&#9776;</button>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#dashboard">Dashboard</a></li>
-      <li><a href="#specimens">Tecnología</a></li>
+  <!-- Nav -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo"><span class="logo-s">S</span><span class="logo-text">IGNFORCE</span></a>
+    <ul class="nav-links">
+      <li><a href="#features">Características</a></li>
+      <li><a href="#how">Cómo Funciona</a></li>
       <li><a href="#security">Seguridad</a></li>
-      <li><a href="#process">Proceso</a></li>
-      <li><a href="/login" class="nav-cta">Iniciar Sesión</a></li>
+      <li><a href="#compliance">Normativa</a></li>
     </ul>
+    <a href="/registro/login.html" class="nav-cta">Iniciar Sesión</a>
   </nav>
 
-  <!-- HERO -->
+  <!-- Hero -->
   <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-left">
-        <div class="hero-badge reveal">
-          <span class="dot"></span>
-          PLATAFORMA ACTIVA
-        </div>
-        <h1 class="reveal reveal-delay-1">
-          SIGN<span class="line-accent">FORCE</span><br>
-          identity in motion.
-        </h1>
-        <p class="hero-sub reveal reveal-delay-2">
-          Tu cuenta en <strong style="color: var(--lime)">SIGNFORCE</strong> ha sido diseñada para eliminar la fricción, el papel y la incertidumbre del acto de firmar.
-          Cada firma es criptográficamente pura, legalmente irrefutable e instantáneamente verificable.
-        </p>
-        <div class="hero-actions reveal reveal-delay-3">
-          <a href="#" class="btn-primary">
-            Comenzar ahora
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-          <a href="#dashboard" class="btn-ghost">Ver Demo</a>
-        </div>
+    <div class="container">
+      <div class="hero-badge">
+        <span class="material-symbols-outlined" style="font-size:14px;">verified</span>
+        Cumple NOM-151-SCFI-2016
       </div>
-
-      <div class="hero-panel reveal reveal-delay-2">
-        <div class="panel-header">
-          <div class="panel-dot" style="background:#ef4444"></div>
-          <div class="panel-dot" style="background:#f59e0b"></div>
-          <div class="panel-dot" style="background:var(--lime)"></div>
-          <span class="panel-title">VERIFICACIÓN COMPLETA</span>
-        </div>
-        <div class="panel-body">
-          <div class="sig-specimen">
-            <span class="sig-verified">&#10003; VERIFICADO</span>
-            <svg viewBox="0 0 300 80">
-              <path class="sig-line" d="M20,60 C40,60 45,20 70,20 C95,20 100,70 125,70 C140,70 140,30 160,30 C180,30 175,60 195,60 C210,60 210,40 230,40 L280,40"/>
-              <path class="sig-line" style="stroke: var(--lime); animation-delay: 1.5s;" d="M220,55 C225,45 235,45 240,55 C245,65 235,70 230,65"/>
-            </svg>
-          </div>
-          <div class="sig-hash">
-            SHA-256: <span>a7f4c2e91b</span>83d650f2c1<span>4e8a9d7b36</span>c512f8e047<span>1d9a</span>...
-          </div>
-          <div class="mini-metrics">
-            <div class="mini-metric green">
-              <div class="mini-metric-val">RSA-SHA-256</div>
-              <div class="mini-metric-label">Algoritmo</div>
-            </div>
-            <div class="mini-metric lime">
-              <div class="mini-metric-val">AES-256</div>
-              <div class="mini-metric-label">Cifrado</div>
-            </div>
-            <div class="mini-metric blue">
-              <div class="mini-metric-val">eIDAS</div>
-              <div class="mini-metric-label">Autenticidad</div>
-            </div>
-            <div class="mini-metric">
-              <div class="mini-metric-val" id="live-counter">0</div>
-              <div class="mini-metric-label">Firmas hoy</div>
-            </div>
-          </div>
-        </div>
+      <h1>Firma electrónica <span class="accent">avanzada</span> para tu empresa</h1>
+      <p>Gestiona, firma y protege documentos electrónicos con validez legal en México. Seguro, rápido y conforme a la norma.</p>
+      <div class="hero-btns">
+        <a href="/registro/login.html" class="btn-lg btn-primary">
+          <span class="material-symbols-outlined" style="font-size:18px;">rocket_launch</span> Comenzar Ahora
+        </a>
+        <a href="#how" class="btn-lg btn-ghost">
+          <span class="material-symbols-outlined" style="font-size:18px;">play_circle</span> Ver Demo
+        </a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat"><div class="stat-num">256</div><div class="stat-label">Bit AES Encryption</div></div>
+        <div class="stat"><div class="stat-num">XAdES</div><div class="stat-label">Firma Avanzada</div></div>
+        <div class="stat"><div class="stat-num">ASiC-E</div><div class="stat-label">Contenedor Estándar</div></div>
+        <div class="stat"><div class="stat-num">NOM-151</div><div class="stat-label">Cumplimiento Legal</div></div>
       </div>
     </div>
   </section>
 
-  <!-- TICKER -->
-  <div class="ticker-wrap">
-    <div class="ticker-track" id="ticker">
-      <span class="ticker-item"><strong>eIDAS</strong> COMPLIANT <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>NOM-151</strong> CERTIFIED <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>SOC 2</strong> TYPE II <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>ISO 27001</strong> VERIFIED <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>AES-256</strong> ENCRYPTION <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>SHA-2</strong> HASHING <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>ZERO PAPER</strong> PROTOCOL <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>BLOCKCHAIN</strong> ANCHORED <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>eIDAS</strong> COMPLIANT <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>NOM-151</strong> CERTIFIED <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>SOC 2</strong> TYPE II <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>ISO 27001</strong> VERIFIED <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>AES-256</strong> ENCRYPTION <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>SHA-2</strong> HASHING <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>ZERO PAPER</strong> PROTOCOL <span class="ticker-sep">///</span></span>
-      <span class="ticker-item"><strong>BLOCKCHAIN</strong> ANCHORED <span class="ticker-sep">///</span></span>
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="ticker-dot"></span>FIRMA ELECTRÓNICA AVANZADA</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CERTIFICADOS X.509</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>SELLADO DE TIEMPO RFC 3161</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CIFRADO AES-256-GCM</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>XADES-BES / XADES-T</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CONTENEDOR ASiC-E</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>NOM-151-SCFI-2016</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CÓDIGO DE COMERCIO ART. 89 Y 97</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>FIRMA ELECTRÓNICA AVANZADA</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CERTIFICADOS X.509</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>SELLADO DE TIEMPO RFC 3161</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CIFRADO AES-256-GCM</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>XADES-BES / XADES-T</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CONTENEDOR ASiC-E</span>
     </div>
   </div>
 
-  <!-- LIVE DASHBOARD -->
-  <section id="dashboard">
-    <div class="section-inner">
-      <p class="section-label reveal">Métricas en tiempo real</p>
-      <h2 class="reveal">PANEL<br>DE ACTIVIDAD</h2>
-      <p class="section-sub reveal">Cada transacción es un dato. Cada dato, una prueba. Monitoriza el pulso de tu infraestructura de firma.</p>
-
-      <div class="dashboard-grid">
-        <div class="chart-card reveal">
-          <div class="chart-header">
-            <div>
-              <div class="chart-title">Documentos firmados — últimas 24h</div>
-            </div>
-            <span class="chart-live">&#9679; LIVE</span>
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-label">Plataforma</div>
+      <h2 class="section-title reveal">Todo lo que necesitas para firmar</h2>
+      <p class="section-sub reveal">Una plataforma completa para gestionar el ciclo de vida de tus documentos electrónicos.</p>
+      <div class="features-grid">
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(181,196,19,.1);">
+            <span class="material-symbols-outlined" style="color:#B5C413;">draw</span>
           </div>
-          <canvas id="mainChart" height="200"></canvas>
+          <h3>Firma Electrónica Avanzada</h3>
+          <p>Firma documentos con tu e.firma (FIEL) del SAT. Genera firmas XAdES con validez legal completa en México.</p>
         </div>
-
-        <div class="kpi-stack">
-          <div class="kpi-card reveal reveal-delay-1">
-            <div class="kpi-top">
-              <span class="kpi-label">Usuarios activos</span>
-              <span class="kpi-delta">+12.4%</span>
-            </div>
-            <div class="kpi-value" data-target="48291">0</div>
-            <div class="kpi-bar"><div class="kpi-bar-fill" style="width:78%; background: var(--lime)"></div></div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(96,165,250,.1);">
+            <span class="material-symbols-outlined" style="color:#60a5fa;">encrypted</span>
           </div>
-          <div class="kpi-card reveal reveal-delay-2">
-            <div class="kpi-top">
-              <span class="kpi-label">Firmas totales</span>
-              <span class="kpi-delta">+8.7%</span>
-            </div>
-            <div class="kpi-value" data-target="2847503">0</div>
-            <div class="kpi-bar"><div class="kpi-bar-fill" style="width:91%; background: var(--green)"></div></div>
+          <h3>Cifrado de Grado Militar</h3>
+          <p>Documentos protegidos con AES-256-GCM. Cada archivo cifrado con nonce único por bloque para máxima seguridad.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(52,211,153,.1);">
+            <span class="material-symbols-outlined" style="color:#34d399;">verified</span>
           </div>
-          <div class="kpi-card reveal reveal-delay-3">
-            <div class="kpi-top">
-              <span class="kpi-label">Carpetas activas</span>
-              <span class="kpi-delta">+23.1%</span>
-            </div>
-            <div class="kpi-value" data-target="192847">0</div>
-            <div class="kpi-bar"><div class="kpi-bar-fill" style="width:64%; background: var(--blue)"></div></div>
+          <h3>Verificación de Identidad</h3>
+          <p>Validación biométrica facial y verificación de certificados X.509 contra cadena de confianza del SAT.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(167,139,250,.1);">
+            <span class="material-symbols-outlined" style="color:#a78bfa;">folder_zip</span>
           </div>
-          <div class="kpi-card reveal reveal-delay-4">
-            <div class="kpi-top">
-              <span class="kpi-label">Docs. hoy</span>
-              <span class="kpi-delta">+31.5%</span>
-            </div>
-            <div class="kpi-value" data-target="18472">0</div>
-            <div class="kpi-bar"><div class="kpi-bar-fill" style="width:55%; background: var(--amber)"></div></div>
+          <h3>Contenedor ASiC-E</h3>
+          <p>Empaquetado estándar ETSI que incluye el documento original, firmas XAdES y manifiesto en un solo archivo.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(251,191,36,.1);">
+            <span class="material-symbols-outlined" style="color:#fbbf24;">group</span>
           </div>
+          <h3>Flujo Multi-Firmante</h3>
+          <p>Invita a múltiples firmantes y observadores. Cada uno recibe notificación y puede firmar desde cualquier dispositivo.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(248,113,113,.1);">
+            <span class="material-symbols-outlined" style="color:#f87171;">qr_code_2</span>
+          </div>
+          <h3>Verificación QR</h3>
+          <p>Cada firma genera un código QR único para verificación instantánea de autenticidad desde cualquier dispositivo.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SPECIMENS -->
-  <section id="specimens">
-    <div class="section-inner">
-      <div class="specimens-header">
-        <div>
-          <p class="section-label reveal">Taxonomía de usos</p>
-          <h2 class="reveal">PRUEBAS<br>DIGITALES</h2>
+  <!-- How it works -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="section-label">Proceso</div>
+      <h2 class="section-title reveal">Firma en 4 pasos simples</h2>
+      <p class="section-sub reveal">Desde la carga del documento hasta la firma con validez legal.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <h4>Sube tu documento</h4>
+          <p>Carga un PDF y SignForce lo analiza, clasifica y prepara en milisegundos.</p>
+          <span class="step-arrow">→</span>
         </div>
-        <p class="section-sub reveal">Pasa el cursor sobre cada carta para revelar sus propiedades criptográficas y casos de aplicación.</p>
-      </div>
-
-      <div class="specimen-grid">
-        <div class="specimen-card spec-lime reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#128272;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.001.&#945;</div>
-              <div class="overlay-title">FIRMA AVANZADA</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Algoritmo</span><span class="overlay-val">RSA-SHA-256</span></div>
-                <div class="overlay-row"><span class="overlay-key">Validez</span><span class="overlay-val">Permanente</span></div>
-                <div class="overlay-row"><span class="overlay-key">Estándar</span><span class="overlay-val">eIDAS QES</span></div>
-                <div class="overlay-row"><span class="overlay-key">Cert. NOM</span><span class="overlay-val">151 &#10003;</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">Firma Electrónica Avanzada</div>
-            <div class="specimen-desc">Vinculación criptográfica única al firmante. Legalmente equivalente a firma manuscrita.</div>
-          </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <h4>Añade firmantes</h4>
+          <p>Invita a los participantes como firmantes u observadores con fecha límite.</p>
+          <span class="step-arrow">→</span>
         </div>
-
-        <div class="specimen-card spec-green reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#129706;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.002.&#946;</div>
-              <div class="overlay-title">IDENTIDAD DIGITAL</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Protocolo</span><span class="overlay-val">JWT + OAuth 2.0</span></div>
-                <div class="overlay-row"><span class="overlay-key">Biometría</span><span class="overlay-val">Activa</span></div>
-                <div class="overlay-row"><span class="overlay-key">Almacén</span><span class="overlay-val">HSM Certificado</span></div>
-                <div class="overlay-row"><span class="overlay-key">Método</span><span class="overlay-val">Vector Facial</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">ID Digital Verificada</div>
-            <div class="specimen-desc">Identidad anclada en biometría y certificado digital emitido por autoridad reconocida.</div>
-          </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <h4>Firma con e.firma</h4>
+          <p>Los firmantes usan su llave privada y certificado del SAT para generar la firma XAdES.</p>
+          <span class="step-arrow">→</span>
         </div>
-
-        <div class="specimen-card spec-blue reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#128451;&#65039;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.003.&#947;</div>
-              <div class="overlay-title">GESTIÓN DOCUMENTAL</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Formatos</span><span class="overlay-val">PDF, DOCX, XML</span></div>
-                <div class="overlay-row"><span class="overlay-key">Retención</span><span class="overlay-val">10 años</span></div>
-                <div class="overlay-row"><span class="overlay-key">Cifrado</span><span class="overlay-val">AES-256-GCM</span></div>
-                <div class="overlay-row"><span class="overlay-key">Auditoría</span><span class="overlay-val">Inmutable</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">Repositorio Seguro</div>
-            <div class="specimen-desc">Almacenamiento cifrado con trazabilidad completa de cada versión y acceso.</div>
-          </div>
-        </div>
-
-        <div class="specimen-card spec-amber reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#9939;&#65039;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.004.&#948;</div>
-              <div class="overlay-title">ANCLAJE BLOCKCHAIN</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Red</span><span class="overlay-val">Ethereum L2</span></div>
-                <div class="overlay-row"><span class="overlay-key">Hash</span><span class="overlay-val">Keccak-256</span></div>
-                <div class="overlay-row"><span class="overlay-key">Confirmación</span><span class="overlay-val">&lt; 5 seg</span></div>
-                <div class="overlay-row"><span class="overlay-key">Inmutabilidad</span><span class="overlay-val">100%</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">Anclaje Blockchain</div>
-            <div class="specimen-desc">Cada firma queda registrada en cadena de bloques pública. Prueba matemática inalterable.</div>
-          </div>
-        </div>
-
-        <div class="specimen-card spec-rose reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#129302;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.005.&#949;</div>
-              <div class="overlay-title">FLUJOS AUTOMATIZADOS</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Trigger</span><span class="overlay-val">API / Webhook</span></div>
-                <div class="overlay-row"><span class="overlay-key">Firmantes</span><span class="overlay-val">Multi-parte</span></div>
-                <div class="overlay-row"><span class="overlay-key">Integración</span><span class="overlay-val">REST + SDK</span></div>
-                <div class="overlay-row"><span class="overlay-key">SLA</span><span class="overlay-val">99.99%</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">Automatización de Flujos</div>
-            <div class="specimen-desc">Orquesta circuitos de firma complejos sin intervención manual. Cero cuellos de botella.</div>
-          </div>
-        </div>
-
-        <div class="specimen-card spec-slate reveal">
-          <div class="specimen-visual">
-            <div class="lab-bg"></div>
-            <span class="spec-icon">&#128300;</span>
-            <div class="specimen-overlay">
-              <div class="overlay-tag">ID — SPF.006.&#950;</div>
-              <div class="overlay-title">AUDITORÍA FORENSE</div>
-              <div class="overlay-data">
-                <div class="overlay-row"><span class="overlay-key">Evidencia</span><span class="overlay-val">Nivel 4</span></div>
-                <div class="overlay-row"><span class="overlay-key">IP + GEO</span><span class="overlay-val">Registrado</span></div>
-                <div class="overlay-row"><span class="overlay-key">Timestamp</span><span class="overlay-val">RFC 3161</span></div>
-                <div class="overlay-row"><span class="overlay-key">Exportación</span><span class="overlay-val">PDF + XML</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="specimen-info">
-            <div class="specimen-name">Evidencia Forense Digital</div>
-            <div class="specimen-desc">Trail de auditoría completo que cumple estándares de evidencia en procesos legales.</div>
-          </div>
+        <div class="step reveal">
+          <div class="step-num">4</div>
+          <h4>Documento legal</h4>
+          <p>Se genera el contenedor ASiC-E con todas las firmas, listo para cualquier proceso legal.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SECURITY & PRIVACY (Matches email template design) -->
-  <section id="security">
-    <div class="section-inner">
-      <p class="section-label reveal">Seguridad y privacidad</p>
-      <h2 class="reveal">TU INFORMACIÓN,<br>PROTEGIDA.</h2>
-      <p class="section-sub reveal">Toda tu información personal está protegida con los más altos estándares de seguridad criptográfica.</p>
-
+  <!-- Security -->
+  <section class="security" id="security">
+    <div class="container">
       <div class="security-grid">
-        <div class="security-card reveal">
-          <div class="security-icon">&#128274;</div>
-          <div class="security-title">Datos encriptados</div>
-          <div class="security-desc">Toda tu información personal, RFC y CURP están protegidos con encriptación de extremo a extremo (AES-256). Solo tú y los usuarios autorizados pueden acceder a ellos.</div>
+        <div class="security-visual reveal">
+          <div style="position:relative;z-index:1;">
+            <span class="material-symbols-outlined shield-icon">shield_lock</span>
+            <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem;">Seguridad de nivel empresarial</h3>
+            <p style="color:rgba(255,255,255,.4);font-size:.9rem;">Infraestructura diseñada para proteger tus documentos más sensibles.</p>
+          </div>
         </div>
-        <div class="security-card reveal">
-          <div class="security-icon">&#128247;</div>
-          <div class="security-title">Foto KYC privada y confidencial</div>
-          <div class="security-desc">La fotografía tomada durante tu verificación de identidad es estrictamente confidencial. Se almacena de forma encriptada y no se comparte con terceros bajo ninguna circunstancia.</div>
-        </div>
-        <div class="security-card reveal">
-          <div class="security-icon">&#128272;</div>
-          <div class="security-title">Contraseña segura</div>
-          <div class="security-desc">Tu contraseña se almacena con hash criptográfico. Ni siquiera nosotros podemos verla. Nunca te la pediremos por correo o teléfono.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PROCESS -->
-  <section id="process">
-    <div class="section-inner">
-      <p class="section-label reveal">Protocolo operativo</p>
-      <h2 class="reveal">CUATRO PASOS.<br>CERO DUDAS.</h2>
-      <div class="process-steps">
-        <div class="step-card reveal">
-          <div class="step-number">01</div>
-          <div class="step-icon">&#128196;</div>
-          <div class="step-title">Carga el documento</div>
-          <div class="step-desc">PDF, Word o XML. SIGNFORCE lo analiza, clasifica y prepara en milisegundos.</div>
-        </div>
-        <div class="step-card reveal reveal-delay-1">
-          <div class="step-number">02</div>
-          <div class="step-icon">&#129706;</div>
-          <div class="step-title">Verifica identidad</div>
-          <div class="step-desc">Autenticación biométrica o certificado digital. El sistema confirma quién firma.</div>
-        </div>
-        <div class="step-card reveal reveal-delay-2">
-          <div class="step-number">03</div>
-          <div class="step-icon">&#9997;&#65039;</div>
-          <div class="step-title">Firma criptográfica</div>
-          <div class="step-desc">RSA-SHA256 genera una huella matemática única. Imposible de falsificar o repudiar.</div>
-        </div>
-        <div class="step-card reveal reveal-delay-3">
-          <div class="step-number">04</div>
-          <div class="step-icon">&#9939;&#65039;</div>
-          <div class="step-title">Registro permanente</div>
-          <div class="step-desc">Hash anclado en blockchain y sello de tiempo RFC 3161. Evidencia para siempre.</div>
+        <div>
+          <div class="section-label">Seguridad</div>
+          <h2 class="section-title reveal">Protección en cada capa</h2>
+          <p class="section-sub reveal">Cada documento pasa por múltiples capas de protección criptográfica.</p>
+          <div class="sec-list">
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Cifrado AES-256-GCM</h4><p>Documentos cifrados en reposo con nonce único por bloque</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Firma RSA con SHA-256</h4><p>Firmas criptográficas con certificados X.509 del SAT</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Verificación de integridad</h4><p>Hash SHA-256 de cada documento verificado antes y después de la firma</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Trazabilidad completa</h4><p>IP, user agent, timezone y timestamp registrados en cada firma</p></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA SECTION -->
-  <section class="cta-section">
-    <div class="cta-glow"></div>
-    <div class="cta-inner">
-      <p class="section-label reveal" style="justify-content: center;">Siguiente paso</p>
-      <h2 class="reveal">COMIENZA A<br>FIRMAR HOY</h2>
-      <p class="section-sub reveal">Tu perfil personal está listo. Completa la información de tu empresa para comenzar a firmar y gestionar documentos con tu equipo.</p>
-      <a href="#" class="btn-primary reveal reveal-delay-1">
-        Completar información de la empresa
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </a>
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-card reveal">
+        <h2>Comienza a firmar con validez legal</h2>
+        <p>Únete a las empresas que ya gestionan sus documentos de forma digital, segura y conforme a la ley.</p>
+        <a href="/registro/login.html" class="btn-lg btn-primary" style="position:relative;">
+          <span class="material-symbols-outlined" style="font-size:18px;">rocket_launch</span> Crear Cuenta Gratis
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- COMPLIANCE -->
-  <div class="compliance">
-    <div class="compliance-inner">
-      <div class="compliance-text">
-        <div class="compliance-label">Cumplimiento Normativo</div>
-        <div class="compliance-title">Certificado en cada jurisdicción que importa.</div>
-      </div>
-      <div class="compliance-badges">
-        <div class="badge">eIDAS QES</div>
-        <div class="badge">NOM-151</div>
-        <div class="badge">ESIGN ACT</div>
-        <div class="badge">SOC 2 TYPE II</div>
-        <div class="badge">ISO 27001</div>
-        <div class="badge">GDPR READY</div>
-        <div class="badge">UETA</div>
-        <div class="badge">X.509 v3</div>
+  <!-- Compliance -->
+  <section class="compliance" id="compliance">
+    <div class="container">
+      <div class="compliance-row reveal">
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">gavel</span> NOM-151-SCFI-2016</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">policy</span> Código de Comercio Art. 89 y 97</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">security</span> ETSI EN 319 132 (XAdES)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">archive</span> ETSI EN 319 162 (ASiC-E)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">schedule</span> RFC 3161 (TSP)</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-brand"><span class="logo-s">S</span>IGNFORCE</div>
-      <ul class="footer-links">
-        <li><a href="#">Privacidad</a></li>
-        <li><a href="#">Términos</a></li>
-        <li><a href="#">API Docs</a></li>
-        <li><a href="#">Status</a></li>
-      </ul>
-      <div class="footer-copy">&copy; 2026 SIGNFORCE TECHNOLOGIES — ALL SYSTEMS NOMINAL</div>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+        <a href="#">Contacto</a>
+        <a href="#">Documentación</a>
+      </div>
+      <p>&copy; 2026 SignForce Technologies — Firma electrónica avanzada con validez legal en México</p>
     </div>
   </footer>
 
-  <!-- CHART.JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script>
-    // ── PARTICLES ──
-    (function createParticles() {
-      const container = document.getElementById('particles');
-      if (!container) return;
-      const count = 25;
-      for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.classList.add('particle');
-        const size = Math.random() * 3 + 1;
-        p.style.width = size + 'px';
-        p.style.height = size + 'px';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.animationDuration = (Math.random() * 20 + 15) + 's';
-        p.style.animationDelay = (Math.random() * 15) + 's';
-        container.appendChild(p);
-      }
-    })();
-
-    // ── NAV SCROLL EFFECT ──
-    const mainNav = document.getElementById('mainNav');
-    let lastScroll = 0;
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        mainNav.classList.add('scrolled');
-      } else {
-        mainNav.classList.remove('scrolled');
-      }
-    }, { passive: true });
-
-    // ── MOBILE MENU ──
-    const navToggle = document.getElementById('navToggle');
-    const navLinks = document.getElementById('navLinks');
-    if (navToggle) {
-      navToggle.addEventListener('click', () => {
-        navLinks.classList.toggle('active');
-        navToggle.textContent = navLinks.classList.contains('active') ? '\u2715' : '\u2630';
-      });
-      navLinks.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => {
-          navLinks.classList.remove('active');
-          navToggle.textContent = '\u2630';
-        });
-      });
-    }
-
-    // ── REVEAL ON SCROLL ──
-    const revealEls = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
-    revealEls.forEach(el => observer.observe(el));
-
-    // ── LIVE COUNTER (hero) ──
-    let liveCount = 14320;
-    const liveEl = document.getElementById('live-counter');
-    setInterval(() => {
-      liveCount += Math.floor(Math.random() * 3);
-      if (liveEl) liveEl.textContent = liveCount.toLocaleString('es');
-    }, 1800);
-
-    // ── KPI COUNTER ANIMATION ──
-    function animateCounter(el) {
-      const target = parseInt(el.dataset.target);
-      const duration = 2200;
-      const step = target / (duration / 16);
-      let current = 0;
-      const timer = setInterval(() => {
-        current = Math.min(current + step, target);
-        el.textContent = Math.floor(current).toLocaleString('es');
-        if (current >= target) clearInterval(timer);
-      }, 16);
-    }
-
-    const kpiObserver = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          const el = e.target.querySelector('.kpi-value[data-target]');
-          if (el && el.textContent === '0') animateCounter(el);
-        }
-      });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('.kpi-card').forEach(c => kpiObserver.observe(c));
-
-    // ── MAIN CHART ──
-    function generateData(points, base, variance) {
-      return Array.from({ length: points }, (_, i) => {
-        const trend = i * (Math.random() * 5);
-        return Math.floor(base + trend + (Math.random() - 0.5) * variance);
-      });
-    }
-
-    const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,'0')}:00`);
-    const sigData = generateData(24, 200, 300);
-    const usersData = generateData(24, 100, 150);
-
-    const ctx = document.getElementById('mainChart');
-    if (ctx) {
-      const chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: hours,
-          datasets: [
-            {
-              label: 'Firmas',
-              data: sigData,
-              borderColor: '#B5C413',
-              backgroundColor: 'rgba(181,196,19,0.06)',
-              borderWidth: 2,
-              pointRadius: 0,
-              pointHoverRadius: 5,
-              pointHoverBackgroundColor: '#B5C413',
-              tension: 0.4,
-              fill: true,
-            },
-            {
-              label: 'Usuarios activos',
-              data: usersData,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16,185,129,0.04)',
-              borderWidth: 2,
-              pointRadius: 0,
-              pointHoverRadius: 5,
-              pointHoverBackgroundColor: '#10b981',
-              tension: 0.4,
-              fill: true,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: {
-              labels: {
-                color: 'rgba(255,255,255,0.4)',
-                font: { family: 'Share Tech Mono', size: 11 },
-                boxWidth: 12, boxHeight: 2, usePointStyle: false,
-              }
-            },
-            tooltip: {
-              backgroundColor: 'rgba(15,21,36,0.95)',
-              borderColor: 'rgba(181,196,19,0.15)',
-              borderWidth: 1,
-              titleColor: 'rgba(255,255,255,0.5)',
-              bodyColor: '#ffffff',
-              titleFont: { family: 'Share Tech Mono', size: 11 },
-              bodyFont: { family: 'Share Tech Mono', size: 12 },
-              padding: 12,
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-              ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 }, maxTicksLimit: 8 },
-              border: { display: false }
-            },
-            y: {
-              grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-              ticks: { color: 'rgba(255,255,255,0.3)', font: { family: 'Share Tech Mono', size: 10 } },
-              border: { display: false }
-            }
-          }
-        }
-      });
-
-      // Live update
-      setInterval(() => {
-        const newSig = sigData[sigData.length - 1] + Math.floor((Math.random() - 0.3) * 80);
-        const newUser = usersData[usersData.length - 1] + Math.floor((Math.random() - 0.4) * 40);
-        chart.data.datasets[0].data.push(Math.max(50, newSig));
-        chart.data.datasets[1].data.push(Math.max(20, newUser));
-        chart.data.labels.push('');
-        if (chart.data.labels.length > 30) {
-          chart.data.datasets[0].data.shift();
-          chart.data.datasets[1].data.shift();
-          chart.data.labels.shift();
-        }
-        chart.update('none');
-      }, 3000);
-    }
-
-    // ── SMOOTH SCROLL for nav links ──
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
+    // Scroll nav
+    window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50)},{passive:true});
+    // Reveal on scroll
+    const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
   </script>
 </body>
 </html>

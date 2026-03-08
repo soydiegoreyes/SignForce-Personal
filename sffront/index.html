@@ -1,362 +1,400 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignForce | Firma Electrónica Avanzada</title>
-    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/home/index.css">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./signforce-global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Firma Electrónica Avanzada</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <style>
-    /* ═══ SignForce Design Override ═══ */
-    body { background: #0a0f1e !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
-    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
-    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
-    p { color: rgba(255,255,255,.6) !important; }
-    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
-      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
-      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
-      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
-      box-shadow:none !important; padding:0 1.5rem !important; }
-    .glass-header::before { display:none !important; }
-    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
-      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
-    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
-      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
-    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:14px !important; transition:all .3s ease; }
-    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
-    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
-    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
-      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
-    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
-    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
-    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
-      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
-    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
-    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
-    input[type="date"], input[type="file"], textarea, select {
-      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
-      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
-    input:focus, textarea:focus, select:focus, .input-field:focus {
-      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
-    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
-    select option { background:#0f1524; color:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
-      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
-    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
-    tr:hover td { background:rgba(255,255,255,.02); }
-    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
-    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
-    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
-    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
-    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:20px !important; }
-    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
-    .close-modal:hover { color:#fff; }
-    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
-      width:30px; height:30px; animation:spin .7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .bg { background:none !important; }
-    .main-container, .content, main { position:relative; z-index:1; }
-    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
-    .text-primary { color:#fff !important; }
-    .text-secondary { color:rgba(255,255,255,.55) !important; }
-    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
-    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
-    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
-    /* end override */
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:#060a14;color:#fff;font-family:'DM Sans',sans-serif;overflow-x:hidden;line-height:1.6}
 
+    /* ═══ Background ═══ */
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.03) 1px,transparent 0);background-size:48px 48px}
+    .orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+    .orb-1{width:500px;height:500px;background:rgba(181,196,19,.06);top:-150px;left:-100px;animation:drift1 20s ease-in-out infinite}
+    .orb-2{width:400px;height:400px;background:rgba(52,211,153,.04);bottom:-100px;right:-100px;animation:drift2 25s ease-in-out infinite}
+    .orb-3{width:300px;height:300px;background:rgba(96,165,250,.03);top:40%;right:10%;animation:drift3 18s ease-in-out infinite}
+    @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
+    @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-40px)}}
+    @keyframes drift3{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+    /* ═══ Top bar ═══ */
+    .topbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;box-shadow:0 0 20px rgba(181,196,19,.22)}
+
+    /* ═══ Nav ═══ */
+    .nav{position:fixed;top:3px;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;
+      background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);transition:all .4s}
+    .nav.scrolled{background:rgba(6,10,20,.96);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+    .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff}
+    .logo-s{width:34px;height:34px;background:#B5C413;color:#060a14;font-weight:900;font-size:1rem;border-radius:9px;
+      display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(181,196,19,.25)}
+    .logo-text{font-weight:800;font-size:1.15rem;letter-spacing:.06em}
+    .nav-links{display:flex;gap:1.5rem;list-style:none}
+    .nav-links a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .3s;padding:.4rem .6rem;border-radius:6px}
+    .nav-links a:hover{color:#fff}
+    .nav-cta{background:#B5C413;color:#060a14;padding:.5rem 1.3rem;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;transition:all .25s}
+    .nav-cta:hover{background:#c5d41a;box-shadow:0 0 24px rgba(181,196,19,.25)}
+
+    /* ═══ Sections ═══ */
+    section{position:relative;z-index:1}
+    .container{max-width:1140px;margin:0 auto;padding:0 2rem}
+
+    /* ═══ Hero ═══ */
+    .hero{padding:10rem 0 6rem;text-align:center}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:.4rem 1rem;border-radius:20px;
+      background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.15);font-size:.75rem;font-weight:600;color:#B5C413;margin-bottom:2rem}
+    .hero h1{font-size:3.8rem;font-weight:700;line-height:1.1;max-width:700px;margin:0 auto 1.5rem}
+    .hero h1 .accent{color:#B5C413;position:relative}
+    .hero h1 .accent::after{content:'';position:absolute;bottom:4px;left:0;right:0;height:3px;background:#B5C413;opacity:.3;border-radius:2px}
+    .hero p{font-size:1.15rem;color:rgba(255,255,255,.5);max-width:540px;margin:0 auto 2.5rem}
+    .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .btn-lg{padding:.85rem 2rem;border-radius:10px;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .3s;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif}
+    .btn-primary{background:#B5C413;color:#060a14}
+    .btn-primary:hover{background:#c5d41a;box-shadow:0 0 30px rgba(181,196,19,.25);transform:translateY(-2px)}
+    .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12)}
+    .btn-ghost:hover{background:rgba(255,255,255,.06);border-color:rgba(181,196,19,.25)}
+    .hero-stats{display:flex;justify-content:center;gap:3rem;margin-top:4rem}
+    .stat{text-align:center}
+    .stat-num{font-size:2.2rem;font-weight:700;color:#B5C413}
+    .stat-label{font-size:.78rem;color:rgba(255,255,255,.35);margin-top:.2rem}
+
+    /* ═══ Ticker ═══ */
+    .ticker{overflow:hidden;padding:2rem 0;border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);margin:2rem 0}
+    .ticker-track{display:flex;gap:3rem;animation:scroll 30s linear infinite;white-space:nowrap}
+    .ticker-item{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;display:flex;align-items:center;gap:8px}
+    .ticker-dot{width:4px;height:4px;border-radius:50%;background:rgba(181,196,19,.3)}
+    @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+    /* ═══ Features ═══ */
+    .features{padding:6rem 0}
+    .section-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.15em;color:#B5C413;font-weight:600;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+    .section-label::before{content:'';width:20px;height:1px;background:#B5C413}
+    .section-title{font-size:2.2rem;font-weight:700;margin-bottom:.75rem;max-width:500px}
+    .section-sub{color:rgba(255,255,255,.45);font-size:1rem;max-width:480px;margin-bottom:3rem}
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .f-card{background:rgba(15,21,36,.4);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:2rem;
+      position:relative;overflow:hidden;transition:all .3s}
+    .f-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,196,19,.2),transparent);pointer-events:none}
+    .f-card:hover{border-color:rgba(181,196,19,.15);transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.3)}
+    .f-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
+    .f-card h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+    .f-card p{font-size:.85rem;color:rgba(255,255,255,.4);line-height:1.6}
+
+    /* ═══ How it works ═══ */
+    .how{padding:6rem 0}
+    .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-top:3rem}
+    .step{text-align:center;padding:2rem 1.5rem;background:rgba(15,21,36,.3);border:1px solid rgba(255,255,255,.05);border-radius:20px;position:relative;transition:all .3s}
+    .step:hover{border-color:rgba(181,196,19,.12);background:rgba(181,196,19,.03)}
+    .step-num{width:36px;height:36px;border-radius:10px;background:rgba(181,196,19,.1);color:#B5C413;
+      font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+    .step h4{font-size:.95rem;font-weight:700;margin-bottom:.4rem}
+    .step p{font-size:.8rem;color:rgba(255,255,255,.4);line-height:1.5}
+    .step-arrow{position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.1);font-size:1.5rem}
+
+    /* ═══ Security ═══ */
+    .security{padding:6rem 0}
+    .security-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+    .security-visual{background:rgba(15,21,36,.4);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:3rem;
+      position:relative;overflow:hidden;text-align:center}
+    .security-visual::before{content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .shield-icon{font-size:5rem;color:rgba(181,196,19,.5);margin-bottom:1.5rem}
+    .sec-list{display:flex;flex-direction:column;gap:1rem}
+    .sec-item{display:flex;align-items:flex-start;gap:.85rem;padding:1rem;border-radius:14px;border:1px solid rgba(255,255,255,.05);transition:all .3s}
+    .sec-item:hover{background:rgba(181,196,19,.03);border-color:rgba(181,196,19,.1)}
+    .sec-check{width:28px;height:28px;border-radius:7px;background:rgba(181,196,19,.1);color:#B5C413;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sec-item h4{font-size:.9rem;font-weight:600;margin-bottom:.15rem}
+    .sec-item p{font-size:.8rem;color:rgba(255,255,255,.4)}
+
+    /* ═══ CTA ═══ */
+    .cta{padding:6rem 0;text-align:center}
+    .cta-card{background:rgba(15,21,36,.5);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:4rem;
+      position:relative;overflow:hidden}
+    .cta-card::before{content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .cta-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,196,19,.3),transparent);pointer-events:none}
+    .cta h2{font-size:2.2rem;font-weight:700;margin-bottom:.75rem;position:relative}
+    .cta p{color:rgba(255,255,255,.45);font-size:1.05rem;margin-bottom:2rem;position:relative}
+
+    /* ═══ Compliance ═══ */
+    .compliance{padding:4rem 0;border-top:1px solid rgba(255,255,255,.04)}
+    .compliance-row{display:flex;justify-content:center;gap:3rem;flex-wrap:wrap}
+    .comp-item{display:flex;align-items:center;gap:.6rem;color:rgba(255,255,255,.3);font-size:.78rem;font-weight:500}
+
+    /* ═══ Footer ═══ */
+    .footer{padding:3rem 0;border-top:1px solid rgba(255,255,255,.04);text-align:center}
+    .footer p{color:rgba(255,255,255,.2);font-size:.78rem}
+    .footer-links{display:flex;justify-content:center;gap:2rem;margin-bottom:1rem}
+    .footer-links a{color:rgba(255,255,255,.35);text-decoration:none;font-size:.78rem;transition:color .3s}
+    .footer-links a:hover{color:#B5C413}
+
+    /* ═══ Animations ═══ */
+    .reveal{opacity:0;transform:translateY(20px);transition:all .7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* ═══ Scrollbar ═══ */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(181,196,19,.2);border-radius:3px}
+
+    /* ═══ Responsive ═══ */
+    @media(max-width:900px){
+      .nav{padding:0 1.25rem}.nav-links{display:none}
+      .hero h1{font-size:2.4rem}.hero{padding:8rem 0 4rem}
+      .features-grid{grid-template-columns:1fr}
+      .steps{grid-template-columns:1fr 1fr}.step-arrow{display:none}
+      .security-grid{grid-template-columns:1fr}
+      .hero-stats{gap:1.5rem}.stat-num{font-size:1.6rem}
+    }
+    @media(max-width:600px){
+      .hero h1{font-size:1.9rem}
+      .steps{grid-template-columns:1fr}
+      .container{padding:0 1.25rem}
+      .cta-card{padding:2.5rem 1.5rem}
+    }
   </style>
 </head>
 <body>
-    <div class="top-accent"></div>
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <span class="logo-s" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:0.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,0.25);">S</span>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SIGNFORCE</h2>
-            </div>
-            <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#hero-section" data-item="home">Inicio</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#features" data-item="features">Características</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#testimonials" data-item="testimonials">Testimonios</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#contact" data-item="contact">Contacto</a>
-            </div>
-        </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <a href="/login" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
-                Iniciar Sesión
-            </a>
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </header>
-    <div class="bg">
-      <!-- Hero Section Rediseñado -->
-      <section class="hero-section" id="hero-section">
-          <!-- Carrusel de fondo -->
-          <div class="carousel-container" id="heroCarousel">
-              <div class="carousel-slide active" style="background-image: url('./home/images/person_glass.png')"></div>
-              <div class="carousel-slide" style="background-image: url('./home/images/man_signing.png')"></div>
-              <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc.png')"></div>
-              <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc1.png')"></div>
-              <div class="carousel-slide" style="background-image: url('./home/images/person_viewing_doc2.png')"></div>
-          </div>
+  <div class="topbar"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
-          <!-- Barra lateral izquierda - Características -->
-          <div class="hero-sidebar">
-              <div class="hero-feature fade-in">
-                  <h3>🔒 Seguridad Blockchain</h3>
-                  <p>Trazabilidad inmutable para todas tus firmas electrónicas</p>
-              </div>
-              <div class="hero-feature fade-in delay-1">
-                  <h3>⚡ Firma Rápida</h3>
-                  <p>Completa documentos en segundos desde cualquier dispositivo</p>
-              </div>
-              <div class="hero-feature fade-in delay-2">
-                  <h3>📈 Analítica Avanzada</h3>
-                  <p>Dashboard en tiempo real con métricas de productividad</p>
-              </div>
-          </div>
+  <!-- Nav -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo"><span class="logo-s">S</span><span class="logo-text">IGNFORCE</span></a>
+    <ul class="nav-links">
+      <li><a href="#features">Características</a></li>
+      <li><a href="#how">Cómo Funciona</a></li>
+      <li><a href="#security">Seguridad</a></li>
+      <li><a href="#compliance">Normativa</a></li>
+    </ul>
+    <a href="/registro/login.html" class="nav-cta">Iniciar Sesión</a>
+  </nav>
 
-          <!-- Contenido principal central -->
-          
-          <div class="hero-main">
-              <div class="hero-cta fade-in delay-2">
-                  <button class="btn-primary">Comenzar Gratis</button>
-                  <button class="btn-secondary">Ver Demo</button>
-              </div>
-
-              <div class="hero-stats fade-in delay-3">
-                  <div class="stat-item">
-                      <span class="stat-number" data-target="50">0+</span>
-                      <span class="stat-label">Empresas Confían</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-number" data-target="100">0+</span>
-                      <span class="stat-label">K Documentos</span>
-                  </div>
-                  <div class="stat-item">
-                      <span class="stat-number" data-target="99">0+</span>
-                      <span class="stat-label">% Satisfacción</span>
-                  </div>
-              </div>
-              <div class="hero-feature p-12">
-                <h1 class="hero-subtitle font-extrabold fade-in delay-1">
-                    La plataforma de firma electrónica más avanzada con tecnología blockchain. 
-                    <br>Validez legal garantizada en México y Latinoamérica.
-                </h1>
-              </div>
-          </div>
-
-          <!-- Barra lateral derecha - Información adicional -->
-          <div class="hero-sidebar">
-              <div class="hero-feature fade-in">
-                  <h3>🌎 Multiplataforma</h3>
-                  <p>Funciona en web, móvil y desktop sin instalación</p>
-              </div>
-              <div class="hero-feature fade-in delay-1">
-                  <h3>📋 NOM-151 Compliant</h3>
-                  <p>Cumplimiento total con regulaciones mexicanas</p>
-              </div>
-              <div class="hero-feature fade-in delay-2">
-                  <h3>🔄 Integraciones</h3>
-                  <p>Conecta con tus herramientas favoritas</p>
-              </div>
-          </div>
-
-          <!-- Controles del carrusel -->
-          <button class="carousel-nav carousel-prev">❮</button>
-          <button class="carousel-nav carousel-next">❯</button>
-          <div class="carousel-indicators">
-              <span class="indicator active"></span>
-              <span class="indicator"></span>
-              <span class="indicator"></span>
-              <span class="indicator"></span>
-              <span class="indicator"></span>
-          </div>
-      </section>
-
-      <!-- Resto de las secciones (Features, Testimonials, etc.) -->
-    
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="features">
-          <div class="layout-container flex h-full grow flex-col">
-            <div class="gap-1 flex flex-1 justify-center py-5">
-              <div class="flex flex-col w-full glass-panel p-12">
-                <h2 class="text-primary text-3xl font-bold text-center mb-12 fade-in">Nuestras Ventajas</h2>
-                
-                <div class="features-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-shield-alt text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Seguridad Blockchain</h3>
-                    <p class="text-secondary">Todas las firmas son registradas en blockchain, garantizando integridad y no repudio de los documentos.</p>
-                  </div>
-                  
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-1">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-bolt text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Rápido y Simple</h3>
-                    <p class="text-secondary">Firma documentos en segundos desde cualquier dispositivo, sin necesidad de imprimir o escanear.</p>
-                  </div>
-                  
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-2">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-check-double text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Cumplimiento Legal</h3>
-                    <p class="text-secondary">Cumple con la NOM-151, eIDAS y regulaciones internacionales para firma electrónica avanzada.</p>
-                  </div>
-                  
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-1">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-chart-line text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Analítica Avanzada</h3>
-                    <p class="text-secondary">Dashboard con seguimiento de documentos firmados, tiempos de respuesta y estado de cada contrato.</p>
-                  </div>
-                  
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-2">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-users text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Flujos de Trabajo</h3>
-                    <p class="text-secondary">Configura procesos de firma múltiple con aprobaciones secuenciales o paralelas según tus necesidades.</p>
-                  </div>
-                  
-                  <div class="feature-card glass-card p-6 rounded-xl fade-in delay-3">
-                    <div class="feature-icon text-3xl mb-4 text-accent">
-                      <i class="fas fa-lock text-white/50"></i>
-                    </div>
-                    <h3 class="text-primary text-xl font-bold mb-2">Autenticación Fuerte</h3>
-                    <p class="text-secondary">Múltiples factores de autenticación incluyendo biometría, OTP y certificados digitales.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-      </section>
-
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="testimonials">
-          <div class="layout-container flex h-full grow flex-col">
-            <div class="gap-1 flex flex-1 justify-center py-5">
-              <div class="flex flex-col w-full glass-panel p-12">
-                <h2 class="text-primary text-3xl font-bold text-center mb-12 fade-in">Lo que dicen nuestros clientes</h2>
-                
-                <div class="testimonial-grid grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in">
-                    <p class="testimonial-text text-secondary italic mb-4">"SignForce ha transformado nuestra operación legal. Redujimos el tiempo de firma de contratos de 5 días a menos de 1 hora, con mayor seguridad que los procesos físicos."</p>
-                    <div class="testimonial-author flex items-center">
-                      <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
-                      <div class="author-info">
-                        <h4 class="text-primary font-bold">María González</h4>
-                        <p class="text-secondary text-sm">Directora Legal, FinTech MX</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in delay-1">
-                    <p class="testimonial-text text-secondary italic mb-4">"La implementación fue sencilla y el soporte excelente. Nuestros clientes ahora pueden firmar desde sus celulares sin perder la validez legal de los documentos."</p>
-                    <div class="testimonial-author flex items-center">
-                      <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
-                      <div class="author-info">
-                        <h4 class="text-primary font-bold">Carlos Mendoza</h4>
-                        <p class="text-secondary text-sm">CEO, Inmobiliaria Capital</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="testimonial-card glass-card p-6 rounded-xl fade-in delay-2">
-                    <p class="testimonial-text text-secondary italic mb-4">"Como firma de abogados, la seguridad es crítica. SignForce nos da la confianza de que nuestros documentos están protegidos con tecnología de nivel bancario."</p>
-                    <div class="testimonial-author flex items-center">
-                      <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Cliente" class="author-avatar w-12 h-12 rounded-full mr-4">
-                      <div class="author-info">
-                        <h4 class="text-primary font-bold">Ana Lucía Ramírez</h4>
-                        <p class="text-secondary text-sm">Socia, LegalTrust Abogados</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-      </section>
-
-      <section class="relative flex size-full flex-col overflow-x-hidden px-[100px] pb-20" id="contact">
-          <div class="layout-container flex h-full grow flex-col">
-            <div class="gap-1 flex flex-1 justify-center py-5">
-              <div class="flex flex-col items-center justify-center w-full glass-panel p-12 text-center">
-                <h2 class="text-primary text-3xl font-bold mb-6 fade-in">¿Listo para transformar tus procesos?</h2>
-                <p class="text-secondary text-xl mb-8 fade-in delay-1">Contáctanos para una demostración personalizada o preguntas sobre nuestra solución.</p>
-                <a href="#" class="cta-button inline-flex items-center justify-center rounded-xl h-12 px-8 bg-white/20 text-primary text-lg font-bold hover:bg-white/30 hover-glow fade-in delay-2">Contactar Equipo de Ventas</a>
-              </div>
-            </div>
-          </div>
-      </section>
-
-      <footer class="glass-panel mt-20">
-          <div class="footer-content container mx-auto px-[100px] py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div class="footer-column">
-              <h3 class="text-primary text-lg font-bold mb-4">SignForce</h3>
-              <p class="text-secondary mb-4">La plataforma líder en firma electrónica avanzada con validez legal en México y Latinoamérica.</p>
-              <div class="social-links flex gap-4">
-                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-linkedin"></i></a>
-                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="text-secondary hover:text-white"><i class="fab fa-instagram"></i></a>
-              </div>
-            </div>
-            
-            <div class="footer-column">
-              <h3 class="text-primary text-lg font-bold mb-4">Producto</h3>
-              <ul class="footer-links">
-                <li><a href="#" class="text-secondary hover:text-white">Características</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Seguridad</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Precios</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Integraciones</a></li>
-              </ul>
-            </div>
-            
-            <div class="footer-column">
-              <h3 class="text-primary text-lg font-bold mb-4">Recursos</h3>
-              <ul class="footer-links">
-                <li><a href="#" class="text-secondary hover:text-white">Documentación</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Centro de ayuda</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Blog</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Webinars</a></li>
-              </ul>
-            </div>
-            
-            <div class="footer-column">
-              <h3 class="text-primary text-lg font-bold mb-4">Empresa</h3>
-              <ul class="footer-links">
-                <li><a href="#" class="text-secondary hover:text-white">Nosotros</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Carreras</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Contacto</a></li>
-                <li><a href="#" class="text-secondary hover:text-white">Soporte</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="copyright text-center py-6 border-t border-white/10">
-            <p class="text-secondary">&copy; 2025 SignForce. Todos los derechos reservados.</p>
-          </div>
-      </footer>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="material-symbols-outlined" style="font-size:14px;">verified</span>
+        Cumple NOM-151-SCFI-2016
+      </div>
+      <h1>Firma electrónica <span class="accent">avanzada</span> para tu empresa</h1>
+      <p>Gestiona, firma y protege documentos electrónicos con validez legal en México. Seguro, rápido y conforme a la norma.</p>
+      <div class="hero-btns">
+        <a href="/registro/login.html" class="btn-lg btn-primary">
+          <span class="material-symbols-outlined" style="font-size:18px;">rocket_launch</span> Comenzar Ahora
+        </a>
+        <a href="#how" class="btn-lg btn-ghost">
+          <span class="material-symbols-outlined" style="font-size:18px;">play_circle</span> Ver Demo
+        </a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat"><div class="stat-num">256</div><div class="stat-label">Bit AES Encryption</div></div>
+        <div class="stat"><div class="stat-num">XAdES</div><div class="stat-label">Firma Avanzada</div></div>
+        <div class="stat"><div class="stat-num">ASiC-E</div><div class="stat-label">Contenedor Estándar</div></div>
+        <div class="stat"><div class="stat-num">NOM-151</div><div class="stat-label">Cumplimiento Legal</div></div>
+      </div>
     </div>
-    <script src="/home/index.js"></script>
+  </section>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="ticker-dot"></span>FIRMA ELECTRÓNICA AVANZADA</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CERTIFICADOS X.509</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>SELLADO DE TIEMPO RFC 3161</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CIFRADO AES-256-GCM</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>XADES-BES / XADES-T</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CONTENEDOR ASiC-E</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>NOM-151-SCFI-2016</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CÓDIGO DE COMERCIO ART. 89 Y 97</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>FIRMA ELECTRÓNICA AVANZADA</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CERTIFICADOS X.509</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>SELLADO DE TIEMPO RFC 3161</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CIFRADO AES-256-GCM</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>XADES-BES / XADES-T</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>CONTENEDOR ASiC-E</span>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-label">Plataforma</div>
+      <h2 class="section-title reveal">Todo lo que necesitas para firmar</h2>
+      <p class="section-sub reveal">Una plataforma completa para gestionar el ciclo de vida de tus documentos electrónicos.</p>
+      <div class="features-grid">
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(181,196,19,.1);">
+            <span class="material-symbols-outlined" style="color:#B5C413;">draw</span>
+          </div>
+          <h3>Firma Electrónica Avanzada</h3>
+          <p>Firma documentos con tu e.firma (FIEL) del SAT. Genera firmas XAdES con validez legal completa en México.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(96,165,250,.1);">
+            <span class="material-symbols-outlined" style="color:#60a5fa;">encrypted</span>
+          </div>
+          <h3>Cifrado de Grado Militar</h3>
+          <p>Documentos protegidos con AES-256-GCM. Cada archivo cifrado con nonce único por bloque para máxima seguridad.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(52,211,153,.1);">
+            <span class="material-symbols-outlined" style="color:#34d399;">verified</span>
+          </div>
+          <h3>Verificación de Identidad</h3>
+          <p>Validación biométrica facial y verificación de certificados X.509 contra cadena de confianza del SAT.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(167,139,250,.1);">
+            <span class="material-symbols-outlined" style="color:#a78bfa;">folder_zip</span>
+          </div>
+          <h3>Contenedor ASiC-E</h3>
+          <p>Empaquetado estándar ETSI que incluye el documento original, firmas XAdES y manifiesto en un solo archivo.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(251,191,36,.1);">
+            <span class="material-symbols-outlined" style="color:#fbbf24;">group</span>
+          </div>
+          <h3>Flujo Multi-Firmante</h3>
+          <p>Invita a múltiples firmantes y observadores. Cada uno recibe notificación y puede firmar desde cualquier dispositivo.</p>
+        </div>
+        <div class="f-card reveal">
+          <div class="f-icon" style="background:rgba(248,113,113,.1);">
+            <span class="material-symbols-outlined" style="color:#f87171;">qr_code_2</span>
+          </div>
+          <h3>Verificación QR</h3>
+          <p>Cada firma genera un código QR único para verificación instantánea de autenticidad desde cualquier dispositivo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how" id="how">
+    <div class="container">
+      <div class="section-label">Proceso</div>
+      <h2 class="section-title reveal">Firma en 4 pasos simples</h2>
+      <p class="section-sub reveal">Desde la carga del documento hasta la firma con validez legal.</p>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <h4>Sube tu documento</h4>
+          <p>Carga un PDF y SignForce lo analiza, clasifica y prepara en milisegundos.</p>
+          <span class="step-arrow">→</span>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <h4>Añade firmantes</h4>
+          <p>Invita a los participantes como firmantes u observadores con fecha límite.</p>
+          <span class="step-arrow">→</span>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <h4>Firma con e.firma</h4>
+          <p>Los firmantes usan su llave privada y certificado del SAT para generar la firma XAdES.</p>
+          <span class="step-arrow">→</span>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">4</div>
+          <h4>Documento legal</h4>
+          <p>Se genera el contenedor ASiC-E con todas las firmas, listo para cualquier proceso legal.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security -->
+  <section class="security" id="security">
+    <div class="container">
+      <div class="security-grid">
+        <div class="security-visual reveal">
+          <div style="position:relative;z-index:1;">
+            <span class="material-symbols-outlined shield-icon">shield_lock</span>
+            <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem;">Seguridad de nivel empresarial</h3>
+            <p style="color:rgba(255,255,255,.4);font-size:.9rem;">Infraestructura diseñada para proteger tus documentos más sensibles.</p>
+          </div>
+        </div>
+        <div>
+          <div class="section-label">Seguridad</div>
+          <h2 class="section-title reveal">Protección en cada capa</h2>
+          <p class="section-sub reveal">Cada documento pasa por múltiples capas de protección criptográfica.</p>
+          <div class="sec-list">
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Cifrado AES-256-GCM</h4><p>Documentos cifrados en reposo con nonce único por bloque</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Firma RSA con SHA-256</h4><p>Firmas criptográficas con certificados X.509 del SAT</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Verificación de integridad</h4><p>Hash SHA-256 de cada documento verificado antes y después de la firma</p></div>
+            </div>
+            <div class="sec-item reveal">
+              <div class="sec-check"><span class="material-symbols-outlined" style="font-size:16px;">check</span></div>
+              <div><h4>Trazabilidad completa</h4><p>IP, user agent, timezone y timestamp registrados en cada firma</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-card reveal">
+        <h2>Comienza a firmar con validez legal</h2>
+        <p>Únete a las empresas que ya gestionan sus documentos de forma digital, segura y conforme a la ley.</p>
+        <a href="/registro/login.html" class="btn-lg btn-primary" style="position:relative;">
+          <span class="material-symbols-outlined" style="font-size:18px;">rocket_launch</span> Crear Cuenta Gratis
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compliance -->
+  <section class="compliance" id="compliance">
+    <div class="container">
+      <div class="compliance-row reveal">
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">gavel</span> NOM-151-SCFI-2016</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">policy</span> Código de Comercio Art. 89 y 97</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">security</span> ETSI EN 319 132 (XAdES)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">archive</span> ETSI EN 319 162 (ASiC-E)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">schedule</span> RFC 3161 (TSP)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+        <a href="#">Contacto</a>
+        <a href="#">Documentación</a>
+      </div>
+      <p>&copy; 2026 SignForce Technologies — Firma electrónica avanzada con validez legal en México</p>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll nav
+    window.addEventListener('scroll',()=>{document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50)},{passive:true});
+    // Reveal on scroll
+    const observer=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}})},{threshold:0.1});
+    document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+  </script>
 </body>
 </html>
