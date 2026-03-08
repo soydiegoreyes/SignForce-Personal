@@ -1,509 +1,213 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SignForce</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard_styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Gestión de Usuarios</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <style>
+    body{background:#0a0f1e;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(10,15,30,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s ease;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-logo-s{width:30px;height:30px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:.9rem;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(181,196,19,.2)}
+    .sf-logo-text{font-weight:800;font-size:1.1rem;letter-spacing:.05em;color:#fff;margin-left:6px}
+    .sf-btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:.4rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s ease;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+    .sf-btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(181,196,19,.2)}
+    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
+    .sf-sidebar{width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem}
+    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
+    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
+    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s ease;text-decoration:none;margin-bottom:2px}
+    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
+    .sf-nav-link .material-symbols-outlined{font-size:1.15rem}
+    .sf-content{flex:1;display:flex;flex-direction:column;gap:1.25rem}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem}
+    .sf-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+    .sf-card-header-left{display:flex;align-items:center;gap:.75rem}
+    .sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sf-card-title{font-size:1.05rem;font-weight:700}
+    .sf-table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
+    .sf-table thead tr{background:rgba(255,255,255,.03)}
+    .sf-table th{padding:.65rem 1rem;text-align:left;font-size:.7rem;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-table td{padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);color:rgba(255,255,255,.6);font-size:.85rem}
+    .sf-table tr:hover td{background:rgba(255,255,255,.02)}
+    .sf-badge{padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+    .sf-badge-green{background:rgba(181,196,19,.12);color:#B5C413}
+    .sf-badge-blue{background:rgba(96,165,250,.12);color:#60a5fa}
+    .sf-btn{padding:.5rem 1.2rem;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s ease;border:none;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+    .sf-btn-primary{background:#B5C413;color:#0a0f1e}
+    .sf-btn-primary:hover{background:#c5d41a;box-shadow:0 0 20px rgba(181,196,19,.2)}
+    .sf-btn-sm{padding:.35rem .7rem;font-size:.75rem;border-radius:6px;cursor:pointer;border:none;transition:all .2s ease;font-family:'DM Sans',sans-serif}
+    .sf-btn-edit{background:rgba(96,165,250,.12);color:#60a5fa}.sf-btn-edit:hover{background:rgba(96,165,250,.2)}
+    .sf-btn-del{background:rgba(248,113,113,.1);color:#f87171}.sf-btn-del:hover{background:rgba(248,113,113,.2)}
+    .sf-btn-promo{background:rgba(181,196,19,.1);color:#B5C413}.sf-btn-promo:hover{background:rgba(181,196,19,.2)}
+    .modal{display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(5px)}
+    .modal-content{background:rgba(10,15,30,.96);border:1px solid rgba(255,255,255,.08);border-radius:20px;margin:8% auto;padding:2rem;width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:slideIn .3s ease}
+    @keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .close-modal{color:rgba(255,255,255,.4);cursor:pointer;font-size:1.5rem;transition:.2s}.close-modal:hover{color:#fff}
+    .form-group{margin-bottom:1rem}
+    .form-group label{display:block;font-size:.78rem;font-weight:500;color:rgba(255,255,255,.5);margin-bottom:.35rem}
+    .form-group input,.form-group select{width:100%;padding:.6rem .85rem;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:.85rem;font-family:'DM Sans',sans-serif;transition:all .25s ease}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:#B5C413;box-shadow:0 0 0 3px rgba(181,196,19,.1)}
+    .form-group select option{background:#0f1524;color:#fff}
+    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%}}
+  </style>
 </head>
 <body>
-    <div class="top-accent"></div>
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <span class="logo-s" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:0.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,0.25);">S</span>
-                <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-            </div>
-            <div class="flex items-center gap-9">
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="./../dashboards/dashboard_admin.html" data-item="dashboard">Dashboard</a>
-                <a class="nav-item text-white text-sm font-bold leading-normal transition-colors" href="#" data-item="users">Usuarios</a>
-                <a class="nav-item text-secondary text-sm font-bold leading-normal transition-colors" href="#" data-item="settings">Configuración</a>
-            </div>
-        </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <div class="user-info flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-emoji-grimace-fill" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M7 6.25C7 5.56 6.552 5 6 5s-1 .56-1 1.25.448 1.25 1 1.25 1-.56 1-1.25m3 1.25c.552 0 1-.56 1-1.25S10.552 5 10 5s-1 .56-1 1.25.448 1.25 1 1.25m1.5 4.5a1.5 1.5 0 0 0 1.48-1.25v-.003a1.5 1.5 0 0 0 0-.497A1.5 1.5 0 0 0 11.5 9h-7a1.5 1.5 0 0 0-1.48 1.25v.003a1.5 1.5 0 0 0 0 .497A1.5 1.5 0 0 0 4.5 12zm-7.969-1.25a1 1 0 0 0 .969.75h.25v-.75zm8.938 0a1 1 0 0 1-.969.75h-.25v-.75zM11.5 9.5a1 1 0 0 1 .969.75H11.25V9.5zm-7.969.75A1 1 0 0 1 4.5 9.5h.25v.75zM5.25 11.5h1v-.75h-1zm2.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm1.5 0h-1v-.75h1zm-1-2h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1zm-1.5 0h1v.75h-1z"/>
-                </svg>
-                <span id="nombreUsuario">Administrador de Equipo</span>
-            </div>
-            <button onclick="logout()" class="btn-secondary">Cerrar Sesión</button>
-            <button class="theme-toggle flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <aside class="sidebar glass-panel">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-primary">Gestión de Usuarios</h1>
-            </div>
-            <nav class="flex-1 px-4 py-2">
-                <a class="flex items-center gap-3 px-4 py-2 text-secondary rounded-lg hover:bg-white/10" href="./../dashboards/dashboard_admin.html">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    <span>Volver al Dashboard</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg" href="#">
-                    <span class="material-symbols-outlined">group</span>
-                    <span>Gestionar Usuarios</span>
-                </a>
-                <a class="flex items-center gap-3 px-4 py-2 mt-2 text-secondary rounded-lg hover:bg-white/10" href="#">
-                    <span class="material-symbols-outlined">settings</span>
-                    <span>Configuración</span>
-                </a>
-            </nav>
-        </aside>
-        
-        <main class="content">
-            <div class="actions mb-6 flex justify-between items-center">
-                <button class="btn-secondary" onclick="window.location.href='./../dashboards/dashboard_admin.html'">
-                    <span class="material-symbols-outlined mr-2" style="vertical-align: middle;">arrow_back</span>
-                    Volver al Dashboard
-                </button>
-                <button class="btn-primary" onclick="abrirModalAgregar()">
-                    <span class="material-symbols-outlined mr-2" style="vertical-align: middle;">person_add</span>
-                    Agregar Usuario
-                </button>
-            </div>
-            
-            <div class="glass-panel p-6">
-                <h1 class="text-3xl font-bold text-primary mb-6">SignForce</h1>
-                
-                <div class="overflow-x-auto">
-                    <table id="tablaUsuarios" class="w-full">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Email</th>
-                                <th>Rol</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Los usuarios se cargarán dinámicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="color:#fff;"><span class="sf-logo-s">S</span><span class="sf-logo-text">IGNFORCE</span></a>
+      <nav style="display:flex;gap:4px;">
+        <a href="./../dashboards/dashboard_admin.html"><span class="material-symbols-outlined" style="font-size:16px;">dashboard</span> Dashboard</a>
+        <a href="#"><span class="material-symbols-outlined" style="font-size:16px;">group</span> Usuarios</a>
+      </nav>
     </div>
-    
-    <!-- Modal para agregar usuario -->
-    <div id="modalAgregar" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="cerrarModalAgregar()">&times;</span>
-            <h2 class="text-2xl font-bold text-primary mb-4">Agregar Nuevo Usuario</h2>
-            <form id="formAgregarUsuario">
-                <div class="form-group">
-                    <label for="nombreNuevoUsuario">Nombre</label>
-                    <input type="text" id="nombreNuevoUsuario" required>
-                </div>
-                <div class="form-group">
-                    <label for="emailNuevoUsuario">Email</label>
-                    <input type="email" id="emailNuevoUsuario" required>
-                </div>
-                <div class="form-group">
-                    <label for="rolNuevoUsuario">Rol</label>
-                    <select id="rolNuevoUsuario" required>
-                        <option value="miembro">Miembro</option>
-                        <option value="admin">Administrador</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-4 mt-6">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalAgregar()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Agregar Usuario</button>
-                </div>
-            </form>
-        </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="nombreUsuario" style="font-size:.82rem;color:rgba(255,255,255,.45);">Admin</span>
+      <button class="sf-btn-ghost" onclick="logout()"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</button>
     </div>
-    
-    <!-- Modal para editar usuario -->
-    <div id="modalEditar" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="cerrarModalEditar()">&times;</span>
-            <h2 class="text-2xl font-bold text-primary mb-4">Editar Usuario</h2>
-            <form id="formEditarUsuario">
-                <input type="hidden" id="usuarioIdEditar">
-                <div class="form-group">
-                    <label for="nombreEditarUsuario">Nombre</label>
-                    <input type="text" id="nombreEditarUsuario" required>
-                </div>
-                <div class="form-group">
-                    <label for="emailEditarUsuario">Email</label>
-                    <input type="email" id="emailEditarUsuario" required>
-                </div>
-                <div class="form-group">
-                    <label for="rolEditarUsuario">Rol</label>
-                    <select id="rolEditarUsuario" required>
-                        <option value="miembro">Miembro</option>
-                        <option value="admin">Administrador</option>
-                    </select>
-                </div>
-                <div class="flex justify-end gap-4 mt-6">
-                    <button type="button" class="btn-secondary" onclick="cerrarModalEditar()">Cancelar</button>
-                    <button type="submit" class="btn-primary">Guardar Cambios</button>
-                </div>
-            </form>
+  </header>
+
+  <div class="sf-layout">
+    <aside class="sf-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">group</span></div>
+          <div><div style="font-size:.95rem;font-weight:700;">Usuarios</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">Gestión del equipo</div></div>
         </div>
+      </div>
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link" href="./../dashboards/dashboard_admin.html"><span class="material-symbols-outlined">arrow_back</span> Volver al Dashboard</a>
+        <a class="sf-nav-link active" href="#"><span class="material-symbols-outlined">group</span> Gestionar Usuarios</a>
+        <a class="sf-nav-link" href="#"><span class="material-symbols-outlined">settings</span> Configuración</a>
+      </nav>
+    </aside>
+
+    <main class="sf-content">
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-header-left">
+            <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">group</span></div>
+            <div class="sf-card-title">Usuarios del Equipo</div>
+          </div>
+          <button class="sf-btn sf-btn-primary" onclick="abrirModalAgregar()"><span class="material-symbols-outlined" style="font-size:16px;">person_add</span> Agregar Usuario</button>
+        </div>
+        <table class="sf-table" id="tablaUsuarios">
+          <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Agregar -->
+  <div id="modalAgregar" class="modal">
+    <div class="modal-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h3 style="font-size:1.1rem;font-weight:700;margin:0;">Agregar Nuevo Usuario</h3>
+        <span class="close-modal" onclick="cerrarModalAgregar()">&times;</span>
+      </div>
+      <form id="formAgregarUsuario">
+        <div class="form-group"><label>Nombre</label><input type="text" id="nombreNuevoUsuario" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="emailNuevoUsuario" required></div>
+        <div class="form-group"><label>Rol</label><select id="rolNuevoUsuario" required><option value="miembro">Miembro</option><option value="admin">Administrador</option></select></div>
+        <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.25rem;">
+          <button type="button" class="sf-btn-ghost" onclick="cerrarModalAgregar()">Cancelar</button>
+          <button type="submit" class="sf-btn sf-btn-primary">Agregar</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-        // Cargar información del usuario
-        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-        
-        /*if (!currentUser || currentUser.tipo !== 'admin_equipo') {
-            console.log("Usuario no es admin o no usuario ")
-            //window.location.href = './../registro/login.html';
-        }*/
-        
-        document.getElementById('nombreUsuario').textContent = currentUser.nombre || 'Administrador de Equipo';
-        
-        // Cargar información de los equipos
-        let equipos = JSON.parse(sessionStorage.getItem('equipos')) || [];
+  <!-- Modal Editar -->
+  <div id="modalEditar" class="modal">
+    <div class="modal-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h3 style="font-size:1.1rem;font-weight:700;margin:0;">Editar Usuario</h3>
+        <span class="close-modal" onclick="cerrarModalEditar()">&times;</span>
+      </div>
+      <form id="formEditarUsuario">
+        <input type="hidden" id="usuarioIdEditar">
+        <div class="form-group"><label>Nombre</label><input type="text" id="nombreEditarUsuario" required></div>
+        <div class="form-group"><label>Email</label><input type="email" id="emailEditarUsuario" required></div>
+        <div class="form-group"><label>Rol</label><select id="rolEditarUsuario" required><option value="miembro">Miembro</option><option value="admin">Administrador</option></select></div>
+        <div style="display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.25rem;">
+          <button type="button" class="sf-btn-ghost" onclick="cerrarModalEditar()">Cancelar</button>
+          <button type="submit" class="sf-btn sf-btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-        // Cargar informacion de los usuarios
-         let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
+  <script>
+    const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+    let equipos = JSON.parse(sessionStorage.getItem('equipos') || '[]');
+    let usuarios = JSON.parse(sessionStorage.getItem('usuarios') || '[]');
+    if(currentUser.nombre) document.getElementById('nombreUsuario').textContent = currentUser.nombre;
+    const modalAgregar = document.getElementById('modalAgregar');
+    const modalEditar = document.getElementById('modalEditar');
 
-        // Efecto liquid glass para la burbuja del menú
-        const liquidBubble = document.getElementById('liquidBubble');
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        const itemPositions = {};
-        
-        function calculatePositions() {
-            navItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                
-                itemPositions[item.dataset.item] = {
-                    left: rect.left - headerRect.left,
-                    width: rect.width
-                };
-            });
-            
-            moveBubble('users');
-        }
-        
-        function moveBubble(itemName) {
-            const item = itemPositions[itemName];
-            if (item && liquidBubble) {
-                liquidBubble.style.left = `${item.left - 10}px`;
-                liquidBubble.style.width = `${item.width + 20}px`;
-            }
-        }
-        
-        navItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                moveBubble(item.dataset.item);
-            });
-        });
+    function cargarUsuarios(){
+      const equipo = equipos.find(e => e.id === currentUser.equipoId);
+      if(!equipo||!equipo.miembros) return;
+      const tbody = document.querySelector('#tablaUsuarios tbody'); tbody.innerHTML='';
+      equipo.miembros.forEach(m => {
+        const u = usuarios.find(x => x.id === m.usuarioId); if(!u) return;
+        const tr = document.createElement('tr');
+        const isAdmin = m.rol==='admin';
+        tr.innerHTML=`
+          <td style="color:#fff;font-weight:500;">${u.nombre}</td>
+          <td>${u.email}</td>
+          <td><span class="sf-badge ${isAdmin?'sf-badge-green':'sf-badge-blue'}">${isAdmin?'ADMIN':'MIEMBRO'}</span></td>
+          <td>${u.id!==currentUser.id?`
+            <button class="sf-btn-sm sf-btn-edit" onclick="editarUsuario('${u.id}')">Editar</button>
+            <button class="sf-btn-sm sf-btn-del" onclick="eliminarUsuario('${u.id}')">Eliminar</button>
+            ${!isAdmin?`<button class="sf-btn-sm sf-btn-promo" onclick="promoverAAdmin('${u.id}')">Admin</button>`:''}`
+            :'<span style="color:rgba(255,255,255,.3);font-size:.78rem;">Tú</span>'}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    cargarUsuarios();
 
-        window.addEventListener('load', calculatePositions);
-        window.addEventListener('resize', calculatePositions);
+    function abrirModalAgregar(){modalAgregar.style.display='block'}
+    function cerrarModalAgregar(){modalAgregar.style.display='none';document.getElementById('formAgregarUsuario').reset()}
+    function cerrarModalEditar(){modalEditar.style.display='none'}
+    window.onclick=e=>{if(e.target===modalAgregar)cerrarModalAgregar();if(e.target===modalEditar)cerrarModalEditar()};
 
-        // Toggle de tema claro/oscuro
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) {
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('light-theme');
-                
-                const icon = themeToggle.querySelector('i');
-                if (document.body.classList.contains('light-theme')) {
-                    icon.classList.remove('fa-moon');
-                    icon.classList.add('fa-sun');
-                } else {
-                    icon.classList.remove('fa-sun');
-                    icon.classList.add('fa-moon');
-                }
-            });
-        }
+    document.getElementById('formAgregarUsuario').addEventListener('submit',e=>{
+      e.preventDefault();
+      const nombre=document.getElementById('nombreNuevoUsuario').value,email=document.getElementById('emailNuevoUsuario').value,rol=document.getElementById('rolNuevoUsuario').value;
+      if(usuarios.some(u=>u.email===email)){alert('Email ya registrado');return}
+      const nu={id:`usr_${Date.now()}`,nombre,email,password:'temp'+Math.random().toString(36).substr(2,8),tipo:'miembro_equipo',empresaId:currentUser.empresaId,equipoId:currentUser.equipoId};
+      usuarios.push(nu);sessionStorage.setItem('usuarios',JSON.stringify(usuarios));
+      const eq=equipos.find(e=>e.id===currentUser.equipoId);eq.miembros.push({usuarioId:nu.id,rol,fechaUnion:new Date().toISOString()});
+      sessionStorage.setItem('equipos',JSON.stringify(equipos));
+      alert(`Usuario agregado!\nEmail: ${nu.email}\nPass: ${nu.password}`);cerrarModalAgregar();cargarUsuarios();
+    });
 
-        // Variables para modales
-        const modalAgregar = document.getElementById('modalAgregar');
-        const modalEditar = document.getElementById('modalEditar');
-        
-        // Cargar usuarios del equipo
-        function cargarUsuarios() {
-            // Buscar equipo en memoria
-            const equipo = equipos.find(e => e.id === currentUser.equipoId);
-            // Determinar si el usuario actual puede editar este miembro
-            const puedeEditar = (currentUser.tipo === 'admin_equipo');
-            
-            if (equipo && equipo.miembros) {
-                const tbody = document.querySelector('#tablaUsuarios tbody');
-                tbody.innerHTML = '';
-                
-                equipo.miembros.forEach(miembro => {
-                    // Buscar información del usuario
-                    const usuario = usuarios.find(u => u.id === miembro.usuarioId);
-                    
-                    if (usuario) {
-                        const tr = document.createElement('tr');
-                        tr.className = 'glass-card fade-in';
-                        
-                        // Determinar clase del badge según el rol
-                        let badgeClass, rolText;
-                        if (miembro.rol === 'admin') {
-                            badgeClass = 'badge-admin';
-                            rolText = 'ADMIN';
-                        } else if (miembro.rol === 'miembro') {
-                            badgeClass = 'badge-miembro';
-                            rolText = 'MIEMBRO';
-                        }
-                        
-                        tr.innerHTML = `
-                            <td class="text-primary font-medium">${usuario.nombre}</td>
-                            <td class="text-secondary">${usuario.email}</td>
-                            <td><span class="badge ${badgeClass}">${rolText}</span></td>
-                            <td>
-                                ${usuario.id !== currentUser.id ? `
-                                <button class="action-btn btn-editar" onclick="editarUsuario('${usuario.id}')">Editar</button>
-                                <button class="action-btn btn-eliminar" onclick="eliminarUsuario('${usuario.id}')">Eliminar</button>
-                                ${miembro.rol !== 'admin' ? `
-                                    <button class="action-btn btn-promover" onclick="promoverAAdmin('${usuario.id}')">Hacer Admin</button>
-                                    ` : ''}
-                                ` : '<span class="text-secondary">Tú</span>'}
-                            </td>
-                        `;
-                        
-                        tbody.appendChild(tr);
-                    }
-                });
-            }
-        }
-        
-        cargarUsuarios();
-        
-        // Funciones para modales
-        function abrirModalAgregar() {
-            modalAgregar.style.display = 'block';
-        }
-        
-        function cerrarModalAgregar() {
-            modalAgregar.style.display = 'none';
-            document.getElementById('formAgregarUsuario').reset();
-        }
-        
-        function abrirModalEditar(usuarioId) {
-            // Buscar usuario
-            const usuario = usuarios.find(u => u.id === usuarioId);
-            
-            if (usuario) {
-                // Buscar información de miembro
-                const equipo = equipos.find(e => e.id === currentUser.equipoId);
-                const miembro = equipo.miembros.find(m => m.usuarioId === usuarioId);
-                
-                document.getElementById('usuarioIdEditar').value = usuario.id;
-                document.getElementById('nombreEditarUsuario').value = usuario.nombre;
-                document.getElementById('emailEditarUsuario').value = usuario.email;
-                document.getElementById('rolEditarUsuario').value = miembro.rol;
-                
-                modalEditar.style.display = 'block';
-            }
-        }
-        
-        function cerrarModalEditar() {
-            modalEditar.style.display = 'none';
-        }
-        
-        // Cerrar modales al hacer clic fuera de ellos
-        window.onclick = function(event) {
-            if (event.target === modalAgregar) {
-                cerrarModalAgregar();
-            }
-            if (event.target === modalEditar) {
-                cerrarModalEditar();
-            }
-        };
-        
-        // Formulario para agregar usuario
-        document.getElementById('formAgregarUsuario').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const nombre = document.getElementById('nombreNuevoUsuario').value;
-            const email = document.getElementById('emailNuevoUsuario').value;
-            const rol = document.getElementById('rolNuevoUsuario').value;
-            
-            // Validar que el email no esté ya en uso
-            const emailEnUso = usuarios.some(u => u.email === email);
-            
-            if (emailEnUso) {
-                alert('Este email ya está registrado en el sistema');
-                return;
-            }
-            
-            // Crear nuevo usuario
-            // En un caso real sería un fetch a la API
-            /*
-            fetch('/api/usuarios', {
-                method: 'POST',
-                body: JSON.stringify({
-                    nombre,
-                    email,
-                    password: 'temp' + Math.random().toString(36).substring(2, 8),
-                    tipo: 'miembro_equipo',
-                    empresaId: currentUser.empresaId,
-                    equipoId: currentUser.equipoId,
-                    rol
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Manejar respuesta
-            });
-            */
-            
-            const nuevoUsuario = {
-                id: `usr_${Date.now()}`,
-                nombre,
-                email,
-                password: 'temp' + Math.random().toString(36).substring(2, 8),
-                tipo: 'miembro_equipo',
-                empresaId: currentUser.empresaId,
-                equipoId: currentUser.equipoId
-            };
-            
-            usuarios.push(nuevoUsuario);
-            sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
+    document.getElementById('formEditarUsuario').addEventListener('submit',e=>{
+      e.preventDefault();
+      const id=document.getElementById('usuarioIdEditar').value,u=usuarios.find(x=>x.id===id);
+      if(u){u.nombre=document.getElementById('nombreEditarUsuario').value;u.email=document.getElementById('emailEditarUsuario').value;
+        const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id);
+        if(m)m.rol=document.getElementById('rolEditarUsuario').value;
+        sessionStorage.setItem('equipos',JSON.stringify(equipos));alert('Actualizado');cerrarModalEditar();cargarUsuarios();}
+    });
 
-            // Agregar usuario al equipo
-            const equipo = equipos.find(e => e.id === currentUser.equipoId);
-            equipo.miembros.push({
-                usuarioId: nuevoUsuario.id,
-                rol,
-                fechaUnion: new Date().toISOString()
-            });
-            sessionStorage.setItem('equipos', JSON.stringify(equipos));
-
-            // Mostrar mensaje con credenciales
-            alert(`Usuario agregado exitosamente!\n\nEmail: ${nuevoUsuario.email}\nContraseña temporal: ${nuevoUsuario.password}\n\nEstas credenciales han sido enviadas al correo del usuario.`);
-            
-            // Cerrar modal y recargar lista
-            cerrarModalAgregar();
-            cargarUsuarios();
-        });
-        
-        // Formulario para editar usuario
-        document.getElementById('formEditarUsuario').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const usuarioId = document.getElementById('usuarioIdEditar').value;
-            const nombre = document.getElementById('nombreEditarUsuario').value;
-            const email = document.getElementById('emailEditarUsuario').value;
-            const rol = document.getElementById('rolEditarUsuario').value;
-            
-            // Actualizar usuario
-            // En un caso real sería un fetch a la API
-            /*
-            fetch(`/api/usuarios/${usuarioId}`, {
-                method: 'PUT',
-                body: JSON.stringify({ nombre, email, rol }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Manejar respuesta
-            });
-            */
-            
-            // Actualizar en memoria
-            const usuario = usuarios.find(u => u.id === usuarioId);
-            if (usuario) {
-                usuario.nombre = nombre;
-                usuario.email = email;
-                
-                // Actualizar rol en el equipo
-                const equipo = equipos.find(e => e.id === currentUser.equipoId);
-                const miembro = equipo.miembros.find(m => m.usuarioId === usuarioId);
-                if (miembro) {
-                    miembro.rol = rol;
-                }
-                sessionStorage.setItem('equipos', JSON.stringify(equipos));
-                
-                alert('Usuario actualizado exitosamente');
-                cerrarModalEditar();
-                cargarUsuarios();
-            }
-        });
-        
-        // Funciones para acciones
-        function editarUsuario(usuarioId) {
-            abrirModalEditar(usuarioId);
-        }
-        
-        function eliminarUsuario(usuarioId) {
-            if (confirm('¿Estás seguro de que deseas eliminar este usuario del equipo?')) {
-                // En un caso real sería un fetch a la API
-                /*
-                fetch(`/api/equipos/${currentUser.equipoId}/miembros/${usuarioId}`, {
-                    method: 'DELETE'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Manejar respuesta
-                });
-                */
-                
-                // Eliminar de memoria
-                const equipo = equipos.find(e => e.id === currentUser.equipoId);
-                equipo.miembros = equipo.miembros.filter(m => m.usuarioId !== usuarioId);
-                sessionStorage.setItem('equipos', JSON.stringify(equipos));
-                // No eliminamos el usuario completamente, solo del equipo
-                alert('Usuario eliminado del equipo');
-                cargarUsuarios();
-            }
-        }
-        
-        function promoverAAdmin(usuarioId) {
-            if (confirm('¿Promover este usuario a administrador del equipo?')) {
-                // En un caso real sería un fetch a la API
-                /*
-                fetch(`/api/equipos/${currentUser.equipoId}/miembros/${usuarioId}/promover`, {
-                    method: 'PUT',
-                    body: JSON.stringify({ rol: 'admin' }),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Manejar respuesta
-                });
-                */
-                
-                // Actualizar en memoria
-                const equipo = equipos.find(e => e.id === currentUser.equipoId);
-                const miembro = equipo.miembros.find(m => m.usuarioId === usuarioId);
-                const usu= usuarios.find(u => u.id === usuarioId);
-                if (miembro) {
-                    miembro.rol = 'admin';
-                    usu.tipo = 'admin_equipo'
-                    alert('Usuario promovido a administrador');
-                    cargarUsuarios();
-                }
-                sessionStorage.setItem('equipos', JSON.stringify(equipos));
-                sessionStorage.setItem('usuarios', JSON.stringify(usuarios));
-            }
-        }
-
-        function logout() {
-            sessionStorage.removeItem('currentUser');
-            window.location.href = '/login';
-        }
-    </script>
+    function editarUsuario(id){
+      const u=usuarios.find(x=>x.id===id),eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id);
+      if(u){document.getElementById('usuarioIdEditar').value=u.id;document.getElementById('nombreEditarUsuario').value=u.nombre;
+        document.getElementById('emailEditarUsuario').value=u.email;document.getElementById('rolEditarUsuario').value=m.rol;modalEditar.style.display='block';}
+    }
+    function eliminarUsuario(id){if(confirm('¿Eliminar usuario del equipo?')){const eq=equipos.find(e=>e.id===currentUser.equipoId);eq.miembros=eq.miembros.filter(m=>m.usuarioId!==id);sessionStorage.setItem('equipos',JSON.stringify(equipos));cargarUsuarios()}}
+    function promoverAAdmin(id){if(confirm('¿Promover a admin?')){const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id),u=usuarios.find(x=>x.id===id);if(m){m.rol='admin';u.tipo='admin_equipo';sessionStorage.setItem('equipos',JSON.stringify(equipos));sessionStorage.setItem('usuarios',JSON.stringify(usuarios));cargarUsuarios()}}}
+    function logout(){sessionStorage.removeItem('currentUser');window.location.href='/login'}
+  </script>
 </body>
 </html>

@@ -1,474 +1,82 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validación de Documentos - SignForce</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Estilos Base y Scrollbar */
-        .keys-list {
-            max-height: 400px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(33, 150, 243, 0.3) transparent;
-            padding-right: 5px;
-        }
-        
-        .keys-list::-webkit-scrollbar { width: 4px; }
-        .keys-list::-webkit-scrollbar-track { background: transparent; }
-        .keys-list::-webkit-scrollbar-thumb {
-            background-color: rgba(33, 150, 243, 0.3);
-            border-radius: 3px;
-        }
-
-        /* Tarjetas Estilo "Invitación" */
-        .tech-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .tech-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
-            opacity: 0.5;
-        }
-
-        .tech-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(56, 189, 248, 0.3);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Contenedores de datos con resplandor */
-        .sig-data-item {
-            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .sig-data-item::before {
-            content: '';
-            position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, 
-                rgba(59, 130, 246, 0.3), 
-                rgba(124, 58, 237, 0.3), 
-                rgba(59, 130, 246, 0.3));
-            border-radius: 14px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .sig-data-item:hover::before {
-            opacity: 1;
-        }
-
-        .sig-data-item:hover {
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
-            border-color: rgba(33, 150, 243, 0.4);
-            transform: translateY(-2px);
-        }
-
-        /* Badges Neon */
-        .badge-neon {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .badge-validation {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-            box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
-        }
-
-        .badge-document {
-            background: rgba(59, 130, 246, 0.15);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        /* Botones */
-        .btn-cyber {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-            color: white;
-            font-weight: 500;
-        }
-        
-        .btn-cyber:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            color: white;
-            font-weight: 500;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        /* Header Panel */
-        .header-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .info-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-            margin-bottom: 2px;
-        }
-        
-        .info-value {
-            font-weight: 600;
-            color: #f3f4f6;
-        }
-
-        /* Estados de documentos */
-        .status {
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            min-width: 100px;
-            text-align: center;
-            border: 1px solid transparent;
-        }
-
-        .status-pendiente {
-            background-color: rgba(249, 115, 22, 0.2);
-            color: #f97316;
-            border-color: rgba(249, 115, 22, 0.3);
-        }
-
-        .status-completo {
-            background-color: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            border-color: rgba(34, 197, 94, 0.3);
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        /* Inputs */
-        .input-field {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05); /* Fondo transparente oscuro */
-            border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
-            color: #f3f4f6; /* Texto claro */
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            outline: none;
-            border-color: rgba(59, 130, 246, 0.7); /* Borde azul al enfocar */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Sombra azul sutil */
-            background: rgba(255, 255, 255, 0.08); /* Fondo ligeramente más claro al enfocar */
-            color: #ffffff; /* Texto blanco puro al enfocar */
-        }
-
-        .input-field::placeholder {
-            color: rgba(156, 163, 175, 0.7); /* Placeholder gris translúcido */
-            /* Quita el background del placeholder - no es necesario */
-        }
-
-        /* Si quieres que el input se vea aún más oscuro cuando no está enfocado */
-        .input-field:not(:focus) {
-            background: rgba(255, 255, 255, 0.03); /* Aún más oscuro cuando no está enfocado */
-        }
-
-        /* Mensajes */
-        .message-success {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .message-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .message-info {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            color: #93c5fd;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        /* Document items */
-        .documento-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            margin-bottom: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .documento-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .file-info {
-            font-size: 0.85rem;
-            color: #9ca3af;
-            margin-top: 0.25rem;
-        }
-
-        /* File input styling */
-        .file-input-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        .file-input {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #3b82f6;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 0.5rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Validación de Documentos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <style>
+    body{background:#0a0f1e;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(10,15,30,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s ease;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-logo-s{width:30px;height:30px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:.9rem;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(181,196,19,.2)}
+    .sf-logo-text{font-weight:800;font-size:1.1rem;letter-spacing:.05em;color:#fff;margin-left:6px}
+    .sf-main{max-width:700px;width:100%;padding:90px 1.5rem 3rem;position:relative;z-index:1}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:2rem;margin-bottom:1.25rem}
+    .sf-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+    .sf-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .sf-card-title{font-size:1.15rem;font-weight:700}
+    .sf-step{display:flex;align-items:flex-start;gap:1rem;padding:1rem;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);margin-bottom:.75rem;transition:all .3s ease}
+    .sf-step:hover{border-color:rgba(181,196,19,.15);background:rgba(181,196,19,.03)}
+    .sf-step-num{width:32px;height:32px;border-radius:8px;background:rgba(181,196,19,.1);color:#B5C413;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sf-step-done{background:rgba(52,211,153,.15);color:#34d399}
+    .sf-step h4{font-size:.9rem;font-weight:600;margin-bottom:.2rem}
+    .sf-step p{font-size:.78rem;color:rgba(255,255,255,.4);line-height:1.5;margin:0}
+    .sf-input{width:100%;padding:.6rem .85rem;border-radius:10px;font-size:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;transition:all .25s ease;margin-top:.5rem}
+    .sf-input:focus{outline:none;border-color:#B5C413;box-shadow:0 0 0 3px rgba(181,196,19,.1)}
+    .sf-btn{padding:.65rem 1.5rem;border-radius:10px;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .25s ease;border:none;display:inline-flex;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;background:#B5C413;color:#0a0f1e;margin-top:1rem}
+    .sf-btn:hover{background:#c5d41a;box-shadow:0 0 24px rgba(181,196,19,.2)}
+    .sf-progress{height:4px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:1.5rem}
+    .sf-progress-bar{height:100%;background:linear-gradient(90deg,#B5C413,#34d399);border-radius:4px;transition:width .5s ease}
+    @media(max-width:600px){.sf-main{padding:80px 1rem 2rem}}
+  </style>
 </head>
-<body class="font-display bg-[#010102] text-gray-200 min-h-screen flex flex-col">
-    <div class="top-accent"></div>
+<body>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <header class="sf-header">
+    <a href="/" style="color:#fff;"><span class="sf-logo-s">S</span><span class="sf-logo-text">IGNFORCE</span></a>
+    <a href="/login"><span class="material-symbols-outlined" style="font-size:16px;">arrow_back</span> Volver</a>
+  </header>
 
-    <header class="header-panel fixed top-0 w-full z-50 h-16">
-        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
-            <div class="flex items-center gap-3">
-                <div>
-                    <img src="./../images/sflogo.png" alt="Logo" style="width: 20%;"/>
-                </div>
-                <!-- <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Validación de Documentos</span></h1> -->
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-xs font-medium">Conectado</span>
-                </div>
-            </div>
+  <main class="sf-main">
+    <div class="sf-card">
+      <div class="sf-card-header">
+        <div class="sf-card-icon" style="background:rgba(181,196,19,.1);"><span class="material-symbols-outlined" style="font-size:1.2rem;color:#B5C413;">verified</span></div>
+        <div class="sf-card-title">Validación de Registro</div>
+      </div>
+      <p style="color:rgba(255,255,255,.45);font-size:.88rem;margin-bottom:1.25rem;">Completa los siguientes pasos para verificar tu cuenta empresarial.</p>
+      <div class="sf-progress"><div class="sf-progress-bar" id="progressBar" style="width:25%;"></div></div>
+
+      <div class="sf-step">
+        <div class="sf-step-num sf-step-done">1</div>
+        <div><h4>Registro completado</h4><p>Tu cuenta ha sido creada exitosamente. Datos de empresa registrados.</p></div>
+      </div>
+      <div class="sf-step">
+        <div class="sf-step-num">2</div>
+        <div>
+          <h4>Documentos legales</h4>
+          <p>Sube tu acta constitutiva, poder del representante legal y comprobante de domicilio.</p>
+          <input type="file" class="sf-input" accept=".pdf,.jpg,.png" style="margin-top:.75rem;">
         </div>
-    </header>
-
-    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1200px] mx-auto w-full flex flex-col gap-8">
-        
-        <!-- Sección Principal - Información de la Empresa -->
-        <div class="tech-card p-8 animate-fade-in">
-            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-                <div class="flex items-center gap-3">
-                    <span class="badge-neon badge-validation">
-                        <span class="material-symbols-outlined text-[14px">business</span>
-                        Información de la Empresa
-                    </span>
-                </div>
-            </div>
-
-            <div id="messageContainer"></div>
-
-            <div class="sig-data-item">
-                <div id="empresaInfo" class="space-y-4">
-                    <!-- Información se llenará con JS -->
-                </div>
-            </div>
+      </div>
+      <div class="sf-step">
+        <div class="sf-step-num">3</div>
+        <div><h4>Verificación de identidad</h4><p>Sube una identificación oficial vigente del representante legal (INE/Pasaporte).</p>
+          <input type="file" class="sf-input" accept=".pdf,.jpg,.png" style="margin-top:.75rem;">
         </div>
+      </div>
+      <div class="sf-step">
+        <div class="sf-step-num">4</div>
+        <div><h4>Revisión y aprobación</h4><p>Nuestro equipo revisará tu documentación en un plazo de 24-48 horas hábiles.</p></div>
+      </div>
 
-        <!-- Sección de Documentos Requeridos -->
-        <div class="tech-card p-8 animate-fade-in">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-green-400">description</span>
-                    Documentos Requeridos
-                </h3>
-                <div class="h-px flex-1 bg-white/10 ml-6"></div>
-            </div>
-
-            <div class="documentos-list space-y-4">
-                <!-- Acta Constitutiva -->
-                <div class="documento-item">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="material-symbols-outlined text-blue-400 text-lg">description</span>
-                            <span class="font-medium text-white">Acta Constitutiva</span>
-                        </div>
-                        <div class="file-info" id="infoActa"></div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="status status-pendiente" id="statusActa">Pendiente</span>
-                        <div class="file-input-container">
-                            <button id="btnActa" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm">upload</span>
-                                Subir
-                            </button>
-                            <input type="file" class="file-input" id="fileActa" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Poder Notarial -->
-                <div class="documento-item">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="material-symbols-outlined text-purple-400 text-lg">gavel</span>
-                            <span class="font-medium text-white">Poder Notarial</span>
-                        </div>
-                        <div class="file-info" id="infoPoder"></div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="status status-pendiente" id="statusPoder">Pendiente</span>
-                        <div class="file-input-container">
-                            <button id="btnPoder" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm">upload</span>
-                                Subir
-                            </button>
-                            <input type="file" class="file-input" id="filePoder" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Identificación Oficial -->
-                <div class="documento-item">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="material-symbols-outlined text-green-400 text-lg">badge</span>
-                            <span class="font-medium text-white">Identificación Oficial</span>
-                        </div>
-                        <div class="file-info" id="infoIdentificacion"></div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="status status-pendiente" id="statusIdentificacion">Pendiente</span>
-                        <div class="file-input-container">
-                            <button id="btnIdentificacion" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm">upload</span>
-                                Subir
-                            </button>
-                            <input type="file" class="file-input" id="fileIdentificacion" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Comprobante de Domicilio -->
-                <div class="documento-item">
-                    <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="material-symbols-outlined text-orange-400 text-lg">home</span>
-                            <span class="font-medium text-white">Comprobante de Domicilio</span>
-                        </div>
-                        <div class="file-info" id="infoDomicilio"></div>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="status status-pendiente" id="statusDomicilio">Pendiente</span>
-                        <div class="file-input-container">
-                            <button id="btnDomicilio" class="btn-cyber px-4 py-2 rounded-lg flex items-center gap-2">
-                                <span class="material-symbols-outlined text-sm">upload</span>
-                                Subir
-                            </button>
-                            <input type="file" class="file-input" id="fileDomicilio" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-8 pt-6 border-t border-white/10">
-                <div class="flex justify-center">
-                    <button class="btn-cyber px-8 py-3 rounded-lg text-white font-medium flex items-center gap-2 text-lg" id="btnCompletar" disabled>
-                        <span class="material-symbols-outlined text-sm">check_circle</span>
-                        Completar Validación
-                    </button>
-                </div>
-            </div>
-        </div>
+      <div style="text-align:center;">
+        <button class="sf-btn"><span class="material-symbols-outlined" style="font-size:18px;">upload</span> Enviar Documentación</button>
+      </div>
     </div>
-
-    <script src="/registro/validation.js"></script>
+  </main>
 </body>
 </html>

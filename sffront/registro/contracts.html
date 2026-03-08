@@ -1,152 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SignForce - Firma de Documentos</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;600;800&family=Noto+Sans:wght@400;600">
-  <link rel="stylesheet" href="/registro/contracts.css">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Contratos</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <style>
+    body{background:#0a0f1e;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(10,15,30,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s ease;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-logo-s{width:30px;height:30px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:.9rem;border-radius:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(181,196,19,.2)}
+    .sf-logo-text{font-weight:800;font-size:1.1rem;letter-spacing:.05em;color:#fff;margin-left:6px}
+    .sf-main{max-width:900px;width:100%;padding:90px 1.5rem 3rem;position:relative;z-index:1}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:2rem;margin-bottom:1.25rem}
+    .sf-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+    .sf-card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .sf-card-title{font-size:1.15rem;font-weight:700}
+    .sf-contract{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.25rem;border:1px solid rgba(255,255,255,.06);border-radius:14px;background:rgba(255,255,255,.02);margin-bottom:.75rem;transition:all .3s ease}
+    .sf-contract:hover{border-color:rgba(181,196,19,.15);background:rgba(181,196,19,.03)}
+    .sf-contract-info h4{font-size:.9rem;font-weight:600;margin:0 0 .2rem}
+    .sf-contract-info p{font-size:.78rem;color:rgba(255,255,255,.4);margin:0}
+    .sf-contract-actions{display:flex;gap:.5rem}
+    .sf-btn-sm{padding:.4rem .85rem;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:all .25s ease;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px}
+    .sf-btn-sign{background:#B5C413;color:#0a0f1e}.sf-btn-sign:hover{background:#c5d41a}
+    .sf-btn-view{background:rgba(96,165,250,.12);color:#60a5fa}.sf-btn-view:hover{background:rgba(96,165,250,.2)}
+    .sf-badge{padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:600}
+    .sf-badge-pending{background:rgba(251,191,36,.12);color:#fbbf24}
+    .sf-badge-signed{background:rgba(52,211,153,.12);color:#34d399}
+    .sf-empty{text-align:center;padding:2.5rem;color:rgba(255,255,255,.3);font-size:.88rem}
+    @media(max-width:600px){.sf-main{padding:80px 1rem 2rem}.sf-contract{flex-direction:column;gap:1rem;align-items:flex-start}}
+  </style>
 </head>
 <body>
-    <div class="top-accent"></div>
-  <!-- Header -->
-  <header class="glass-header" id="mainHeader">
-    <div class="header-left">
-      <div class="liquid-bubble" id="liquidBubble"></div>
-      <div class="brand">
-        <div class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor"></path></svg>
-        </div>
-        <h2 class="brand-title">SignForce</h2>
-      </div>
-      <nav class="nav">
-        <a class="nav-item" href="#" data-item="home">Inicio</a>
-        <a class="nav-item" href="#contact" data-item="contact">Contacto</a>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="color:#fff;"><span class="sf-logo-s">S</span><span class="sf-logo-text">IGNFORCE</span></a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
+        <a href="/myfolders"><span class="material-symbols-outlined" style="font-size:16px;">folder</span> Folders</a>
       </nav>
     </div>
-    <div class="header-right">
-      <button class="btn-chip" id="goHome">Home</button>
-      <button class="btn-chip" id="themeToggle" aria-label="Cambiar tema">🌙</button>
-    </div>
+    <a href="/login"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</a>
   </header>
 
-  <main class="bg">
-    <section class="container" id="view-setup" aria-labelledby="setup-title">
-      <div class="content-left">
-        <h1 id="setup-title" class="headline">Configura tu firma</h1>
-        <ul class="features">
-          <li class="feature-item glass-card">
-            <div class="feature-icon" aria-hidden="true">📂</div>
-            <div>
-              <h3>Ubica el folder con tu E-FIRMA o FIEL</h3>
-              <p>Encontrarás tu llave y certificado habitualmente con la extension <strong>.KEY</strong> y <strong>.CER</strong></p>
-              <p>Tambien es habitual que tengan la extenision <strong>.PEM</strong></p>
-            </div>
-          </li>
-          <li class="feature-item glass-card">
-            <div class="feature-icon" aria-hidden="true">🛡️</div>
-            <div>
-              <h3>Con tu password validamos que tus llaves sean correctas</h3>
-              <p>Tu password es <strong>TUYO</strong> y no lo guardamos en ningún momento.</p>
-              <p>Por cada firma que realices te lo pediremos.</p>
-              <p>Tus llaves se mantienen cifradas y seguras.</p>
-            </div>
-          </li>
-        </ul>
+  <main class="sf-main">
+    <div class="sf-card">
+      <div class="sf-card-header">
+        <div class="sf-card-icon" style="background:rgba(181,196,19,.1);"><span class="material-symbols-outlined" style="font-size:1.2rem;color:#B5C413;">description</span></div>
+        <div class="sf-card-title">Contratos Pendientes de Firma</div>
       </div>
 
-      <div class="content-right">
-        <div class="form-container glass-panel">
-          <h2 class="form-title">Sube tus credenciales</h2>
-          <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
-            <div class="form-group">
-              <label for="keyFile">Llave privada RSA (.pem / .key / .der)</label>
-              <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
-            </div>
-            <div class="form-group">
-              <label for="certFile">Certificado público (.cer / .crt / .pem / .der)</label>
-              <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
-            </div>
-            <div class="form-group">
-              <label for="keyPassword">Contraseña de la llave</label>
-              <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
-            </div>
-            <button class="btn" type="submit">Continuar</button>
-            <p class="form-hint">* En este demo, la verificación es simulada para no requerir backend.</p>
-          </form>
+      <div class="sf-contract">
+        <div class="sf-contract-info">
+          <h4>Contrato de Servicios — Acme Corp</h4>
+          <p>Enviado: 7 Mar 2026 · 3 firmantes · PDF 2.4 MB</p>
         </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD -->
-    <section class="container hidden" id="view-dashboard" aria-labelledby="dashboard-title">
-      <div class="content-left">
-        <h1 id="dashboard-title" class="headline">Tus documentos</h1>
-        <p class="lead">Revisa y firma tus documentos. El estado se sincroniza con un endpoint simulado y se guarda localmente.</p>
-
-        <div class="glass-panel p-block">
-          <h3>Datos del usuario y la empresa</h3>
-          <div class="feature-item glass-card fade-in delay-1">
-              <i class="fas fa-shield-alt feature-icon"></i>
-              <div>
-                  <h3 class="text-primary text-xl font-bold mb-2">Llaves registrads</h3>
-                  <p>llave.key</p>
-                  <p>llave.cer</p>
-                  <form id="profileForm" class="grid-2">
-                    <div class="form-group">
-                      <label for="nombreUsuario">Password</label>
-                      <input class="input-field" id="keypass" type="password" placeholder="************" />
-                    </div>
-                  </form>
-              </div>
-          </div>
+        <div class="sf-contract-actions">
+          <span class="sf-badge sf-badge-pending">Pendiente</span>
+          <button class="sf-btn-sm sf-btn-view"><span class="material-symbols-outlined" style="font-size:14px;">visibility</span> Ver</button>
+          <button class="sf-btn-sm sf-btn-sign"><span class="material-symbols-outlined" style="font-size:14px;">draw</span> Firmar</button>
         </div>
       </div>
 
-      <div class="content-right">
-        <div id="docsList" class="docs-list">
-          <!-- Cards generadas por JS -->
+      <div class="sf-contract">
+        <div class="sf-contract-info">
+          <h4>NDA — Proyecto Alpha</h4>
+          <p>Enviado: 5 Mar 2026 · 2 firmantes · PDF 1.1 MB</p>
+        </div>
+        <div class="sf-contract-actions">
+          <span class="sf-badge sf-badge-signed">Firmado</span>
+          <button class="sf-btn-sm sf-btn-view"><span class="material-symbols-outlined" style="font-size:14px;">visibility</span> Ver</button>
         </div>
       </div>
-    </section>
-  </main>
 
-  <footer class="glass-panel footer">
-    <p>&copy; 2025 SignForce. Todos los derechos reservados.</p>
-  </footer>
-
-  <template id="doc-card-template">
-    <article class="doc-card glass-panel">
-      <header class="doc-card-header">
-        <h4 class="doc-title"></h4>
-        <span class="badge" data-status>—</span>
-      </header>
-      <div class="doc-viewer" data-doc-body></div>
-      <div class="doc-actions">
-        <button class="btn ghost" data-preview>Vista previa</button>
-        <button class="btn" data-sign>Firmar</button>
+      <div class="sf-contract">
+        <div class="sf-contract-info">
+          <h4>Acuerdo de Confidencialidad — JustFruits</h4>
+          <p>Enviado: 3 Mar 2026 · 4 firmantes · PDF 3.8 MB</p>
+        </div>
+        <div class="sf-contract-actions">
+          <span class="sf-badge sf-badge-pending">Pendiente</span>
+          <button class="sf-btn-sm sf-btn-view"><span class="material-symbols-outlined" style="font-size:14px;">visibility</span> Ver</button>
+          <button class="sf-btn-sm sf-btn-sign"><span class="material-symbols-outlined" style="font-size:14px;">draw</span> Firmar</button>
+        </div>
       </div>
-      <div class="doc-meta" data-meta></div>
-    </article>
-  </template>
-
-  <!-- Modal de vista previa -->
-  <dialog id="previewModal" class="modal glass-panel">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 id="previewTitle">Vista previa</h3>
-        <button class="btn-chip ghost" id="closePreview" aria-label="Cerrar">✕</button>
-      </header>
-      <div class="doc-viewer modal-body" id="previewBody"></div>
-      <footer class="modal-footer">
-        <button class="btn ghost" id="closePreview2">Cerrar</button>
-      </footer>
     </div>
-  </dialog>
-
-  <script src="/registro/contracts.js"></script>
+  </main>
 </body>
 </html>
