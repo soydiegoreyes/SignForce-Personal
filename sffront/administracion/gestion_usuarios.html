@@ -214,5 +214,7 @@
     function promoverAAdmin(id){if(confirm('¿Promover a admin?')){const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id),u=usuarios.find(x=>x.id===id);if(m){m.rol='admin';u.tipo='admin_equipo';sessionStorage.setItem('equipos',JSON.stringify(equipos));sessionStorage.setItem('usuarios',JSON.stringify(usuarios));cargarUsuarios()}}}
     function logout(){sessionStorage.removeItem('currentUser');window.location.href='/login'}
   </script>
+
+  <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
 </body>
 </html>

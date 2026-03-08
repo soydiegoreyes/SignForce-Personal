@@ -548,3 +548,10 @@ tr:hover td {
   pointer-events: none;
   border-radius: 20px 20px 0 0;
 }
+
+/* ═══ FORCE DEEP BLACK — OVERRIDE EVERYTHING ═══ */
+html, body, html.dark, body.dark,
+html[class], body[class] {
+  background: #060a14 !important;
+  background-color: #060a14 !important;
+}
