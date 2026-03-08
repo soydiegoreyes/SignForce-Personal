@@ -1,180 +1,269 @@
 <!DOCTYPE html>
-<html class="dark" lang="es">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SignForce - Gestión de Llaves RSA</title>
-  
-  <!-- Fuentes y estilos unificados -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com" rel="preconnect"/>
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+  <title>SignForce - Gestión de Llaves</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  
-  <link rel="stylesheet" href="/administracion/mykeys.css">
-  <script src="/administracion/mykeys.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <link rel="stylesheet" href="../signforce-global.css">
+  <style>
+    body { background: #0a0f1e; font-family: 'DM Sans', sans-serif; color: #fff; margin: 0; min-height: 100vh; }
+
+    /* Header */
+    .sf-header {
+      position: fixed; top: 3px; left: 0; right: 0; z-index: 1000;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+      background: rgba(10,15,30,0.85); backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sf-header a { text-decoration: none; color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500;
+      padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; }
+    .sf-header a:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .sf-logo-s { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+      background: #B5C413; color: #0a0f1e; font-weight: 900; font-size: 0.9rem; border-radius: 8px;
+      box-shadow: 0 0 16px rgba(181,196,19,0.2); }
+    .sf-logo-text { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.05em; color: #fff; margin-left: 6px; }
+    .sf-btn-ghost { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: #fff;
+      padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; }
+    .sf-btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(181,196,19,0.2); }
+
+    /* Layout */
+    .sf-main { max-width: 1200px; margin: 0 auto; padding: 90px 1.5rem 3rem; }
+    .sf-headline { font-size: 1.8rem; font-weight: 700; text-align: center; margin-bottom: 0.4rem; }
+    .sf-lead { color: rgba(255,255,255,0.45); text-align: center; font-size: 0.9rem; margin-bottom: 2rem; }
+    .sf-grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start; }
+
+    /* Cards */
+    .sf-card {
+      background: rgba(15,21,36,0.45); backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.75rem;
+    }
+    .sf-card-title { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; }
+    .sf-card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+    /* Key cards */
+    .sf-key-list { display: flex; flex-direction: column; gap: 0.75rem; max-height: 65vh; overflow-y: auto; padding-right: 4px; }
+    .sf-key-list::-webkit-scrollbar { width: 4px; }
+    .sf-key-list::-webkit-scrollbar-thumb { background: rgba(181,196,19,0.2); border-radius: 3px; }
+    .sf-key-card {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;
+      padding: 1.1rem 1.25rem; transition: all 0.3s ease;
+    }
+    .sf-key-card:hover { background: rgba(181,196,19,0.04); border-color: rgba(181,196,19,0.15); }
+    .sf-key-name { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+    .sf-key-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .sf-key-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.35); margin-bottom: 2px; }
+    .sf-key-value { font-size: 0.82rem; color: rgba(255,255,255,0.8); word-break: break-all; }
+
+    /* Badges */
+    .sf-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.68rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px; }
+    .sf-badge-green { background: rgba(181,196,19,0.12); color: #B5C413; border: 1px solid rgba(181,196,19,0.2); }
+    .sf-badge-ok { background: rgba(52,211,153,0.12); color: #34d399; }
+    .sf-badge-warn { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+    /* Form */
+    .sf-form-group { margin-bottom: 1.1rem; }
+    .sf-form-label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 500;
+      color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+    .sf-input {
+      width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #fff;
+      transition: all 0.25s ease; font-family: 'DM Sans', sans-serif;
+    }
+    .sf-input:focus { outline: none; border-color: #B5C413; box-shadow: 0 0 0 3px rgba(181,196,19,0.1); }
+    .sf-input::file-selector-button {
+      background: #B5C413; color: #0a0f1e; border: none; border-radius: 6px;
+      padding: 0.35rem 0.8rem; font-weight: 600; font-size: 0.78rem; cursor: pointer; margin-right: 0.75rem;
+    }
+    .sf-input[type="password"]::placeholder { color: rgba(255,255,255,0.25); }
+
+    .sf-btn-submit {
+      width: 100%; padding: 0.7rem; border-radius: 10px; border: none; cursor: pointer;
+      background: #B5C413; color: #0a0f1e; font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.25s ease; margin-top: 0.5rem;
+    }
+    .sf-btn-submit:hover { background: #c5d41a; box-shadow: 0 0 24px rgba(181,196,19,0.2); transform: translateY(-1px); }
+
+    .sf-disclaimer { margin-top: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.3); text-align: center; }
+    .sf-disclaimer a { color: #B5C413; cursor: pointer; }
+    .sf-disclaimer a:hover { color: #c5d41a; text-decoration: underline; }
+
+    /* Help tooltip */
+    .sf-help { position: relative; display: inline-block; cursor: help; }
+    .sf-help-popup { display: none; position: absolute; top: 100%; left: 0; z-index: 50; width: 260px; padding: 12px;
+      background: rgba(10,15,30,0.95); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5); margin-top: 6px; }
+    .sf-help:hover .sf-help-popup { display: block; }
+    .sf-help-popup p { font-size: 0.78rem; color: rgba(255,255,255,0.6); margin: 0; }
+    .sf-help-popup img { width: 100%; border-radius: 6px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.06); }
+
+    /* Footer */
+    .sf-footer { max-width: 1200px; margin: 0 auto 2rem; padding: 1rem; text-align: center;
+      background: rgba(10,15,30,0.4); border: 1px solid rgba(255,255,255,0.04); border-radius: 14px; }
+    .sf-footer p { color: rgba(255,255,255,0.25); font-size: 0.75rem; margin: 0; }
+
+    /* Modal */
+    dialog.sf-modal { border: none; border-radius: 20px; padding: 0; max-width: 550px; width: calc(100% - 32px);
+      background: rgba(10,15,30,0.96); border: 1px solid rgba(255,255,255,0.08); color: #fff; }
+    dialog.sf-modal::backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
+    .sf-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .sf-modal-header h3 { font-size: 1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .sf-modal-body { padding: 1.5rem; max-height: 55vh; overflow-y: auto; color: rgba(255,255,255,0.6); font-size: 0.88rem; line-height: 1.7; }
+    .sf-modal-body h2 { color: #fff; font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .sf-modal-body h3 { color: #fff; font-size: 0.95rem; margin: 1rem 0 0.5rem; }
+    .sf-modal-body ul { padding-left: 1.2rem; }
+    .sf-modal-body li { margin-bottom: 0.4rem; }
+    .sf-modal-footer { padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: flex-end; }
+
+    @media (max-width: 900px) {
+      .sf-grid { grid-template-columns: 1fr; }
+      .sf-header nav { display: none; }
+    }
+  </style>
 </head>
-<body class="font-display bg-[#0f172a] text-gray-200 min-h-screen">
-    <div class="top-accent"></div>
-  
-  <!-- Header con estilo unificado -->
-  <header class="glass-header animate-fade-in">
-    <div class="header-left">
-      <div class="brand">
-        <div>
-            <img src="./../images/sflogo.png" alt="Logo" style="width: 10%;"/>
-        </div>
-        <!-- <h2 class="brand-title">SignForce</h2> -->
-      </div>
-      <nav class="nav">
-        <a class="nav-item" href="/users" data-item="users">
-          <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
-          Usuarios
-        </a>
-        <a class="nav-item" href="/myfolders" data-item="myfolders">
-          <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
-          Mis Folders
-        </a>
-        <a class="nav-item" href="/mydocs" data-item="mydocs">
-          <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
-          Mis Documentos
-        </a>
+<body>
+  <div class="top-accent"></div>
+
+  <!-- Header -->
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="display:flex;align-items:center;gap:0;color:#fff;">
+        <span class="sf-logo-s">S</span>
+        <span class="sf-logo-text">IGNFORCE</span>
+      </a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/users"><span class="material-symbols-outlined" style="font-size:16px;">group</span> Usuarios</a>
+        <a href="/myfolders"><span class="material-symbols-outlined" style="font-size:16px;">folder</span> Folders</a>
+        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
       </nav>
     </div>
-    <div class="header-right">
-      <button class="btn-chip" id="goHome">
-        <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
-        Home
+    <div>
+      <button class="sf-btn-ghost" id="goHome">
+        <span class="material-symbols-outlined" style="font-size:16px;">home</span> Home
       </button>
     </div>
   </header>
 
-  <main class="bg">
-    <section class="container" id="view-setup" aria-labelledby="setup-title">
-      <h1 id="setup-title" class="headline">Gestión de Llaves RSA</h1>
-      <p class="lead">Administra tus llaves criptográficas de forma segura</p>
-      
-      <div class="main-content">
-        <!-- Panel Izquierdo: Lista de llaves -->
-        <div class="content-left">
-          <div class="tech-card p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                <span class="material-symbols-outlined text-blue-400">key</span>
-                Tus Llaves Registradas
-              </h2>
-              <span class="badge badge-neon">
-                <span class="material-symbols-outlined text-[14px]">verified</span>
-                e.Firmas
-              </span>
-            </div>
-            
-            <div id="keysList" class="keys-list">
-              <!-- Las llaves se cargarán aquí dinámicamente -->
-            </div>
-          </div>
-        </div>
+  <!-- Main -->
+  <main class="sf-main">
+    <h1 class="sf-headline">Gestión de Llaves</h1>
+    <p class="sf-lead">Administra tus credenciales criptográficas de firma electrónica</p>
 
-        <!-- Panel Derecho: Formulario -->
-        <div class="content-right">
-          <div class="tech-card p-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="size-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span class="material-symbols-outlined text-white">assured_workload</span>
-              </div>
-              <h2 class="text-xl font-bold text-white">Sube tus Credenciales</h2>
+    <div class="sf-grid">
+      <!-- Left: Keys list -->
+      <div class="sf-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+          <div class="sf-card-title" style="margin-bottom:0;">
+            <div class="sf-card-icon" style="background:rgba(181,196,19,0.1);">
+              <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">key</span>
             </div>
-            
-            <form id="credentialsForm" class="form active" autocomplete="off" novalidate>
-              <div class="form-group">
-                <label for="keyFile" class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-blue-400" style="font-size: 20px;">key</span>
-                  Llave privada RSA (.pem / .key / .der)
-                  <span class="help-icon">
-                    <span class="material-symbols-outlined text-gray-400" style="font-size: 16px;">help</span>
-                    <div class="help-modal">
-                      <p class="text-sm">Tu llave privada suele tener extensión .key, .pem o .der. Asegúrate de subir el archivo correcto.</p>
-                      <img src="./../images/keys_folder1.png" alt="Ejemplo de archivos de llaves">
-                    </div>
-                  </span>
-                </label>
-                <input class="input-field" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required />
-              </div>
-              
-              <div class="form-group">
-                <label for="certFile" class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-green-400" style="font-size: 20px;">verified</span>
-                  Certificado público (.cer / .crt / .pem / .der)
-                </label>
-                <input class="input-field" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required />
-              </div>
-              
-              <div class="form-group">
-                <label for="keyPassword" class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-red-400" style="font-size: 20px;">lock</span>
-                  Contraseña de la llave
-                </label>
-                <input class="input-field" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required />
-              </div>
-              
-              <button class="btn" type="submit">
-                <span class="material-symbols-outlined">upload</span>
-                Subir Llaves
-              </button>
-              
-              <div class="disclaimer">
-                Al subir tus llaves aceptas los <span class="terms-link" id="termsLink">Términos y Condiciones</span>
-              </div>
-            </form>
+            Llaves Registradas
+          </div>
+          <span class="sf-badge sf-badge-green">
+            <span class="material-symbols-outlined" style="font-size:12px;">verified</span>
+            e.Firmas
+          </span>
+        </div>
+        <div id="keysList" class="sf-key-list">
+          <!-- Keys loaded dynamically by mykeys.js -->
+          <div style="text-align:center;padding:2rem;color:rgba(255,255,255,0.3);">
+            <span class="material-symbols-outlined" style="font-size:2.5rem;opacity:0.3;">vpn_key</span>
+            <p style="margin-top:0.5rem;font-size:0.85rem;">Cargando llaves...</p>
           </div>
         </div>
       </div>
-    </section>
+
+      <!-- Right: Upload form -->
+      <div class="sf-card">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem;">
+          <div class="sf-card-icon" style="background:rgba(181,196,19,0.1);">
+            <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">assured_workload</span>
+          </div>
+          <h2 style="font-size:1.05rem;font-weight:700;margin:0;">Sube tus Credenciales</h2>
+        </div>
+
+        <form id="credentialsForm" autocomplete="off" novalidate>
+          <div class="sf-form-group">
+            <label class="sf-form-label" for="keyFile">
+              <span class="material-symbols-outlined" style="font-size:16px;color:#B5C413;">key</span>
+              Llave privada (.pem / .key / .der)
+              <span class="sf-help">
+                <span class="material-symbols-outlined" style="font-size:14px;color:rgba(255,255,255,0.3);">help</span>
+                <div class="sf-help-popup">
+                  <p>Tu llave privada suele tener extensión .key, .pem o .der.</p>
+                  <img src="./../images/keys_folder1.png" alt="Ejemplo">
+                </div>
+              </span>
+            </label>
+            <input class="sf-input" type="file" id="keyFile" name="keyFile" accept=".key,.pem,.der" required/>
+          </div>
+
+          <div class="sf-form-group">
+            <label class="sf-form-label" for="certFile">
+              <span class="material-symbols-outlined" style="font-size:16px;color:#34d399;">verified</span>
+              Certificado público (.cer / .crt / .pem)
+            </label>
+            <input class="sf-input" type="file" id="certFile" name="certFile" accept=".crt,.cer,.pem,.der" required/>
+          </div>
+
+          <div class="sf-form-group">
+            <label class="sf-form-label" for="keyPassword">
+              <span class="material-symbols-outlined" style="font-size:16px;color:#f87171;">lock</span>
+              Contraseña de la llave
+            </label>
+            <input class="sf-input" type="password" id="keyPassword" name="passKey" placeholder="••••••••" required/>
+          </div>
+
+          <button class="sf-btn-submit" type="submit">
+            <span class="material-symbols-outlined" style="font-size:18px;">upload</span>
+            Subir Llaves
+          </button>
+
+          <div class="sf-disclaimer">
+            Al subir tus llaves aceptas los <a id="termsLink">Términos y Condiciones</a>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
 
   <!-- Footer -->
-  <footer class="footer animate-fade-in">
-    <p class="text-gray-400 text-sm">&copy; 2025 SignForce. Todos los derechos reservados.</p>
+  <footer class="sf-footer">
+    <p>&copy; 2026 SignForce. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Modal de Términos y Condiciones -->
-  <dialog id="termsModal" class="modal">
-    <div class="modal-content">
-      <header class="modal-header">
-        <h3 class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-blue-400">security</span>
-          Términos y Condiciones
-        </h3>
-        <button class="btn-chip ghost" id="closeTerms" aria-label="Cerrar">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </header>
-      <div class="modal-body">
-        <h2>Aviso de Privacidad</h2>
-        <p>Este Aviso de Privacidad describe cómo SignForce trata tus datos personales conforme a la legislación aplicable. Tu información se utiliza exclusivamente para la prestación de servicios de firma y sellado de tiempo. Al continuar, aceptas los términos descritos.</p>
-        
-        <h3>Términos y Condiciones</h3>
-        <p>El uso de la plataforma implica la aceptación plena de los presentes términos. El usuario se compromete a:</p>
-        <ul class="list-disc pl-5 mt-2 space-y-2">
-          <li>Proporcionar información veraz y actualizada</li>
-          <li>Custodiar sus credenciales de firma de forma segura</li>
-          <li>Utilizar el servicio conforme a la legislación vigente</li>
-          <li>No realizar actividades fraudulentas o malintencionadas</li>
-        </ul>
-        
-        <p class="mt-4"><strong>Fecha:</strong> <span id="termsDate"></span></p>
-      </div>
-      <footer class="modal-footer">
-        <button class="btn ghost" id="closeTerms2">
-          <span class="material-symbols-outlined">check</span>
-          Aceptar y Cerrar
-        </button>
-      </footer>
+  <!-- Terms Modal -->
+  <dialog id="termsModal" class="sf-modal">
+    <div class="sf-modal-header">
+      <h3><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">security</span> Términos y Condiciones</h3>
+      <button class="sf-btn-ghost" id="closeTerms" style="padding:0.3rem 0.6rem;"><span class="material-symbols-outlined" style="font-size:16px;">close</span></button>
+    </div>
+    <div class="sf-modal-body">
+      <h2>Aviso de Privacidad</h2>
+      <p>Este Aviso de Privacidad describe cómo SignForce trata tus datos personales conforme a la legislación aplicable.</p>
+      <h3>Términos y Condiciones</h3>
+      <p>El uso de la plataforma implica la aceptación plena de los presentes términos. El usuario se compromete a:</p>
+      <ul>
+        <li>Proporcionar información veraz y actualizada</li>
+        <li>Custodiar sus credenciales de firma de forma segura</li>
+        <li>Utilizar el servicio conforme a la legislación vigente</li>
+        <li>No realizar actividades fraudulentas</li>
+      </ul>
+      <p style="margin-top:1rem;"><strong>Fecha:</strong> <span id="termsDate"></span></p>
+    </div>
+    <div class="sf-modal-footer">
+      <button class="sf-btn-ghost" id="closeTerms2">
+        <span class="material-symbols-outlined" style="font-size:16px;">check</span> Aceptar y Cerrar
+      </button>
     </div>
   </dialog>
+
+  <script src="/administracion/mykeys.js"></script>
 </body>
 </html>
