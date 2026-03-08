@@ -39,12 +39,12 @@
         .liquid-bubble {
             position: absolute;
             height: 32px;
-            background: rgba(200,255,0,0.1);
+            background: rgba(181,196,19,0.1);
             border-radius: 8px;
             transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             z-index: -1;
             box-shadow: none;
-            border: 1px solid rgba(200,255,0,0.15);
+            border: 1px solid rgba(181,196,19,0.15);
         }
 
         /* Layout */
@@ -56,9 +56,9 @@
 
         /* Sidebar active item */
         aside nav a[class*="bg-gradient"] {
-            background: linear-gradient(135deg, rgba(200,255,0,0.15), rgba(16,185,129,0.1)) !important;
-            color: #c8ff00 !important;
-            border: 1px solid rgba(200,255,0,0.15) !important;
+            background: linear-gradient(135deg, rgba(181,196,19,0.15), rgba(16,185,129,0.1)) !important;
+            color: #B5C413 !important;
+            border: 1px solid rgba(181,196,19,0.15) !important;
         }
 
         /* Stat cards */
@@ -68,7 +68,7 @@
             border-radius: 20px !important;
         }
         .stat-card:hover {
-            border-color: rgba(200,255,0,0.2) !important;
+            border-color: rgba(181,196,19,0.2) !important;
             transform: translateY(-3px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.3) !important;
         }
@@ -81,8 +81,8 @@
             border-radius: 12px;
         }
         .input-field:focus {
-            border-color: #c8ff00 !important;
-            box-shadow: 0 0 0 3px rgba(200,255,0,0.15) !important;
+            border-color: #B5C413 !important;
+            box-shadow: 0 0 0 3px rgba(181,196,19,0.15) !important;
             background: rgba(255,255,255,0.07) !important;
         }
         .input-field::placeholder { color: rgba(255,255,255,0.35) !important; }
@@ -90,14 +90,14 @@
 
         /* Buttons — lime primary */
         .btn-primary {
-            background: #c8ff00 !important;
+            background: #B5C413 !important;
             color: #0a0f1e !important;
             border-radius: 10px !important;
             font-weight: 700;
         }
         .btn-primary:hover {
-            background: #d4ff33 !important;
-            box-shadow: 0 0 24px rgba(200,255,0,0.25) !important;
+            background: #c5d41a !important;
+            box-shadow: 0 0 24px rgba(181,196,19,0.25) !important;
         }
         .btn-secondary {
             background: rgba(255,255,255,0.08) !important;
@@ -152,13 +152,13 @@
             color: rgba(255,255,255,0.65); border-bottom: 1px solid rgba(255,255,255,0.05);
         }
         .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: rgba(200,255,0,0.05); }
+        .suggestion-item:hover { background: rgba(181,196,19,0.05); }
         .suggestion-item strong { color: #fff; }
 
         /* Spinner */
         .spinner {
             border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #c8ff00;
+            border-top-color: #B5C413;
             border-radius: 50%;
             width: 30px; height: 30px;
             animation: spin 0.7s linear infinite;
@@ -176,9 +176,9 @@
             background: rgba(255,255,255,0.04) !important;
         }
         .sf-nav-link.active {
-            color: #c8ff00 !important;
-            background: rgba(200,255,0,0.08) !important;
-            border-color: rgba(200,255,0,0.12) !important;
+            color: #B5C413 !important;
+            background: rgba(181,196,19,0.08) !important;
+            border-color: rgba(181,196,19,0.12) !important;
         }
 
         /* Chart bar colors */
@@ -228,7 +228,7 @@
             <!-- Logo + título -->
             <div style="background: rgba(15,21,36,0.5); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.25rem 1.5rem;">
                 <div class="flex items-center gap-3">
-                    <div style="width: 36px; height: 36px; background: #c8ff00; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; color: #0a0f1e; box-shadow: 0 0 20px rgba(200,255,0,0.2);">S</div>
+                    <div style="width: 36px; height: 36px; background: #B5C413; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; color: #0a0f1e; box-shadow: 0 0 20px rgba(181,196,19,0.2);">S</div>
                     <div>
                         <h1 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: 0.03em;">Panel Admin</h1>
                         <p style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin: 0; margin-top: 2px;">SignForce Platform</p>
@@ -240,7 +240,7 @@
             <nav style="background: rgba(15,21,36,0.4); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 0.75rem; flex: 1; display: flex; flex-direction: column;">
                 <p style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); padding: 0.5rem 0.75rem 0.5rem; font-weight: 600; margin: 0;">Navegación</p>
                 
-                <a class="sf-nav-link active" href="#" data-tab="dashboard" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: #c8ff00; background: rgba(200,255,0,0.08); border: 1px solid rgba(200,255,0,0.12); margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
+                <a class="sf-nav-link active" href="#" data-tab="dashboard" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem; font-weight: 500; color: #B5C413; background: rgba(181,196,19,0.08); border: 1px solid rgba(181,196,19,0.12); margin-bottom: 4px; transition: all 0.25s ease; text-decoration: none;">
                     <span class="material-symbols-outlined" style="font-size: 1.15rem;">dashboard</span>
                     <span>Dashboard</span>
                 </a>
@@ -385,8 +385,8 @@
                 <!-- Usuarios recientes -->
                 <div style="background: rgba(15,21,36,0.45); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.75rem;">
                     <div class="flex items-center gap-3 mb-5">
-                        <div style="width: 32px; height: 32px; background: rgba(200,255,0,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #c8ff00;">group</span>
+                        <div style="width: 32px; height: 32px; background: rgba(181,196,19,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #B5C413;">group</span>
                         </div>
                         <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0;">Usuarios Recientes</h3>
                     </div>
@@ -697,9 +697,9 @@
                     l.style.borderColor = 'transparent';
                 });
                 link.classList.add('active');
-                link.style.color = '#c8ff00';
-                link.style.background = 'rgba(200,255,0,0.08)';
-                link.style.borderColor = 'rgba(200,255,0,0.12)';
+                link.style.color = '#B5C413';
+                link.style.background = 'rgba(181,196,19,0.08)';
+                link.style.borderColor = 'rgba(181,196,19,0.12)';
                 
                 // Mostrar sección correspondiente
                 sections.forEach(section => {

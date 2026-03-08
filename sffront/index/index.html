@@ -19,10 +19,10 @@
       --text-primary: #ffffff;
       --text-secondary: rgba(255,255,255,0.65);
       --text-muted: rgba(255,255,255,0.35);
-      --lime: #c8ff00;
-      --lime-dim: rgba(200,255,0,0.7);
-      --lime-glow: rgba(200,255,0,0.15);
-      --lime-glow-strong: rgba(200,255,0,0.25);
+      --lime: #B5C413;
+      --lime-dim: rgba(181,196,19,0.7);
+      --lime-glow: rgba(181,196,19,0.15);
+      --lime-glow-strong: rgba(181,196,19,0.25);
       --green: #10b981;
       --green-glow: rgba(16,185,129,0.15);
       --blue: #0ea5e9;
@@ -71,7 +71,7 @@
       content: '';
       position: absolute; inset: 0;
       background:
-        radial-gradient(ellipse 70% 50% at 20% 0%, rgba(200,255,0,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 20% 0%, rgba(181,196,19,0.04) 0%, transparent 60%),
         radial-gradient(ellipse 50% 50% at 80% 100%, rgba(16,185,129,0.03) 0%, transparent 50%),
         radial-gradient(ellipse 40% 40% at 60% 50%, rgba(14,165,233,0.02) 0%, transparent 50%);
     }
@@ -104,7 +104,7 @@
     }
     .glow-orb-1 {
       width: 500px; height: 500px;
-      background: rgba(200,255,0,0.06);
+      background: rgba(181,196,19,0.06);
       top: -150px; left: -100px;
       animation: orbDrift1 20s ease-in-out infinite;
     }
@@ -202,7 +202,7 @@
       box-shadow: 0 0 20px var(--lime-glow);
     }
     .nav-cta:hover {
-      box-shadow: 0 0 30px var(--lime-glow-strong), 0 4px 15px rgba(200,255,0,0.3) !important;
+      box-shadow: 0 0 30px var(--lime-glow-strong), 0 4px 15px rgba(181,196,19,0.3) !important;
       transform: translateY(-1px);
     }
     .nav-cta::after { display: none !important; }
@@ -299,7 +299,7 @@
     }
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 0 40px var(--lime-glow-strong), 0 8px 30px rgba(200,255,0,0.2);
+      box-shadow: 0 0 40px var(--lime-glow-strong), 0 8px 30px rgba(181,196,19,0.2);
     }
     .btn-ghost {
       background: transparent;
@@ -327,13 +327,13 @@
       border: 1px solid var(--border-strong);
       border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: var(--shadow-lg), 0 0 40px rgba(200,255,0,0.03);
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(181,196,19,0.03);
       position: relative;
       transition: all 0.4s ease;
     }
     .hero-panel:hover {
-      box-shadow: var(--shadow-lg), 0 0 60px rgba(200,255,0,0.06);
-      border-color: rgba(200,255,0,0.15);
+      box-shadow: var(--shadow-lg), 0 0 60px rgba(181,196,19,0.06);
+      border-color: rgba(181,196,19,0.15);
     }
     .panel-header {
       display: flex; align-items: center; gap: 10px;
@@ -383,7 +383,7 @@
       background: var(--lime-glow);
       padding: 3px 10px;
       border-radius: 4px;
-      border: 1px solid rgba(200,255,0,0.25);
+      border: 1px solid rgba(181,196,19,0.25);
       letter-spacing: 0.05em;
     }
     .sig-hash {
@@ -508,7 +508,7 @@
     }
     .chart-card:hover {
       border-color: var(--border-strong);
-      box-shadow: 0 0 30px rgba(200,255,0,0.03);
+      box-shadow: 0 0 30px rgba(181,196,19,0.03);
     }
     .chart-header {
       display: flex; justify-content: space-between; align-items: flex-start;
@@ -527,7 +527,7 @@
       color: var(--lime);
       background: var(--lime-glow);
       padding: 3px 10px; border-radius: 4px;
-      border: 1px solid rgba(200,255,0,0.2);
+      border: 1px solid rgba(181,196,19,0.2);
       animation: pulse-dot 2s infinite;
     }
     canvas { width: 100% !important; }
@@ -542,7 +542,7 @@
       cursor: default;
     }
     .kpi-card:hover {
-      border-color: rgba(200,255,0,0.2);
+      border-color: rgba(181,196,19,0.2);
       box-shadow: 0 0 25px var(--lime-glow);
       transform: translateX(6px);
       background: var(--bg-card-hover);
@@ -736,7 +736,7 @@
     }
     .security-card:hover::before { opacity: 1; }
     .security-card:hover {
-      border-color: rgba(200,255,0,0.15);
+      border-color: rgba(181,196,19,0.15);
       background: var(--bg-card-hover);
       transform: translateY(-4px);
       box-shadow: 0 20px 40px rgba(0,0,0,0.2), 0 0 30px var(--lime-glow);
@@ -744,7 +744,7 @@
     .security-icon {
       width: 48px; height: 48px;
       background: var(--lime-glow);
-      border: 1px solid rgba(200,255,0,0.2);
+      border: 1px solid rgba(181,196,19,0.2);
       border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem;
@@ -752,7 +752,7 @@
       transition: all 0.4s ease;
     }
     .security-card:hover .security-icon {
-      background: rgba(200,255,0,0.2);
+      background: rgba(181,196,19,0.2);
       box-shadow: 0 0 20px var(--lime-glow);
     }
     .security-title {
@@ -898,7 +898,7 @@
     }
     .badge:hover {
       background: var(--lime-glow);
-      border-color: rgba(200,255,0,0.25);
+      border-color: rgba(181,196,19,0.25);
       color: var(--lime);
       box-shadow: 0 0 15px var(--lime-glow);
     }
@@ -963,8 +963,8 @@
     /* ── CUSTOM SCROLLBAR ── */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-primary); }
-    ::-webkit-scrollbar-thumb { background: rgba(200,255,0,0.2); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(200,255,0,0.35); }
+    ::-webkit-scrollbar-thumb { background: rgba(181,196,19,0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(181,196,19,0.35); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1024px) {
@@ -1017,7 +1017,7 @@
     }
 
     /* ── SELECTION COLOR ── */
-    ::selection { background: rgba(200,255,0,0.3); color: white; }
+    ::selection { background: rgba(181,196,19,0.3); color: white; }
   </style>
     <link rel="stylesheet" href="../signforce-global.css">
 </head>
@@ -1554,12 +1554,12 @@
             {
               label: 'Firmas',
               data: sigData,
-              borderColor: '#c8ff00',
-              backgroundColor: 'rgba(200,255,0,0.06)',
+              borderColor: '#B5C413',
+              backgroundColor: 'rgba(181,196,19,0.06)',
               borderWidth: 2,
               pointRadius: 0,
               pointHoverRadius: 5,
-              pointHoverBackgroundColor: '#c8ff00',
+              pointHoverBackgroundColor: '#B5C413',
               tension: 0.4,
               fill: true,
             },
@@ -1590,7 +1590,7 @@
             },
             tooltip: {
               backgroundColor: 'rgba(15,21,36,0.95)',
-              borderColor: 'rgba(200,255,0,0.15)',
+              borderColor: 'rgba(181,196,19,0.15)',
               borderWidth: 1,
               titleColor: 'rgba(255,255,255,0.5)',
               bodyColor: '#ffffff',

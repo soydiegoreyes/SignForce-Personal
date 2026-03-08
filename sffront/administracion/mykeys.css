@@ -640,7 +640,7 @@ body { background: #0a0f1e !important; }
 }
 .glass-header::before { display: none !important; }
 .brand-icon {
-  background: #c8ff00 !important;
+  background: #B5C413 !important;
   border-radius: 6px !important;
 }
 .brand-icon svg { color: #0a0f1e !important; }
@@ -650,26 +650,26 @@ body { background: #0a0f1e !important; }
   color: #fff !important;
 }
 .btn {
-  background: #c8ff00 !important;
+  background: #B5C413 !important;
   color: #0a0f1e !important;
 }
 .btn:hover {
-  box-shadow: 0 0 24px rgba(200,255,0,0.25) !important;
+  box-shadow: 0 0 24px rgba(181,196,19,0.25) !important;
 }
 .tech-card, .key-card {
   background: rgba(15,21,36,0.6) !important;
   border-color: rgba(255,255,255,0.08) !important;
 }
 .tech-card:hover, .key-card:hover {
-  border-color: rgba(200,255,0,0.2) !important;
+  border-color: rgba(181,196,19,0.2) !important;
   background: rgba(15,21,36,0.8) !important;
   box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
 }
 .tech-card::before, .key-card::before { display: none !important; }
 .badge-neon {
-  background: rgba(200,255,0,0.15) !important;
-  color: #c8ff00 !important;
-  border-color: rgba(200,255,0,0.3) !important;
+  background: rgba(181,196,19,0.15) !important;
+  color: #B5C413 !important;
+  border-color: rgba(181,196,19,0.3) !important;
 }
 .form-container {
   background: rgba(15,21,36,0.6) !important;
@@ -680,8 +680,8 @@ body { background: #0a0f1e !important; }
   border-color: rgba(255,255,255,0.12) !important;
 }
 .input-field:focus {
-  border-color: #c8ff00 !important;
-  box-shadow: 0 0 0 3px rgba(200,255,0,0.15) !important;
+  border-color: #B5C413 !important;
+  box-shadow: 0 0 0 3px rgba(181,196,19,0.15) !important;
 }
 .footer {
   background: rgba(10,15,30,0.7) !important;

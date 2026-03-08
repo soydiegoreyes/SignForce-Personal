@@ -22,18 +22,20 @@
   --sf-text-secondary: rgba(255,255,255,0.65);
   --sf-text-muted: rgba(255,255,255,0.35);
 
-  /* Accent — Lime */
-  --sf-lime: #c8ff00;
-  --sf-lime-dim: rgba(200,255,0,0.7);
-  --sf-lime-glow: rgba(200,255,0,0.15);
-  --sf-lime-glow-strong: rgba(200,255,0,0.25);
+  /* Accent — SignForce Green */
+  --sf-lime: #B5C413;
+  --sf-lime-dim: rgba(181,196,19,0.75);
+  --sf-lime-glow: rgba(181,196,19,0.12);
+  --sf-lime-glow-strong: rgba(181,196,19,0.22);
 
   /* Semantic Colors */
-  --sf-green: #10b981;
-  --sf-blue: #0ea5e9;
-  --sf-purple: #7c3aed;
-  --sf-red: #f43f5e;
-  --sf-amber: #f59e0b;
+  --sf-green: #34d399;
+  --sf-blue: #60a5fa;
+  --sf-purple: #a78bfa;
+  --sf-red: #f87171;
+  --sf-amber: #fbbf24;
+  --sf-cyan: #22d3ee;
+  --sf-pink: #f472b6;
 
   /* Shadows */
   --sf-shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
@@ -111,7 +113,7 @@ a:hover { color: var(--sf-lime); }
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--sf-lime), #a3e635, var(--sf-lime));
+  background: linear-gradient(90deg, #B5C413, #d4e157, #B5C413);
   z-index: 9999;
   box-shadow: 0 0 20px var(--sf-lime-glow-strong), 0 0 60px var(--sf-lime-glow);
 }
@@ -243,7 +245,7 @@ body::after {
 }
 .btn-primary:hover,
 .sf-btn-primary:hover {
-  background: #d4ff33 !important;
+  background: #c5d41a !important;
   box-shadow: 0 0 24px var(--sf-lime-glow-strong);
   transform: translateY(-1px);
 }
