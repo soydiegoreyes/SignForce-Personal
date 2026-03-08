@@ -192,11 +192,23 @@
 
         <!-- Panel principal -->
         <main class="flex-1">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-primary fade-in">Configurar Documento</h2>
+            <!-- Hero gradient -->
+            <div style="background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;margin-bottom:1.25rem;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,196,19,.06) 0%,rgba(52,211,153,.04) 40%,transparent 70%);pointer-events:none;"></div>
+                <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.25),transparent);pointer-events:none;"></div>
+                <div style="position:relative;z-index:1;display:flex;align-items:center;gap:.75rem;">
+                    <div style="width:36px;height:36px;background:rgba(181,196,19,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:1.2rem;color:#B5C413;">settings</span>
+                    </div>
+                    <div>
+                        <h2 style="font-size:1.4rem;font-weight:700;margin:0;">Configurar Documento</h2>
+                        <p style="font-size:.82rem;color:rgba(255,255,255,.4);margin:0;">Define firmantes, clasificación y parámetros del documento</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="glass-panel">
+            <div style="background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;position:relative;">
+                <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none;border-radius:20px 20px 0 0;"></div>
                 <!-- Sección principal en fila -->
                 <div class="flex flex-wrap justify-between gap-6 mb-8">
                     <!-- Columna izquierda: campos de texto -->
@@ -255,7 +267,12 @@
                 </div>
 
                 <!-- Sección de Firmantes -->
-                <h2 class="text-2xl font-bold text-primary mb-4">Firmantes y Observadores</h2>
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;margin-top:1rem;">
+                    <div style="width:28px;height:28px;background:rgba(96,165,250,.1);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:.95rem;color:#60a5fa;">group</span>
+                    </div>
+                    <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Firmantes y Observadores</h2>
+                </div>
 
                 <div class="overflow-hidden rounded-xl glass-card mb-6">
                 <table id="reviewersTable" class="w-full">
@@ -276,7 +293,12 @@
                 </div>
 
                 <!-- Formulario para buscar y añadir firmante -->
-                <h3 class="text-xl font-bold text-primary mb-4">Añadir Firmante</h3>
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;margin-top:.5rem;">
+                    <div style="width:28px;height:28px;background:rgba(52,211,153,.1);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:.95rem;color:#34d399;">person_add</span>
+                    </div>
+                    <h3 style="font-size:1rem;font-weight:700;margin:0;">Añadir Firmante</h3>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     

@@ -231,6 +231,20 @@
     .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
     .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
     .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
+    
+    /* Hero gradient line on panels */
+    .glass-panel { position: relative !important; overflow: hidden; }
+    .glass-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(181,196,19,.2), transparent);
+      pointer-events: none; z-index: 1;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(181,196,19,.1), transparent);
+      pointer-events: none;
+    }
+
     /* end override */
 
     </style>

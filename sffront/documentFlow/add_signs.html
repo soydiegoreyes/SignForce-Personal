@@ -159,7 +159,8 @@
           </aside>
 
           <!-- Panel principal -->
-          <div class="layout-content-container flex flex-col flex-1 glass-panel">
+          <div class="layout-content-container flex flex-col flex-1" style="background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.5rem;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none;border-radius:20px 20px 0 0;"></div>
             <div class="pb-3">
               <div class="flex border-b border-white/10 px-4 gap-8">
                 <a class="flex flex-col items-center justify-center border-b-[3px] border-b-[#B5C413] text-[#B5C413] pb-[13px] pt-4" href="#">
@@ -202,7 +203,12 @@
 
               <!-- Columna derecha: Tabla de reviewers -->
               <div class="flex flex-col w-[50%] max-w-[50%]  h-[100%]">
-                <h2 class="text-primary text-[22px] font-bold leading-tight tracking-[-0.015em] pb-3 pt-1">Approvals</h2>
+                <div style="display:flex;align-items:center;gap:.6rem;padding-bottom:.75rem;padding-top:.5rem;">
+                    <div style="width:28px;height:28px;background:rgba(96,165,250,.1);border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                        <span class="material-symbols-outlined" style="font-size:.95rem;color:#60a5fa;">how_to_reg</span>
+                    </div>
+                    <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Aprobaciones</h2>
+                </div>
 
                 <div class="overflow-hidden rounded-xl glass-card max-h-[600px] overflow-y-auto overflow-x-auto">
                   <table class="w-full">
