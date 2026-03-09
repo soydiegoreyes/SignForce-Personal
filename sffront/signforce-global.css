@@ -521,11 +521,87 @@ tr:hover td {
 }
 
 /* ── RESPONSIVE ── */
+/* ═══ RESPONSIVE — TABLET ═══ */
+@media (max-width: 1024px) {
+  .glass-header { padding: 0 1rem; }
+  .sf-header { padding: 0 1rem; }
+  .sf-layout { padding: 75px 1rem 2rem; }
+  .sf-sidebar { width: 220px; }
+  .sf-card { padding: 1.25rem; }
+}
+
+/* ═══ RESPONSIVE — MOBILE ═══ */
 @media (max-width: 768px) {
-  .glass-header { padding: 0 1rem; height: 54px; }
-  .sidebar { display: none; }
-  .main-container { padding-left: 0 !important; }
-  .content { padding: 1rem !important; }
+  .glass-header,
+  .sf-header { padding: 0 .75rem; height: 54px !important; }
+  .glass-header h2,
+  .sf-header .sf-logo-text,
+  .sf-logo-text { font-size: .9rem !important; }
+
+  /* Hide sidebar on mobile */
+  .sidebar,
+  aside,
+  .sf-sidebar { display: none !important; }
+
+  /* Stack layouts */
+  .main-container,
+  .sf-layout {
+    flex-direction: column !important;
+    padding: 70px .75rem 1.5rem !important;
+  }
+  .content,
+  .sf-content,
+  main { padding: .5rem 0 !important; }
+
+  /* Cards */
+  .glass-panel,
+  .sf-card { padding: 1.25rem !important; border-radius: 16px !important; }
+
+  /* Tables scroll */
+  table { display: block; overflow-x: auto; }
+
+  /* Grids to single column */
+  .sf-actions,
+  .actions-grid,
+  .features-grid,
+  .sf-grid,
+  .sf-form-row,
+  .sf-add-row { grid-template-columns: 1fr !important; }
+
+  /* Flex wraps */
+  .flex-row { flex-direction: column !important; }
+  .flex-wrap { gap: .75rem !important; }
+
+  /* Nav links hidden */
+  .nav-links,
+  .glass-header .flex.items-center.gap-9,
+  .sf-header nav { display: none !important; }
+
+  /* Titles smaller */
+  h1 { font-size: 1.4rem !important; }
+  h2 { font-size: 1.15rem !important; }
+
+  /* Full width buttons */
+  .btn-lg,
+  .sf-btn,
+  .sf-btn-submit,
+  .btn-submit { width: 100%; justify-content: center; }
+
+  /* Orbs smaller on mobile */
+  .sf-orb-1 { width: 250px; height: 250px; }
+  .sf-orb-2 { width: 180px; height: 180px; }
+  .sf-orb-3 { display: none; }
+}
+
+/* ═══ RESPONSIVE — SMALL MOBILE ═══ */
+@media (max-width: 480px) {
+  .glass-header,
+  .sf-header { padding: 0 .5rem; }
+  .sf-card { padding: 1rem !important; }
+  h1 { font-size: 1.2rem !important; }
+  .hero-stats { flex-direction: column; gap: 1rem; }
+  .hero-btns { flex-direction: column; }
+  .social-row { flex-direction: column; }
 }
 
 /* ═══ HERO GRADIENT CARD ═══ */
