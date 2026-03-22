@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Reportes</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#060a14">
+  <style>
+    body{background:#060a14;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:.4rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+    .sf-btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(181,196,19,.2)}
+    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
+    .sf-sidebar{width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem}
+    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
+    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
+    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s;text-decoration:none;margin-bottom:2px}
+    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
+    .sf-content{flex:1;display:flex;flex-direction:column;gap:1.25rem}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;position:relative;overflow:hidden}
+    .sf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none}
+    .sf-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+    .sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sf-card-title{font-size:1.05rem;font-weight:700}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .stat-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.5rem;text-align:center;transition:all .3s}
+    .stat-card:hover{border-color:rgba(181,196,19,.15);background:rgba(181,196,19,.03)}
+    .stat-number{font-size:2.5rem;font-weight:800;margin-bottom:.25rem}
+    .stat-label{font-size:.78rem;color:rgba(255,255,255,.4);font-weight:500}
+    .stat-lime .stat-number{color:#B5C413}
+    .stat-blue .stat-number{color:#60a5fa}
+    .stat-purple .stat-number{color:#a78bfa}
+    .stat-green .stat-number{color:#34d399}
+
+    .activity-item{display:flex;align-items:center;gap:1rem;padding:1rem;border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s}
+    .activity-item:last-child{border:none}
+    .activity-item:hover{background:rgba(255,255,255,.02)}
+    .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .activity-info h4{font-size:.88rem;font-weight:600;margin-bottom:2px}
+    .activity-info p{font-size:.75rem;color:rgba(255,255,255,.35)}
+    .activity-time{margin-left:auto;font-size:.72rem;color:rgba(255,255,255,.3);white-space:nowrap}
+
+    .empty-state{text-align:center;padding:3rem;color:rgba(255,255,255,.3)}
+    .empty-state .material-symbols-outlined{font-size:3rem;margin-bottom:1rem;opacity:.3}
+    .empty-state p{font-size:.9rem}
+
+    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%}.stats-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:500px){.stats-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
+
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="color:#fff;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:32px;width:auto;"></a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
+        <a href="/keys"><span class="material-symbols-outlined" style="font-size:16px;">key</span> Mis Llaves</a>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="nombreUsuario" style="font-size:.82rem;color:rgba(255,255,255,.45);">Usuario</span>
+      <button class="sf-btn-ghost" onclick="window.location.href='/logoutUser'"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</button>
+    </div>
+  </header>
+
+  <div class="sf-layout">
+    <aside class="sf-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="sf-card-icon" style="background:rgba(167,139,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#a78bfa;">assessment</span></div>
+          <div><div style="font-size:.95rem;font-weight:700;">Reportes</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">Estadísticas y actividad</div></div>
+        </div>
+      </div>
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link" href="/users"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+        <a class="sf-nav-link" href="/mydocs"><span class="material-symbols-outlined">description</span> Documentos</a>
+        <a class="sf-nav-link" href="/settings"><span class="material-symbols-outlined">settings</span> Configuración</a>
+        <a class="sf-nav-link active" href="/reports"><span class="material-symbols-outlined">assessment</span> Reportes</a>
+      </nav>
+    </aside>
+
+    <main class="sf-content">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card stat-lime">
+          <div class="stat-number" id="stat-total">-</div>
+          <div class="stat-label">Documentos totales</div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-number" id="stat-signed">-</div>
+          <div class="stat-label">Firmados</div>
+        </div>
+        <div class="stat-card stat-blue">
+          <div class="stat-number" id="stat-pending">-</div>
+          <div class="stat-label">Pendientes</div>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-number" id="stat-folders">-</div>
+          <div class="stat-label">Carpetas</div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(181,196,19,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">timeline</span></div>
+          <div class="sf-card-title">Actividad Reciente</div>
+        </div>
+        <div id="activityList">
+          <div class="empty-state">
+            <span class="material-symbols-outlined">hourglass_empty</span>
+            <p>Cargando actividad...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">data_usage</span></div>
+          <div class="sf-card-title">Uso del Plan</div>
+        </div>
+        <div id="planUsage">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+            <span style="font-size:.85rem;color:rgba(255,255,255,.6);">Documentos este mes</span>
+            <span style="font-size:.85rem;font-weight:700;" id="usage-count">- / -</span>
+          </div>
+          <div style="height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;">
+            <div id="usage-bar" style="height:100%;background:#B5C413;border-radius:4px;width:0%;transition:width 1s ease;"></div>
+          </div>
+          <p style="font-size:.75rem;color:rgba(255,255,255,.3);margin-top:.5rem;" id="usage-msg"></p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Load user name
+    const userName = localStorage.getItem('sf_userName');
+    if (userName) document.getElementById('nombreUsuario').textContent = userName;
+
+    // Fetch stats from API
+    async function loadStats() {
+      try {
+        const [docsRes, foldersRes] = await Promise.all([
+          fetch('/statusDocs', { credentials: 'include' }).then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/getfolders', { credentials: 'include' }).then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+
+        let total = 0, signed = 0, pending = 0, folders = 0;
+
+        if (docsRes && Array.isArray(docsRes)) {
+          total = docsRes.length;
+          signed = docsRes.filter(d => d.status === 'signed' || d.status === 'completed' || d.statusDoc === 'signed').length;
+          pending = total - signed;
+        } else if (docsRes && typeof docsRes === 'object') {
+          total = docsRes.total || 0;
+          signed = docsRes.signed || 0;
+          pending = docsRes.pending || total - signed;
+        }
+
+        if (foldersRes && Array.isArray(foldersRes)) {
+          folders = foldersRes.length;
+        } else if (foldersRes && typeof foldersRes === 'object' && foldersRes.folders) {
+          folders = foldersRes.folders.length || 0;
+        }
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-signed').textContent = signed;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-folders').textContent = folders;
+
+        // Usage bar (assume Pro plan = 100 docs)
+        const limit = 100;
+        const pct = Math.min((total / limit) * 100, 100);
+        document.getElementById('usage-count').textContent = total + ' / ' + limit;
+        document.getElementById('usage-bar').style.width = pct + '%';
+        document.getElementById('usage-msg').textContent = total >= limit ? '⚠️ Límite alcanzado — considera actualizar tu plan' : Math.round(pct) + '% utilizado este periodo';
+
+        // Activity (mock from docs data)
+        if (docsRes && Array.isArray(docsRes) && docsRes.length > 0) {
+          const items = docsRes.slice(0, 8).map(d => {
+            const status = d.status || d.statusDoc || 'pending';
+            const dotColor = status === 'signed' || status === 'completed' ? '#34d399' : status === 'pending' ? '#fbbf24' : '#60a5fa';
+            const label = status === 'signed' || status === 'completed' ? 'Firmado' : status === 'pending' ? 'Pendiente' : 'En proceso';
+            return `<div class="activity-item">
+              <div class="activity-dot" style="background:${dotColor};box-shadow:0 0 8px ${dotColor}44;"></div>
+              <div class="activity-info"><h4>${d.name || d.docName || 'Documento'}</h4><p>${label}</p></div>
+            </div>`;
+          }).join('');
+          document.getElementById('activityList').innerHTML = items;
+        } else {
+          document.getElementById('activityList').innerHTML = '<div class="empty-state"><span class="material-symbols-outlined">description</span><p>No hay documentos aún. ¡Sube tu primer documento!</p></div>';
+        }
+
+      } catch (err) {
+        console.error('Error loading stats:', err);
+        document.getElementById('stat-total').textContent = '0';
+        document.getElementById('stat-signed').textContent = '0';
+        document.getElementById('stat-pending').textContent = '0';
+        document.getElementById('stat-folders').textContent = '0';
+        document.getElementById('activityList').innerHTML = '<div class="empty-state"><span class="material-symbols-outlined">cloud_off</span><p>No se pudieron cargar los datos. Verifica tu conexión.</p></div>';
+      }
+    }
+
+    loadStats();
+  </script>
+  <style>html,body{background:#060a14 !important;}</style>
+<script src="/shared-nav.js"></script>
+<script>injectSidebar("reports");</script>
+</body>
+</html>

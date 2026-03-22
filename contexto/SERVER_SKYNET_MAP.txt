@@ -1,0 +1,132 @@
+
+ ══════════════════════════════════════════════════════════════
+  SKYNET SERVER — ESTRUCTURA DEL SERVIDOR
+  IP: 187.77.6.110 | Ubuntu 24 | Root
+ ══════════════════════════════════════════════════════════════
+
+ DIAGRAMA:
+
+ /root/
+ │
+ ├── projects/                    PROYECTOS (código fuente)
+ │   ├── signforce/               ── SignForce (firma electrónica)
+ │   │   ├── sffront/                 Frontend HTML/CSS/JS
+ │   │   ├── sfback/                  API criptográfica (Go :5001)
+ │   │   ├── sfmiddle/                Middleware gateway (Go :5002)
+ │   │   ├── sfia/                    Agente IA (Python)
+ │   │   ├── emailServ/               Servicio email (Go)
+ │   │   ├── docker-compose*.yml      Configs Docker
+ │   │   ├── nginx.conf               Config Nginx del container
+ │   │   ├── .env                     Variables de entorno (SECRETO)
+ │   │   └── signforce_db.sql         Schema MySQL
+ │   │
+ │   └── luxspace/                ── LuxSpace (dashboard Airbnb)
+ │       ├── dashboard/               App Node.js (PM2 :3000)
+ │       └── postgres/                PostgreSQL + pgAdmin
+ │
+ ├── scripts/                     SCRIPTS de mantenimiento
+ │   ├── actualizar-*.sh              Actualización UI
+ │   ├── instalar*.sh                 Instaladores
+ │   ├── diagnostico-dashboard.sh     Diagnóstico
+ │   ├── openclaw-refresh.sh          OpenClaw refresh
+ │   └── backup.sh                    Backup automático (cron 3AM)
+ │
+ ├── services/                    SERVICIOS auxiliares
+ │   ├── filebrowser/                 File Browser web
+ │   ├── openclaw-files/              Archivos OpenClaw
+ │   └── voice-proxy.js               Proxy de voz
+ │
+ ├── backups/                     BACKUPS automáticos
+ │   ├── daily/                       Últimos 7 días
+ │   │   ├── signforce_YYYY-MM-DD.tar.gz
+ │   │   └── luxspace_YYYY-MM-DD.tar.gz
+ │   └── weekly/                      Últimas 4 semanas
+ │
+ └── mcp-workspace/               MCP (acceso controlado)
+     └── signforce-frontend/      Symlink → sffront/ (SOLO frontend)
+
+
+ ══════════════════════════════════════════════════════════════
+  RUTAS IMPORTANTES
+ ══════════════════════════════════════════════════════════════
+
+  SignForce frontend:     /root/projects/signforce/sffront/
+  SignForce Docker:       /root/projects/signforce/
+  LuxSpace dashboard:     /root/projects/luxspace/dashboard/
+  Nginx sites:            /etc/nginx/sites-available/
+  SSL certs:              /etc/letsencrypt/live/
+  MCP workspace:          /root/mcp-workspace/signforce-frontend/
+
+ ══════════════════════════════════════════════════════════════
+  SYMLINKS (rutas viejas siguen funcionando)
+ ══════════════════════════════════════════════════════════════
+
+  /root/signforce          →  /root/projects/signforce
+  /root/airbnb-dashboard   →  /root/projects/luxspace/dashboard
+  /root/postgres-luxspace  →  /root/projects/luxspace/postgres
+
+  Esto significa que comandos como:
+    cd ~/signforce && git pull
+  SIGUEN FUNCIONANDO igual que antes.
+
+ ══════════════════════════════════════════════════════════════
+  SERVICIOS ACTIVOS
+ ══════════════════════════════════════════════════════════════
+
+  SERVICIO              PUERTO     TIPO          ESTADO
+  ────────────────────  ─────────  ────────────  ──────────
+  SignForce Web         8090       Docker/Nginx  Activo
+  LuxSpace Dashboard    3000       PM2/Node      Activo
+  PostgreSQL            5432       Docker        Activo
+  pgAdmin               5050       Docker        Activo
+  Uptime Kuma           3001       Docker        Activo
+  OpenClaw Bot          -          PM2           Activo
+  Nginx (proxy)         80/443     Sistema       Activo
+
+ ══════════════════════════════════════════════════════════════
+  DOMINIOS
+ ══════════════════════════════════════════════════════════════
+
+  testsignforce.luxspace.org  →  127.0.0.1:8090  (SSL activo)
+  app.sign-force.com          →  127.0.0.1:8090  (DNS pendiente)
+  luxspace.org                →  127.0.0.1:3000  (SSL activo)
+
+ ══════════════════════════════════════════════════════════════
+  COMANDOS FRECUENTES
+ ══════════════════════════════════════════════════════════════
+
+  # Actualizar SignForce
+  cd ~/signforce && git pull && docker compose -f docker-compose.frontend.yml up -d --build
+
+  # Ver logs SignForce
+  docker logs signforce-web --tail 50
+
+  # Backup manual
+  bash /root/scripts/backup.sh
+
+  # Ver estado de servicios
+  docker ps
+  pm2 status
+
+  # Ver este archivo
+  cat /root/SERVER_MAP.txt
+
+ ══════════════════════════════════════════════════════════════
+  SEGURIDAD MCP
+ ══════════════════════════════════════════════════════════════
+
+  MCP/21st.dev SOLO tiene acceso a:
+    /root/mcp-workspace/signforce-frontend/
+
+  Esto es un symlink a sffront/ (HTML, CSS, JS).
+  MCP NO puede ver ni modificar:
+    - .env (secretos)
+    - Código Go (sfback, sfmiddle)
+    - Código Python (sfia)
+    - SSH keys (.ssh/)
+    - Docker configs
+    - Base de datos
+
+ ══════════════════════════════════════════════════════════════
+  Última actualización: Marzo 8, 2026
+ ══════════════════════════════════════════════════════════════

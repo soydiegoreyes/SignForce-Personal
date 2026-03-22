@@ -1,10 +1,58 @@
 /* ============================================================
+NOTIFICACIONES INLINE (reemplaza alert())
+============================================================ */
+function showError(msg, autohide = 6000) {
+    const banner = document.getElementById('sf-error-banner');
+    const text = document.getElementById('sf-error-text');
+    if (!banner || !text) { console.error(msg); return; }
+    text.textContent = msg;
+    banner.style.display = 'block';
+    document.getElementById('sf-info-banner').style.display = 'none';
+    if (autohide) setTimeout(() => { banner.style.display = 'none'; }, autohide);
+}
+
+function showInfo(msg, autohide = 5000) {
+    const banner = document.getElementById('sf-info-banner');
+    const text = document.getElementById('sf-info-text');
+    if (!banner || !text) { console.log(msg); return; }
+    text.textContent = msg;
+    banner.style.display = 'block';
+    document.getElementById('sf-error-banner').style.display = 'none';
+    if (autohide) setTimeout(() => { banner.style.display = 'none'; }, autohide);
+}
+/* ============================================================
+HELPERS: CAPITALIZE + ALIAS SUGGESTION + PHONE PREFIX
+============================================================ */
+function capFirst(input) {
+    const v = input.value;
+    if (v.length > 0) {
+        input.value = v.charAt(0).toUpperCase() + v.slice(1);
+    }
+}
+
+function suggestAlias() {
+    const name = document.getElementById('nameUser')?.value.trim() || '';
+    const last = document.getElementById('lastNameUser')?.value.trim() || '';
+    if (name.length < 2 || last.length < 1) return;
+    const prefix = name.substring(0, 2);
+    const surfix = last.split(' ')[0];
+    const suggestion = (prefix + surfix).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const aliasField = document.getElementById('aliasUser');
+    if (aliasField && (aliasField.value === '' || aliasField.dataset.autosuggested === 'true')) {
+        aliasField.value = suggestion;
+        aliasField.dataset.autosuggested = 'true';
+    }
+}
+
+
+
+/* ============================================================
 VARIABLES GLOBALES
 ============================================================ */
 let existUser = null;
 let inviteId = null;
 let inviteEmail = null;
-let faceModel = null;
+// faceModel eliminado - ahora usa kycFaceLandmarker de MediaPipe
 let faceVector = null;
 
 let videoStream = null;
@@ -22,13 +70,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     inviteId = params.get('id');
 
     if (!inviteId) {
-        alert('Invitación inválida');
+        showError('Invitación inválida o expirada');
         return;
     }
 
-    await loadFaceModel();
+
     fetchInviteData(inviteId);
-    setupCameraUI();
+    setupKycUI();
+    // Alias: cuando el usuario escribe, desactivar autosuggested
+    const aliasField = document.getElementById('aliasUser');
+    if (aliasField) {
+        aliasField.addEventListener('input', () => {
+            aliasField.dataset.autosuggested = 'false';
+        });
+    }
+
     ['oldPass', 'newPass', 'confirmPass'].forEach(id => {
         document.getElementById(id).addEventListener('input', validateForm);
     });
@@ -39,41 +95,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 LÓGICA DE CONTRASEÑAS Y UI
 ============================================================ */
 function updatePassFeedback(pass) {
-    const reqLength = document.getElementById('reqLength');
-    const reqChars = document.getElementById('reqChars');
-    const reqComplexity = document.getElementById('reqComplexity');
+    const bar   = document.getElementById('strengthBar');
+    const fill  = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    const reqs  = document.getElementById('passReqs');
+    if (!bar) return;
 
-    // 1. Validar Longitud
-    if (pass.length >= 12) {
-        setReqStatus(reqLength, true);
+    // Mostrar controles si hay texto
+    if (pass.length > 0) {
+        bar.classList.remove('hidden');
+        label.classList.remove('hidden');
+        reqs.classList.remove('hidden');
     } else {
-        setReqStatus(reqLength, false);
+        bar.classList.add('hidden');
+        label.classList.add('hidden');
+        reqs.classList.add('hidden');
+        return;
     }
 
-    // 2. Validar Caracteres prohibidos (usando tu lógica de Regex)
-    if (passRegex.test(pass)) {
-        setReqStatus(reqChars, true);
-    } else {
-        setReqStatus(reqChars, false);
-    }
+    // Criterios
+    const checks = {
+        len:   pass.length >= 8,
+        upper: /[A-Z]/.test(pass),
+        lower: /[a-z]/.test(pass),
+        num:   /[0-9]/.test(pass),
+        spec:  /[^A-Za-z0-9]/.test(pass),
+    };
+    const score = Object.values(checks).filter(Boolean).length; // 0-5
 
-    // 3. Validar Complejidad (Mayúscula y Número)
-    if (complexityRegex.test(pass)) {
-        setReqStatus(reqComplexity, true);
-    } else {
-        setReqStatus(reqComplexity, false);
-    }
+    // Actualizar dots de requisitos
+    Object.entries(checks).forEach(([key, ok]) => {
+        const dot = document.getElementById('dot-' + key);
+        const li  = document.getElementById('req-' + key);
+        if (!dot || !li) return;
+        dot.style.background = ok ? '#4ade80' : '#4b5563';
+        li.style.color = ok ? '#4ade80' : '#9ca3af';
+    });
+
+    // Barra de fuerza
+    const levels = [
+        { pct: '20%', color: '#ef4444', text: 'Muy débil',  textColor: '#ef4444' },
+        { pct: '40%', color: '#f97316', text: 'Débil',      textColor: '#f97316' },
+        { pct: '60%', color: '#eab308', text: 'Regular',    textColor: '#eab308' },
+        { pct: '80%', color: '#84cc16', text: 'Fuerte',     textColor: '#84cc16' },
+        { pct: '100%',color: '#22c55e', text: '¡Excelente!',textColor: '#22c55e' },
+    ];
+    const lvl = levels[Math.max(0, score - 1)];
+    fill.style.width   = lvl.pct;
+    fill.style.background = lvl.color;
+    label.textContent  = lvl.text;
+    label.style.color  = lvl.textColor;
 }
 
 function setReqStatus(el, isValid) {
-    const icon = el.querySelector('.material-symbols-outlined');
-    if (isValid) {
-        el.classList.replace('text-gray-500', 'text-green-400');
-        icon.textContent = 'check_circle';
-    } else {
-        el.classList.replace('text-green-400', 'text-gray-500');
-        icon.textContent = 'circle';
-    }
+    // Compatibilidad - no se usa con el nuevo sistema
 }
 
 function setupPasswordUI() {
@@ -109,23 +184,19 @@ function validateForm() {
     const required = ['nameUser', 'lastNameUser', 'aliasUser', 'phoneUser', 'taxNumUser', 'pobUidUser'];
     const fieldsOK = required.every(id => document.getElementById(id).value.trim() !== '');
     const faceOK = Array.isArray(faceVector) && faceVector.length === 256;
-    const AliasRegex = /^[A-Za-z\d\S]{5,20}$/;
-    if (!AliasRegex.test(businessAlias)) {
-        const errLabel = document.getElementById('passError');
-        errLabel.textContent = "ALIAS solo debe contener letras y números con al menos 5 caracteres";
-        errLabel.classList.remove('hidden');
-        return;
-    }
-
     const nPass = document.getElementById('newPass').value;
     const cPass = document.getElementById('confirmPass').value;
     const oPass = document.getElementById('oldPass').value;
-    
-    // Actualizar visual de requisitos
+
+    // Actualizar visual de requisitos SIEMPRE (no puede quedar bloqueado por alias)
     updatePassFeedback(nPass);
     
     // La contraseña es válida si cumple tu Regex Y la complejidad
-    const isPassStrong = passRegex.test(nPass) && complexityRegex.test(nPass);
+    const isPassStrong = nPass.length >= 8
+            && /[A-Z]/.test(nPass)
+            && /[a-z]/.test(nPass)
+            && /[0-9]/.test(nPass)
+            && /[^A-Za-z0-9]/.test(nPass);
     const isConfirmMatch = nPass === cPass && nPass !== '';
 
     let passOK = true;
@@ -154,51 +225,235 @@ function validateForm() {
     document.getElementById('btnSubmit').disabled = !(fieldsOK && faceOK && passOK);
 }
 /* ============================================================
-MODELO FACIAL
+KYC MODERNO — face-api.js (vladmandic) + Liveness Detection
+Steps: Centro → Izquierda → Derecha → Captura
 ============================================================ */
-async function loadFaceModel() {
-    try {
-        console.log('⏳ Cargando modelo facial...');
-        faceModel = await tf.loadGraphModel('/facevector/model.json');
-        console.log('✅ Modelo facial cargado');
-    } catch (err) {
-        console.error(err);
-        alert('Error cargando el modelo facial');
-    }
+
+const FACEAPI_MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+let kycModelsLoaded = false;
+let kycStream = null;
+let kycAnimFrame = null;
+let kycStep = 0; // 0=centro, 1=izq, 2=der
+let kycStepFrames = 0;
+const FRAMES_TO_CONFIRM = 10;
+
+const KYC_STEPS = [
+  { text: 'Centra tu rostro en el óvalo', sub: 'Mira directamente a la cámara', dot: 0 },
+  { text: 'Gira la cabeza a la IZQUIERDA  ←', sub: 'Despacio, mantén hasta que desaparezca la flecha', dot: 1 },
+  { text: 'Gira la cabeza a la DERECHA  →', sub: 'Despacio, mantén hasta que desaparezca la flecha', dot: 2 },
+];
+
+async function initKycModel() {
+  if (kycModelsLoaded) return true;
+  try {
+    await faceapi.nets.tinyFaceDetector.loadFromUri(FACEAPI_MODEL_URL);
+    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACEAPI_MODEL_URL);
+    kycModelsLoaded = true;
+    return true;
+  } catch (e) {
+    console.error('face-api error:', e);
+    showError('No se pudo cargar el sistema de verificación. Verifica tu conexión.');
+    return false;
+  }
 }
 
-/* ============================================================
-PREPROCESAMIENTO (105,105,3)
-============================================================ */
-function preprocessCanvas(canvas) {
-    return tf.tidy(() =>
-        tf.browser.fromPixels(canvas)
-            .resizeBilinear([105, 105])
-            .toFloat()
-            .div(255.0)
-            .expandDims(0) // [1,105,105,3]
-    );
+function estimateYaw(landmarks) {
+  // Usa landmarks 68-point para estimar yaw (rotación horizontal)
+  const pts = landmarks.positions;
+  const leftEyeOuter  = pts[36]; // esquina externa ojo izq
+  const rightEyeOuter = pts[45]; // esquina externa ojo der
+  const noseTip       = pts[30]; // punta de la nariz
+  const eyeMidX = (leftEyeOuter.x + rightEyeOuter.x) / 2;
+  const eyeWidth = Math.abs(rightEyeOuter.x - leftEyeOuter.x);
+  if (eyeWidth < 1) return 0;
+  // offset normalizado: positivo = nariz hacia derecha = cabeza girada derecha
+  return (noseTip.x - eyeMidX) / eyeWidth;
 }
 
-/* ============================================================
-EXTRACCIÓN DEL VECTOR FACIAL (256)
-============================================================ */
-async function extractFaceVector(canvas) {
-    if (!faceModel) throw new Error('Modelo no cargado');
-
-    const input = preprocessCanvas(canvas);
-    const embedding = faceModel.predict(input);
-    const vector = await embedding.data(); // Float32Array(256)
-
-    tf.dispose([input, embedding]);
-
-    return Array.from(vector);
+function updateKycStep(step) {
+  kycStep = step;
+  kycStepFrames = 0;
+  const s = KYC_STEPS[step];
+  if (!s) return;
+  document.getElementById('kycInstructionText').textContent = s.text;
+  document.getElementById('kycInstructionSub').textContent = s.sub;
+  [0,1,2].forEach(i => {
+    const dot = document.getElementById('dot'+i);
+    if (i < step)       { dot.style.background='#4ade80'; dot.style.width='10px'; dot.style.height='10px'; }
+    else if (i===step)  { dot.style.background='#B5C413'; dot.style.width='12px'; dot.style.height='12px'; }
+    else                { dot.style.background='rgba(255,255,255,0.18)'; dot.style.width='8px'; dot.style.height='8px'; }
+  });
+  const arrow = document.getElementById('kycArrow');
+  const arrowInner = document.getElementById('kycArrowInner');
+  if (step===1) {
+    arrow.style.opacity='1';
+    arrowInner.textContent='←';
+    arrowInner.style.animation='arrow-pulse 0.7s ease-in-out infinite alternate';
+  } else if (step===2) {
+    arrow.style.opacity='1';
+    arrowInner.textContent='→';
+    arrowInner.style.animation='arrow-pulse-r 0.7s ease-in-out infinite alternate';
+  } else {
+    arrow.style.opacity='0';
+  }
 }
+
+async function kycDetectLoop() {
+  const video = document.getElementById('kycVideo');
+  if (!video || video.readyState < 2 || !kycStream) return;
+
+  const detection = await faceapi
+    .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 }))
+    .withFaceLandmarks(true);
+
+  const oval = document.getElementById('kycOvalRing');
+  if (!detection) {
+    oval.style.borderColor='rgba(239,68,68,0.6)';
+    kycStepFrames = 0;
+    kycAnimFrame = requestAnimationFrame(kycDetectLoop);
+    return;
+  }
+
+  oval.style.borderColor='rgba(181,196,19,0.85)';
+  const yaw = estimateYaw(detection.landmarks); // -0.5 a +0.5
+
+  if (kycStep === 0) {
+    // Centro: yaw entre -0.12 y +0.12
+    if (Math.abs(yaw) < 0.12) {
+      kycStepFrames++;
+      if (kycStepFrames >= FRAMES_TO_CONFIRM) updateKycStep(1);
+    } else kycStepFrames = 0;
+
+  } else if (kycStep === 1) {
+    // Izquierda del usuario = derecha en el espejo (yaw positivo)
+    if (yaw > 0.22) {
+      kycStepFrames++;
+      if (kycStepFrames >= FRAMES_TO_CONFIRM) updateKycStep(2);
+    } else kycStepFrames = 0;
+
+  } else if (kycStep === 2) {
+    // Derecha del usuario = izquierda en el espejo (yaw negativo)
+    if (yaw < -0.22) {
+      kycStepFrames++;
+      if (kycStepFrames >= FRAMES_TO_CONFIRM) {
+        captureKycPhoto(video, detection.landmarks);
+        return;
+      }
+    } else kycStepFrames = 0;
+  }
+
+  if (kycStream) kycAnimFrame = requestAnimationFrame(kycDetectLoop);
+}
+
+function captureKycPhoto(video, landmarks) {
+  cancelAnimationFrame(kycAnimFrame);
+  kycAnimFrame = null;
+
+  document.getElementById('kycOvalRing').style.borderColor='#4ade80';
+  document.getElementById('kycArrow').style.opacity='0';
+  document.getElementById('kycCheckOverlay').style.display='flex';
+  document.getElementById('kycInstructionText').textContent='¡Verificación completada!';
+  document.getElementById('kycInstructionSub').textContent='Procesando tu identidad...';
+  [0,1,2].forEach(i => {
+    const dot = document.getElementById('dot'+i);
+    dot.style.background='#4ade80'; dot.style.width='10px'; dot.style.height='10px';
+  });
+
+  const canvas = document.getElementById('kycCanvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0); ctx.scale(-1, 1); // desespejear
+  ctx.drawImage(video, 0, 0);
+  const photoDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+  // Vector facial: 68 landmarks × 2 coords + normalización = 136 → pad a 256
+  const pts = landmarks.positions;
+  const xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+  const w=maxX-minX||1, h=maxY-minY||1;
+  const raw = [];
+  pts.forEach(p => { raw.push((p.x-minX)/w); raw.push((p.y-minY)/h); });
+  // Pad a 256 repitiendo valores
+  while (raw.length < 256) raw.push(raw[raw.length % raw.length]);
+  const vector = raw.slice(0, 256).map(v => parseFloat(v.toFixed(6)));
+
+  setTimeout(() => {
+    stopKycCamera();
+    document.getElementById('kycPreviewImg').src = photoDataUrl;
+    document.getElementById('kycStartSection').classList.add('hidden');
+    document.getElementById('kycPreviewSection').style.display='flex';
+    document.getElementById('kycPreviewSection').classList.remove('hidden');
+    document.getElementById('kycBadge').classList.remove('hidden');
+    document.getElementById('kycBadge').style.display='flex';
+    document.getElementById('photoStatus').textContent='Verificación completada ✓';
+    document.getElementById('photoStatus').style.color='#4ade80';
+    faceVector = vector;
+    checkFormReady();
+  }, 1000);
+}
+
+function stopKycCamera() {
+  if (kycAnimFrame) { cancelAnimationFrame(kycAnimFrame); kycAnimFrame = null; }
+  if (kycStream) { kycStream.getTracks().forEach(t=>t.stop()); kycStream=null; }
+  document.getElementById('kycModal').style.display='none';
+}
+
+async function startKyc() {
+  kycStep=0; kycStepFrames=0;
+  const modal = document.getElementById('kycModal');
+  modal.style.display='flex';
+  document.getElementById('kycCheckOverlay').style.display='none';
+  document.getElementById('kycOvalRing').style.borderColor='rgba(181,196,19,0.5)';
+  document.getElementById('kycArrow').style.opacity='0';
+  document.getElementById('kycInstructionText').textContent='Cargando modelo...';
+  document.getElementById('kycInstructionSub').textContent='Un momento por favor';
+  [0,1,2].forEach(i => {
+    const dot=document.getElementById('dot'+i);
+    dot.style.background='rgba(255,255,255,0.18)'; dot.style.width='8px'; dot.style.height='8px';
+  });
+
+  const loaded = await initKycModel();
+  if (!loaded) { modal.style.display='none'; return; }
+
+  try {
+    kycStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio:false
+    });
+    const video = document.getElementById('kycVideo');
+    video.srcObject = kycStream;
+    await new Promise(r => { video.onloadedmetadata=r; });
+    video.play();
+    updateKycStep(0);
+    kycAnimFrame = requestAnimationFrame(kycDetectLoop);
+  } catch(e) {
+    stopKycCamera();
+    showError('No se pudo acceder a la cámara. Verifica los permisos del navegador.');
+  }
+}
+
+function setupKycUI() {
+  document.getElementById('btnStartKyc')?.addEventListener('click', startKyc);
+  document.getElementById('btnRetakeKyc')?.addEventListener('click', () => {
+    document.getElementById('kycPreviewSection').style.display='none';
+    document.getElementById('kycStartSection').classList.remove('hidden');
+    document.getElementById('kycBadge').classList.add('hidden');
+    document.getElementById('kycBadge').style.display='none';
+    document.getElementById('photoStatus').textContent='Verificación pendiente';
+    document.getElementById('photoStatus').style.color='';
+    faceVector=null;
+    checkFormReady();
+  });
+  document.getElementById('btnCloseKyc')?.addEventListener('click', stopKycCamera);
+}
+
+
 
 /* ============================================================
 CAMARA
 ============================================================ */
-function setupCameraUI() {
+// setupCameraUI reemplazado
+function setupCameraUI_OLD() {
     document.getElementById('btnTakePhoto').onclick = startCamera;
     document.getElementById('btnCancelCapture').onclick = stopCamera;
     document.getElementById('btnCapture').onclick = capturePhoto;
@@ -218,7 +473,7 @@ async function startCamera() {
 
         video.srcObject = videoStream;
     } catch (err) {
-        alert('No se pudo acceder a la cámara');
+        showError('No se pudo acceder a la cámara. Verifica los permisos.');
         stopCamera();
     }
 }
@@ -268,7 +523,7 @@ async function capturePhoto() {
 
     } catch (err) {
         console.error(err);
-        alert('Error procesando el rostro');
+        showError('Error procesando el rostro. Intenta de nuevo.');
     } finally {
         isProcessing = false;
     }
@@ -314,8 +569,25 @@ async function fetchInviteData(id) {
         if (existUser !== "0") {
             document.getElementById('nameUser').value = hostData.nameUser || '';
             document.getElementById('lastNameUser').value = hostData.lastNameUser || '';
-            document.getElementById('aliasUser').value = hostData.aliasUser || '';
-            document.getElementById('phoneUser').value = hostData.phoneUser || '';
+            // Alias: si es root_ o vacío, generar sugerencia inteligente
+            const rawAlias = hostData.aliasUser || '';
+            const isAutoAlias = rawAlias === '' || rawAlias.startsWith('root_');
+            if (isAutoAlias) {
+                const n = (hostData.nameUser || '').substring(0, 2);
+                const s = (hostData.lastNameUser || '').split(' ')[0];
+                const suggested = (n + s).toLowerCase().replace(/[^a-z0-9]/g, '');
+                const aliasField = document.getElementById('aliasUser');
+                aliasField.value = suggested;
+                aliasField.dataset.autosuggested = 'true';
+            } else {
+                document.getElementById('aliasUser').value = rawAlias;
+            }
+            // Teléfono: prefijo México si está vacío
+            const phone = hostData.phoneUser || '';
+            document.getElementById('phoneUser').value = phone || '+52 ';
+        } else {
+            // Usuario nuevo: poner prefijo México
+            document.getElementById('phoneUser').value = '+52 ';
         }
 
         setupPasswordUI(); // <--- Inicializar UI de passwords

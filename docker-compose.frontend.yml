@@ -14,7 +14,7 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: signforce-web
     ports:
-      - "8080:80"
+      - "8090:80"
     restart: unless-stopped
     labels:
       - "app=signforce"

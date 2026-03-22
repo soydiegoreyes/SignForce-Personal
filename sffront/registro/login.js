@@ -253,44 +253,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Validaciones
         if (!legalName || !legalLastName) {
-            alert('Por favor, añade un nombre del responsable del sistema');
+            document.getElementById('notice-box').textContent='Por favor, añade el nombre del responsable legal'; return;;
             return;
         }
         if (!businessName) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>El nombre de la empresa es requerido</strong></p>';
+            document.getElementById('notice-box').textContent='El nombre de la empresa es requerido';
             return;
         }
 
-        const AliasRegex = /^[A-Za-z\d\S]{5,20}$/;
+        const AliasRegex = /^[A-Za-z\d\s]{3,50}$/;
         if (!AliasRegex.test(businessAlias)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu Alias debe contener solo letras y números, sin espacios o caracteres especiales y un máximos de 20 caracteres.</strong></p>';
+            document.getElementById('notice-box').textContent='El alias solo puede contener letras, números y espacios (3-50 caracteres)';
             return;
         }
 
         const TaxNumRegex = /^[A-Z\d]{12,20}$/;
         if (!TaxNumRegex.test(businessTaxNum)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
+            document.getElementById('notice-box').textContent='RFC inválido: solo letras y números, 12-20 caracteres';
             return;
         }
 
 
         if (!EmailRegex.test(email)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
+            document.getElementById('notice-box').textContent='Email inválido. Verifica que sea correcto';
             return;
         }
         const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(phone)) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Tu telefono a 10 digitos sin espacios ni caracteres especiales</strong></p>';
+            document.getElementById('notice-box').textContent='Teléfono inválido: 10 dígitos sin espacios';
             return;
         }
         if (!terms) {
-            alert('Alguno de tus datos no es correcto.');
-            document.getElementById('notice-box').innerHTML = '<p><strong>Lee y acepta el Acuerdo de Términos y Condiciones</strong></p>';
+            document.getElementById('notice-box').textContent='Debes aceptar los términos y condiciones';
             return;
         }
 
@@ -316,6 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const nuevaEmpresaJson = JSON.stringify(nuevaEmpresa);
 
+            // Mostrar loading
+            document.getElementById('sf-loading').style.display = 'flex';
+
             try {
                 // manda los datos a la api para crear un nuevo cliente que empezara el proceso
                 const response = await fetch('/register', {
@@ -340,23 +337,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Parsear la respuesta JSON
                 const data = await response.json();
                 console.log(data);
-                // Agregar nueva empresa al arreglo local
+
+                // Verificar si hubo error del servidor
+                if (!data.check || data.error) {
+                    document.getElementById('sf-loading').style.display = 'none';
+                    const nb = document.getElementById('notice-box');
+                    nb.textContent = data.error || 'Error al registrar. Intenta de nuevo.';
+                    return;
+                }
+
+                // Registro exitoso
                 empresas[data.instId] = nuevaEmpresa;
                 sessionStorage.setItem('empresas', JSON.stringify(empresas));
 
-                // Redirigir usando el ID del servidor
-                window.location.href = '/login';
-
-                alert('¡Bienvenido a SignForce! Revisa tu bandeja de entrada.');
+                // Mostrar pantalla de éxito
+                document.getElementById('sf-loading').style.display = 'none';
+                document.getElementById('sf-email-sent').textContent = email;
+                const successEl = document.getElementById('sf-success');
+                successEl.style.display = 'flex';
 
             } catch (error) {
                 console.error('Error:', error);
-                alert(`Error al registrar: ${error.message}`);
+                document.getElementById('sf-loading').style.display='none'; document.getElementById('notice-box').textContent='Error de conexión. Intenta de nuevo.';
             }
 
         } catch (error) {
+            document.getElementById('sf-loading').style.display = 'none';
             console.error('Error:', error);
-            alert(`Error al registrar: ${error.message}`);
+            document.getElementById('notice-box').textContent = 'Error al registrar. Intenta de nuevo.';
         }
     });
 

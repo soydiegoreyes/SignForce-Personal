@@ -1,804 +1,968 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Planes y Precios - SignForce</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Estilos de view_signature.html */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Badges Neon */
-        .badge-neon {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(59, 130, 246, 0.7);
-        }
-
-        /* Tarjetas Estilo "Invitación" */
-        .tech-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .tech-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
-            opacity: 0.5;
-        }
-
-        .tech-card:hover {
-            transform: translateY(-4px);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(56, 189, 248, 0.3);
-            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Botones */
-        .btn-cyber {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .btn-cyber:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        /* Header Panel simplificado */
-        .header-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .info-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-            margin-bottom: 2px;
-        }
-        
-        .info-value {
-            font-weight: 600;
-            color: #f3f4f6;
-        }
-
-        /* Animaciones */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease forwards;
-        }
-
-        /* Planes */
-        .plans-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .plan-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .plan-card.featured {
-            transform: scale(1.05);
-            border: 2px solid rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
-        }
-
-        .plan-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .plan-card.featured:hover {
-            transform: scale(1.05) translateY(-10px);
-        }
-
-        .plan-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            color: #f3f4f6;
-        }
-
-        .plan-price {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin: 1.5rem 0;
-            color: #60a5fa;
-        }
-
-        .plan-price span {
-            font-size: 1rem;
-            color: #9ca3af;
-        }
-
-        .plan-features {
-            list-style: none;
-            margin: 1.5rem 0;
-            text-align: left;
-            padding: 0;
-        }
-
-        .plan-features li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            align-items: center;
-            color: #d1d5db;
-        }
-
-        .plan-features li i {
-            margin-right: 0.5rem;
-        }
-
-        .plan-features li .fa-check {
-            color: #10b981;
-        }
-
-        .plan-features li .fa-times {
-            color: #ef4444;
-        }
-
-        .plan-button {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 1rem;
-        }
-
-        .plan-button:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-        }
-
-        /* Modal de Pago */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .payment-modal {
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            width: 90%;
-            max-width: 500px;
-            padding: 2rem;
-            position: relative;
-            transform: translateY(50px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .payment-modal {
-            transform: translateY(0);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: #9ca3af;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0;
-        }
-       
-        .payment-form {
-            margin-top: 1.5rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #d1d5db00;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(255, 255, 255, 0.05);
-            font-size: 1rem;
-            color: #bbbbbb;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #3b82f6;
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-            border-radius: 10px;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        .payment-summary {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .payment-summary h4 {
-            margin-bottom: 0.5rem;
-            color: #60a5fa;
-        }
-
-        .payment-loader {
-            display: none;
-            text-align: center;
-            margin: 1rem 0;
-            color: #60a5fa;
-        }
-
-        .payment-success {
-            display: none;
-            text-align: center;
-            color: #10b981;
-            margin: 1rem 0;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 0.5rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Mensajes */
-        .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        .success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .plans-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .plan-card.featured {
-                transform: scale(1);
-            }
-            
-            .plan-card.featured:hover {
-                transform: translateY(-10px);
-            }
-            
-            .form-row {
-                flex-direction: column;
-                gap: 0;
-            }
-        }
-    
-    /* ═══ SignForce Design Override ═══ */
-    body { background: #060a14 !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
-    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
-    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
-    p { color: rgba(255,255,255,.6) !important; }
-    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
-      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
-      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
-      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
-      box-shadow:none !important; padding:0 1.5rem !important; }
-    .glass-header::before { display:none !important; }
-    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
-      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
-    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
-      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
-    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:14px !important; transition:all .3s ease; }
-    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
-    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
-    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
-      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
-    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
-    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
-    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
-      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
-    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
-    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
-    input[type="date"], input[type="file"], textarea, select {
-      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
-      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
-    input:focus, textarea:focus, select:focus, .input-field:focus {
-      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
-    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
-    select option { background:#0f1524; color:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
-      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
-    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
-    tr:hover td { background:rgba(255,255,255,.02); }
-    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
-    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
-    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
-    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
-    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:20px !important; }
-    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
-    .close-modal:hover { color:#fff; }
-    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
-      width:30px; height:30px; animation:spin .7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .bg { background:none !important; }
-    .main-container, .content, main { position:relative; z-index:1; }
-    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
-    .text-primary { color:#fff !important; }
-    .text-secondary { color:rgba(255,255,255,.55) !important; }
-    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
-    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
-    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
-    /* end override */
-
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planes y Precios — SignForce</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
+  <meta name="description" content="Planes y precios de SignForce — Firma electrónica avanzada desde $0/mes. Cumple NOM-151.">
   <meta name="theme-color" content="#060a14">
-  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
-  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
-  <meta property="og:type" content="website">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:#060a14;color:#fff;font-family:'DM Sans',sans-serif;overflow-x:hidden;line-height:1.6;min-height:100vh}
+
+    /* ═══ Particles Canvas ═══ */
+    #particles-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+    /* ═══ Dot grid overlay ═══ */
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+      background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.03) 1px,transparent 0);background-size:48px 48px}
+
+    /* ═══ Orbs ═══ */
+    .orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+    .orb-1{width:500px;height:500px;background:rgba(181,196,19,.06);top:-150px;left:-100px;animation:drift1 20s ease-in-out infinite}
+    .orb-2{width:400px;height:400px;background:rgba(52,211,153,.04);bottom:-100px;right:-100px;animation:drift2 25s ease-in-out infinite}
+    .orb-3{width:300px;height:300px;background:rgba(96,165,250,.03);top:40%;right:10%;animation:drift3 18s ease-in-out infinite}
+    @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
+    @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-40px)}}
+    @keyframes drift3{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+    /* ═══ Top bar ═══ */
+    .topbar{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;box-shadow:0 0 20px rgba(181,196,19,.22)}
+
+    /* ═══ Nav ═══ */
+    .nav{position:fixed;top:3px;left:0;right:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:64px;
+      background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06);transition:all .4s}
+    .nav.scrolled{background:rgba(6,10,20,.96);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+    .nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:#fff}
+    .logo-s{width:34px;height:34px;background:#B5C413;color:#060a14;font-weight:900;font-size:1rem;border-radius:9px;
+      display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(181,196,19,.25)}
+    .logo-text{font-weight:800;font-size:1.15rem;letter-spacing:.06em}
+    .nav-links{display:flex;gap:1.5rem;list-style:none}
+    .nav-links a{color:rgba(255,255,255,.5);text-decoration:none;font-size:.82rem;font-weight:500;transition:color .3s;padding:.4rem .6rem;border-radius:6px}
+    .nav-links a:hover{color:#fff}
+    .nav-links a.active{color:#B5C413}
+    .nav-cta{background:#B5C413;color:#060a14;padding:.5rem 1.3rem;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;transition:all .25s}
+    .nav-cta:hover{background:#c5d41a;box-shadow:0 0 24px rgba(181,196,19,.25)}
+
+    /* ═══ Content ═══ */
+    section{position:relative;z-index:1}
+    .container{max-width:1200px;margin:0 auto;padding:0 2rem}
+
+    /* ═══ Hero ═══ */
+    .pricing-hero{padding:9rem 0 3rem;text-align:center}
+    .pricing-hero .badge{display:inline-flex;align-items:center;gap:6px;padding:.4rem 1rem;border-radius:20px;
+      background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.15);font-size:.75rem;font-weight:600;color:#B5C413;margin-bottom:1.5rem}
+    .pricing-hero h1{font-size:3.2rem;font-weight:700;line-height:1.1;margin-bottom:1rem;letter-spacing:-.02em}
+    .pricing-hero h1 .accent{color:#B5C413;position:relative}
+    .pricing-hero h1 .accent::after{content:'';position:absolute;bottom:2px;left:0;right:0;height:3px;background:#B5C413;opacity:.3;border-radius:2px}
+    .pricing-hero p{font-size:1.1rem;color:rgba(255,255,255,.45);max-width:560px;margin:0 auto}
+
+    /* ═══ Billing Toggle ═══ */
+    .billing-toggle{display:flex;align-items:center;justify-content:center;gap:1rem;margin:2.5rem 0 3rem}
+    .billing-label{font-size:.88rem;font-weight:500;color:rgba(255,255,255,.45);transition:color .3s;cursor:pointer}
+    .billing-label.active{color:#fff}
+    .toggle-switch{width:52px;height:28px;background:rgba(255,255,255,.1);border-radius:14px;position:relative;cursor:pointer;transition:background .3s;border:1px solid rgba(255,255,255,.08)}
+    .toggle-switch.annual{background:rgba(181,196,19,.2);border-color:rgba(181,196,19,.3)}
+    .toggle-knob{width:22px;height:22px;background:#fff;border-radius:50%;position:absolute;top:2px;left:3px;transition:transform .3s cubic-bezier(.68,-.55,.265,1.55);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+    .toggle-switch.annual .toggle-knob{transform:translateX(24px)}
+    .save-badge{background:rgba(181,196,19,.12);color:#B5C413;font-size:.72rem;font-weight:700;padding:.25rem .65rem;border-radius:12px;border:1px solid rgba(181,196,19,.2)}
+
+    /* ═══ Plans Grid ═══ */
+    .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:5rem}
+
+    /* ═══ Plan Card ═══ */
+    .plan-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:2.5rem 2rem;
+      position:relative;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+    .plan-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);pointer-events:none}
+    .plan-card:hover{transform:translateY(-8px);border-color:rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+
+    /* Featured card */
+    .plan-card.featured{border-color:rgba(181,196,19,.25);background:rgba(15,21,36,.6)}
+    .plan-card.featured::before{background:linear-gradient(90deg,transparent,rgba(181,196,19,.4),transparent)}
+    .plan-card.featured::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,196,19,.04),transparent 60%);pointer-events:none;border-radius:24px}
+    .plan-card.featured:hover{border-color:rgba(181,196,19,.4);box-shadow:0 20px 60px rgba(181,196,19,.08)}
+
+    .popular-badge{position:absolute;top:1.25rem;right:1.25rem;background:#B5C413;color:#060a14;font-size:.65rem;font-weight:800;padding:.3rem .75rem;
+      border-radius:8px;text-transform:uppercase;letter-spacing:.08em;box-shadow:0 0 20px rgba(181,196,19,.3)}
+    .plan-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
+    .plan-name{font-size:1.3rem;font-weight:700;margin-bottom:.35rem}
+    .plan-desc{font-size:.82rem;color:rgba(255,255,255,.4);margin-bottom:1.5rem;line-height:1.5}
+    .plan-price-wrap{margin-bottom:1.75rem}
+    .plan-price{font-size:3rem;font-weight:800;line-height:1;display:flex;align-items:baseline;gap:.25rem}
+    .plan-price .currency{font-size:1.4rem;font-weight:600;color:rgba(255,255,255,.6)}
+    .plan-price .period{font-size:.85rem;font-weight:400;color:rgba(255,255,255,.35);margin-left:.25rem}
+    .plan-price-annual{font-size:.78rem;color:rgba(255,255,255,.3);margin-top:.35rem;height:1.2em}
+    .plan-price-annual .save{color:#B5C413;font-weight:600}
+
+    /* Features list */
+    .plan-features{list-style:none;margin-bottom:2rem;flex:1}
+    .plan-features li{display:flex;align-items:flex-start;gap:.6rem;padding:.55rem 0;font-size:.84rem;color:rgba(255,255,255,.6);border-bottom:1px solid rgba(255,255,255,.04)}
+    .plan-features li:last-child{border:none}
+    .plan-features .check{color:#B5C413;font-size:16px;flex-shrink:0;margin-top:1px}
+    .plan-features .cross{color:rgba(255,255,255,.15);font-size:16px;flex-shrink:0;margin-top:1px}
+    .plan-features li.disabled{color:rgba(255,255,255,.2)}
+
+    /* Plan CTA */
+    .plan-btn{width:100%;padding:.9rem;border-radius:12px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .3s;border:none;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
+    .plan-btn-primary{background:#B5C413;color:#060a14}
+    .plan-btn-primary:hover{background:#c5d41a;box-shadow:0 0 30px rgba(181,196,19,.25);transform:translateY(-2px)}
+    .plan-btn-outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12)}
+    .plan-btn-outline:hover{background:rgba(255,255,255,.06);border-color:rgba(181,196,19,.25)}
+    .plan-btn-enterprise{background:rgba(181,196,19,.1);color:#B5C413;border:1px solid rgba(181,196,19,.2)}
+    .plan-btn-enterprise:hover{background:rgba(181,196,19,.18);box-shadow:0 0 24px rgba(181,196,19,.12)}
+
+    /* ═══ Payment Methods Section ═══ */
+    .payment-methods{padding:0 0 4rem;text-align:center}
+    .payment-methods h3{font-size:1rem;font-weight:600;color:rgba(255,255,255,.35);margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:.1em;font-size:.75rem}
+    .payment-icons{display:flex;justify-content:center;gap:1.25rem;flex-wrap:wrap}
+    .pay-icon{display:flex;align-items:center;gap:.5rem;padding:.65rem 1.25rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;font-size:.82rem;font-weight:600;color:rgba(255,255,255,.55);transition:all .3s}
+    .pay-icon:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:#fff}
+    .pay-icon.featured-pay{border-color:rgba(181,196,19,.2);background:rgba(181,196,19,.05)}
+    .pay-icon.featured-pay:hover{border-color:rgba(181,196,19,.35);background:rgba(181,196,19,.1)}
+    .pay-icon svg{width:24px;height:24px}
+
+    /* ═══ Comparison Table ═══ */
+    .comparison{padding:0 0 5rem}
+    .comparison h2{font-size:2rem;font-weight:700;text-align:center;margin-bottom:.5rem}
+    .comparison .subtitle{text-align:center;color:rgba(255,255,255,.4);font-size:.95rem;margin-bottom:3rem}
+    .comp-table{width:100%;border-collapse:collapse;background:rgba(15,21,36,.3);border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+    .comp-table thead th{padding:1.25rem 1rem;font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.35);font-weight:600;text-align:center;border-bottom:1px solid rgba(255,255,255,.06)}
+    .comp-table thead th:first-child{text-align:left;color:rgba(255,255,255,.5)}
+    .comp-table thead th.featured-col{color:#B5C413}
+    .comp-table tbody td{padding:.85rem 1rem;font-size:.84rem;color:rgba(255,255,255,.5);border-bottom:1px solid rgba(255,255,255,.04);text-align:center}
+    .comp-table tbody td:first-child{text-align:left;font-weight:500;color:rgba(255,255,255,.7)}
+    .comp-table tbody tr:hover td{background:rgba(255,255,255,.02)}
+    .comp-table tbody tr:last-child td{border:none}
+    .comp-table .section-row td{background:rgba(181,196,19,.03);font-weight:700;color:#B5C413;font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;padding:.6rem 1rem}
+    .comp-check{color:#B5C413;font-size:18px}
+    .comp-cross{color:rgba(255,255,255,.12);font-size:18px}
+
+    /* ═══ FAQ ═══ */
+    .faq{padding:0 0 5rem}
+    .faq h2{font-size:2rem;font-weight:700;text-align:center;margin-bottom:3rem}
+    .faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:900px;margin:0 auto}
+    .faq-item{background:rgba(15,21,36,.35);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.5rem;transition:all .3s;cursor:pointer}
+    .faq-item:hover{border-color:rgba(181,196,19,.15);background:rgba(15,21,36,.5)}
+    .faq-item h4{font-size:.92rem;font-weight:600;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+    .faq-item p{font-size:.82rem;color:rgba(255,255,255,.4);line-height:1.6}
+
+    /* ═══ Guarantee ═══ */
+    .guarantee{padding:0 0 5rem;text-align:center}
+    .guarantee-card{display:inline-flex;align-items:center;gap:1rem;background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.15);
+      border-radius:16px;padding:1.25rem 2rem}
+    .guarantee-icon{font-size:2rem;color:#34d399}
+    .guarantee-text h4{font-size:.95rem;font-weight:700;color:#34d399;margin-bottom:.15rem}
+    .guarantee-text p{font-size:.8rem;color:rgba(255,255,255,.4)}
+
+    /* ═══ CTA Bottom ═══ */
+    .cta-bottom{padding:0 0 5rem;text-align:center}
+    .cta-card{background:rgba(15,21,36,.5);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:4rem;
+      position:relative;overflow:hidden}
+    .cta-card::before{content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(181,196,19,.06),rgba(52,211,153,.04),transparent);pointer-events:none}
+    .cta-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(181,196,19,.3),transparent);pointer-events:none}
+    .cta-card h2{font-size:2.2rem;font-weight:700;margin-bottom:.75rem;position:relative}
+    .cta-card p{color:rgba(255,255,255,.45);font-size:1rem;margin-bottom:2rem;position:relative}
+
+    /* ═══ Compliance ═══ */
+    .compliance{padding:3rem 0;border-top:1px solid rgba(255,255,255,.04)}
+    .compliance-row{display:flex;justify-content:center;gap:2.5rem;flex-wrap:wrap}
+    .comp-item{display:flex;align-items:center;gap:.5rem;color:rgba(255,255,255,.25);font-size:.75rem;font-weight:500}
+
+    /* ═══ Footer ═══ */
+    .footer{padding:2.5rem 0;border-top:1px solid rgba(255,255,255,.04);text-align:center}
+    .footer p{color:rgba(255,255,255,.2);font-size:.75rem}
+    .footer-links{display:flex;justify-content:center;gap:2rem;margin-bottom:.75rem}
+    .footer-links a{color:rgba(255,255,255,.3);text-decoration:none;font-size:.75rem;transition:color .3s}
+    .footer-links a:hover{color:#B5C413}
+
+    /* ═══ Reveal Animation ═══ */
+    .reveal{opacity:0;transform:translateY(24px);transition:all .7s cubic-bezier(.4,0,.2,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* ═══ Scrollbar ═══ */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(181,196,19,.2);border-radius:3px}
+
+    /* ═══ Responsive ═══ */
+    @media(max-width:960px){
+      .plans-grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}
+      .plan-card.featured{order:-1}
+      .comp-table{font-size:.78rem}
+      .faq-grid{grid-template-columns:1fr}
+      .pricing-hero h1{font-size:2.4rem}
+    }
+    @media(max-width:600px){
+      .nav{padding:0 1.25rem}
+      .nav-links{display:none}
+      .pricing-hero h1{font-size:1.9rem}
+      .pricing-hero{padding:8rem 0 2rem}
+      .container{padding:0 1.25rem}
+      .cta-card{padding:2.5rem 1.5rem}
+      .plan-card{padding:2rem 1.5rem}
+      .payment-icons{gap:.75rem}
+      .pay-icon{padding:.5rem .85rem;font-size:.75rem}
+    }
+  </style>
 </head>
-<body class="" style="min-height:100vh;display:flex;flex-direction:column;">
-    <div class="top-accent"></div>
-  <!-- SignForce Orbs -->
-  <div class="sf-orb sf-orb-1"></div>
-  <div class="sf-orb sf-orb-2"></div>
-  <div class="sf-orb sf-orb-3"></div>
+<body>
+  <div class="topbar"></div>
+  <canvas id="particles-canvas"></canvas>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
 
+  <!-- Nav -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo"><img src="/images/signforce-logo.png" alt="SignForce" style="height:32px;width:auto;"></a>
+    <ul class="nav-links">
+      <li><a href="/">Inicio</a></li>
+      <li><a href="/#features">Características</a></li>
+      <li><a href="/registro/plan_pay.html" class="active">Planes</a></li>
+      <li><a href="/#security">Seguridad</a></li>
+    </ul>
+    <a href="/registro/login.html" class="nav-cta" id="navAuthBtn">Iniciar Sesión</a>
+  </nav>
 
-    <!-- Header simplificado -->
-    <header class="header-panel fixed top-0 w-full z-50 h-16">
-        <div class="h-full px-6 flex items-center justify-between max-w-[1920px] mx-auto">
-            <div class="flex items-center gap-3">
-                <div>
-                    <img src="./../images/sflogo.png" alt="Logo" style="width: 20%;"/>
-                </div>
-                <!-- <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Planes y Precios</span></h1> -->
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <a href="/" class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-medium">
-                    <i class="fas fa-home mr-2"></i>Inicio
-                </a>
-                <a href="/login" class="px-4 py-2 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 transition-colors text-sm font-medium">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
-                </a>
-            </div>
-        </div>
-    </header>
+  <!-- Hero -->
+  <section class="pricing-hero">
+    <div class="container">
+      <div class="badge reveal">
+        <span class="material-symbols-outlined" style="font-size:14px;">verified</span>
+        Sin contratos · Cancela cuando quieras
+      </div>
+      <h1 class="reveal">El plan perfecto para <span class="accent">tu firma</span></h1>
+      <p class="reveal">Empieza gratis. Escala cuando lo necesites. Firma electrónica avanzada con validez legal NOM-151.</p>
+    </div>
+  </section>
 
-    <div class="flex-1 pt-24 pb-8 px-4 md:px-8 max-w-[1400px] mx-auto w-full">
-        
-        <!-- Título -->
-        <div class="text-center mb-8 animate-fade-in">
-            <h1 class="text-4xl font-bold text-white mb-2">Planes y Precios</h1>
-            <p class="text-gray-400">Elige el plan que mejor se adapte a tus necesidades de firma electrónica</p>
+  <!-- Billing Toggle -->
+  <div class="container">
+    <div class="billing-toggle reveal">
+      <span class="billing-label active" id="label-monthly">Mensual</span>
+      <div class="toggle-switch" id="billingToggle">
+        <div class="toggle-knob"></div>
+      </div>
+      <span class="billing-label" id="label-annual">Anual</span>
+      <span class="save-badge">Ahorra hasta 15%</span>
+    </div>
+  </div>
+
+  <!-- Plans -->
+  <section class="container">
+    <div class="plans-grid">
+
+      <!-- Starter -->
+      <div class="plan-card reveal">
+        <div class="plan-icon" style="background:rgba(96,165,250,.1);">
+          <span class="material-symbols-outlined" style="color:#60a5fa;font-size:24px;">rocket_launch</span>
         </div>
-        
-        <!-- Mensajes -->
-        <div id="messageContainer" class="max-w-4xl mx-auto mb-6"></div>
-        
-        <!-- Planes -->
-        <div class="plans-container animate-fade-in">
-            <!-- Plan Básico -->
-            <div class="plan-card featured">
-                <div class="plan-name">Básico</div>
-                <div class="plan-price">$9<span>/mes</span></div>
-                <ul class="plan-features">
-                    <li><i class="fas fa-check"></i> Hasta 5 documentos mensuales</li>
-                    <li><i class="fas fa-check"></i> Firma básica digital</li>
-                    <li><i class="fas fa-check"></i> Almacenamiento por 30 días</li>
-                    <li><i class="fas fa-check"></i> Soporte por email</li>
-                    <li><i class="fas fa-times"></i> Plantillas personalizadas</li>
-                </ul>
-                <button class="plan-button" data-plan="basico" data-price="9" plan-id="1">Seleccionar Plan</button>
-            </div>
-            
-            <!-- Plan Profesional -->
-            <div class="plan-card featured">
-                <div class="plan-name">Profesional</div>
-                <div class="plan-price">$19<span>/mes</span></div>
-                <ul class="plan-features">
-                    <li><i class="fas fa-check"></i> Documentos ilimitados</li>
-                    <li><i class="fas fa-check"></i> Firma avanzada con certificado</li>
-                    <li><i class="fas fa-check"></i> Almacenamiento por 1 año</li>
-                    <li><i class="fas fa-check"></i> Soporte prioritario 24/7</li>
-                    <li><i class="fas fa-check"></i> Plantillas personalizadas</li>
-                </ul>
-                <button class="plan-button" data-plan="profesional" data-price="19" plan-id="2">Seleccionar Plan</button>
-            </div>
-            
-            <!-- Plan Empresarial -->
-            <div class="plan-card featured">
-                <div class="plan-name">Empresarial</div>
-                <div class="plan-price">$49<span>/mes</span></div>
-                <ul class="plan-features">
-                    <li><i class="fas fa-check"></i> Documentos ilimitados</li>
-                    <li><i class="fas fa-check"></i> Firmas múltiples y flujos de trabajo</li>
-                    <li><i class="fas fa-check"></i> Almacenamiento permanente</li>
-                    <li><i class="fas fa-check"></i> Soporte dedicado</li>
-                    <li><i class="fas fa-check"></i> API acceso e integraciones</li>
-                </ul>
-                <button class="plan-button" data-plan="empresarial" data-price="49" plan-id="3">Seleccionar Plan</button>
-            </div>
+        <div class="plan-name">Starter</div>
+        <div class="plan-desc">Ideal para freelancers y profesionistas que inician con firma digital.</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price">
+            <span class="currency">$</span>0<span class="period">/mes</span>
+          </div>
+          <div class="plan-price-annual">Gratis para siempre</div>
         </div>
+        <ul class="plan-features">
+          <li><span class="material-symbols-outlined check">check_circle</span>10 documentos al mes</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>1 usuario</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Firma electrónica simple</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Envío por email</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>3 plantillas básicas</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Almacenamiento 30 días</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Soporte por email</li>
+          <li class="disabled"><span class="material-symbols-outlined cross">cancel</span>Firma avanzada (NOM-151)</li>
+          <li class="disabled"><span class="material-symbols-outlined cross">cancel</span>API REST</li>
+        </ul>
+        <button class="plan-btn plan-btn-outline" onclick="selectPlan('starter')">
+          <span class="material-symbols-outlined" style="font-size:18px;">arrow_forward</span> Empieza Gratis
+        </button>
+      </div>
+
+      <!-- Profesional (Featured) -->
+      <div class="plan-card featured reveal">
+        <div class="popular-badge">Más Popular</div>
+        <div class="plan-icon" style="background:rgba(181,196,19,.12);">
+          <span class="material-symbols-outlined" style="color:#B5C413;font-size:24px;">workspace_premium</span>
+        </div>
+        <div class="plan-name">Profesional</div>
+        <div class="plan-desc">Para PyMEs y despachos con flujo regular de firmas y documentos.</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price" id="price-pro">
+            <span class="currency">$</span><span class="price-amount">499</span><span class="period">MXN/mes</span>
+          </div>
+          <div class="plan-price-annual" id="annual-pro">&nbsp;</div>
+        </div>
+        <ul class="plan-features">
+          <li><span class="material-symbols-outlined check">check_circle</span>100 documentos al mes</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Usuarios ilimitados</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Firma avanzada NOM-151</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Plantillas ilimitadas</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Almacenamiento 1 año</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Certificado NOM-151</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Recordatorios automáticos</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Dashboard con métricas</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Nero IA (asistente inteligente)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Branding personalizado</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Soporte prioritario (24h)</li>
+          <li class="disabled"><span class="material-symbols-outlined cross">cancel</span>API REST</li>
+        </ul>
+        <button class="plan-btn plan-btn-primary" onclick="selectPlan('profesional')">
+          <span class="material-symbols-outlined" style="font-size:18px;">bolt</span> Prueba 14 Días Gratis
+        </button>
+      </div>
+
+      <!-- Empresarial -->
+      <div class="plan-card reveal">
+        <div class="plan-icon" style="background:rgba(167,139,250,.1);">
+          <span class="material-symbols-outlined" style="color:#a78bfa;font-size:24px;">domain</span>
+        </div>
+        <div class="plan-name">Empresarial</div>
+        <div class="plan-desc">Para corporativos y empresas con alto volumen que necesitan control total.</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price" id="price-ent">
+            <span class="currency">$</span><span class="price-amount">1,499</span><span class="period">MXN/mes</span>
+          </div>
+          <div class="plan-price-annual" id="annual-ent">&nbsp;</div>
+        </div>
+        <ul class="plan-features">
+          <li><span class="material-symbols-outlined check">check_circle</span>500 documentos al mes</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Usuarios ilimitados</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Todo de Profesional</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Nero IA (asistente inteligente)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>API REST + Webhooks</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>SSO (Single Sign-On)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Firma masiva (bulk)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Flujos de aprobación multinivel</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Roles y permisos avanzados</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Almacenamiento ilimitado (5 años)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Branding completo (logo + dominio)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Soporte dedicado (4h)</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>Onboarding personalizado</li>
+          <li><span class="material-symbols-outlined check">check_circle</span>SLA 99.9% uptime</li>
+        </ul>
+        <button class="plan-btn plan-btn-enterprise" onclick="selectPlan('empresarial')">
+          <span class="material-symbols-outlined" style="font-size:18px;">call</span> Habla con Ventas
+        </button>
+      </div>
 
     </div>
+  </section>
 
-    <!-- Modal de Pago -->
-    <div class="modal-overlay" id="paymentModal">
-        <div class="payment-modal">
-            <button class="close-modal" id="closeModal">&times;</button>
-            <h3 class="text-xl font-bold text-white mb-4">Completa tu compra</h3>
-            
-            <div class="payment-summary">
-                <h4 class="text-lg font-semibold">Resumen del pedido</h4>
-                <p class="text-gray-300 mt-2"><span class="font-medium">Plan:</span> <span id="selectedPlanSpan"></span></p>
-                <p class="text-gray-300"><span class="font-medium">Precio:</span> $<span id="planPriceSpan"></span>/mes</p>
-            </div>
-            
-            <form class="payment-form" id="paymentForm">
-                <div class="form-group">
-                    <label for="cardNumber">Número de tarjeta</label>
-                    <input type="text" id="cardNumber" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="expiryDate">Fecha de expiración</label>
-                        <input type="text" id="expiryDate" class="form-control" placeholder="MM/AA" maxlength="5">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="cvv">CVV</label>
-                        <input type="password" id="cvv" class="form-control" placeholder="123" autocomplete="off" maxlength="3">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="cardName">Nombre en la tarjeta</label>
-                    <input type="text" id="cardName" class="form-control" placeholder="Como aparece en la tarjeta">
-                </div>
-                
-                <div class="payment-loader" id="paymentLoader">
-                    <div class="loading"></div> Procesando pago...
-                </div>
-                
-                <div class="payment-success" id="paymentSuccess">
-                    <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
-                    <p>¡Pago realizado con éxito!</p>
-                </div>
-                
-                <button type="submit" class="btn-cyber px-4 py-3 rounded-lg text-white font-medium w-full">
-                    Pagar ahora
-                </button>
-            </form>
-        </div>
+  <!-- Payment Methods -->
+  <section class="payment-methods container reveal">
+    <h3>Métodos de pago aceptados</h3>
+    <div class="payment-icons">
+      <div class="pay-icon featured-pay">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+        Apple Pay
+      </div>
+      <div class="pay-icon featured-pay">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.78 4.12-1.13 1.13-2.89 2.36-6.06 2.36-4.83 0-8.6-3.89-8.6-8.72s3.77-8.72 8.6-8.72c2.6 0 4.51 1.02 5.91 2.34l2.31-2.31C18.66 1.32 16.1 0 12.48 0 5.87 0 .32 5.38.32 12s5.55 12 12.16 12c3.56 0 6.24-1.17 8.33-3.36 2.15-2.15 2.83-5.17 2.83-7.61 0-.76-.07-1.46-.19-2.04h-11z"/></svg>
+        Google Pay
+      </div>
+      <div class="pay-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.654h6.23c2.068 0 3.503.432 4.263 1.284.343.384.574.794.685 1.218.117.444.142.974.076 1.615l-.01.063v.537l.418.237c.355.188.637.395.853.622.36.378.593.842.691 1.377.1.549.063 1.203-.11 1.944-.197.852-.52 1.593-.957 2.2a4.47 4.47 0 0 1-1.509 1.396c-.576.332-1.254.575-2.013.723-.74.144-1.578.217-2.492.217H10.88a.96.96 0 0 0-.949.814l-.032.176-.534 3.385-.024.127a.96.96 0 0 1-.948.814H7.076z"/></svg>
+        PayPal
+      </div>
+      <div class="pay-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="3"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        Tarjeta
+      </div>
+      <div class="pay-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7h20l-2 13H4L2 7z"/><path d="M8 7V5a4 4 0 1 1 8 0v2"/></svg>
+        OXXO Pay
+      </div>
+      <div class="pay-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="M2 8h20"/><path d="M9 12h6"/><path d="M12 12v6"/></svg>
+        Transferencia
+      </div>
     </div>
+  </section>
 
-    <script>
-        // Variables globales
-        let currentPlan = null;
-        let currentPrice = null;
+  <!-- Comparison Table -->
+  <section class="comparison container">
+    <h2 class="reveal">Compara todos los planes</h2>
+    <p class="subtitle reveal">Detalle completo de lo que incluye cada plan</p>
+    <div class="reveal" style="overflow-x:auto;">
+      <table class="comp-table">
+        <thead>
+          <tr>
+            <th style="width:40%">Característica</th>
+            <th>Starter</th>
+            <th class="featured-col">Profesional</th>
+            <th>Empresarial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="section-row"><td colspan="4">Documentos y Firmantes</td></tr>
+          <tr><td>Documentos al mes</td><td>10</td><td>100</td><td>500</td></tr>
+          <tr><td>Doc adicional</td><td>—</td><td>$29 MXN</td><td>$19 MXN</td></tr>
+          <tr><td>Firmantes por documento</td><td>Ilimitados</td><td>Ilimitados</td><td>Ilimitados</td></tr>
+          <tr><td>Usuarios</td><td>1</td><td>Ilimitados</td><td>Ilimitados</td></tr>
+          <tr class="section-row"><td colspan="4">Tipos de Firma</td></tr>
+          <tr><td>Firma electrónica simple</td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Firma avanzada (NOM-151)</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Costo por firma</td><td>$0 MXN</td><td>~$4.99 MXN</td><td>~$2.99 MXN</td></tr>
+          <tr><td>Firma masiva (bulk)</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr class="section-row"><td colspan="4">Plataforma</td></tr>
+          <tr><td>Plantillas</td><td>3</td><td>Ilimitadas</td><td>Ilimitadas</td></tr>
+          <tr><td>Carpetas organizativas</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Recordatorios automáticos</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Dashboard con métricas</td><td>Básico</td><td>Completo</td><td>Avanzado + exportar</td></tr>
+          <tr><td>Flujos de aprobación</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Roles y permisos</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td>Básicos</td><td>Avanzados</td></tr>
+          <tr><td>Nero IA (asistente inteligente)</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr class="section-row"><td colspan="4">Almacenamiento y Seguridad</td></tr>
+          <tr><td>Almacenamiento</td><td>30 días</td><td>1 año</td><td>5 años</td></tr>
+          <tr><td>Cifrado AES-256</td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Auditoría completa</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>SSO (Single Sign-On)</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr class="section-row"><td colspan="4">Integraciones</td></tr>
+          <tr><td>API REST</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Webhooks</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>Branding personalizado</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td><td>Logo + dominio propio</td></tr>
+          <tr class="section-row"><td colspan="4">Soporte</td></tr>
+          <tr><td>Canal de soporte</td><td>Email</td><td>Email + Chat</td><td>Dedicado + Tel</td></tr>
+          <tr><td>Tiempo de respuesta</td><td>48h</td><td>24h</td><td>4h</td></tr>
+          <tr><td>Onboarding personalizado</td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-cross">cancel</span></td><td><span class="material-symbols-outlined comp-check">check_circle</span></td></tr>
+          <tr><td>SLA uptime</td><td>—</td><td>99%</td><td>99.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-        // Al cargar la página
-        document.addEventListener('DOMContentLoaded', () => {
-            // Configurar botones de selección de plan
-            document.querySelectorAll('.plan-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const plan = button.getAttribute('data-plan');
-                    const price = button.getAttribute('data-price');
-                    const planId = button.getAttribute('plan-id');
-                    abrirModalPago(plan, price, planId);
-                });
-            });
-            
-            // Configurar cierre del modal
-            document.getElementById('closeModal').addEventListener('click', cerrarModal);
-            
-            // Configurar envío del formulario de pago
-            document.getElementById('paymentForm').addEventListener('submit', procesarPago);
-            
-            // Formatear inputs de tarjeta
-            document.getElementById('cardNumber').addEventListener('input', formatCardNumber);
-            document.getElementById('expiryDate').addEventListener('input', formatExpiryDate);
-            
-            // Cerrar modal al hacer clic fuera
-            document.getElementById('paymentModal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('paymentModal')) {
-                    cerrarModal();
-                }
-            });
-        });
+  <!-- FAQ -->
+  <section class="faq container">
+    <h2 class="reveal">Preguntas frecuentes</h2>
+    <div class="faq-grid">
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿Puedo cambiar de plan después?</h4>
+        <p>Sí, puedes subir o bajar de plan en cualquier momento. Los cambios se aplican inmediatamente y se prorratea la diferencia.</p>
+      </div>
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿Qué pasa si supero mi límite de documentos?</h4>
+        <p>Te notificamos antes de llegar al límite. Puedes comprar documentos adicionales o actualizar tu plan sin perder datos.</p>
+      </div>
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿La firma tiene validez legal en México?</h4>
+        <p>Sí. Cumplimos con la NOM-151-SCFI-2016 y el Código de Comercio (Art. 89 y 97). Nuestras firmas tienen plena validez jurídica.</p>
+      </div>
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿Necesito instalar algo?</h4>
+        <p>No. SignForce es 100% web. Funciona desde cualquier navegador moderno, en computadora, tablet o celular.</p>
+      </div>
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿Puedo facturar mi suscripción?</h4>
+        <p>Sí. Emitimos CFDI automáticamente. Solo registra tus datos fiscales y recibirás tu factura cada periodo.</p>
+      </div>
+      <div class="faq-item reveal">
+        <h4><span class="material-symbols-outlined" style="font-size:18px;color:#B5C413;">help</span> ¿Cómo funciona la prueba gratuita del Pro?</h4>
+        <p>14 días completos con todas las funciones de Profesional. No se cobra nada. Sin tarjeta de crédito requerida.</p>
+      </div>
+    </div>
+  </section>
 
-        // ===================================== MODAL DE PAGO =========================================
-        function abrirModalPago(plan, precio, planId) {
-            currentPlan = plan;
-            currentPrice = precio;
-            
-            document.getElementById('selectedPlanSpan').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-            document.getElementById('planPriceSpan').textContent = precio;
-            
-            const modal = document.getElementById('paymentModal');
-            modal.classList.add('active');
-            
-            // Deshabilitar scroll del body
-            document.body.style.overflow = 'hidden';
+  <!-- Guarantee -->
+  <section class="guarantee container reveal">
+    <div class="guarantee-card">
+      <span class="material-symbols-outlined guarantee-icon">verified_user</span>
+      <div class="guarantee-text">
+        <h4>Garantía de 30 días</h4>
+        <p>Si no estás satisfecho, te devolvemos tu dinero. Sin preguntas.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Bottom -->
+  <section class="cta-bottom container">
+    <div class="cta-card reveal">
+      <h2>¿Listo para firmar con validez legal?</h2>
+      <p>Únete a las empresas que ya gestionan sus documentos de forma digital, segura y conforme a la ley.</p>
+      <a href="/registro/login.html" class="plan-btn plan-btn-primary" style="display:inline-flex;width:auto;padding:.9rem 2.5rem;text-decoration:none;position:relative;">
+        <span class="material-symbols-outlined" style="font-size:18px;">rocket_launch</span> Crear Cuenta Gratis
+      </a>
+    </div>
+  </section>
+
+  <!-- Compliance -->
+  <section class="compliance">
+    <div class="container">
+      <div class="compliance-row reveal">
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">gavel</span> NOM-151-SCFI-2016</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">policy</span> Código de Comercio Art. 89 y 97</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">security</span> ETSI EN 319 132 (XAdES)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">schedule</span> RFC 3161 (TSP)</div>
+        <div class="comp-item"><span class="material-symbols-outlined" style="font-size:16px;color:rgba(181,196,19,.4);">receipt_long</span> Facturación CFDI</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Payment Modal ═══ -->
+  <div class="pay-modal-overlay" id="payModal">
+    <div class="pay-modal">
+      <button class="pay-modal-close" id="payModalClose">&times;</button>
+
+      <!-- Step 1: Method selection -->
+      <div class="pay-step" id="payStep1">
+        <h3 class="pay-modal-title">Selecciona tu método de pago</h3>
+        <div class="pay-modal-summary" id="payModalSummary"></div>
+
+        <div class="pay-methods-grid">
+          <button class="pay-method-btn featured-method" data-method="apple_pay">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+            <span>Apple Pay</span>
+            <small>Pago instantáneo</small>
+          </button>
+          <button class="pay-method-btn featured-method" data-method="google_pay">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.78 4.12-1.13 1.13-2.89 2.36-6.06 2.36-4.83 0-8.6-3.89-8.6-8.72s3.77-8.72 8.6-8.72c2.6 0 4.51 1.02 5.91 2.34l2.31-2.31C18.66 1.32 16.1 0 12.48 0 5.87 0 .32 5.38.32 12s5.55 12 12.16 12c3.56 0 6.24-1.17 8.33-3.36 2.15-2.15 2.83-5.17 2.83-7.61 0-.76-.07-1.46-.19-2.04h-11z"/></svg>
+            <span>Google Pay</span>
+            <small>Pago instantáneo</small>
+          </button>
+          <button class="pay-method-btn" data-method="paypal">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.72a.77.77 0 0 1 .757-.654h6.23c2.068 0 3.503.432 4.263 1.284.343.384.574.794.685 1.218.117.444.142.974.076 1.615l-.01.063v.537l.418.237c.355.188.637.395.853.622.36.378.593.842.691 1.377.1.549.063 1.203-.11 1.944-.197.852-.52 1.593-.957 2.2a4.47 4.47 0 0 1-1.509 1.396c-.576.332-1.254.575-2.013.723-.74.144-1.578.217-2.492.217H10.88a.96.96 0 0 0-.949.814l-.032.176-.534 3.385-.024.127a.96.96 0 0 1-.948.814H7.076z"/></svg>
+            <span>PayPal</span>
+            <small>Cuenta PayPal</small>
+          </button>
+          <button class="pay-method-btn" data-method="card">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><rect x="1" y="4" width="22" height="16" rx="3"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span>Tarjeta</span>
+            <small>Débito o crédito</small>
+          </button>
+          <button class="pay-method-btn" data-method="oxxo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><path d="M2 7h20l-2 13H4L2 7z"/><path d="M8 7V5a4 4 0 1 1 8 0v2"/></svg>
+            <span>OXXO Pay</span>
+            <small>Pago en tienda</small>
+          </button>
+          <button class="pay-method-btn" data-method="transfer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="M2 8h20"/><path d="M9 12h6"/><path d="M12 12v6"/></svg>
+            <span>Transferencia</span>
+            <small>SPEI / bancaria</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Card form (only for card method) -->
+      <div class="pay-step" id="payStep2" style="display:none;">
+        <button class="pay-back-btn" id="payBackBtn">← Cambiar método</button>
+        <h3 class="pay-modal-title">Datos de tarjeta</h3>
+        <div class="pay-modal-summary" id="payModalSummary2"></div>
+
+        <form id="cardForm">
+          <div class="pay-form-group">
+            <label>Número de tarjeta</label>
+            <input type="text" id="pay-card-number" class="pay-input" placeholder="1234 5678 9012 3456" maxlength="19" required>
+          </div>
+          <div class="pay-form-row">
+            <div class="pay-form-group">
+              <label>Vencimiento</label>
+              <input type="text" id="pay-card-exp" class="pay-input" placeholder="MM/AA" maxlength="5" required>
+            </div>
+            <div class="pay-form-group">
+              <label>CVV</label>
+              <input type="password" id="pay-card-cvv" class="pay-input" placeholder="123" maxlength="3" required>
+            </div>
+          </div>
+          <div class="pay-form-group">
+            <label>Nombre en la tarjeta</label>
+            <input type="text" id="pay-card-name" class="pay-input" placeholder="Como aparece en la tarjeta" required>
+          </div>
+          <button type="submit" class="pay-submit-btn">
+            <span class="material-symbols-outlined" style="font-size:18px;">lock</span> Pagar ahora
+          </button>
+        </form>
+      </div>
+
+      <!-- Step: Processing -->
+      <div class="pay-step" id="payStepProcessing" style="display:none;">
+        <div class="pay-processing">
+          <div class="pay-spinner"></div>
+          <p>Procesando tu pago...</p>
+        </div>
+      </div>
+
+      <!-- Step: Success -->
+      <div class="pay-step" id="payStepSuccess" style="display:none;">
+        <div class="pay-success">
+          <div class="pay-success-icon">
+            <span class="material-symbols-outlined" style="font-size:48px;color:#B5C413;">check_circle</span>
+          </div>
+          <h3>¡Pago exitoso!</h3>
+          <p id="paySuccessMsg">Tu plan ha sido activado.</p>
+          <button class="pay-submit-btn" onclick="window.location.href='/users'" style="margin-top:1.5rem;">
+            Ir al dashboard →
+          </button>
+        </div>
+      </div>
+
+      <!-- Secure badge -->
+      <div class="pay-secure">
+        <span class="material-symbols-outlined" style="font-size:14px;">lock</span>
+        Conexión segura · Cifrado AES-256
+      </div>
+    </div>
+  </div>
+
+  <style>
+    /* ═══ Payment Modal ═══ */
+    .pay-modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:all .3s ease}
+    .pay-modal-overlay.active{opacity:1;visibility:visible}
+    .pay-modal{background:rgba(15,21,36,.97);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.08);border-radius:24px;width:90%;max-width:520px;max-height:90vh;overflow-y:auto;padding:2.5rem;position:relative;transform:translateY(30px);transition:transform .3s ease}
+    .pay-modal-overlay.active .pay-modal{transform:translateY(0)}
+    .pay-modal-close{position:absolute;top:1rem;right:1.25rem;background:none;border:none;color:rgba(255,255,255,.4);font-size:1.8rem;cursor:pointer;transition:color .2s;line-height:1}
+    .pay-modal-close:hover{color:#fff}
+    .pay-modal-title{font-size:1.25rem;font-weight:700;margin-bottom:1rem}
+    .pay-modal-summary{background:rgba(181,196,19,.06);border:1px solid rgba(181,196,19,.15);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;justify-content:space-between;align-items:center}
+    .pay-modal-summary .plan-label{font-size:.85rem;color:rgba(255,255,255,.6)}
+    .pay-modal-summary .plan-total{font-size:1.3rem;font-weight:800;color:#B5C413}
+
+    .pay-methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .pay-method-btn{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:1.25rem 1rem;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;align-items:center;gap:.4rem;color:#fff;font-family:'DM Sans',sans-serif}
+    .pay-method-btn span{font-size:.88rem;font-weight:600}
+    .pay-method-btn small{font-size:.7rem;color:rgba(255,255,255,.35)}
+    .pay-method-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+    .pay-method-btn.featured-method{border-color:rgba(181,196,19,.2);background:rgba(181,196,19,.04)}
+    .pay-method-btn.featured-method:hover{border-color:rgba(181,196,19,.4);background:rgba(181,196,19,.1);box-shadow:0 0 20px rgba(181,196,19,.1)}
+
+    .pay-back-btn{background:none;border:none;color:rgba(255,255,255,.4);font-size:.82rem;cursor:pointer;margin-bottom:1rem;font-family:'DM Sans',sans-serif;transition:color .2s}
+    .pay-back-btn:hover{color:#fff}
+
+    .pay-form-group{margin-bottom:1rem}
+    .pay-form-group label{display:block;font-size:.75rem;font-weight:500;color:rgba(255,255,255,.45);margin-bottom:.35rem}
+    .pay-input{width:100%;padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:.9rem;font-family:'DM Sans',sans-serif;transition:all .25s}
+    .pay-input:focus{outline:none;border-color:#B5C413;box-shadow:0 0 0 3px rgba(181,196,19,.1)}
+    .pay-input::placeholder{color:rgba(255,255,255,.2)}
+    .pay-form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+    .pay-submit-btn{width:100%;padding:.85rem;border:none;border-radius:12px;background:#B5C413;color:#060a14;font-size:.92rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s}
+    .pay-submit-btn:hover{background:#c5d41a;box-shadow:0 0 24px rgba(181,196,19,.25);transform:translateY(-1px)}
+
+    .pay-processing{text-align:center;padding:3rem 0}
+    .pay-processing p{color:rgba(255,255,255,.5);margin-top:1.5rem;font-size:.9rem}
+    .pay-spinner{width:48px;height:48px;border:3px solid rgba(181,196,19,.15);border-top-color:#B5C413;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .pay-success{text-align:center;padding:2rem 0}
+    .pay-success-icon{margin-bottom:1rem}
+    .pay-success h3{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
+    .pay-success p{color:rgba(255,255,255,.45);font-size:.9rem}
+
+    .pay-secure{text-align:center;margin-top:1.25rem;font-size:.72rem;color:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:4px}
+
+    @media(max-width:500px){
+      .pay-methods-grid{grid-template-columns:1fr}
+      .pay-modal{padding:1.75rem}
+    }
+  </style>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-links">
+        <a href="#">Términos</a>
+        <a href="#">Privacidad</a>
+        <a href="#">Contacto</a>
+        <a href="#">Documentación</a>
+      </div>
+      <p>&copy; 2026 SignForce Technologies — Firma electrónica avanzada con validez legal en México</p>
+    </div>
+  </footer>
+
+  <script>
+    // ═══ Particles Animation (rising dots) ═══
+    const canvas = document.getElementById('particles-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const PARTICLE_COUNT = 60;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor() { this.reset(true); }
+      reset(init) {
+        this.x = Math.random() * canvas.width;
+        this.y = init ? Math.random() * canvas.height : canvas.height + 10;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedY = Math.random() * 0.4 + 0.15;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.4 + 0.08;
+        this.pulse = Math.random() * Math.PI * 2;
+        this.pulseSpeed = Math.random() * 0.02 + 0.005;
+        // Some particles are lime colored
+        this.isLime = Math.random() > 0.7;
+      }
+      update() {
+        this.y -= this.speedY;
+        this.x += this.speedX + Math.sin(this.pulse) * 0.15;
+        this.pulse += this.pulseSpeed;
+        if (this.y < -10) this.reset(false);
+      }
+      draw() {
+        const o = this.opacity * (0.7 + Math.sin(this.pulse) * 0.3);
+        if (this.isLime) {
+          ctx.fillStyle = `rgba(181,196,19,${o})`;
+        } else {
+          ctx.fillStyle = `rgba(255,255,255,${o})`;
         }
-        
-        function cerrarModal() {
-            const modal = document.getElementById('paymentModal');
-            modal.classList.remove('active');
-            
-            // Habilitar scroll del body
-            document.body.style.overflow = 'auto';
-            
-            // Resetear formulario
-            document.getElementById('paymentForm').reset();
-            document.getElementById('paymentLoader').style.display = 'none';
-            document.getElementById('paymentSuccess').style.display = 'none';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ═══ Billing Toggle ═══
+    let isAnnual = false;
+    const toggle = document.getElementById('billingToggle');
+    const labelM = document.getElementById('label-monthly');
+    const labelA = document.getElementById('label-annual');
+
+    toggle.addEventListener('click', () => {
+      isAnnual = !isAnnual;
+      toggle.classList.toggle('annual', isAnnual);
+      labelM.classList.toggle('active', !isAnnual);
+      labelA.classList.toggle('active', isAnnual);
+      updatePrices();
+    });
+
+    function updatePrices() {
+      const proPrice = document.querySelector('#price-pro .price-amount');
+      const proAnnual = document.getElementById('annual-pro');
+      const entPrice = document.querySelector('#price-ent .price-amount');
+      const entAnnual = document.getElementById('annual-ent');
+
+      if (isAnnual) {
+        proPrice.textContent = '449';
+        proAnnual.innerHTML = '$5,388 MXN/año — <span class="save">Ahorras $600</span>';
+        entPrice.textContent = '1,299';
+        entAnnual.innerHTML = '$15,588 MXN/año — <span class="save">Ahorras $2,400</span>';
+      } else {
+        proPrice.textContent = '499';
+        proAnnual.innerHTML = '&nbsp;';
+        entPrice.textContent = '1,499';
+        entAnnual.innerHTML = '&nbsp;';
+      }
+    }
+
+    // ═══ Plan Selection & Payment Modal ═══
+    let selectedPlan = null;
+    let selectedPrice = null;
+    const modal = document.getElementById('payModal');
+    const plans = {
+      starter: { name: 'Starter', price: 0, priceAnnual: 0 },
+      profesional: { name: 'Profesional', price: 499, priceAnnual: 449 },
+      empresarial: { name: 'Empresarial', price: 1499, priceAnnual: 1299 }
+    };
+
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      const p = plans[plan];
+      selectedPrice = isAnnual ? p.priceAnnual : p.price;
+
+      if (plan === 'starter') {
+        // Starter es gratis — activar directo
+        activateFreePlan();
+        return;
+      }
+
+      // Show summary in modal
+      const period = isAnnual ? '/mes (anual)' : '/mes';
+      const summaryHTML = `<div><span class="plan-label">Plan ${p.name}</span></div><div class="plan-total">$${selectedPrice.toLocaleString()} MXN${period}</div>`;
+      document.getElementById('payModalSummary').innerHTML = summaryHTML;
+      document.getElementById('payModalSummary2').innerHTML = summaryHTML;
+
+      // Reset to step 1
+      document.getElementById('payStep1').style.display = 'block';
+      document.getElementById('payStep2').style.display = 'none';
+      document.getElementById('payStepProcessing').style.display = 'none';
+      document.getElementById('payStepSuccess').style.display = 'none';
+
+      // Open modal
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePayModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    document.getElementById('payModalClose').addEventListener('click', closePayModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closePayModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePayModal(); });
+
+    // Method selection
+    document.querySelectorAll('.pay-method-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const method = btn.dataset.method;
+
+        if (method === 'card') {
+          // Show card form
+          document.getElementById('payStep1').style.display = 'none';
+          document.getElementById('payStep2').style.display = 'block';
+        } else if (method === 'apple_pay' || method === 'google_pay') {
+          // Simulate wallet payment
+          showProcessing();
+          setTimeout(() => processPayment(method), 2000);
+        } else if (method === 'paypal') {
+          showProcessing();
+          setTimeout(() => processPayment(method), 2500);
+        } else if (method === 'oxxo' || method === 'transfer') {
+          showProcessing();
+          setTimeout(() => processPayment(method), 2000);
         }
+      });
+    });
 
-        // ===================================== FORMATEO DE TARJETA =========================================
-        function formatCardNumber(e) {
-            let input = e.target.value.replace(/\D/g, '').substring(0, 16);
-            let formattedInput = '';
-            
-            for (let i = 0; i < input.length; i++) {
-                if (i > 0 && i % 4 === 0) {
-                    formattedInput += ' ';
-                }
-                formattedInput += input[i];
-            }
-            
-            e.target.value = formattedInput;
+    // Back button
+    document.getElementById('payBackBtn').addEventListener('click', () => {
+      document.getElementById('payStep2').style.display = 'none';
+      document.getElementById('payStep1').style.display = 'block';
+    });
+
+    // Card form
+    document.getElementById('cardForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const num = document.getElementById('pay-card-number').value.replace(/\s/g, '');
+      const exp = document.getElementById('pay-card-exp').value;
+      const cvv = document.getElementById('pay-card-cvv').value;
+      const name = document.getElementById('pay-card-name').value;
+
+      if (num.length !== 16) { alert('Número de tarjeta inválido'); return; }
+      if (!/^\d{2}\/\d{2}$/.test(exp)) { alert('Fecha inválida (MM/AA)'); return; }
+      if (cvv.length < 3) { alert('CVV inválido'); return; }
+      if (!name.trim()) { alert('Ingresa el nombre de la tarjeta'); return; }
+
+      document.getElementById('payStep2').style.display = 'none';
+      showProcessing();
+
+      // Send to backend
+      fetch('/processpayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          cardnumber: num, exp, cvv, nameowner: name,
+          plan: plans[selectedPlan].name
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data);
+        } else {
+          document.getElementById('payStepProcessing').style.display = 'none';
+          document.getElementById('payStep2').style.display = 'block';
+          alert('Error en el pago. Intenta de nuevo.');
         }
-        
-        function formatExpiryDate(e) {
-            let input = e.target.value.replace(/\D/g, '').substring(0, 4);
-            
-            if (input.length === 4) {
-                let month = input.substring(0, 2);
-                let year = input.substring(2, 4);
-                let now = new Date();
-                let m = parseInt(month);
-                let y = 2000 + parseInt(year);
-                
-                if (now.getFullYear() > y) {
-                    year = "99";
-                    mostrarMensaje("El año de expiración no es válido", "error");
-                }
-                if (m > 12 || m < 1) {
-                    month = "12";
-                    mostrarMensaje("El mes de expiración no es válido", "error");
-                }
-                e.target.value = month + '/' + year;
-            } else {
-                e.target.value = input;
-            }
-        }
+      })
+      .catch(() => {
+        document.getElementById('payStepProcessing').style.display = 'none';
+        document.getElementById('payStep2').style.display = 'block';
+        alert('Error de conexión. Intenta de nuevo.');
+      });
+    });
 
-        // ===================================== PROCESAMIENTO DE PAGO =========================================
-        async function procesarPago(event) {
-            event.preventDefault();
+    // Card number formatting
+    document.getElementById('pay-card-number').addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '').substring(0, 16);
+      e.target.value = v.replace(/(.{4})/g, '$1 ').trim();
+    });
+    document.getElementById('pay-card-exp').addEventListener('input', (e) => {
+      let v = e.target.value.replace(/\D/g, '').substring(0, 4);
+      if (v.length >= 3) v = v.substring(0,2) + '/' + v.substring(2);
+      e.target.value = v;
+    });
 
-            // ---------- VALIDACIONES ----------
-            const cardNumber = document.getElementById('cardNumber').value.replaceAll(" ", "");
-            const expiryDate = document.getElementById('expiryDate').value;
-            const cvv        = document.getElementById('cvv').value;
-            const cardName   = document.getElementById('cardName').value;
-            
-            if (!cardNumber || cardNumber.length !== 16) {
-                mostrarMensaje('Número de tarjeta inválido', 'error');
-                return;
-            }
-            if (!expiryDate || !/^\d{2}\/\d{2}$/.test(expiryDate)) {
-                mostrarMensaje('Fecha de expiración inválida', 'error');
-                return;
-            }
-            if (!cvv || cvv.length !== 3) {
-                mostrarMensaje('CVV inválido', 'error');
-                return;
-            }
-            if (!cardName.trim()) {
-                mostrarMensaje('Por favor ingresa el nombre de la tarjeta', 'error');
-                return;
-            }
+    function showProcessing() {
+      document.getElementById('payStep1').style.display = 'none';
+      document.getElementById('payStep2').style.display = 'none';
+      document.getElementById('payStepProcessing').style.display = 'block';
+    }
 
-            // ---------- ARMADO DEL BODY ----------
-            const payload = {
-                cardnumber: cardNumber,
-                exp: expiryDate,
-                cvv: cvv,
-                nameowner: cardName,
-                plan: document.getElementById('selectedPlanSpan').textContent
-            };
+    function showSuccess(data) {
+      document.getElementById('payStepProcessing').style.display = 'none';
+      document.getElementById('payStepSuccess').style.display = 'block';
+      const msg = data?.plan ? `Plan ${data.plan} activado. Vence: ${data.expiration}` : `Plan ${plans[selectedPlan].name} activado correctamente.`;
+      document.getElementById('paySuccessMsg').textContent = msg;
+    }
 
-            // ---------- INDICADOR DE CARGA ----------
-            const loader = document.getElementById('paymentLoader');
-            loader.style.display = 'block';
+    function processPayment(method) {
+      fetch('/processpayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ plan: plans[selectedPlan].name, method })
+      })
+      .then(r => r.json())
+      .then(data => { showSuccess(data); })
+      .catch(() => {
+        document.getElementById('payStepProcessing').style.display = 'none';
+        document.getElementById('payStep1').style.display = 'block';
+        alert('Error de conexión.');
+      });
+    }
 
-            try {
-                const response = await fetch('/processpayment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
+    function activateFreePlan() {
+      fetch('/processpayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ plan: 'Starter', method: 'free' })
+      })
+      .then(r => r.json())
+      .then(data => { window.location.href = '/users'; })
+      .catch(() => { window.location.href = '/users'; });
+    }
 
-                loader.style.display = 'none';
+    // ═══ Nav scroll effect ═══
+    window.addEventListener('scroll', () => {
+      document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+    }, { passive: true });
 
-                if (!response.ok) {
-                    if (response.status === 401) {  
-                        window.location.href = '/login';
-                    }
-                    const errorText = await response.text();
-                    throw new Error(`Error ${response.status}: ${errorText}`);
-                }
+    // ═══ Session-aware nav ═══
+    (function() {
+      const userName = localStorage.getItem('sf_userName');
+      const authBtn = document.getElementById('navAuthBtn');
+      if (userName && authBtn) {
+        authBtn.textContent = 'Hola, ' + userName;
+        authBtn.href = '/users';
+        authBtn.style.background = 'rgba(181,196,19,.12)';
+        authBtn.style.color = '#B5C413';
+        authBtn.style.border = '1px solid rgba(181,196,19,.2)';
+      }
+    })();
 
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Mostrar éxito
-                    const successDiv = document.getElementById('paymentSuccess');
-                    successDiv.style.display = 'block';
-                    
-                    mostrarMensaje(`Plan activado: ${data.plan}, vence ${data.expiration}`, 'success');
-                    
-                    // Cerrar modal después de 1.5 segundos y redirigir
-                    setTimeout(() => {
-                        cerrarModal();
-                        window.location.href = `/mykeys`;
-                    }, 1500);
-                } else {
-                    throw new Error("Error en la respuesta del servidor");
-                }
-                
-            } catch (err) {
-                loader.style.display = 'none';
-                console.error(err);
-                mostrarMensaje('Falló la comunicación con el servidor.', 'error');
-            }
-        }
-        
-        // ===================================== SHOW MESSAGES =========================================
-        function mostrarMensaje(mensaje, tipo) {
-            const messageContainer = document.getElementById('messageContainer');
-            messageContainer.innerHTML = `<div class="${tipo === 'error' ? 'error' : 'success'}">${mensaje}</div>`;
-            
-            // Auto-ocultar después de 5 segundos
-            setTimeout(() => {
-                messageContainer.innerHTML = '';
-            }, 5000);
-        }
-    </script>
-
-  <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+    // ═══ Reveal on scroll ═══
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>

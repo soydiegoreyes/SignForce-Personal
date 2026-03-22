@@ -162,6 +162,7 @@ func main() {
 	mux.HandleFunc("/noAuthPage", noauth)
 	mux.HandleFunc("/validation", validationPage)
 	mux.HandleFunc("/waitapprove", waitApprove)
+	mux.HandleFunc("/check-email", checkEmail)
 	mux.HandleFunc("/users", usersDash)
 	mux.HandleFunc("/edituser", editUser)
 	mux.HandleFunc("/upload", upload)
@@ -530,7 +531,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	// se obtienen los datos de validacion del usuario
 	//var attrs = []string{"emailUser", "appPassHash", "activeUser", "idTeam_fk", "roleAppUser_fk", "idInstitution_fk"}
-	var attrs = []string{"emailUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk"}
+	var attrs = []string{"emailUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk", "nameUser"}
 	var wheres = map[string][]string{
 		"emailUser":   {loginReq.Account},
 		"appPassHash": {nh},
@@ -564,6 +565,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 			return
 		}
 		fmt.Println("hash valido y usuario activo")
+		loginResp.UserName = v["nameUser"]
 		break
 	}
 	// se asigna el id de la institucion
@@ -733,4 +735,8 @@ func logout(respWriter http.ResponseWriter, request *http.Request) {
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(map[string]string{"message": "OK"})
 
+}
+
+func checkEmail(respWriter http.ResponseWriter, request *http.Request) {
+	http.ServeFile(respWriter, request, "./../sffront/check-email.html")
 }

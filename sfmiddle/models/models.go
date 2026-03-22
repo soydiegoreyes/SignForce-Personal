@@ -149,6 +149,7 @@ type RegisterResponse struct {
 
 // LoginResponse estructura para la respuesta del login
 type LoginResponse struct {
+	UserName   string `json:"userName"`
 	Error      string `json:"error"`
 	RedirectTo string `json:"redirectTo"`
 }

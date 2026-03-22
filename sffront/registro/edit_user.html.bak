@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Registro de Usuario - SignForce</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Añadir TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <style>
+        /* Reutilizando estilos base del archivo original */
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-tech {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #000;
+            transition: background 0.3s ease,
+                        border-color 0.3s ease,
+                        box-shadow 0.3s ease;
+        }
+        .input-tech:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+            outline: none;
+            background-color: #2563eb66;
+        }
+        .input-tech::placeholder {
+            color: #555;
+            opacity: 1;
+        }
+
+        .btn-cyber {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cyber:hover {
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            filter: brightness(1.1);
+        }
+
+        /* Estilos para la captura de foto */
+        #photoOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        #videoContainer {
+            position: relative;
+            width: 90%;
+            max-width: 640px;
+            height: 70vh;
+            max-height: 640px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Espejo para que sea intuitivo */
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 450px;
+            border: 3px solid rgba(59, 130, 246, 0.8);
+            border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+            box-shadow: 
+                0 0 0 2000px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(59, 130, 246, 0.3);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .capture-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 3px solid white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .capture-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .capture-btn:disabled {
+            background: #64748b;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            background: #ef4444;
+        }
+
+        .cancel-btn:hover {
+            background: #dc2626;
+        }
+
+        .instructions {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+            padding: 0 20px;
+            max-width: 500px;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #3b82f6;
+            margin-top: 10px;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #captureStatus {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 20;
+        }
+
+        /* Modal de procesamiento */
+        #processingModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-pulse { animation: pulse 2s infinite; }
+    
+    /* ═══ SignForce Design Override ═══ */
+    body { background: #060a14 !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
+    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
+    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
+    p { color: rgba(255,255,255,.6) !important; }
+    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
+      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
+      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
+      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
+      box-shadow:none !important; padding:0 1.5rem !important; }
+    .glass-header::before { display:none !important; }
+    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
+      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
+    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
+      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
+    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
+      border-radius:14px !important; transition:all .3s ease; }
+    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
+    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
+    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
+      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
+    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
+    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
+    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
+      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
+    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
+    .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
+    input[type="date"], input[type="file"], textarea, select {
+      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
+      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
+    input:focus, textarea:focus, select:focus, .input-field:focus {
+      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
+    input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
+    select option { background:#0f1524; color:#fff; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
+      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
+    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
+    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
+      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
+    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
+    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
+    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:20px !important; }
+    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
+    .close-modal:hover { color:#fff; }
+    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
+      width:30px; height:30px; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .bg { background:none !important; }
+    .main-container, .content, main { position:relative; z-index:1; }
+    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
+    .text-primary { color:#fff !important; }
+    .text-secondary { color:rgba(255,255,255,.55) !important; }
+    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
+    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
+    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
+    /* end override */
+
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../signforce-global.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
+  <meta name="theme-color" content="#060a14">
+  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
+  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
+  <meta property="og:type" content="website">
+</head>
+<body class="font-sans bg-[#010102] text-gray-200 min-h-screen flex flex-col">
+    <div class="top-accent"></div>
+  <!-- SignForce Orbs -->
+  <div class="sf-orb sf-orb-1"></div>
+  <div class="sf-orb sf-orb-2"></div>
+  <div class="sf-orb sf-orb-3"></div>
+
+
+    <header class="fixed top-0 w-full z-50 h-16 bg-[#060a14]/80 backdrop-blur-md border-b border-white/10">
+        <div class="h-full px-6 flex items-center max-w-7xl mx-auto">
+            <div class="flex items-center gap-3">
+                <div>
+                    <img src="./../images/sflogo.png" alt="Logo" style="width: 20%;"/>
+                </div>
+                <!-- <h1 class="text-xl font-bold tracking-tight text-white">SignForce <span class="text-xs font-normal text-gray-400 ml-1">Registro</span></h1> -->
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 pt-24 pb-12 px-4 w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-8">
+        
+        <aside class="flex flex-col gap-6 animate-fade-in">
+            <div class="tech-card p-6 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent pointer-events-none"></div>
+                
+                <div id="loadingInfo" class="flex flex-col items-center justify-center py-10">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+                    <p class="text-sm text-gray-400">Validando invitación...</p>
+                </div>
+
+                <div id="inviteInfoContent" class="hidden relative z-10">
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-bold uppercase mb-4">
+                        <span class="material-symbols-outlined text-[14px]">verified</span> Invitación Verificada
+                    </span>
+
+                    <h2 class="text-gray-400 text-xs uppercase tracking-wider font-bold mb-1">Has sido invitado por:</h2>
+                    <p class="text-2xl font-bold text-white mb-1" id="hostName">Cargando...</p>
+                    <p class="text-sm text-blue-400 mb-6 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">business</span>
+                        <span id="hostInstitution">...</span>
+                    </p>
+
+                    <div class="h-px bg-white/10 w-full my-4"></div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tu correo registrado (ID)</p>
+                            <p class="text-sm font-mono text-gray-300 bg-black/20 p-2 rounded border border-white/5" id="userEmailDisplay">...</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Vence el</p>
+                            <p class="text-sm text-gray-300 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">event_busy</span>
+                                <span id="expireDate">--/--/----</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1">Tipo</p>
+                            <p class="text-sm text-gray-300 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-sm">category</span>
+                                <span id="roleApp">...</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl border border-yellow-500/20 bg-yellow-500/5 text-yellow-200/80 text-xs leading-relaxed">
+                <p class="flex gap-2">
+                    <span class="material-symbols-outlined text-sm">info</span>
+                    <span>Asegúrate de tener a la mano tu <strong>RFC</strong> y <strong>CURP</strong>. Estos datos son necesarios para la validación de identidad fiscal en México.</span>
+                </p>
+            </div>
+        </aside>
+
+        <section class="animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="tech-card p-8">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-2">Completa tu Perfil</h2>
+                    <p class="text-gray-400 text-sm">Ingresa tus datos personales para crear tu cuenta y acceder a los documentos.</p>
+                </div>
+
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-6">
+                    
+                    <!-- Datos de usuario -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nombre(s)</label>
+                            <input type="text" id="nameUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="Ej. Juan Pablo">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Apellidos</label>
+                            <input type="text" id="lastNameUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="Ej. Pérez López">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Alias (Nombre corto)</label>
+                            <input type="text" id="aliasUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="Ej. JuanP">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Teléfono Móvil</label>
+                            <input type="tel" id="phoneUser" required class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="5512345678">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">RFC (con Homoclave)</label>
+                            <input type="text" id="taxNumUser" required 
+                                class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white uppercase" 
+                                placeholder="ABCD800101XYZ" maxlength="15"
+                                oninput="this.value = this.value.toUpperCase()">
+                            <p class="text-[10px] text-gray-500 mt-1">Persona Física o Moral</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">CURP</label>
+                            <input type="text" id="pobUidUser" required 
+                                class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white uppercase" 
+                                placeholder="ABCD800101HDF..." maxlength="20"
+                                oninput="this.value = this.value.toUpperCase()">
+                        </div>
+                    </div>
+                    <div id="securitySection" class="border-t border-white/10 pt-6 mt-6">
+                        <div class="mb-4">
+                            <p class="text-gray-400 text-sm" id="securityDesc">Define tus credenciales de acceso.</p>
+                        </div>
+
+                        <div id="changePassBtnContainer" class="hidden mb-4">
+                            <button type="button" id="btnTogglePass" class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-2 transition-colors">
+                                <span class="material-symbols-outlined text-lg">lock_reset</span>
+                                <span>Cambiar contraseña actual</span>
+                            </button>
+                        </div>
+
+                        <div id="passwordInputs" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-all duration-300">
+                            <div id="oldPassGroup" class="hidden">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Contraseña Actual</label>
+                                <input type="password" id="oldPass" class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="••••••••">
+                            </div>
+
+                            <div id="newPassGroup" class="hidden">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2" id="newPassLabel">Nueva Contraseña</label>
+                                <input type="password" id="newPass" class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="••••••••">
+                            </div>
+
+                            <div id="confirmPassGroup" class="hidden">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Confirmar Contraseña</label>
+                                <input type="password" id="confirmPass" class="input-tech w-full rounded-xl px-4 py-3 placeholder-gray-600 focus:text-white" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <p id="passError" class="text-red-400 text-xs mt-2 hidden">Las contraseñas no coinciden o son demasiado cortas.</p>
+                    </div>
+
+                    <!-- Sección de foto KYC -->
+                    <div class="border-t border-white/10 pt-6 mt-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white mb-1">Verificación de Identidad (KYC)</h3>
+                                <p class="text-gray-400 text-sm">Toma una foto de tu rostro para completar el proceso de verificación</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/50 rounded-xl p-6 border border-gray-800">
+                            <div class="flex flex-col md:flex-row gap-6 items-start md:items-center">
+                                <div class="flex-1">
+                                    <p class="text-gray-300 mb-2 text-sm">
+                                        <span class="material-symbols-outlined text-sm align-middle mr-2">camera</span>
+                                        Requerimos una foto actual de tu rostro para validar tu identidad.
+                                    </p>
+                                    <ul class="text-gray-400 text-xs space-y-1 ml-6 list-disc">
+                                        <li>Asegúrate de tener buena iluminación</li>
+                                        <li>Mira directamente a la cámara</li>
+                                        <li>Tu rostro debe encajar en el óvalo guía</li>
+                                        <li>No uses lentes oscuros ni gorras</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="flex flex-col items-center">
+                                    <div id="photoPreviewContainer" class="photo-preview hidden">
+                                        <img id="photoPreview" alt="Foto capturada">
+                                    </div>
+                                    <button type="button" id="btnTakePhoto" 
+                                            class="btn-cyber px-6 py-3 rounded-lg text-white font-medium flex items-center gap-2">
+                                        <span class="material-symbols-outlined">camera</span>
+                                        <span id="btnPhotoText">Tomar Foto KYC</span>
+                                    </button>
+                                    <input type="hidden" id="kycPhotoPath" name="kycPhotoPath">
+                                    <p class="text-xs text-gray-500 mt-2" id="photoStatus">Foto no capturada</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="formMessage" class="hidden rounded-lg p-4 text-sm font-medium"></div>
+
+                    <div class="pt-4">
+                        <button type="submit" id="btnSubmit" class="btn-cyber w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span>Crear Cuenta y Acceder</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Overlay de captura de foto -->
+    <div id="photoOverlay" style="display: none;">
+        <div id="videoContainer">
+            <div id="captureStatus"></div>
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="face-guide"></div>
+            <div class="camera-controls">
+                <button type="button" id="btnCancelCapture" class="cancel-btn capture-btn">
+                    <span class="material-symbols-outlined text-white">close</span>
+                </button>
+                <button type="button" id="btnCapture" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">photo_camera</span>
+                </button>
+                <button type="button" id="btnSwitchCamera" class="capture-btn">
+                    <span class="material-symbols-outlined text-white">flip_camera_ios</span>
+                </button>
+            </div>
+        </div>
+        <div class="instructions">
+            <p>Coloca tu rostro dentro del óvalo. La foto se tomará automáticamente cuando detectemos una cara válida.</p>
+            <p class="text-sm text-gray-400 mt-2">Para una mejor calidad, evita movimientos bruscos.</p>
+        </div>
+    </div>
+
+    <!-- Modal de procesamiento -->
+    <div id="processingModal">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mb-4"></div>
+        <h3 class="text-xl font-bold mb-2">Procesando Imagen</h3>
+        <p id="processingMessage" class="text-gray-300">Validando tu foto...</p>
+    </div>
+    <script src="/registro/edit_user.js"></script>
+
+  <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Configuración</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="../signforce-global.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#060a14">
+  <style>
+    body{background:#060a14;font-family:'DM Sans',sans-serif;color:#fff;margin:0;min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0);background-size:48px 48px}
+    .sf-header{position:fixed;top:3px;left:0;right:0;z-index:1000;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(6,10,20,.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .sf-header a{text-decoration:none;color:rgba(255,255,255,.55);font-size:.85rem;font-weight:500;padding:.4rem .8rem;border-radius:8px;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+    .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
+    .sf-btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:.4rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
+    .sf-btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(181,196,19,.2)}
+    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
+    .sf-sidebar{width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem}
+    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
+    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
+    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s;text-decoration:none;margin-bottom:2px}
+    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
+    .sf-content{flex:1;display:flex;flex-direction:column;gap:1.25rem}
+    .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;position:relative;overflow:hidden}
+    .sf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none}
+    .sf-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+    .sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sf-card-title{font-size:1.05rem;font-weight:700}
+
+    .settings-group{margin-bottom:1.25rem}
+    .settings-label{display:block;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.4);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.06em}
+    .settings-input{width:100%;padding:.65rem 1rem;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:.88rem;font-family:'DM Sans',sans-serif;transition:all .25s}
+    .settings-input:focus{outline:none;border-color:#B5C413;box-shadow:0 0 0 3px rgba(181,196,19,.1)}
+    .settings-input::placeholder{color:rgba(255,255,255,.2)}
+    .settings-input:disabled{opacity:.5;cursor:not-allowed}
+    .settings-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+    .sf-btn-save{background:#B5C413;color:#060a14;padding:.6rem 1.5rem;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+    .sf-btn-save:hover{background:#c5d41a;box-shadow:0 0 20px rgba(181,196,19,.2)}
+    .sf-btn-danger{background:rgba(248,113,113,.1);color:#f87171;padding:.6rem 1.5rem;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;border:1px solid rgba(248,113,113,.2);font-family:'DM Sans',sans-serif;transition:all .25s}
+    .sf-btn-danger:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.4)}
+
+    .plan-badge{display:inline-flex;align-items:center;gap:6px;padding:.4rem 1rem;border-radius:10px;background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.15);font-size:.82rem;font-weight:600;color:#B5C413}
+    .status-ok{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#34d399;font-weight:500}
+
+    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%}.settings-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
+
+  <header class="sf-header">
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <a href="/" style="color:#fff;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:32px;width:auto;"></a>
+      <nav style="display:flex;gap:4px;">
+        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
+        <a href="/keys"><span class="material-symbols-outlined" style="font-size:16px;">key</span> Mis Llaves</a>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="nombreUsuario" style="font-size:.82rem;color:rgba(255,255,255,.45);">Usuario</span>
+      <button class="sf-btn-ghost" onclick="window.location.href='/logoutUser'"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</button>
+    </div>
+  </header>
+
+  <div class="sf-layout">
+    <aside class="sf-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">settings</span></div>
+          <div><div style="font-size:.95rem;font-weight:700;">Configuración</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">Cuenta y preferencias</div></div>
+        </div>
+      </div>
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link" href="/users"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+        <a class="sf-nav-link" href="/mydocs"><span class="material-symbols-outlined">description</span> Documentos</a>
+        <a class="sf-nav-link active" href="/settings"><span class="material-symbols-outlined">settings</span> Configuración</a>
+        <a class="sf-nav-link" href="/reports"><span class="material-symbols-outlined">assessment</span> Reportes</a>
+      </nav>
+    </aside>
+
+    <main class="sf-content">
+      <!-- Profile -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">person</span></div>
+          <div class="sf-card-title">Perfil de Usuario</div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-group">
+            <label class="settings-label">Nombre</label>
+            <input type="text" class="settings-input" id="set-name" placeholder="Tu nombre">
+          </div>
+          <div class="settings-group">
+            <label class="settings-label">Apellido</label>
+            <input type="text" class="settings-input" id="set-lastname" placeholder="Tu apellido">
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-group">
+            <label class="settings-label">Email</label>
+            <input type="email" class="settings-input" id="set-email" disabled>
+          </div>
+          <div class="settings-group">
+            <label class="settings-label">Teléfono</label>
+            <input type="tel" class="settings-input" id="set-phone" placeholder="10 dígitos">
+          </div>
+        </div>
+        <button class="sf-btn-save" id="saveProfile"><span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar cambios</button>
+      </div>
+
+      <!-- Plan -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(181,196,19,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">workspace_premium</span></div>
+          <div class="sf-card-title">Mi Plan</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <span class="plan-badge" id="plan-name"><span class="material-symbols-outlined" style="font-size:16px;">star</span> Cargando...</span>
+          <span class="status-ok"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> Activo</span>
+        </div>
+        <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;">Gestiona tu suscripción y métodos de pago.</p>
+        <div style="display:flex;gap:.75rem;">
+          <a href="/payment" class="sf-btn-save" style="text-decoration:none;"><span class="material-symbols-outlined" style="font-size:16px;">upgrade</span> Cambiar plan</a>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="sf-card">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(248,113,113,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f87171;">shield</span></div>
+          <div class="sf-card-title">Seguridad</div>
+        </div>
+        <div class="settings-group">
+          <label class="settings-label">Contraseña actual</label>
+          <input type="password" class="settings-input" id="set-oldpass" placeholder="••••••••">
+        </div>
+        <div class="settings-row">
+          <div class="settings-group">
+            <label class="settings-label">Nueva contraseña</label>
+            <input type="password" class="settings-input" id="set-newpass" placeholder="Mínimo 8 caracteres">
+          </div>
+          <div class="settings-group">
+            <label class="settings-label">Confirmar contraseña</label>
+            <input type="password" class="settings-input" id="set-confirmpass" placeholder="Repite la contraseña">
+          </div>
+        </div>
+        <button class="sf-btn-save" id="changePass"><span class="material-symbols-outlined" style="font-size:16px;">lock</span> Cambiar contraseña</button>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="sf-card" style="border-color:rgba(248,113,113,.1);">
+        <div class="sf-card-header">
+          <div class="sf-card-icon" style="background:rgba(248,113,113,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f87171;">warning</span></div>
+          <div class="sf-card-title" style="color:#f87171;">Zona de peligro</div>
+        </div>
+        <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;">Cerrar sesión en todos los dispositivos o eliminar tu cuenta.</p>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+          <button class="sf-btn-danger" onclick="window.location.href='/logoutUser'"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Cerrar todas las sesiones</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const userName = localStorage.getItem('sf_userName');
+    if (userName) {
+      document.getElementById('nombreUsuario').textContent = userName;
+      document.getElementById('set-name').value = userName;
+    }
+
+    // Save profile (placeholder - wire to API when ready)
+    document.getElementById('saveProfile').addEventListener('click', () => {
+      const name = document.getElementById('set-name').value;
+      if (name) localStorage.setItem('sf_userName', name);
+      alert('Perfil actualizado correctamente');
+    });
+
+    // Change password (placeholder)
+    document.getElementById('changePass').addEventListener('click', () => {
+      const newP = document.getElementById('set-newpass').value;
+      const confP = document.getElementById('set-confirmpass').value;
+      if (newP.length < 8) { alert('La contraseña debe tener mínimo 8 caracteres'); return; }
+      if (newP !== confP) { alert('Las contraseñas no coinciden'); return; }
+      alert('Contraseña actualizada correctamente');
+    });
+  </script>
+  <style>html,body{background:#060a14 !important;}</style>
+<script src="/shared-nav.js"></script>
+<script>injectSidebar("settings");</script>
+</body>
+</html>

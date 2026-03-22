@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisa tu correo — SignForce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #060a14;
+      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    /* Orbs de fondo */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: orb-float 8s ease-in-out infinite;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(181,196,19,0.07) 0%, transparent 70%);
+      top: -150px; left: -150px;
+      animation-delay: 0s;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(181,196,19,0.05) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation-delay: -4s;
+    }
+    .orb-3 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(100,150,255,0.04) 0%, transparent 70%);
+      top: 40%; left: 60%;
+      animation-delay: -2s;
+    }
+    @keyframes orb-float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
+    }
+
+    /* Línea de acento superior */
+    .top-line {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #B5C413, #d4e157, #B5C413);
+      z-index: 10;
+      box-shadow: 0 0 20px rgba(181,196,19,0.4);
+    }
+
+    /* Card principal */
+    .card {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      animation: card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 40px;
+      animation: card-in 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .logo-text {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #fff;
+    }
+    .logo-text span { color: #B5C413; }
+
+    /* Icono animado */
+    .icon-wrap {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 32px;
+    }
+    .icon-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(181,196,19,0.25);
+      animation: ring-pulse 2.5s ease-in-out infinite;
+    }
+    .icon-ring-2 {
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 1px solid rgba(181,196,19,0.10);
+      animation: ring-pulse 2.5s ease-in-out infinite 0.4s;
+    }
+    .icon-inner {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: rgba(181,196,19,0.10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: icon-glow 2.5s ease-in-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.12); opacity: 0.3; }
+    }
+    @keyframes icon-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(181,196,19,0); }
+      50% { box-shadow: 0 0 24px 4px rgba(181,196,19,0.15); }
+    }
+
+    /* Envelope SVG animated */
+    .envelope-svg { animation: envelope-bounce 2s ease-in-out infinite; }
+    @keyframes envelope-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* Títulos */
+    h1 {
+      font-size: 30px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: rgba(255,255,255,0.45);
+      line-height: 1.7;
+      margin-bottom: 36px;
+    }
+    .email-highlight {
+      color: #B5C413;
+      font-weight: 600;
+    }
+
+    /* Steps card */
+    .steps-card {
+      background: rgba(181,196,19,0.05);
+      border: 1px solid rgba(181,196,19,0.15);
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      text-align: left;
+      animation: card-in 0.6s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .steps-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #B5C413;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(181,196,19,0.12);
+      border: 1px solid rgba(181,196,19,0.30);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #B5C413;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.60);
+      line-height: 1.5;
+    }
+    .step-text strong { color: #fff; font-weight: 600; }
+
+    /* Spam note */
+    .spam-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.30);
+      margin-bottom: 28px;
+      animation: card-in 0.6s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* Link volver */
+    .back-link {
+      font-size: 13px;
+      color: rgba(255,255,255,0.25);
+      text-decoration: none;
+      transition: color 0.2s;
+      animation: card-in 0.6s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+      display: inline-block;
+    }
+    .back-link:hover { color: #B5C413; }
+
+    /* Partículas flotantes */
+    .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: rgba(181,196,19,0.5);
+      animation: particle-float linear infinite;
+    }
+    @keyframes particle-float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) translateX(var(--drift)); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top-line"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Partículas -->
+  <div class="particles" id="particles"></div>
+
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-text"><span>S</span>IGNFORCE</div>
+    </div>
+
+    <!-- Icono -->
+    <div class="icon-wrap">
+      <div class="icon-ring-2"></div>
+      <div class="icon-ring"></div>
+      <div class="icon-inner">
+        <svg class="envelope-svg" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#B5C413" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Título -->
+    <h1>¡Revisa tu correo!</h1>
+    <p class="subtitle">
+      Enviamos tu invitación a<br>
+      <span class="email-highlight" id="emailDisplay">tu correo electrónico</span>
+    </p>
+
+    <!-- Steps -->
+    <div class="steps-card">
+      <p class="steps-label">Para completar tu registro</p>
+      <div class="step">
+        <div class="step-num">1</div>
+        <p class="step-text">Abre tu bandeja de entrada</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p class="step-text">Busca el correo de <strong>SignForce</strong></p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p class="step-text">Haz clic en <strong>"Continuar con mi registro"</strong></p>
+      </div>
+    </div>
+
+    <!-- Spam note -->
+    <div class="spam-note">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.5">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      ¿No llegó? Revisa tu carpeta de <strong style="color:rgba(255,255,255,0.45)">spam o correo no deseado</strong>
+    </div>
+
+    <!-- Back -->
+    <a href="/login" class="back-link">← Volver al inicio de sesión</a>
+
+  </div>
+
+  <script>
+    // Mostrar email desde query params
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get('email');
+    if (email) {
+      document.getElementById('emailDisplay').textContent = email;
+    }
+
+    // Generar partículas
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (8 + Math.random() * 12) + 's';
+      p.style.animationDelay = (-Math.random() * 20) + 's';
+      p.style.setProperty('--drift', (Math.random() * 100 - 50) + 'px');
+      p.style.opacity = 0.3 + Math.random() * 0.7;
+      container.appendChild(p);
+    }
+  </script>
+</body>
+</html>

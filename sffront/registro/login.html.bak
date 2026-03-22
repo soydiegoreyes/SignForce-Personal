@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignForce — Acceso</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #060a14;
+      min-height: 100vh;
+      font-family: 'DM Sans', sans-serif;
+      color: #fff;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ═══ LEFT: visual panel ═══ */
+    .visual-panel {
+      flex: 1.1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 5rem;
+      overflow: hidden;
+    }
+    .visual-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 30% 20%, rgba(181,196,19,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 70% 80%, rgba(52,211,153,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 40% at 10% 90%, rgba(96,165,250,0.04) 0%, transparent 50%);
+    }
+    /* Grid dots */
+    .visual-panel::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
+      background-size: 40px 40px;
+    }
+
+    .visual-content { position: relative; z-index: 2; }
+
+    .brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 3rem; }
+    .brand-s {
+      width: 44px; height: 44px; background: #B5C413; color: #060a14;
+      font-weight: 900; font-size: 1.3rem; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 30px rgba(181,196,19,0.25);
+    }
+    .brand-name { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.08em; }
+
+    .hero-title {
+      font-size: 3.2rem; font-weight: 700; line-height: 1.15;
+      margin-bottom: 1.2rem; max-width: 500px;
+    }
+    .hero-title .accent { color: #B5C413; }
+    .hero-sub { color: rgba(255,255,255,0.45); font-size: 1.05rem; line-height: 1.7; max-width: 440px; margin-bottom: 3rem; }
+
+    /* Feature pills */
+    .features { display: flex; flex-direction: column; gap: 0.75rem; }
+    .feature {
+      display: flex; align-items: center; gap: 0.85rem;
+      padding: 0.85rem 1.1rem; border-radius: 14px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.3s ease; max-width: 420px;
+    }
+    .feature:hover { background: rgba(181,196,19,0.04); border-color: rgba(181,196,19,0.12); }
+    .feature-icon {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .feature h4 { font-size: 0.88rem; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .feature p { font-size: 0.76rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+    /* ═══ RIGHT: form panel ═══ */
+    .form-panel {
+      flex: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      position: relative;
+    }
+    .form-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(15,21,36,0.8), rgba(10,14,24,0.95));
+      border-left: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .form-card {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 400px;
+    }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 2rem; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; }
+    .tab {
+      flex: 1; padding: 0.6rem; text-align: center; font-size: 0.85rem; font-weight: 600;
+      border-radius: 8px; cursor: pointer; transition: all 0.3s ease;
+      color: rgba(255,255,255,0.4);
+    }
+    .tab.active { background: #B5C413; color: #060a14; }
+    .tab:not(.active):hover { color: rgba(255,255,255,0.7); }
+
+    /* Forms */
+    .form { display: none; }
+    .form.active { display: block; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-group { margin-bottom: 1.1rem; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 500; color: rgba(255,255,255,0.5); margin-bottom: 0.4rem; }
+    .input-wrap { position: relative; }
+    .input-wrap .material-symbols-outlined {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      font-size: 18px; color: rgba(255,255,255,0.2);
+    }
+    .sf-input {
+      width: 100%; padding: 0.7rem 0.85rem 0.7rem 2.5rem; border-radius: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: #fff; font-size: 0.88rem; font-family: 'DM Sans', sans-serif;
+      transition: all 0.25s ease;
+    }
+    .sf-input:focus { outline: none; border-color: #B5C413; box-shadow: 0 0 0 3px rgba(181,196,19,0.1); background: rgba(255,255,255,0.06); }
+    .sf-input::placeholder { color: rgba(255,255,255,0.2); }
+    .sf-input-plain { padding-left: 0.85rem; } /* no icon */
+
+    .toggle-pass {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: rgba(255,255,255,0.25); font-size: 18px;
+      background: none; border: none; transition: color 0.2s;
+    }
+    .toggle-pass:hover { color: rgba(255,255,255,0.5); }
+
+    .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+    .checkbox-row input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: #B5C413; cursor: pointer;
+    }
+    .checkbox-row label { font-size: 0.78rem; color: rgba(255,255,255,0.45); cursor: pointer; }
+
+    small { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.25); margin-top: 4px; }
+
+    .notice-box { min-height: 0; padding: 0; margin-bottom: 0.5rem; font-size: 0.8rem; color: #f87171; }
+
+    .btn-submit {
+      width: 100%; padding: 0.75rem; border: none; border-radius: 10px; cursor: pointer;
+      background: #B5C413; color: #060a14; font-weight: 700; font-size: 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.25s ease; margin-top: 0.25rem;
+    }
+    .btn-submit:hover { background: #c5d41a; box-shadow: 0 0 30px rgba(181,196,19,0.2); transform: translateY(-1px); }
+
+    .divider {
+      text-align: center; margin: 1.2rem 0; position: relative;
+      font-size: 0.75rem; color: rgba(255,255,255,0.2);
+    }
+    .divider::before, .divider::after {
+      content: ''; position: absolute; top: 50%; width: 38%; height: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    .social-row { display: flex; gap: 0.75rem; }
+    .social-btn {
+      flex: 1; padding: 0.6rem; border-radius: 10px; cursor: pointer;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6); font-size: 0.82rem; font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.25s ease;
+    }
+    .social-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); color: #fff; }
+    .social-btn img { width: 16px; height: 16px; }
+
+    .form-footer { text-align: center; margin-top: 1.2rem; font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+    .form-footer a { color: #B5C413; text-decoration: none; font-weight: 600; }
+    .form-footer a:hover { color: #c5d41a; text-decoration: underline; }
+
+    /* ═══ Floating accent shapes ═══ */
+    .accent-shape {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
+    }
+
+    /* ═══ Responsive ═══ */
+    @media (max-width: 900px) {
+      body { flex-direction: column; overflow-y: auto; }
+      .visual-panel { padding: 2rem 1.5rem; flex: none; min-height: auto; }
+      .hero-title { font-size: 2rem; }
+      .features { display: none; }
+      .form-panel { flex: none; padding: 1.5rem; }
+      .form-panel::before { border-left: none; border-top: 1px solid rgba(255,255,255,0.04); }
+    }
+
+    /* scrollbar for register form */
+    .form-scroll { max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .form-scroll::-webkit-scrollbar { width: 3px; }
+    .form-scroll::-webkit-scrollbar-thumb { background: rgba(181,196,19,0.2); border-radius: 3px; }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
+  <meta name="theme-color" content="#060a14">
+  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
+  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
+  <meta property="og:type" content="website">
+</head>
+<body>
+  <!-- SignForce Orbs -->
+  <div class="sf-orb sf-orb-1"></div>
+  <div class="sf-orb sf-orb-2"></div>
+  <div class="sf-orb sf-orb-3"></div>
+
+  <!-- Top accent bar -->
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;box-shadow:0 0 20px rgba(181,196,19,0.22),0 0 60px rgba(181,196,19,0.08);"></div>
+
+  <!-- Floating shapes -->
+  <div class="accent-shape" style="width:400px;height:400px;background:rgba(181,196,19,0.06);top:-100px;left:-100px;"></div>
+  <div class="accent-shape" style="width:300px;height:300px;background:rgba(52,211,153,0.04);bottom:-80px;right:30%;"></div>
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="visual-panel">
+    <div class="visual-content">
+      <div class="brand-row">
+        <div class="brand-s">S</div>
+        <span class="brand-name">IGNFORCE</span>
+      </div>
+
+      <h1 class="hero-title">
+        Firma digital<br><span class="accent">segura</span> y legal
+      </h1>
+      <p class="hero-sub">
+        Gestiona documentos electrónicos con garantía de integridad y autenticidad conforme a la NOM-151.
+      </p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon" style="background:rgba(181,196,19,0.1);">
+            <span class="material-symbols-outlined" style="color:#B5C413;font-size:20px;">shield</span>
+          </div>
+          <div>
+            <h4>Cifrado AES-256</h4>
+            <p>Documentos protegidos con encriptación de grado militar</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" style="background:rgba(96,165,250,0.1);">
+            <span class="material-symbols-outlined" style="color:#60a5fa;font-size:20px;">bolt</span>
+          </div>
+          <div>
+            <h4>Firma en segundos</h4>
+            <p>Firma y envía desde cualquier dispositivo, al instante</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" style="background:rgba(52,211,153,0.1);">
+            <span class="material-symbols-outlined" style="color:#34d399;font-size:20px;">verified</span>
+          </div>
+          <div>
+            <h4>NOM-151 SCFI</h4>
+            <p>Cumple con todos los requisitos legales mexicanos</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RIGHT PANEL ═══ -->
+  <div class="form-panel">
+    <div class="form-card">
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-tab="login">Iniciar Sesión</div>
+        <div class="tab" data-tab="register">Registrarse</div>
+      </div>
+
+      <!-- ═══ LOGIN FORM ═══ -->
+      <form class="form active" id="loginForm">
+        <div class="form-group">
+          <label class="form-label">Correo electrónico</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">mail</span>
+            <input type="email" id="login-email" class="sf-input" placeholder="tucorreo@ejemplo.com" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" id="login-password" class="sf-input" placeholder="••••••••" required>
+            <button type="button" class="toggle-pass" onclick="togglePassword('login-password', this)">
+              <span class="material-symbols-outlined">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+
+        <div class="divider">o continúa con</div>
+
+        <div class="social-row">
+          <button type="button" class="social-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="G"> Google
+          </button>
+          <button type="button" class="social-btn">
+            <img src="https://www.svgrepo.com/show/512317/microsoft-176.svg" alt="M"> Microsoft
+          </button>
+        </div>
+
+        <div class="form-footer">
+          <p>¿Olvidaste tu contraseña? <a href="#">Recupérala aquí</a></p>
+        </div>
+      </form>
+
+      <!-- ═══ REGISTER FORM ═══ -->
+      <form class="form" id="registerForm">
+        <div class="form-scroll">
+          <div class="form-group">
+            <label class="form-label">Nombre y Apellido</label>
+            <div class="name-row">
+              <input type="text" id="first-name" class="sf-input sf-input-plain" placeholder="Nombre" required>
+              <input type="text" id="last-name" class="sf-input sf-input-plain" placeholder="Apellidos" required>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="legal-responsible-checkbox">
+            <label for="legal-responsible-checkbox">Soy el responsable legal</label>
+          </div>
+
+          <div id="legal-responsible-container">
+            <div class="form-group">
+              <label class="form-label">Responsable Legal</label>
+              <div class="name-row">
+                <input type="text" id="legal-first-name" class="sf-input sf-input-plain" placeholder="Nombre">
+                <input type="text" id="legal-last-name" class="sf-input sf-input-plain" placeholder="Apellidos">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Razón Social</label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined">business</span>
+              <input type="text" id="business-name" class="sf-input" placeholder="Nombre de la empresa" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alias (opcional)</label>
+            <input type="text" id="business-alias" class="sf-input sf-input-plain" placeholder="Alias de la empresa">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">RFC</label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined">badge</span>
+              <input type="text" id="business-taxnum" class="sf-input" placeholder="RFC de la empresa" required>
+            </div>
+          </div>
+
+          <div class="name-row" style="margin-bottom:1.1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">País</label>
+              <input type="text" id="country" class="sf-input sf-input-plain" value="Mexico" required>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Ciudad</label>
+              <input type="text" id="city" class="sf-input sf-input-plain" value="CDMX" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined">mail</span>
+              <input type="email" id="register-email" class="sf-input" placeholder="tucorreo@ejemplo.com" required>
+            </div>
+            <small>Se usará para verificación y recuperación de cuenta</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <div class="input-wrap">
+              <span class="material-symbols-outlined">phone</span>
+              <input type="tel" id="register-phone" class="sf-input" placeholder="10 dígitos" required>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="terms" required>
+            <label for="terms">Acepto los <a href="#" style="color:#B5C413;">términos y condiciones</a></label>
+          </div>
+
+          <div class="notice-box" id="notice-box"></div>
+        </div>
+
+        <button type="submit" class="btn-submit">Crear Cuenta</button>
+
+        <div class="form-footer">
+          <p>¿Ya tienes cuenta? <a href="#" id="switchToLogin">Inicia sesión</a></p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ═══ Tab switching ═══
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
+      });
+    });
+
+    document.getElementById('switchToLogin')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      document.querySelector('[data-tab="login"]').classList.add('active');
+      document.getElementById('loginForm').classList.add('active');
+    });
+
+    // ═══ Password toggle ═══
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (input.type === 'password') { input.type = 'text'; icon.textContent = 'visibility_off'; }
+      else { input.type = 'password'; icon.textContent = 'visibility'; }
+    }
+
+    // ═══ Legal checkbox ═══
+    const legalCb = document.getElementById('legal-responsible-checkbox');
+    const legalContainer = document.getElementById('legal-responsible-container');
+    legalCb?.addEventListener('change', function() {
+      if (this.checked) {
+        legalContainer.style.display = 'none';
+        document.getElementById('legal-first-name').value = document.getElementById('first-name').value;
+        document.getElementById('legal-last-name').value = document.getElementById('last-name').value;
+      } else {
+        legalContainer.style.display = 'block';
+        document.getElementById('legal-first-name').value = '';
+        document.getElementById('legal-last-name').value = '';
+      }
+    });
+
+    // ═══ Login submit ═══
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!EmailRegex.test(email) || password.length < 8) {
+        alert('Email inválido o password muy corto (mínimo 8 caracteres).');
+        return;
+      }
+      try {
+        const response = await fetch('/loginUser', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ account: email, password })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.error) { alert('Error: ' + data.error); return; }
+          if (data.redirectTo) window.location.href = data.redirectTo;
+        } else {
+          const err = await response.json();
+          alert('Error: ' + (err.error || 'Error desconocido'));
+        }
+      } catch (error) {
+        alert('Error al iniciar sesión: ' + error.message);
+      }
+    });
+
+    // ═══ Register submit ═══
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        firstName: document.getElementById('first-name').value,
+        lastName: document.getElementById('last-name').value,
+        legalName: document.getElementById('legal-first-name').value,
+        legalLastName: document.getElementById('legal-last-name').value,
+        businessName: document.getElementById('business-name').value,
+        businessAlias: document.getElementById('business-alias').value,
+        businessTaxNum: document.getElementById('business-taxnum').value,
+        email: document.getElementById('register-email').value,
+        phone: document.getElementById('register-phone').value,
+        country: document.getElementById('country').value,
+        city: document.getElementById('city').value
+      };
+      const nb = document.getElementById('notice-box');
+      if (!data.businessName) { nb.textContent = 'La razón social es requerida'; return; }
+      if (!/^[A-Z\d]{12,20}$/.test(data.businessTaxNum)) { nb.textContent = 'RFC: solo mayúsculas y números, 12-20 caracteres'; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { nb.textContent = 'Email inválido'; return; }
+      if (!/^\d{10}$/.test(data.phone)) { nb.textContent = 'Teléfono a 10 dígitos'; return; }
+      if (!document.getElementById('terms').checked) { nb.textContent = 'Acepta los términos y condiciones'; return; }
+      nb.textContent = '';
+      try {
+        const response = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data)
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.error) { nb.textContent = result.error; return; }
+          window.location.href = '/login';
+        } else { throw new Error('Error ' + response.status); }
+      } catch (err) { nb.textContent = 'Error: ' + err.message; }
+    });
+  </script>
+
+  <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+</body>
+</html>

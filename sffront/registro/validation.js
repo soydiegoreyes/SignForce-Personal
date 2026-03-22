@@ -64,52 +64,64 @@ async function obtenerDatosValidacion() {
 
 //===================================== UPDATE DATA INTERFACE =========================================
 function actualizarInterfaz(data) {
-    
-    // Actualizar información de la empresa
-    const inputline = '<div class="mb-4"><label class="info-label">{1}</label><input type="text" id="{0}" class="input-field" placeholder="{1}" value="{2}"></div>';
-    
+    const v = (val) => val || '<span style="color:rgba(255,255,255,.25);font-style:italic">No especificado</span>';
+    const legalRep = [data.legalSignupName, data.legalSignupLastname].filter(Boolean).join(' ') || null;
+
     document.getElementById('empresaInfo').innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-                <div>
-                    <p class="info-label">Razón Social</p>
-                    <p class="info-value">${data.legalName?data.legalName:'No especificado'}</p>
-                </div>
-                <div>
-                    <p class="info-label">Alias</p>
-                    <p class="info-value">${data.aliasName?data.aliasName:'No especificado'}</p>
-                </div>
-                <div>
-                    <p class="info-label">RFC</p>
-                    <p class="info-value">${data.taxNum?data.taxNum:'No especificado'}</p>
-                </div>
-                <div>
-                    <p class="info-label">Representante Legal</p>
-                    <p class="info-value">${data.legalSignupName?data.legalSignupName + ' ' + (data.legalSignupLastname || '') :'No especificado'}</p>
-                </div>
-            
-        </div>
-        
-        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            ${inputline.format("street-address", "Calle y Número", data.streetAddress || '')}
-            ${inputline.format("neighborhood", "Colonia", data.neighborhood || '')}
-        </div>
-        <div class="space-y-4">
-            ${inputline.format("locality", "Delegación o Municipio", data.locality || '')}
-            ${inputline.format("postal-code", "Código Postal", data.postalCode || '')}
-        </div>
-        
-        <div class="mt-8 pt-6 border-t border-white/10">
-            <div class="flex justify-end">
-                <button class="btn-cyber px-6 py-2 rounded-lg flex items-center gap-2" id="btnGuardarInfo">
-                    <span class="material-symbols-outlined text-sm">save</span>
-                    Guardar Información
-                </button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem 2rem;margin-bottom:1.5rem">
+            <div style="padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+                <div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Razón Social</div>
+                <div style="font-size:.92rem;font-weight:600;color:#fff">${v(data.legalName)}</div>
+            </div>
+            <div style="padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+                <div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">RFC</div>
+                <div style="font-size:.92rem;font-weight:600;color:#fff;font-family:monospace;letter-spacing:.04em">${v(data.taxNum)}</div>
+            </div>
+            <div style="padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+                <div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Representante Legal</div>
+                <div style="font-size:.92rem;font-weight:600;color:#fff">${v(legalRep)}</div>
+            </div>
+            <div style="padding:.75rem 0;border-bottom:1px solid rgba(255,255,255,.06)">
+                <div style="font-size:.68rem;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.35rem">Alias</div>
+                <div style="font-size:.92rem;font-weight:600;color:#fff">${v(data.aliasName)}</div>
             </div>
         </div>
+
+        <div style="margin-bottom:.5rem;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.08em">Domicilio Fiscal</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+            <div style="grid-column:1/-1">
+                <input type="text" id="street-address" placeholder="Calle y Número"
+                    value="${data.streetAddress || ''}"
+                    style="width:100%;padding:.65rem 1rem;border-radius:10px;font-size:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+                    onfocus="this.style.borderColor='rgba(181,196,19,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">
+            </div>
+            <input type="text" id="neighborhood" placeholder="Colonia"
+                value="${data.neighborhood || ''}"
+                style="width:100%;padding:.65rem 1rem;border-radius:10px;font-size:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+                onfocus="this.style.borderColor='rgba(181,196,19,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">
+            <input type="text" id="locality" placeholder="Delegación o Municipio"
+                value="${data.locality || ''}"
+                style="width:100%;padding:.65rem 1rem;border-radius:10px;font-size:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+                onfocus="this.style.borderColor='rgba(181,196,19,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">
+            <input type="text" id="postal-code" placeholder="Código Postal" maxlength="5"
+                value="${data.postalCode || ''}"
+                style="width:100%;padding:.65rem 1rem;border-radius:10px;font-size:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;transition:border-color .2s"
+                onfocus="this.style.borderColor='rgba(181,196,19,.5)'" onblur="this.style.borderColor='rgba(255,255,255,.08)'">
+        </div>
+        <button id="btnGuardarInfo"
+            style="padding:.55rem 1.25rem;border-radius:9px;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid rgba(181,196,19,.35);background:rgba(181,196,19,.08);color:#B5C413;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all .2s"
+            onmouseover="this.style.background='rgba(181,196,19,.16)'" onmouseout="this.style.background='rgba(181,196,19,.08)'">
+            <span class="material-symbols-outlined" style="font-size:15px;">save</span> Guardar domicilio
+        </button>
     `;
-    
-    // Configurar evento para guardar información
+
+    // Responsive en pantallas chicas
+    if (window.innerWidth < 540) {
+        document.querySelectorAll('#empresaInfo input').forEach(el => {
+            el.style.gridColumn = '1/-1';
+        });
+    }
+
     document.getElementById('btnGuardarInfo').addEventListener('click', guardarInformacionTexto);
     
     for (const [key, value] of Object.entries(documentTypes)) {
@@ -233,17 +245,16 @@ async function subirDocumento(tipo, archivo) {
         
         // Actualizar UI
         const capitalized = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-        document.getElementById(`status${capitalized}`).className = 'status status-completo';
-        document.getElementById(`status${capitalized}`).textContent = 'Completo';
-        
-        const buttonEl = document.getElementById(`btn${capitalized}`);
-        buttonEl.textContent = 'Documento subido';
-        buttonEl.classList.remove('btn-cyber');
-        buttonEl.classList.add('btn-secondary');
-        buttonEl.disabled = true;
-        
-        document.getElementById(`file${capitalized}`).disabled = true;
-        document.getElementById(`info${capitalized}`).textContent = `Archivo: ${archivo.name}`;
+        const statusDone = document.getElementById('status' + capitalized);
+        if (statusDone) { statusDone.textContent = 'Listo'; statusDone.className = 'doc-status done'; }
+        const btnDone = document.getElementById('btn' + capitalized);
+        if (btnDone) { btnDone.classList.add('done'); btnDone.innerHTML = '<span class="material-symbols-outlined" style="font-size:15px;">check_circle</span> Subido'; btnDone.style.pointerEvents = 'none'; }
+        const fileDone = document.getElementById('file' + capitalized);
+        if (fileDone) fileDone.disabled = true;
+        const infoDone = document.getElementById('info' + capitalized);
+        if (infoDone) infoDone.textContent = archivo.name;
+        const itemDone = document.getElementById('docItem' + capitalized);
+        if (itemDone) itemDone.classList.add('doc-done');
         
         // Verificar si todos los documentos están completos
         verificarCompletitud();
@@ -290,7 +301,14 @@ async function guardarInformacionTexto() {
 
 //===================================== CHECK COMPLETE =========================================
 function verificarCompletitud() {
-    const todosCompletos = Object.values(documentos).every(doc => doc.subido);
+    const total = Object.keys(documentos).length;
+    const done = Object.values(documentos).filter(d => d.subido).length;
+    const todosCompletos = done === total;
+    const pct = 25 + Math.round((done / total) * 75);
+    const bar = document.getElementById('progressBar');
+    const lbl = document.getElementById('progressPct');
+    if (bar) bar.style.width = pct + '%';
+    if (lbl) lbl.textContent = pct + '%';
     document.getElementById('btnCompletar').disabled = !todosCompletos;
 }
 
@@ -332,13 +350,10 @@ async function completarValidacion() {
 
 //===================================== SHOW MESSAGES =========================================
 function mostrarMensaje(mensaje, tipo) {
-    const messageContainer = document.getElementById('messageContainer');
-    messageContainer.innerHTML = `<div class="message-${tipo}">${mensaje}</div>`;
-    
-    // Auto-ocultar después de 5 segundos
-    setTimeout(() => {
-        messageContainer.innerHTML = '';
-    }, 5000);
+    const c = document.getElementById('messageContainer');
+    const map = { info: 'msg-info', success: 'msg-success', error: 'msg-error' };
+    c.innerHTML = '<div class="msg ' + (map[tipo] || 'msg-info') + '">' + mensaje + '</div>';
+    if (tipo !== 'error') setTimeout(() => { c.innerHTML = ''; }, 5000);
 }
 
 String.prototype.format = function () {
