@@ -347,8 +347,7 @@
 
     /* end override */
 
-    .material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:1.15rem;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'liga'}
-</style>
+    </style>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../signforce-global.css">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -357,16 +356,9 @@
   <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
   <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
   <meta property="og:type" content="website">
-<style>    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
-    .sf-sidebar{width:250px;min-width:250px;max-width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem;position:sticky;top:80px;align-self:flex-start;max-height:calc(100vh - 100px)}
-    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
-    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
-    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s ease;text-decoration:none;margin-bottom:2px}
-    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
-    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
-    .sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .sf-content{flex:1;min-width:0}
-    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%;min-width:100%;max-width:100%;position:static;max-height:none}}</style>
+<style>    .sf-content{flex:1;min-width:0}
+    @media(max-width:900px){}</style>
+<link rel="stylesheet" href="/signforce-sidebar.css"/>
 </head>
 <body class="">
     <div class="top-accent"></div>
@@ -395,7 +387,7 @@
             </button>
         </div>
     </header>
-  <div class="sf-layout">
+  <div class="sf-page-layout">
     <aside class="sf-sidebar" id="sf-shared-sidebar">
       <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
         <div style="display:flex;align-items:center;gap:.6rem;">
@@ -419,9 +411,9 @@
         </div>
       </nav>
     </aside>
-    <main class="sf-content">
-<div class="bg flex min-h-screen pt-24 pb-8 px-8">
-        <main class="flex-1">
+    <main class="sf-page-content">
+<div class="sf-page-layout">
+        <main class="sf-page-content">
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h2 class="text-3xl font-bold text-primary fade-in">Plantillas de Documentos</h2>

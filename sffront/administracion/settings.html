@@ -16,18 +16,10 @@
     .sf-header a:hover{color:#fff;background:rgba(255,255,255,.05)}
     .sf-btn-ghost{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff;padding:.4rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'DM Sans',sans-serif}
     .sf-btn-ghost:hover{background:rgba(255,255,255,.1);border-color:rgba(181,196,19,.2)}
-    .sf-layout{display:flex;min-height:100vh;padding:80px 1.5rem 2rem;gap:1.25rem;position:relative;z-index:1}
-    .sf-sidebar{width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem}
-    .sf-sidebar-card{background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1rem}
-    .sf-sidebar-title{font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem}
-    .sf-nav-link{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);border:1px solid transparent;transition:all .25s;text-decoration:none;margin-bottom:2px}
-    .sf-nav-link:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
-    .sf-nav-link.active{color:#B5C413;background:rgba(181,196,19,.08);border-color:rgba(181,196,19,.12)}
     .sf-content{flex:1;display:flex;flex-direction:column;gap:1.25rem}
     .sf-card{background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;position:relative;overflow:hidden}
     .sf-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(181,196,19,.15),transparent);pointer-events:none}
     .sf-card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
-    .sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .sf-card-title{font-size:1.05rem;font-weight:700}
 
     .settings-group{margin-bottom:1.25rem}
@@ -46,9 +38,9 @@
     .plan-badge{display:inline-flex;align-items:center;gap:6px;padding:.4rem 1rem;border-radius:10px;background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.15);font-size:.82rem;font-weight:600;color:#B5C413}
     .status-ok{display:inline-flex;align-items:center;gap:4px;font-size:.78rem;color:#34d399;font-weight:500}
 
-    @media(max-width:900px){.sf-layout{flex-direction:column;padding:75px 1rem 2rem}.sf-sidebar{width:100%}.settings-row{grid-template-columns:1fr}}
-  .material-symbols-outlined{font-family:'Material Symbols Outlined';font-weight:normal;font-style:normal;font-size:1.15rem;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:'liga'}
-</style>
+    @media(max-width:900px){.settings-row{grid-template-columns:1fr}}
+  </style>
+<link rel="stylesheet" href="/signforce-sidebar.css"/>
 </head>
 <body>
   <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
@@ -68,7 +60,7 @@
     </div>
   </header>
 
-  <div class="sf-layout">
+  <div class="sf-page-layout">
         <aside class="sf-sidebar" id="sf-shared-sidebar">
       <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
         <div style="display:flex;align-items:center;gap:.6rem;">
@@ -93,7 +85,7 @@
       </nav>
     </aside>
 
-    <main class="sf-content">
+    <main class="sf-page-content">
       <!-- Profile -->
       <div class="sf-card">
         <div class="sf-card-header">
