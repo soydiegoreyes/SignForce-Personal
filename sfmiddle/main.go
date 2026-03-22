@@ -629,7 +629,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		HttpOnly: true,
 		Secure:   true, // poner en true en producción con HTTPS
 		SameSite: http.SameSiteStrictMode,
-		Expires:  time.Now().Add(1 * time.Hour),
+		Expires:  time.Now().Add(8 * time.Hour),
 	})
 
 	// EN LUGAR DE HACER REDIRECT, RETORNAMOS LA INFO AL FRONTEND

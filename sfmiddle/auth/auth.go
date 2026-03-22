@@ -28,7 +28,7 @@ func AddUser(id string, user *objects.User) {
 	defer mu.Unlock()
 	activeUsers[id] = ActiveUser{
 		User:      user,
-		ExpiresAt: time.Now().Add(time.Hour), // Expira en 1 hora
+		ExpiresAt: time.Now().Add(8 * time.Hour), // Expira en 8 horas
 	}
 }
 

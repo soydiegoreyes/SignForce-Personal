@@ -40,7 +40,7 @@ services:
       DB_NAME: signforceapi
       JWT_KEY: "tMP*[U|K1Ij>Gasg&2@oVS0Y7OzeR%k$|pk"
       JWT_ALG: "HS256"
-      JWT_EXP: "60"
+      JWT_EXP: "480"
       EXP_LOGIN_TIME: "5"
       DIGEST_ALG: "sha256"
       ALLOWED_ALGS: "sha256"
@@ -82,7 +82,7 @@ services:
       DB_NAME: signforceapi
       JWT_KEY: "tMP*[U|K1Ij>Gasg&2@oVS0Y7OzeR%k$|pk"
       JWT_ALG: "HS256"
-      JWT_EXP: "120"
+      JWT_EXP: "480"
       EXP_LOGIN_TIME: "5"
       DIGEST_ALG: "sha256"
       ALLOWED_ALGS: "sha256"
