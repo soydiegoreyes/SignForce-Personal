@@ -172,6 +172,11 @@ func main() {
 	mux.HandleFunc("/mydocs", myDocuments)
 	mux.HandleFunc("/myfolders", myFolders)
 	mux.HandleFunc("/mytemplates", myTemplates)
+	mux.HandleFunc("/settings", settingsPage)
+	mux.HandleFunc("/reports", reportsPage)
+	mux.HandleFunc("/folders", foldersPage)
+	mux.HandleFunc("/templates", templatesPage)
+	mux.HandleFunc("/keys", keysPage)
 	mux.HandleFunc("/addSigners", addSigners)
 	mux.HandleFunc("/addSignatures", addSignatures)
 	mux.HandleFunc("/viewSignature", viewSignature) // obtiene los equipos de una institucion
@@ -453,6 +458,45 @@ func myKeys(respWriter http.ResponseWriter, request *http.Request) {
 	http.ServeFile(respWriter, request, "./../sffront/administracion/mykeys.html")
 }
 
+func settingsPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/administracion/settings.html")
+}
+
+func reportsPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/dashboards/reports.html")
+}
+
+func foldersPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/folders.html")
+}
+
+func templatesPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/documentFlow/template_man.html")
+}
+
+func keysPage(respWriter http.ResponseWriter, request *http.Request) {
+	if request.Method != http.MethodGet {
+		http.Error(respWriter, "Método no permitido", http.StatusMethodNotAllowed)
+		return
+	}
+	http.ServeFile(respWriter, request, "./../sffront/administracion/mykeys.html")
+}
 // ==========================================================================================================
 // sirve la pagina para añadir firmantes
 func addSigners(respWriter http.ResponseWriter, request *http.Request) {

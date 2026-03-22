@@ -2,7 +2,7 @@
   var navItems = [
     { id: 'dashboard',  label: 'Dashboard',        icon: 'dashboard',    href: '/users' },
     { id: 'mydocs',     label: 'Mis Documentos',   icon: 'description',  href: '/mydocs' },
-    { id: 'settings',   label: 'Configuración',    icon: 'settings',     href: '/settings' },
+    { id: 'settings',   label: 'Configuraci\u00f3n',    icon: 'settings',     href: '/settings' },
     { id: 'reports',    label: 'Reportes',          icon: 'assessment',   href: '/reports' },
     { id: 'upload',     label: 'Subir Documento',   icon: 'upload_file',  href: '/upload' },
     { id: 'folders',    label: 'Mis Folders',       icon: 'folder',       href: '/folders' },
@@ -53,7 +53,7 @@
     var s = document.createElement('style');
     s.id = 'sf-nav-styles';
     s.textContent =
-      '#sf-shared-sidebar{width:250px!important;min-width:250px!important;max-width:250px!important;flex-shrink:0!important;display:flex!important;flex-direction:column!important;gap:.75rem!important}' +
+      '#sf-shared-sidebar{width:250px!important;min-width:250px!important;max-width:250px!important;flex-shrink:0!important;display:flex!important;flex-direction:column!important;gap:.75rem!important;position:sticky!important;top:80px!important;align-self:flex-start!important;max-height:calc(100vh - 100px)!important}' +
       '.sf-sidebar-card{background:rgba(15,21,36,.4)!important;backdrop-filter:blur(16px)!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:16px!important;padding:1rem!important}' +
       '.sf-sidebar-title{font-size:.65rem!important;text-transform:uppercase!important;letter-spacing:.12em!important;color:rgba(255,255,255,.3)!important;padding:.4rem .6rem!important;font-weight:600!important;margin-bottom:.25rem!important}' +
       '.sf-nav-link{display:flex!important;align-items:center!important;gap:.75rem!important;padding:.6rem .75rem!important;border-radius:10px!important;font-size:.85rem!important;font-weight:500!important;color:rgba(255,255,255,.55)!important;border:1px solid transparent!important;transition:all .25s ease!important;text-decoration:none!important;margin-bottom:2px!important;background:transparent!important}' +
@@ -61,7 +61,8 @@
       '.sf-nav-link.active{color:#B5C413!important;background:rgba(181,196,19,.08)!important;border-color:rgba(181,196,19,.12)!important}' +
       '.sf-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}' +
       '.sf-layout-normalized{display:flex!important;min-height:100vh!important;padding:80px 1.5rem 2rem!important;gap:1.25rem!important;position:relative!important;z-index:1!important;flex-direction:row!important;align-items:flex-start!important}' +
-      '@media(max-width:900px){#sf-shared-sidebar{width:100%!important;min-width:100%!important;max-width:100%!important}}';
+      '.sf-layout-normalized>main,.sf-layout-normalized>.sf-content,.sf-layout-normalized>.main-content,.sf-layout-normalized>div:not(#sf-shared-sidebar):not(.sf-sidebar){flex:1!important;min-width:0!important}' +
+      '@media(max-width:900px){#sf-shared-sidebar{width:100%!important;min-width:100%!important;max-width:100%!important;position:static!important;max-height:none!important}.sf-layout-normalized{flex-direction:column!important}}';
     document.head.appendChild(s);
   }
 
@@ -70,14 +71,14 @@
     injectStyles();
     if (document.getElementById('sf-shared-sidebar')) return;
 
-    // Find existing aside and replace
+    var navHTML = buildNavHTML(activeId);
+
+    // Strategy 1: Find existing aside and replace it
     var existing = document.querySelector('aside');
     if (existing) {
-      // Normalize the parent layout container
       var parent = existing.parentElement;
       if (parent) {
         parent.classList.add('sf-layout-normalized');
-        // Remove conflicting inline padding/classes
         var cn = parent.className;
         cn = cn.replace(/\b(pt-\d+|pb-\d+|px-\d+|min-h-screen)\b/g, '');
         parent.className = cn;
@@ -85,13 +86,47 @@
         parent.style.paddingTop = '';
         parent.style.gap = '';
       }
-      existing.outerHTML = buildNavHTML(activeId);
-    } else {
-      var layout = document.querySelector('.sf-layout, [class*="layout"]');
-      if (layout) {
-        layout.classList.add('sf-layout-normalized');
-        layout.insertAdjacentHTML('afterbegin', buildNavHTML(activeId));
+      existing.outerHTML = navHTML;
+      return;
+    }
+
+    // Strategy 2: Find sf-layout or similar flex container
+    var layout = document.querySelector('.sf-layout');
+    if (layout) {
+      layout.classList.add('sf-layout-normalized');
+      layout.insertAdjacentHTML('afterbegin', navHTML);
+      return;
+    }
+
+    // Strategy 3: No aside, no sf-layout — wrap body content in a layout
+    // Find the main content area (after header)
+    var header = document.querySelector('header');
+    var mainContent = document.querySelector('.main-content, main, .content');
+    
+    if (!mainContent) {
+      // Find first significant div after header
+      var siblings = document.body.children;
+      for (var i = 0; i < siblings.length; i++) {
+        var el = siblings[i];
+        if (el.tagName === 'HEADER' || el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || 
+            el.classList.contains('sf-orb') || el.classList.contains('top-accent') ||
+            el.classList.contains('sf-particles-container')) continue;
+        if (el.tagName === 'DIV' || el.tagName === 'MAIN' || el.tagName === 'SECTION') {
+          mainContent = el;
+          break;
+        }
       }
+    }
+
+    if (mainContent) {
+      // Create wrapper layout
+      var wrapper = document.createElement('div');
+      wrapper.classList.add('sf-layout-normalized');
+      mainContent.parentNode.insertBefore(wrapper, mainContent);
+      wrapper.innerHTML = navHTML;
+      mainContent.style.flex = '1';
+      mainContent.style.minWidth = '0';
+      wrapper.appendChild(mainContent);
     }
   };
 })();
