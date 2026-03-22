@@ -643,3 +643,29 @@ html[class], body[class] {
   background: #060a14 !important;
   background-color: #060a14 !important;
 }
+
+/* ═══ Floating Rising Dots ═══ */
+.sf-particles-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.sf-particle {
+  position: absolute;
+  bottom: -10px;
+  width: var(--size, 3px);
+  height: var(--size, 3px);
+  border-radius: 50%;
+  background: var(--color, rgba(181,196,19,.35));
+  box-shadow: 0 0 calc(var(--size, 3px) * 2) var(--color, rgba(181,196,19,.2));
+  animation: sf-rise var(--duration, 12s) var(--delay, 0s) linear infinite;
+  opacity: 0;
+}
+@keyframes sf-rise {
+  0%   { transform: translateY(0) translateX(0) scale(0); opacity: 0; }
+  10%  { opacity: var(--peak-opacity, 0.6); transform: translateY(-10vh) translateX(var(--drift, 10px)) scale(1); }
+  90%  { opacity: var(--peak-opacity, 0.4); }
+  100% { transform: translateY(-110vh) translateX(var(--drift-end, -15px)) scale(0.3); opacity: 0; }
+}
