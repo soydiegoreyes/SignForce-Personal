@@ -137,32 +137,20 @@
 <link rel="stylesheet" href="/signforce-sidebar.css"/>
 </head>
 <body>
-  <div class="top-accent"></div>
-  <!-- SignForce Orbs -->
-  <div class="sf-orb sf-orb-1"></div>
-  <div class="sf-orb sf-orb-2"></div>
-  <div class="sf-orb sf-orb-3"></div>
-
-
-  <!-- Header -->
-  <header class="sf-header">
-    <div style="display:flex;align-items:center;gap:1.5rem;">
-      <a href="/" style="display:flex;align-items:center;gap:0;color:#fff;">
-        <span class="sf-logo-s">S</span>
-        <span class="sf-logo-text">IGNFORCE</span>
-      </a>
-      <nav style="display:flex;gap:4px;">
-        <a href="/users"><span class="material-symbols-outlined" style="font-size:16px;">group</span> Usuarios</a>
-        <a href="/myfolders"><span class="material-symbols-outlined" style="font-size:16px;">folder</span> Folders</a>
-        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
-      </nav>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
+  <header class="sf-unified-header" id="mainHeader">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <a href="/users" style="display:flex;align-items:center;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:28px;width:auto;"></a>
     </div>
-    <div>
-      <button class="sf-btn-ghost" id="goHome">
-        <span class="material-symbols-outlined" style="font-size:16px;">home</span> Home
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span class="sf-user-name" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
+      <button class="sf-btn-logout" onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+        <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
       </button>
     </div>
   </header>
+
   <div class="sf-page-layout">
     <aside class="sf-sidebar" id="sf-shared-sidebar">
       <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">

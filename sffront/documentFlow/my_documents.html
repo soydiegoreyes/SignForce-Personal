@@ -275,47 +275,20 @@
 <link rel="stylesheet" href="/signforce-sidebar.css"/>
 </head>
   <body>
-    <div class="top-accent"></div>
-  <!-- SignForce Orbs -->
-  <div class="sf-orb sf-orb-1"></div>
-  <div class="sf-orb sf-orb-2"></div>
-  <div class="sf-orb sf-orb-3"></div>
+  <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
+  <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
+  <header class="sf-unified-header" id="mainHeader">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <a href="/users" style="display:flex;align-items:center;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:28px;width:auto;"></a>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span class="sf-user-name" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
+      <button class="sf-btn-logout" onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+        <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
+      </button>
+    </div>
+  </header>
 
-    <!-- Barra superior rediseñada -->
-    <header class="glass-header" id="mainHeader">
-      <div class="flex items-center gap-8 relative">
-        <!-- Burbuja liquid glass -->
-        <div class="liquid-bubble" id="liquidBubble"></div>
-        
-        <div class="flex items-center gap-4 text-primary">
-          <span class="logo-s" style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:0.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,0.25);">S</span>
-          <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2>
-        </div>
-        
-      </div>
-      <div class="flex flex-1 justify-end gap-8">
-        <label class="flex flex-col min-w-40 !h-8 max-w-64">
-          <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
-            <div class="text-secondary flex border-none bg-white/20 items-center justify-center pl-4 rounded-l-xl border-r-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-              </svg>
-            </div>
-            <input
-              placeholder="Search"
-              class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-white/20 focus:border-none h-full placeholder:text-secondary px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
-              value=""
-            />
-          </div>
-        </label>
-        <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-8 bg-white/20 text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5 hover:bg-white/30 hover-glow">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" viewBox="0 0 256 256">
-            <path d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z"></path>
-          </svg>
-        </button>
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 border-2 border-white/30" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBbYUWxbORDaDC5_G2MR7j7eMY5TkcBIeHUAPDirdwudaG_RCYs6OXkNrwnAoQyBuiUrQ6mgXQ6DaZ9aDKNy_DO1OrhL2KU7uvwqLwUQN1egqbx0DGCkFRe9Lpdwb1KlGAQwh8nuRaagEvyLuKDxGSBkzdsH7q1-HVdD_mtOOSlR2HGVN59k2TFGb7Cg2CFPfOCYalcMHWYS9cR_NzXvFZ5YRyBuj_4xjJaw06b4vBlTXUdSXG3BmQXDWuJGDFVCtUTClqbDNoeiTw");'></div>
-      </div>
-    </header>
   <div class="sf-page-layout">
     <aside class="sf-sidebar" id="sf-shared-sidebar">
       <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">

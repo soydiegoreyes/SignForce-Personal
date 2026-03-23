@@ -51,18 +51,15 @@
 <body>
   <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
   <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
-
-  <header class="sf-header">
-    <div style="display:flex;align-items:center;gap:1.5rem;">
-      <a href="/users" style="color:#fff;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:32px;width:auto;"></a>
-      <nav style="display:flex;gap:4px;">
-        <a href="/mydocs"><span class="material-symbols-outlined" style="font-size:16px;">description</span> Documentos</a>
-        <a href="/mykeys"><span class="material-symbols-outlined" style="font-size:16px;">key</span> Mis Llaves</a>
-      </nav>
+  <header class="sf-unified-header" id="mainHeader">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <a href="/users" style="display:flex;align-items:center;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:28px;width:auto;"></a>
     </div>
     <div style="display:flex;align-items:center;gap:.75rem;">
-      <span id="nombreUsuario" style="font-size:.82rem;color:rgba(255,255,255,.45);">Usuario</span>
-      <button class="sf-btn-ghost" onclick="logout()"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir</button>
+      <span class="sf-user-name" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
+      <button class="sf-btn-logout" onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+        <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
+      </button>
     </div>
   </header>
 
