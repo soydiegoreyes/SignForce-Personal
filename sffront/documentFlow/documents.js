@@ -249,51 +249,14 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (!response.ok) {
-                if (response.status === 401 && !window.SF_DEMO) {  
+                if (response.status === 401) {  
                     window.location.href = '/login';
-                }
-                // Fallback to demo data on any error
-                if (window.SF_DEMO_DOCS) {
-                    currentData = {};
-                    Object.entries(window.SF_DEMO_DOCS).forEach(([id, doc]) => {
-                        currentData[id] = {
-                            documentName: doc.nameDoc,
-                            documentExt: 'PDF',
-                            sizeB: parseInt(doc.fileSize) * 1024 || 1500000,
-                            createdAtDoc: doc.createDate,
-                            lastModifiedDoc: doc.createDate,
-                            activeDoc: "1",
-                            documentHash: 'sha256_' + id.toLowerCase().replace(/-/g,''),
-                            progressPercent: doc.status === 5 ? 100 : doc.status === 3 ? 65 : 30
-                        };
-                    });
-                    populateTable(currentData, currentTab);
-                    renderPagination();
-                    return;
                 }
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
             const responseData = await response.json();
             currentData = responseData.data || {};
-            
-            // If no real data, use demo data
-            if (Object.keys(currentData).length === 0 && window.SF_DEMO_DOCS) {
-                currentData = {};
-                Object.entries(window.SF_DEMO_DOCS).forEach(([id, doc]) => {
-                    currentData[id] = {
-                        documentName: doc.nameDoc,
-                        documentExt: 'PDF',
-                        sizeB: parseInt(doc.fileSize) * 1024 || 1500000,
-                        createdAtDoc: doc.createDate,
-                        lastModifiedDoc: doc.createDate,
-                        activeDoc: doc.status === 4 ? "0" : "1",
-                        documentHash: 'sha256_' + id.toLowerCase().replace(/-/g,''),
-                        progressPercent: doc.status === 5 ? 100 : doc.status === 3 ? 65 : doc.status === 2 ? 30 : 0,
-                        abstractDoc: doc.tags ? doc.tags.join(', ') : ''
-                    };
-                });
-            }
             currentPage = responseData.page || page;
             pageSize = responseData.page_size || pageSize;
             totalDocs = responseData.total ?? Object.keys(currentData).length;
@@ -717,27 +680,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (!response.ok) {
-                if (response.status === 401 && !window.SF_DEMO) {  
+                if (response.status === 401) {  
                     window.location.href = '/login';
-                }
-                // Fallback to demo data on any error
-                if (window.SF_DEMO_DOCS) {
-                    currentData = {};
-                    Object.entries(window.SF_DEMO_DOCS).forEach(([id, doc]) => {
-                        currentData[id] = {
-                            documentName: doc.nameDoc,
-                            documentExt: 'PDF',
-                            sizeB: parseInt(doc.fileSize) * 1024 || 1500000,
-                            createdAtDoc: doc.createDate,
-                            lastModifiedDoc: doc.createDate,
-                            activeDoc: "1",
-                            documentHash: 'sha256_' + id.toLowerCase().replace(/-/g,''),
-                            progressPercent: doc.status === 5 ? 100 : doc.status === 3 ? 65 : 30
-                        };
-                    });
-                    populateTable(currentData, currentTab);
-                    renderPagination();
-                    return;
                 }
                 throw new Error(`Error HTTP: ${response.status}`);
             }
@@ -772,27 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (!response.ok) {
-                if (response.status === 401 && !window.SF_DEMO) {  
+                if (response.status === 401) {  
                     window.location.href = '/login';
-                }
-                // Fallback to demo data on any error
-                if (window.SF_DEMO_DOCS) {
-                    currentData = {};
-                    Object.entries(window.SF_DEMO_DOCS).forEach(([id, doc]) => {
-                        currentData[id] = {
-                            documentName: doc.nameDoc,
-                            documentExt: 'PDF',
-                            sizeB: parseInt(doc.fileSize) * 1024 || 1500000,
-                            createdAtDoc: doc.createDate,
-                            lastModifiedDoc: doc.createDate,
-                            activeDoc: "1",
-                            documentHash: 'sha256_' + id.toLowerCase().replace(/-/g,''),
-                            progressPercent: doc.status === 5 ? 100 : doc.status === 3 ? 65 : 30
-                        };
-                    });
-                    populateTable(currentData, currentTab);
-                    renderPagination();
-                    return;
                 }
                 throw new Error(`Error HTTP: ${response.status}`);
             }
