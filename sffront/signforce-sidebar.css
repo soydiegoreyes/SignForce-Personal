@@ -1,8 +1,17 @@
+/* ═══ SignForce Background — from Payment page ═══ */
+body{background:#060a14!important;color:#fff!important;font-family:'DM Sans','Inter',sans-serif!important;overflow-x:hidden!important;line-height:1.6!important;min-height:100vh!important;margin:0!important}
+body::before{content:''!important;position:fixed!important;inset:0!important;pointer-events:none!important;z-index:0!important;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.03) 1px,transparent 0)!important;background-size:48px 48px!important}
 
-/* ═══ SignForce Background System ═══ */
-body{background:#030711!important;font-family:'DM Sans','Inter',sans-serif!important;color:#fff!important;margin:0!important;min-height:100vh!important}
-body::before{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background:radial-gradient(circle 600px at 5% 8%,rgba(181,196,19,.10) 0%,transparent 60%),radial-gradient(circle 450px at 15% 2%,rgba(181,196,19,.06) 0%,transparent 50%),radial-gradient(circle 350px at 85% 85%,rgba(96,165,250,.06) 0%,transparent 50%),radial-gradient(circle 500px at 90% 90%,rgba(96,165,250,.04) 0%,transparent 60%),radial-gradient(circle 300px at 50% 50%,rgba(181,196,19,.025) 0%,transparent 50%),radial-gradient(circle 200px at 70% 20%,rgba(52,211,153,.03) 0%,transparent 50%)!important}
-body::after{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;opacity:.4!important;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E")!important;background-size:128px 128px!important}
+/* Animated floating orbs — payment style */
+.sf-bg-orb{position:fixed!important;border-radius:50%!important;filter:blur(100px)!important;pointer-events:none!important;z-index:0!important}
+.sf-bg-orb-1{width:500px!important;height:500px!important;background:rgba(181,196,19,.08)!important;top:-150px!important;left:-100px!important;animation:sf-drift1 20s ease-in-out infinite!important}
+.sf-bg-orb-2{width:400px!important;height:400px!important;background:rgba(52,211,153,.05)!important;bottom:-100px!important;right:-100px!important;animation:sf-drift2 25s ease-in-out infinite!important}
+.sf-bg-orb-3{width:300px!important;height:300px!important;background:rgba(96,165,250,.04)!important;top:40%!important;right:10%!important;animation:sf-drift3 18s ease-in-out infinite!important}
+@keyframes sf-drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(80px,60px)}}
+@keyframes sf-drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-60px,-40px)}}
+@keyframes sf-drift3{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+
 
 /* SignForce Unified Sidebar + Header — single source of truth */
 
