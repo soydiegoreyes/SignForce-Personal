@@ -23,10 +23,6 @@
 .material-symbols-outlined{font-family:'Material Symbols Outlined'!important;font-weight:normal!important;font-style:normal!important;font-size:1.15rem!important;line-height:1!important;letter-spacing:normal!important;text-transform:none!important;display:inline-block!important;white-space:nowrap!important;word-wrap:normal!important;direction:ltr!important;-webkit-font-smoothing:antialiased!important;-moz-osx-font-smoothing:grayscale!important;text-rendering:optimizeLegibility!important;font-feature-settings:'liga'!important}
 
 /* Orbs */
-.sf-orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.12;pointer-events:none;z-index:0}
-.sf-orb-1{width:400px;height:400px;background:#B5C413;top:-100px;left:-100px}
-.sf-orb-2{width:350px;height:350px;background:#60a5fa;bottom:-50px;right:-50px}
-.sf-orb-3{width:250px;height:250px;background:#a78bfa;top:40%;left:60%}
 
 /* Responsive */
 @media(max-width:900px){
@@ -34,8 +30,9 @@
   .sf-sidebar{width:100%!important;min-width:100%!important;max-width:100%!important;position:static!important;max-height:none!important}
 }
 /* Body reset */
-body{background:#060a14!important;font-family:'DM Sans','Inter',sans-serif!important;color:#fff!important;margin:0!important;min-height:100vh!important}
-body::before{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0)!important;background-size:48px 48px!important}
+body{background:#050a12!important;font-family:'DM Sans','Inter',sans-serif!important;color:#fff!important;margin:0!important;min-height:100vh!important}
+body::before{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(181,196,19,.04) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 100%,rgba(96,165,250,.03) 0%,transparent 50%),radial-gradient(ellipse 50% 40% at 10% 80%,rgba(181,196,19,.02) 0%,transparent 50%)!important}
+body::after{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.018) 1px,transparent 0)!important;background-size:40px 40px!important}
 
 /* Protect sidebar from page-specific overrides */
 aside.sf-sidebar{background:transparent!important;border:none!important;box-shadow:none!important}

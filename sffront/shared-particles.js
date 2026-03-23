@@ -7,15 +7,14 @@
   container.className = 'sf-particles-container';
 
   var colors = [
-    'rgba(181,196,19,.35)',   // verde signforce bright
-    'rgba(181,196,19,.20)',   // verde signforce medium
-    'rgba(181,196,19,.10)',   // verde signforce soft
-    'rgba(96,165,250,.25)',   // azul
-    'rgba(96,165,250,.12)',   // azul soft
-    'rgba(52,211,153,.22)',   // esmeralda
-    'rgba(167,139,250,.18)', // púrpura
+    'rgba(181,196,19,.55)',   // verde signforce bright
+    'rgba(181,196,19,.40)',   // verde signforce medium
+    'rgba(181,196,19,.25)',   // verde signforce soft
+    'rgba(96,165,250,.35)',   // azul
+    'rgba(96,165,250,.20)',   // azul soft
+    'rgba(52,211,153,.30)',   // esmeralda
+    'rgba(255,255,255,.20)', // blanco
     'rgba(255,255,255,.12)', // blanco tenue
-    'rgba(255,255,255,.06)', // blanco casi invisible
   ];
 
   var COUNT = 80;

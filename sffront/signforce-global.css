@@ -659,8 +659,8 @@ html[class], body[class] {
   height: var(--size, 3px);
   border-radius: 50%;
   background: var(--color, rgba(181,196,19,.35));
-  box-shadow: 0 0 calc(var(--size, 3px) * 2.5) var(--color, rgba(181,196,19,.25)),
-              0 0 calc(var(--size, 3px) * 5) var(--color, rgba(181,196,19,.08));
+  box-shadow: 0 0 calc(var(--size, 3px) * 3) var(--color, rgba(181,196,19,.35)),
+              0 0 calc(var(--size, 3px) * 7) var(--color, rgba(181,196,19,.12));
   animation: sf-rise var(--duration, 12s) var(--delay, 0s) linear infinite;
   opacity: 0;
   will-change: transform, opacity;
