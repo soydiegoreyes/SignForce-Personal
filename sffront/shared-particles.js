@@ -18,7 +18,7 @@
     'rgba(255,255,255,.06)', // blanco casi invisible
   ];
 
-  var COUNT = 63;
+  var COUNT = 80;
 
   for (var i = 0; i < COUNT; i++) {
     var dot = document.createElement('div');
@@ -36,9 +36,9 @@
     var delay = (Math.random() * 20).toFixed(1);           // stagger up to 20s
     var drift = (Math.random() * 60 - 30).toFixed(0);      // wider horizontal drift
     var driftEnd = (Math.random() * 80 - 40).toFixed(0);
-    var peakOpacity = size > 4 ? (Math.random() * 0.3 + 0.1).toFixed(2)   // large = softer
-                    : size > 2.5 ? (Math.random() * 0.4 + 0.2).toFixed(2) // medium
-                    : (Math.random() * 0.5 + 0.2).toFixed(2);             // small = brighter
+    var peakOpacity = size > 4 ? (Math.random() * 0.4 + 0.2).toFixed(2)   // large = softer
+                    : size > 2.5 ? (Math.random() * 0.5 + 0.3).toFixed(2) // medium
+                    : (Math.random() * 0.6 + 0.3).toFixed(2);             // small = brighter
     var color = colors[Math.floor(Math.random() * colors.length)];
 
     // Some particles pulse/twinkle
