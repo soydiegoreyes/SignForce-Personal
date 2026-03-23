@@ -9,7 +9,8 @@
 
 /* Sidebar */
 .sf-sidebar{width:250px!important;min-width:250px!important;max-width:250px!important;flex-shrink:0!important;display:flex!important;flex-direction:column!important;gap:.75rem!important;position:sticky!important;top:84px!important;align-self:flex-start!important;max-height:calc(100vh - 90px)!important;box-sizing:border-box!important}
-.sf-sidebar-card{background:rgba(15,21,36,.4)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:16px!important;padding:1rem!important;box-sizing:border-box!important}
+.sf-sidebar-card{background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.02) 50%,rgba(255,255,255,.04) 100%)!important;backdrop-filter:blur(20px) saturate(150%)!important;-webkit-backdrop-filter:blur(20px) saturate(150%)!important;border:.5px solid rgba(255,255,255,.10)!important;border-radius:20px!important;padding:1rem!important;box-sizing:border-box!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.08),inset 0 -1px 1px rgba(0,0,0,.15),0 4px 20px rgba(0,0,0,.3),0 1px 3px rgba(0,0,0,.15)!important;position:relative!important;overflow:hidden!important}
+.sf-sidebar-card::before{content:''!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:1px!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)!important;pointer-events:none!important}
 .sf-sidebar-title{font-size:.65rem!important;text-transform:uppercase!important;letter-spacing:.12em!important;color:rgba(255,255,255,.3)!important;padding:.4rem .6rem!important;font-weight:600!important;margin-bottom:.25rem!important}
 
 /* Nav links */
@@ -39,3 +40,9 @@ body::before{content:''!important;position:fixed!important;inset:0!important;z-i
 /* Protect sidebar from page-specific overrides */
 aside.sf-sidebar{background:transparent!important;border:none!important;box-shadow:none!important}
 aside.sf-sidebar::before{display:none!important}
+
+/* Glass containers — LuxSpace style for all SignForce panels */
+.sf-glass,.sf-card,.glass-panel,.glass-card,.action-card,.stat-card{background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.02) 50%,rgba(255,255,255,.04) 100%)!important;backdrop-filter:blur(20px) saturate(150%)!important;-webkit-backdrop-filter:blur(20px) saturate(150%)!important;border:.5px solid rgba(255,255,255,.10)!important;border-radius:20px!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.08),inset 0 -1px 1px rgba(0,0,0,.15),0 4px 20px rgba(0,0,0,.3),0 1px 3px rgba(0,0,0,.15)!important;position:relative!important;overflow:hidden!important}
+.sf-glass::before,.sf-card::before,.glass-panel::before,.glass-card::before,.action-card::before,.stat-card::before{content:''!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:1px!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)!important;pointer-events:none!important;z-index:1!important}
+/* Table containers */
+.sf-glass table,.glass-panel table{border-collapse:collapse!important;width:100%!important}
