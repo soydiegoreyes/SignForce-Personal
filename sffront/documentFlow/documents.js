@@ -241,7 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const response = await fetch('/statusDocs', {
+                credentials: 'include',
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -686,6 +688,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const docs = {idDocs: [docId], type: "uploaded"}
             const response = await fetch('/downloadDoc', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -722,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const docs = {idDocs: [docId], type: "uploaded", paths: []}
             const response = await fetch('/downloadDoc', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -779,6 +783,7 @@ async function createSignFolder() {
     try {
         const resp = await fetch('/newSignFolder', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(docs)
         });
@@ -811,6 +816,7 @@ async function signDocument(docId) {
     try {
         const resp = await fetch('/signDoc', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
@@ -835,6 +841,7 @@ async function cancelProcess(docId) {
     try {
         const resp = await fetch('/cancelProcess', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
@@ -856,6 +863,7 @@ async function acceptShared(docId) {
     try {
         const resp = await fetch('/acceptShared', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: docId })
         });
@@ -984,6 +992,7 @@ async function logout() {
         try {
             const response = await fetch('/logoutUser', {
                 method: 'GET',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             });
