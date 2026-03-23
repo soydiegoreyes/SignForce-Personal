@@ -46,3 +46,29 @@ aside.sf-sidebar::before{display:none!important}
 .sf-glass::before,.sf-card::before,.glass-panel::before,.glass-card::before,.action-card::before,.stat-card::before{content:''!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:1px!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)!important;pointer-events:none!important;z-index:1!important}
 /* Table containers */
 .sf-glass table,.glass-panel table{border-collapse:collapse!important;width:100%!important}
+
+/* Additional content containers — glass effect */
+.tech-card,.form-container-wrap,.main-panel,.content-card,.doc-card,.folder-card,.key-card{background:linear-gradient(145deg,rgba(255,255,255,.06) 0%,rgba(255,255,255,.02) 50%,rgba(255,255,255,.04) 100%)!important;backdrop-filter:blur(20px) saturate(150%)!important;-webkit-backdrop-filter:blur(20px) saturate(150%)!important;border:.5px solid rgba(255,255,255,.10)!important;border-radius:20px!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.08),inset 0 -1px 1px rgba(0,0,0,.15),0 4px 20px rgba(0,0,0,.3),0 1px 3px rgba(0,0,0,.15)!important;position:relative!important;overflow:hidden!important}
+.tech-card::before,.form-container-wrap::before,.main-panel::before,.content-card::before,.doc-card::before,.folder-card::before,.key-card::before{content:''!important;position:absolute!important;top:0!important;left:0!important;right:0!important;height:1px!important;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent)!important;pointer-events:none!important;z-index:1!important}
+
+/* Page content spacing */
+.sf-page-content{padding:0!important}
+.sf-page-content>h1,.sf-page-content>h2{margin-bottom:1.25rem!important;font-size:1.5rem!important;font-weight:700!important}
+.sf-page-content .stats-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;gap:1rem!important;margin-bottom:1.5rem!important}
+.sf-page-content .sf-card,.sf-page-content .glass-panel{margin-bottom:1.25rem!important;padding:1.5rem!important}
+.sf-page-content .stat-card{padding:1.25rem!important}
+
+/* Upload page containers */
+.main-content{position:relative!important;z-index:1!important}
+.main-content h1{font-size:1.5rem!important;font-weight:700!important;margin-bottom:1rem!important}
+.tech-card{padding:1.5rem!important;margin-bottom:1.25rem!important}
+
+/* Settings spacing fix */
+.settings-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1rem!important}
+@media(max-width:768px){.settings-row{grid-template-columns:1fr!important}}
+
+/* Dashboard stat cards grid */
+.active-section .flex.max-w-\[1400px\]{max-width:100%!important}
+
+/* Reports page charts */
+.chart-container,.reports-grid{margin-top:1.25rem!important}
