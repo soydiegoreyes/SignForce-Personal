@@ -1,14 +1,14 @@
 /* SignForce Unified Sidebar + Header — single source of truth */
 
 /* Header */
-.sf-unified-header{position:fixed!important;top:3px!important;left:0!important;right:0!important;z-index:1000!important;height:56px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:0 1.5rem!important;background:rgba(6,10,20,.88)!important;backdrop-filter:blur(24px)!important;-webkit-backdrop-filter:blur(24px)!important;border-bottom:1px solid rgba(255,255,255,.06)!important;box-sizing:border-box!important}
+.sf-unified-header{position:fixed!important;top:12px!important;left:12px!important;right:12px!important;z-index:1000!important;height:56px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;padding:0 1.25rem!important;box-sizing:border-box!important;border-radius:22px!important;background:linear-gradient(180deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.03) 100%)!important;backdrop-filter:blur(30px) saturate(160%)!important;-webkit-backdrop-filter:blur(30px) saturate(160%)!important;border:.5px solid rgba(255,255,255,.14)!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.1),inset 0 -1px 1px rgba(0,0,0,.2),0 8px 32px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.3)!important}
 
 /* Page layout */
-.sf-page-layout{display:flex!important;min-height:100vh!important;padding:72px 1.5rem 2rem!important;gap:1.25rem!important;position:relative!important;z-index:1!important;box-sizing:border-box!important}
+.sf-page-layout{display:flex!important;min-height:100vh!important;padding:84px 1.5rem 2rem!important;gap:1.25rem!important;position:relative!important;z-index:1!important;box-sizing:border-box!important}
 .sf-page-content{flex:1!important;min-width:0!important}
 
 /* Sidebar */
-.sf-sidebar{width:250px!important;min-width:250px!important;max-width:250px!important;flex-shrink:0!important;display:flex!important;flex-direction:column!important;gap:.75rem!important;position:sticky!important;top:72px!important;align-self:flex-start!important;max-height:calc(100vh - 90px)!important;box-sizing:border-box!important}
+.sf-sidebar{width:250px!important;min-width:250px!important;max-width:250px!important;flex-shrink:0!important;display:flex!important;flex-direction:column!important;gap:.75rem!important;position:sticky!important;top:84px!important;align-self:flex-start!important;max-height:calc(100vh - 90px)!important;box-sizing:border-box!important}
 .sf-sidebar-card{background:rgba(15,21,36,.4)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:16px!important;padding:1rem!important;box-sizing:border-box!important}
 .sf-sidebar-title{font-size:.65rem!important;text-transform:uppercase!important;letter-spacing:.12em!important;color:rgba(255,255,255,.3)!important;padding:.4rem .6rem!important;font-weight:600!important;margin-bottom:.25rem!important}
 
