@@ -35,3 +35,7 @@
 /* Body reset */
 body{background:#060a14!important;font-family:'DM Sans','Inter',sans-serif!important;color:#fff!important;margin:0!important;min-height:100vh!important}
 body::before{content:''!important;position:fixed!important;inset:0!important;z-index:0!important;pointer-events:none!important;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.025) 1px,transparent 0)!important;background-size:48px 48px!important}
+
+/* Protect sidebar from page-specific overrides */
+aside.sf-sidebar{background:transparent!important;border:none!important;box-shadow:none!important}
+aside.sf-sidebar::before{display:none!important}
