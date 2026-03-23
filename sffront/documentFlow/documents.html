@@ -100,18 +100,169 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
     </style>
 <link rel="stylesheet" href="/signforce-sidebar.css"/>
 <style id="documents-extra">
-/* Make rows clickable and visible */
-#documentsTableBody tr{cursor:pointer;transition:background .2s;}
-#documentsTableBody tr:hover{background:rgba(255,255,255,.06)!important;}
-#documentsTableBody tr td{color:rgba(255,255,255,.7);font-size:.88rem;}
-.doc-checkbox{width:16px;height:16px;accent-color:#B5C413;cursor:pointer;}
-/* Sidebar details */
-#sidebarDetails{background:rgba(255,255,255,.02);border-left:1px solid rgba(255,255,255,.06)!important;}
-#sidebarDetails .text-primary{color:rgba(255,255,255,.85)!important;}
-#sidebarDetails .text-secondary{color:rgba(255,255,255,.4)!important;}
+/* ====== DOCUMENT TABLE — GLASS REDESIGN ====== */
+
+/* Table container */
+#documentsTable { border-collapse:separate; border-spacing:0 6px; }
+#documentsTable thead th {
+    background:transparent !important;
+    font-size:.68rem; font-weight:700; color:rgba(255,255,255,.3);
+    text-transform:uppercase; letter-spacing:.1em;
+    padding:.5rem 1rem; border:none !important;
+}
+
+/* Row glass card */
+.doc-row {
+    cursor:pointer; transition:all .25s ease;
+    background:rgba(255,255,255,.02);
+    border-radius:14px;
+}
+.doc-row:hover {
+    background:rgba(255,255,255,.06);
+    box-shadow:0 4px 24px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.doc-row td {
+    padding:.85rem 1rem; border:none !important;
+    color:rgba(255,255,255,.7); font-size:.85rem;
+    vertical-align:middle;
+}
+.doc-row td:first-child { border-radius:14px 0 0 14px; }
+.doc-row td:last-child { border-radius:0 14px 14px 0; }
+
+/* Checkbox */
+.doc-checkbox {
+    width:16px; height:16px; accent-color:#B5C413;
+    cursor:pointer; border-radius:4px;
+}
+.doc-td-check { width:40px; text-align:center; }
+
+/* Document cell */
+.doc-cell { display:flex; align-items:center; gap:.85rem; }
+.doc-icon-wrap {
+    width:40px; height:40px; border-radius:12px;
+    background:linear-gradient(135deg, rgba(181,196,19,.1), rgba(181,196,19,.04));
+    border:1px solid rgba(181,196,19,.12);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; cursor:pointer; transition:all .25s;
+}
+.doc-icon-wrap:hover {
+    background:linear-gradient(135deg, rgba(181,196,19,.2), rgba(181,196,19,.08));
+    border-color:rgba(181,196,19,.3);
+    transform:scale(1.05);
+}
+.doc-icon-wrap .material-symbols-outlined {
+    font-size:20px; color:#B5C413;
+}
+.doc-info { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.doc-name {
+    font-size:.88rem; font-weight:600; color:rgba(255,255,255,.88);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px;
+}
+.doc-date { font-size:.72rem; color:rgba(255,255,255,.3); }
+
+/* Extension badge */
+.ext-badge {
+    display:inline-flex; padding:3px 10px; border-radius:8px;
+    background:rgba(96,165,250,.08); border:1px solid rgba(96,165,250,.12);
+    color:rgba(96,165,250,.7); font-size:.7rem; font-weight:700;
+    letter-spacing:.04em;
+}
+
+/* Size */
+.doc-td-size { color:rgba(255,255,255,.35) !important; font-size:.8rem !important; font-variant-numeric:tabular-nums; }
+
+/* Status badge */
+.status-badge {
+    display:inline-flex; padding:3px 12px; border-radius:20px;
+    font-size:.7rem; font-weight:600; letter-spacing:.02em;
+}
+.status-active {
+    background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.15);
+    color:#34d399;
+}
+.status-inactive {
+    background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.15);
+    color:#ef4444;
+}
+
+/* ====== SIDEBAR DETAILS ====== */
+#sidebarDetails {
+    background:rgba(255,255,255,.015) !important;
+    border-left:1px solid rgba(255,255,255,.04) !important;
+}
+#sidebarDetails .text-primary { color:rgba(255,255,255,.85) !important; }
+#sidebarDetails .text-secondary { color:rgba(255,255,255,.35) !important; }
+#sidebarDetails h3 { font-size:.95rem !important; }
+#sidebarDetails h4 {
+    font-size:.75rem !important; font-weight:700 !important;
+    text-transform:uppercase; letter-spacing:.08em;
+    color:rgba(255,255,255,.3) !important;
+}
+#sidebarDetails .h-16.w-16 {
+    background:linear-gradient(135deg, rgba(181,196,19,.1), rgba(181,196,19,.04)) !important;
+    border:1px solid rgba(181,196,19,.12); border-radius:16px !important;
+}
+#sidebarDetails .h-16.w-16 .material-symbols-outlined { color:#B5C413 !important; }
+
 /* Progress bar */
-#progressFill{background:linear-gradient(90deg,#B5C413,#34d399);border-radius:4px;height:100%;transition:width .5s;}
-.progress-bar-bg{background:rgba(255,255,255,.06);border-radius:4px;height:6px;overflow:hidden;}
+.progress-bar { background:rgba(255,255,255,.04); border-radius:6px; height:6px; overflow:hidden; }
+.progress-fill { background:linear-gradient(90deg,#B5C413,#34d399); border-radius:6px; height:100%; transition:width .5s; }
+#progressFill { background:linear-gradient(90deg,#B5C413,#34d399); border-radius:6px; height:100%; transition:width .5s; }
+.progress-bar-bg { background:rgba(255,255,255,.04); border-radius:6px; height:6px; overflow:hidden; }
+
+/* Signature history card */
+#sidebarSignatures {
+    background:rgba(255,255,255,.02) !important;
+    border:1px solid rgba(255,255,255,.04) !important;
+    border-radius:14px !important;
+}
+
+/* ====== SEARCH BAR ====== */
+#searchInput {
+    background:rgba(255,255,255,.04) !important;
+    border:1px solid rgba(255,255,255,.06) !important;
+    border-radius:12px !important; color:#fff !important;
+    font-size:.82rem !important; padding:.55rem 1rem .55rem 2.5rem !important;
+    transition:all .25s !important; width:260px;
+}
+#searchInput:focus {
+    background:rgba(255,255,255,.06) !important;
+    border-color:rgba(181,196,19,.25) !important;
+    box-shadow:0 0 0 3px rgba(181,196,19,.06) !important;
+    outline:none !important;
+}
+#searchInput::placeholder { color:rgba(255,255,255,.2) !important; }
+
+/* ====== PAGE TITLE ====== */
+#sectionTitle {
+    font-size:1.4rem !important; font-weight:700;
+    color:rgba(255,255,255,.9); letter-spacing:-.01em;
+}
+
+/* ====== PAGINATION ====== */
+#paginationContainer { gap:4px; }
+#paginationContainer button {
+    padding:6px 12px; border-radius:10px; font-size:.78rem; font-weight:600;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.06);
+    color:rgba(255,255,255,.4); cursor:pointer; transition:all .2s;
+}
+#paginationContainer button:hover {
+    background:rgba(255,255,255,.08); color:rgba(255,255,255,.7);
+}
+#paginationContainer button.active,
+#paginationContainer button[style*="B5C413"] {
+    background:rgba(181,196,19,.12) !important; border-color:rgba(181,196,19,.2) !important;
+    color:#B5C413 !important;
+}
+
+/* ====== GLASS PANEL OVERRIDE ====== */
+.glass-panel {
+    background:rgba(255,255,255,.02) !important;
+    border:1px solid rgba(255,255,255,.04) !important;
+    border-radius:20px !important;
+    backdrop-filter:blur(20px) !important;
+}
+
 /* Action buttons */
 #sidebarActions button{border-radius:12px!important;font-weight:600!important;transition:all .2s!important;}
 #sidebarActions button:hover{transform:translateY(-1px)!important;}
@@ -163,7 +314,7 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
     <main class="sf-page-content">
 
             <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-bold text-primary fade-in" id="sectionTitle">Documentos en Proceso de Firma</h2>
+                <h2 class="fade-in" id="sectionTitle">Mis Documentos</h2>
                 <div id="messageContainer"></div>
             </div>
             <div class="glass-panel overflow-hidden">
@@ -215,7 +366,7 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
                         <div class="flex flex-col h-full">
                             <div class="flex-shrink-0">
                                 <div class="flex items-center space-x-4 mb-6">
-                                    <div class="h-16 w-16 rounded-full bg-gray-600 flex items-center justify-center">
+                                    <div class="h-16 w-16 rounded-full flex items-center justify-center">
                                         <span class="material-symbols-outlined text-3xl text-white">description</span>
                                     </div>
                                     <div>
@@ -266,38 +417,8 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
         </div>
     </div>
 
-    <script>
-// Debug: intercept fetch to /statusDocs and show what happens
-(function() {
-    var origFetch = window.fetch;
-    window.fetch = function(url, opts) {
-        if (typeof url === 'string' && url.indexOf('statusDocs') !== -1) {
-            var dbg = document.createElement('div');
-            dbg.id = 'fetchDebug';
-            dbg.style.cssText = 'position:fixed;bottom:1rem;left:1rem;z-index:99999;background:rgba(0,0,0,.9);color:#0f0;font-family:monospace;font-size:11px;padding:8px 12px;border-radius:8px;max-width:400px;word-break:break-all;';
-            dbg.textContent = 'FETCH: ' + url;
-            document.body.appendChild(dbg);
-            
-            return origFetch.apply(this, arguments).then(function(response) {
-                dbg.textContent += ' | STATUS: ' + response.status;
-                var cloned = response.clone();
-                cloned.text().then(function(t) {
-                    dbg.textContent += ' | BODY: ' + t.substring(0, 200);
-                    setTimeout(function() { dbg.remove(); }, 15000);
-                });
-                return response;
-            }).catch(function(err) {
-                dbg.textContent += ' | ERROR: ' + err.message;
-                dbg.style.color = '#f00';
-                setTimeout(function() { dbg.remove(); }, 15000);
-                throw err;
-            });
-        }
-        return origFetch.apply(this, arguments);
-    };
-})();
-</script>
-<script src="/documentFlow/documents.js?v=4"></script>
+    
+<script src="/documentFlow/documents.js?v=5"></script>
 
   <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
 <script src="/sf-demo-data.js"></script>

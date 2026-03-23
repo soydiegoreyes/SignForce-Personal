@@ -272,12 +272,10 @@ setTimeout(function() {
             }
 
             const responseText = await response.text();
-            console.log('statusDocs raw response:', responseText.substring(0, 500));
             let responseData;
             try {
                 responseData = JSON.parse(responseText);
-                console.log('statusDocs parsed:', JSON.stringify(responseData).substring(0, 500));
-            } catch(parseErr) {
+                } catch(parseErr) {
                 // API returned non-JSON (e.g. 'No autorizado')
                 if (responseText.toLowerCase().includes('no autorizado') || responseText.toLowerCase().includes('not authorized')) {
                     window.location.href = '/login';
@@ -290,12 +288,6 @@ setTimeout(function() {
             pageSize = responseData.page_size || pageSize;
             totalDocs = responseData.total ?? Object.keys(currentData).length;
 
-            console.log('Documents loaded:', Object.keys(currentData).length, 'items');
-            // Temporarily show count in page title
-            var titleEl = document.getElementById('sectionTitle');
-            if (titleEl && Object.keys(currentData).length > 0) {
-                titleEl.textContent = 'Documentos en Proceso de Firma (' + Object.keys(currentData).length + ')';
-            }
             populateTable(currentData, currentTab);
             renderPagination();
 
@@ -371,9 +363,13 @@ setTimeout(function() {
         if (!data || Object.keys(data).length === 0) {
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="text-center py-8 text-secondary">
-                        <div class="btn-secondary">
-                            <a href="/upload">Subir documentos</a>
+                    <td colspan="5" style="text-align:center;padding:3rem;">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+                            <div style="width:64px;height:64px;border-radius:50%;background:rgba(181,196,19,.06);display:flex;align-items:center;justify-content:center;">
+                                <span class="material-symbols-outlined" style="font-size:32px;color:rgba(181,196,19,.35);">cloud_upload</span>
+                            </div>
+                            <p style="color:rgba(255,255,255,.35);font-size:.9rem;">No hay documentos aún</p>
+                            <a href="/upload" class="sf-btn-primary" style="padding:.5rem 1.5rem;border-radius:12px;background:linear-gradient(135deg,rgba(181,196,19,.15),rgba(181,196,19,.08));border:1px solid rgba(181,196,19,.25);color:#B5C413;font-size:.85rem;font-weight:600;text-decoration:none;transition:all .25s;">Subir documento</a>
                         </div>
                     </td>
                 </tr>`;
@@ -409,27 +405,27 @@ setTimeout(function() {
                 const docData = data[docId];
                 selectDocument(docId, docData);
             });
-            row.className = "glass-card fade-in cursor-pointer";row.style.cssText="cursor:pointer;transition:all .2s;border-bottom:1px solid rgba(255,255,255,.04);";row.onmouseenter=function(){this.style.background="rgba(255,255,255,.06)"};row.onmouseleave=function(){this.style.background=""};
+            row.className = "doc-row";
+            const statusClass = doc.activeDoc === "1" ? "status-active" : "status-inactive";
+            const extUpper = (doc.documentExt || 'N/A').toUpperCase();
             row.innerHTML = `
-                <td class="px-4 text-center">
+                <td class="doc-td-check">
                     <input type="checkbox" class="doc-checkbox" data-id="${docId}" data-hash="${doc.documentHash || ''}" ${checked}>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 bg-gray-600 rounded-full flex items-center justify-center">
-                            <span class="material-symbols-outlined text-white" onclick="viewDocument('${doc.documentName}', '${docId}')">description</span>
+                <td class="doc-td-main">
+                    <div class="doc-cell">
+                        <div class="doc-icon-wrap" onclick="viewDocument('${doc.documentName}', '${docId}')">
+                            <span class="material-symbols-outlined">picture_as_pdf</span>
                         </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-primary">${doc.documentName}</div>
-                            <div class="text-sm text-secondary">${uploadDate}</div>
+                        <div class="doc-info">
+                            <span class="doc-name">${doc.documentName}</span>
+                            <span class="doc-date">${uploadDate}</span>
                         </div>
                     </div>
                 </td>
-                <td class="px-6 py-4 text-sm text-primary">${doc.documentExt || 'N/A'}</td>
-                <td class="px-6 py-4 text-sm text-secondary">
-                    ${formatBytes(doc.sizeB)}
-                </td>
-                <td class="px-6 py-4">${statusText}</td>
+                <td class="doc-td-ext"><span class="ext-badge">${extUpper}</span></td>
+                <td class="doc-td-size">${formatBytes(doc.sizeB)}</td>
+                <td class="doc-td-status"><span class="status-badge ${statusClass}">${statusText}</span></td>
             `;
 
             tableBody.appendChild(row);
