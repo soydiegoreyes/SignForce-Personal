@@ -476,6 +476,12 @@
           const data = await response.json();
           if (data.error) { alert('Error: ' + data.error); return; }
           if (data.userName) localStorage.setItem('sf_userName', data.userName);
+          if (data.lastName) localStorage.setItem('sf_userLastName', data.lastName);
+          if (data.email) localStorage.setItem('sf_userEmail', data.email);
+          if (data.phone) localStorage.setItem('sf_userPhone', data.phone);
+          if (data.phoneCode) localStorage.setItem('sf_userPhoneCode', data.phoneCode);
+          if (data.role) localStorage.setItem('sf_userRole', data.role);
+          if (data.planStatus) localStorage.setItem('sf_planStatus', data.planStatus);
           if (data.redirectTo) window.location.href = data.redirectTo;
         } else {
           const err = await response.json();

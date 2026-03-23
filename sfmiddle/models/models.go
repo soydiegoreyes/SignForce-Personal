@@ -150,6 +150,12 @@ type RegisterResponse struct {
 // LoginResponse estructura para la respuesta del login
 type LoginResponse struct {
 	UserName   string `json:"userName"`
+	LastName   string `json:"lastName"`
+	Email      string `json:"email"`
+	Phone      string `json:"phone"`
+	PhoneCode  string `json:"phoneCode"`
+	Role       string `json:"role"`
+	PlanStatus string `json:"planStatus"`
 	Error      string `json:"error"`
 	RedirectTo string `json:"redirectTo"`
 }

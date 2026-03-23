@@ -55,7 +55,7 @@ html,body{background:#060a14 !important;}
     </div>
     <div style="display:flex;align-items:center;gap:.75rem;">
       <span id="sf-header-user" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
-      <button onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+      <button id="logoutBtn" onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
         <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
       </button>
     </div>
@@ -87,12 +87,12 @@ html,body{background:#060a14 !important;}
     <main class="sf-page-content">
 
       <!-- Profile -->
-      <div class="sf-card">
+      <div class="sf-card" style="margin-bottom:1.25rem;padding:1.5rem;">
         <div class="sf-card-header">
           <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">person</span></div>
           <div class="sf-card-title">Perfil de Usuario</div>
         </div>
-        <div class="settings-row">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
           <div class="settings-group">
             <label class="settings-label">Nombre</label>
             <input type="text" class="settings-input" id="set-name" placeholder="Tu nombre">
@@ -102,28 +102,38 @@ html,body{background:#060a14 !important;}
             <input type="text" class="settings-input" id="set-lastname" placeholder="Tu apellido">
           </div>
         </div>
-        <div class="settings-row">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
           <div class="settings-group">
             <label class="settings-label">Email</label>
-            <input type="email" class="settings-input" id="set-email" disabled>
+            <input type="email" class="settings-input" id="set-email" disabled style="opacity:.6;cursor:not-allowed;">
           </div>
           <div class="settings-group">
             <label class="settings-label">Teléfono</label>
-            <input type="tel" class="settings-input" id="set-phone" placeholder="10 dígitos">
+            <div style="display:flex;gap:.5rem;">
+              <div id="phone-flag-container" style="display:flex;align-items:center;gap:.4rem;padding:0 .75rem;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer;min-width:90px;position:relative;" onclick="document.getElementById('country-dropdown').classList.toggle('sf-hidden')">
+                <span id="phone-flag" style="font-size:1.2rem;">🇲🇽</span>
+                <span id="phone-code" style="font-size:.82rem;color:rgba(255,255,255,.6);">+52</span>
+                <span class="material-symbols-outlined" style="font-size:14px;color:rgba(255,255,255,.3);margin-left:auto;">expand_more</span>
+                <!-- Country dropdown -->
+                <div id="country-dropdown" class="sf-hidden" style="position:absolute;top:100%;left:0;margin-top:4px;background:rgba(10,15,30,.96);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:.5rem;z-index:100;max-height:200px;overflow-y:auto;min-width:220px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.5);">
+                </div>
+              </div>
+              <input type="tel" class="settings-input" id="set-phone" placeholder="10 dígitos" style="flex:1;">
+            </div>
           </div>
         </div>
         <button class="sf-btn-save" id="saveProfile"><span class="material-symbols-outlined" style="font-size:16px;">save</span> Guardar cambios</button>
       </div>
 
       <!-- Plan -->
-      <div class="sf-card">
+      <div class="sf-card" style="margin-bottom:1.25rem;padding:1.5rem;">
         <div class="sf-card-header">
           <div class="sf-card-icon" style="background:rgba(181,196,19,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">workspace_premium</span></div>
           <div class="sf-card-title">Mi Plan</div>
         </div>
         <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
-          <span class="plan-badge" id="plan-name"><span class="material-symbols-outlined" style="font-size:16px;">star</span> Cargando...</span>
-          <span class="status-ok"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> Activo</span>
+          <span class="plan-badge" id="plan-name"><span class="material-symbols-outlined" style="font-size:16px;">star</span> <span id="plan-text">Enterprise</span></span>
+          <span id="plan-status" style="display:inline-flex;align-items:center;gap:4px;padding:.3rem .75rem;border-radius:8px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.15);font-size:.78rem;font-weight:600;color:#34d399;"><span class="material-symbols-outlined" style="font-size:14px;">check_circle</span> Activo</span>
         </div>
         <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;">Gestiona tu suscripción y métodos de pago.</p>
         <div style="display:flex;gap:.75rem;">
@@ -132,66 +142,261 @@ html,body{background:#060a14 !important;}
       </div>
 
       <!-- Security -->
-      <div class="sf-card">
+      <div class="sf-card" style="margin-bottom:1.25rem;padding:1.5rem;">
         <div class="sf-card-header">
           <div class="sf-card-icon" style="background:rgba(248,113,113,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f87171;">shield</span></div>
           <div class="sf-card-title">Seguridad</div>
         </div>
-        <div class="settings-group">
+        <div class="settings-group" style="margin-bottom:1rem;">
           <label class="settings-label">Contraseña actual</label>
-          <input type="password" class="settings-input" id="set-oldpass" placeholder="••••••••">
+          <div style="position:relative;">
+            <input type="password" class="settings-input" id="set-oldpass" placeholder="••••••••" style="padding-right:3rem;">
+            <button onclick="togglePass('set-oldpass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);"><span class="material-symbols-outlined" style="font-size:18px;">visibility</span></button>
+          </div>
+          <button id="forgotPassBtn" style="margin-top:.5rem;background:none;border:none;color:#60a5fa;font-size:.78rem;font-weight:600;cursor:pointer;padding:0;font-family:inherit;">¿Olvidaste tu contraseña?</button>
         </div>
-        <div class="settings-row">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.75rem;">
           <div class="settings-group">
             <label class="settings-label">Nueva contraseña</label>
-            <input type="password" class="settings-input" id="set-newpass" placeholder="Mínimo 8 caracteres">
+            <div style="position:relative;">
+              <input type="password" class="settings-input" id="set-newpass" placeholder="Mínimo 8 caracteres" oninput="checkPassStrength()">
+              <button onclick="togglePass('set-newpass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);"><span class="material-symbols-outlined" style="font-size:18px;">visibility</span></button>
+            </div>
           </div>
           <div class="settings-group">
             <label class="settings-label">Confirmar contraseña</label>
-            <input type="password" class="settings-input" id="set-confirmpass" placeholder="Repite la contraseña">
+            <div style="position:relative;">
+              <input type="password" class="settings-input" id="set-confirmpass" placeholder="Repite la contraseña">
+              <button onclick="togglePass('set-confirmpass',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.3);"><span class="material-symbols-outlined" style="font-size:18px;">visibility</span></button>
+            </div>
+          </div>
+        </div>
+        <!-- Password strength bar -->
+        <div id="pass-strength-container" style="margin-bottom:1.25rem;display:none;">
+          <div style="display:flex;gap:4px;margin-bottom:.5rem;">
+            <div id="str-bar-1" style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .3s;"></div>
+            <div id="str-bar-2" style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .3s;"></div>
+            <div id="str-bar-3" style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .3s;"></div>
+            <div id="str-bar-4" style="flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .3s;"></div>
+          </div>
+          <div id="pass-criteria" style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem;">
+            <span id="crit-length" style="font-size:.72rem;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:12px;">close</span> Mínimo 8 caracteres</span>
+            <span id="crit-upper" style="font-size:.72rem;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:12px;">close</span> Mayúscula</span>
+            <span id="crit-number" style="font-size:.72rem;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:12px;">close</span> Número</span>
+            <span id="crit-special" style="font-size:.72rem;color:rgba(255,255,255,.3);display:flex;align-items:center;gap:4px;"><span class="material-symbols-outlined" style="font-size:12px;">close</span> Carácter especial</span>
           </div>
         </div>
         <button class="sf-btn-save" id="changePass"><span class="material-symbols-outlined" style="font-size:16px;">lock</span> Cambiar contraseña</button>
       </div>
 
       <!-- Danger Zone -->
-      <div class="sf-card" style="border-color:rgba(248,113,113,.1);">
+      <div class="sf-card" style="margin-bottom:1.25rem;padding:1.5rem;border-color:rgba(248,113,113,.15)!important;">
         <div class="sf-card-header">
           <div class="sf-card-icon" style="background:rgba(248,113,113,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#f87171;">warning</span></div>
           <div class="sf-card-title" style="color:#f87171;">Zona de peligro</div>
         </div>
-        <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;">Cerrar sesión en todos los dispositivos o eliminar tu cuenta.</p>
+        <p style="font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;">Cerrar sesión en todos los dispositivos o eliminar tu cuenta permanentemente.</p>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
           <button class="sf-btn-danger" onclick="window.location.href='/logoutUser'"><span class="material-symbols-outlined" style="font-size:16px;">logout</span> Cerrar todas las sesiones</button>
+          <button class="sf-btn-danger" id="deleteAccountBtn" style="background:rgba(248,113,113,.15);border-color:rgba(248,113,113,.25);"><span class="material-symbols-outlined" style="font-size:16px;">delete_forever</span> Eliminar cuenta</button>
         </div>
       </div>
+
+      <!-- Delete Account Modal -->
+      <div id="deleteModal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+        <div style="background:rgba(10,15,30,.96);border:1px solid rgba(248,113,113,.15);border-radius:20px;padding:2rem;max-width:420px;width:90%;margin:auto;position:relative;top:50%;transform:translateY(-50%);">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(248,113,113,.1);display:flex;align-items:center;justify-content:center;"><span class="material-symbols-outlined" style="color:#f87171;">warning</span></div>
+            <div>
+              <div style="font-size:1.05rem;font-weight:700;color:#f87171;">Eliminar cuenta</div>
+              <div style="font-size:.75rem;color:rgba(255,255,255,.4);">Esta acción no se puede deshacer</div>
+            </div>
+          </div>
+          <p style="font-size:.85rem;color:rgba(255,255,255,.55);margin-bottom:1rem;">Tu cuenta será <strong style="color:#fbbf24;">suspendida por 30 días</strong> antes de eliminarse permanentemente. Durante este período podrás recuperar tu cuenta iniciando sesión.</p>
+          <div class="settings-group" style="margin-bottom:1rem;">
+            <label class="settings-label">Confirma tu contraseña</label>
+            <input type="password" class="settings-input" id="delete-pass" placeholder="Ingresa tu contraseña">
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+            <button onclick="document.getElementById('deleteModal').style.display='none'" style="padding:.5rem 1rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;">Cancelar</button>
+            <button id="confirmDeleteBtn" style="padding:.5rem 1rem;border-radius:10px;background:rgba(248,113,113,.15);border:1px solid rgba(248,113,113,.25);color:#f87171;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Eliminar cuenta</button>
+          </div>
+        </div>
+      </div>
+
     </main>
+
   </div>
 
-  <script>
-    const userName = localStorage.getItem('sf_userName');
-    if (userName) {
-      document.getElementById('nombreUsuario').textContent = userName;
-      document.getElementById('set-name').value = userName;
+    <script>
+    // Country codes data
+    const COUNTRIES = [
+      {code:'+52',flag:'🇲🇽',name:'México'},{code:'+1',flag:'🇺🇸',name:'Estados Unidos'},{code:'+1',flag:'🇨🇦',name:'Canadá'},
+      {code:'+57',flag:'🇨🇴',name:'Colombia'},{code:'+54',flag:'🇦🇷',name:'Argentina'},{code:'+56',flag:'🇨🇱',name:'Chile'},
+      {code:'+51',flag:'🇵🇪',name:'Perú'},{code:'+593',flag:'🇪🇨',name:'Ecuador'},{code:'+58',flag:'🇻🇪',name:'Venezuela'},
+      {code:'+55',flag:'🇧🇷',name:'Brasil'},{code:'+34',flag:'🇪🇸',name:'España'},{code:'+44',flag:'🇬🇧',name:'Reino Unido'},
+      {code:'+49',flag:'🇩🇪',name:'Alemania'},{code:'+33',flag:'🇫🇷',name:'Francia'},{code:'+39',flag:'🇮🇹',name:'Italia'},
+      {code:'+81',flag:'🇯🇵',name:'Japón'},{code:'+82',flag:'🇰🇷',name:'Corea del Sur'},{code:'+86',flag:'🇨🇳',name:'China'},
+      {code:'+91',flag:'🇮🇳',name:'India'},{code:'+61',flag:'🇦🇺',name:'Australia'},
+      {code:'+506',flag:'🇨🇷',name:'Costa Rica'},{code:'+507',flag:'🇵🇦',name:'Panamá'},{code:'+502',flag:'🇬🇹',name:'Guatemala'},
+    ];
+
+    // Build country dropdown
+    const dd = document.getElementById('country-dropdown');
+    COUNTRIES.forEach(c => {
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:8px;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,.7);transition:background .15s;';
+      item.innerHTML = `<span style="font-size:1.1rem;">${c.flag}</span><span>${c.name}</span><span style="color:rgba(255,255,255,.3);margin-left:auto;">${c.code}</span>`;
+      item.onmouseenter = () => item.style.background = 'rgba(255,255,255,.06)';
+      item.onmouseleave = () => item.style.background = 'none';
+      item.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('phone-flag').textContent = c.flag;
+        document.getElementById('phone-code').textContent = c.code;
+        localStorage.setItem('sf_userPhoneCode', c.code);
+        dd.classList.add('sf-hidden');
+      };
+      dd.appendChild(item);
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!document.getElementById('phone-flag-container').contains(e.target)) {
+        dd.classList.add('sf-hidden');
+      }
+    });
+
+    // Load user data from localStorage
+    const name = localStorage.getItem('sf_userName') || '';
+    const lastName = localStorage.getItem('sf_userLastName') || '';
+    const email = localStorage.getItem('sf_userEmail') || '';
+    const phone = localStorage.getItem('sf_userPhone') || '';
+    const phoneCode = localStorage.getItem('sf_userPhoneCode') || '+52';
+
+    document.getElementById('set-name').value = name;
+    document.getElementById('set-lastname').value = lastName;
+    document.getElementById('set-email').value = email;
+    document.getElementById('set-phone').value = phone;
+
+    // Set header user name
+    const headerUser = document.getElementById('sf-header-user');
+    if (headerUser && name) headerUser.textContent = name;
+
+    // Set phone country flag
+    const countryMatch = COUNTRIES.find(c => c.code === phoneCode);
+    if (countryMatch) {
+      document.getElementById('phone-flag').textContent = countryMatch.flag;
+      document.getElementById('phone-code').textContent = countryMatch.code;
     }
 
-    // Save profile (placeholder - wire to API when ready)
+    // Plan info
+    const planStatus = localStorage.getItem('sf_planStatus') || '7';
+    const planMap = {'5':'Básico','6':'Profesional','7':'Enterprise','8':'Enterprise Plus'};
+    document.getElementById('plan-text').textContent = planMap[planStatus] || 'Enterprise';
+
+    // Save profile
     document.getElementById('saveProfile').addEventListener('click', () => {
-      const name = document.getElementById('set-name').value;
-      if (name) localStorage.setItem('sf_userName', name);
-      alert('Perfil actualizado correctamente');
+      const n = document.getElementById('set-name').value;
+      const ln = document.getElementById('set-lastname').value;
+      const ph = document.getElementById('set-phone').value;
+      const pc = document.getElementById('phone-code').textContent;
+      if (n) localStorage.setItem('sf_userName', n);
+      if (ln) localStorage.setItem('sf_userLastName', ln);
+      if (ph) localStorage.setItem('sf_userPhone', ph);
+      localStorage.setItem('sf_userPhoneCode', pc);
+      // Toast
+      showToast('Perfil actualizado correctamente', '#34d399');
     });
 
-    // Change password (placeholder)
+    // Toggle password visibility
+    function togglePass(id, btn) {
+      const inp = document.getElementById(id);
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (inp.type === 'password') { inp.type = 'text'; icon.textContent = 'visibility_off'; }
+      else { inp.type = 'password'; icon.textContent = 'visibility'; }
+    }
+
+    // Password strength checker
+    function checkPassStrength() {
+      const p = document.getElementById('set-newpass').value;
+      const container = document.getElementById('pass-strength-container');
+      container.style.display = p ? 'block' : 'none';
+
+      const checks = {
+        length: p.length >= 8,
+        upper: /[A-Z]/.test(p),
+        number: /[0-9]/.test(p),
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\|,.<>\/?]/.test(p)
+      };
+      const score = Object.values(checks).filter(Boolean).length;
+
+      const colors = ['#f87171','#f87171','#fbbf24','#34d399','#34d399'];
+      const barColor = colors[score];
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('str-bar-' + i).style.background = i <= score ? barColor : 'rgba(255,255,255,.08)';
+      }
+
+      // Update criteria
+      ['length','upper','number','special'].forEach(key => {
+        const el = document.getElementById('crit-' + key);
+        const icon = el.querySelector('.material-symbols-outlined');
+        if (checks[key]) {
+          el.style.color = '#34d399';
+          icon.textContent = 'check';
+        } else {
+          el.style.color = 'rgba(255,255,255,.3)';
+          icon.textContent = 'close';
+        }
+      });
+    }
+
+    // Change password
     document.getElementById('changePass').addEventListener('click', () => {
+      const oldP = document.getElementById('set-oldpass').value;
       const newP = document.getElementById('set-newpass').value;
       const confP = document.getElementById('set-confirmpass').value;
-      if (newP.length < 8) { alert('La contraseña debe tener mínimo 8 caracteres'); return; }
-      if (newP !== confP) { alert('Las contraseñas no coinciden'); return; }
-      alert('Contraseña actualizada correctamente');
+      if (!oldP) { showToast('Ingresa tu contraseña actual', '#f87171'); return; }
+      if (newP.length < 8) { showToast('La contraseña debe tener mínimo 8 caracteres', '#f87171'); return; }
+      if (newP !== confP) { showToast('Las contraseñas no coinciden', '#f87171'); return; }
+      showToast('Contraseña actualizada correctamente', '#34d399');
     });
+
+    // Forgot password
+    document.getElementById('forgotPassBtn').addEventListener('click', () => {
+      const email = localStorage.getItem('sf_userEmail');
+      if (email) {
+        showToast('Se envió un enlace de recuperación a ' + email, '#60a5fa');
+      } else {
+        showToast('No hay email registrado', '#f87171');
+      }
+    });
+
+    // Delete account
+    document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+      document.getElementById('deleteModal').style.display = 'block';
+    });
+    document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+      const pass = document.getElementById('delete-pass').value;
+      if (!pass) { showToast('Ingresa tu contraseña para confirmar', '#f87171'); return; }
+      // In production: call API to suspend account
+      showToast('Tu cuenta será suspendida. Tienes 30 días para recuperarla.', '#fbbf24');
+      document.getElementById('deleteModal').style.display = 'none';
+      setTimeout(() => { window.location.href = '/logoutUser'; }, 3000);
+    });
+
+    // Toast helper
+    function showToast(msg, color) {
+      const existing = document.getElementById('sf-toast');
+      if (existing) existing.remove();
+      const t = document.createElement('div');
+      t.id = 'sf-toast';
+      t.style.cssText = 'position:fixed;bottom:2rem;right:2rem;z-index:9999;padding:.75rem 1.25rem;border-radius:12px;font-size:.85rem;font-weight:600;color:#fff;backdrop-filter:blur(20px);border:.5px solid ' + color + '33;box-shadow:0 4px 20px rgba(0,0,0,.3);animation:slideUp .3s ease;background:rgba(10,15,30,.9);display:flex;align-items:center;gap:.5rem;';
+      t.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:' + color + ';"></span>' + msg;
+      document.body.appendChild(t);
+      setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 3000);
+    }
   </script>
-  <style>html,body{background:#060a14 !important;}</style>
+  <style>.sf-hidden{display:none!important}@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}</style>
 <script src="/shared-particles.js"></script>
 <script src="/shared-nav.js"></script>
 </body>

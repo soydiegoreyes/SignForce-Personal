@@ -575,7 +575,7 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 
 	// se obtienen los datos de validacion del usuario
 	//var attrs = []string{"emailUser", "appPassHash", "activeUser", "idTeam_fk", "roleAppUser_fk", "idInstitution_fk"}
-	var attrs = []string{"emailUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk", "nameUser"}
+	var attrs = []string{"emailUser", "appPassHash", "activeUser", "roleAppUser_fk", "idInstitution_fk", "nameUser", "lastNameUser", "phoneUser", "countryPhoneCode"}
 	var wheres = map[string][]string{
 		"emailUser":   {loginReq.Account},
 		"appPassHash": {nh},
@@ -610,6 +610,11 @@ func login(respWriter http.ResponseWriter, request *http.Request) {
 		}
 		fmt.Println("hash valido y usuario activo")
 		loginResp.UserName = v["nameUser"]
+		loginResp.LastName = v["lastNameUser"]
+		loginResp.Email = v["emailUser"]
+		loginResp.Phone = v["phoneUser"]
+		loginResp.PhoneCode = v["countryPhoneCode"]
+		loginResp.Role = v["roleAppUser_fk"]
 		break
 	}
 	// se asigna el id de la institucion
