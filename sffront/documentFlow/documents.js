@@ -35,7 +35,7 @@ const searchParams = {
 
 document.addEventListener('DOMContentLoaded', () => {
     // Variables globales locales al scope
-    document.getElementById("logoutBtn").addEventListener("click", logout)
+    try { document.getElementById("logoutBtn").addEventListener("click", logout); } catch(e) {}
     
     // Configuración del buscador
     const searchInput = document.getElementById('searchInput');
@@ -353,6 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Actualizamos el parámetro de búsqueda (page) y llamamos al backend
         try {
             await performSearch("", page);
+        } catch(searchErr) {
+            console.error('Search failed:', searchErr);
+            // Demo fallback already handled inside performSearch
         } finally {
             window.loadingDocuments = false;
         }
@@ -403,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const docData = data[docId];
                 selectDocument(docId, docData);
             });
-            row.className = "glass-card fade-in cursor-pointer";
+            row.className = "glass-card fade-in cursor-pointer";row.style.cssText="cursor:pointer;transition:all .2s;border-bottom:1px solid rgba(255,255,255,.04);";row.onmouseenter=function(){this.style.background="rgba(255,255,255,.06)"};row.onmouseleave=function(){this.style.background=""};
             row.innerHTML = `
                 <td class="px-4 text-center">
                     <input type="checkbox" class="doc-checkbox" data-id="${docId}" data-hash="${doc.documentHash || ''}" ${checked}>
