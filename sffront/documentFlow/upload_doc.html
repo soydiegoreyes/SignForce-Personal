@@ -252,52 +252,6 @@ document.getElementById('fileInput').addEventListener('change', function() {
     fn.textContent = '';
   }
 });
-
-// Upload button — show success with demo mode
-var uploadBtn = document.getElementById('uploadBtn');
-if (uploadBtn) {
-  var origHandler = uploadBtn.onclick;
-  uploadBtn.addEventListener('click', async function(e) {
-    var fileInput = document.getElementById('fileInput');
-    if (!fileInput.files.length) {
-      sfAlert({title:'Sin archivo',message:'Selecciona un archivo PDF antes de subir.',type:'warn'});
-      return;
-    }
-    // Show uploading state
-    uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;animation:spin 1s linear infinite;">progress_activity</span> Subiendo...';
-    uploadBtn.style.pointerEvents = 'none';
-    uploadBtn.style.opacity = '.6';
-    
-    // Simulate upload (demo mode)
-    setTimeout(function() {
-      uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Documento subido';
-      uploadBtn.style.background = 'rgba(52,211,153,.15)';
-      uploadBtn.style.borderColor = 'rgba(52,211,153,.25)';
-      uploadBtn.style.color = '#34d399';
-      uploadBtn.style.opacity = '1';
-      
-      // Toast
-      if (window.showToast) showToast('Documento subido exitosamente', '#34d399');
-      else if (window.sfAlert) sfAlert({title:'Éxito',message:'Documento subido exitosamente.',type:'success'});
-      
-      // Reset after 3s
-      setTimeout(function() {
-        uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Aceptar y Subir';
-        uploadBtn.style.background = '';
-        uploadBtn.style.borderColor = '';
-        uploadBtn.style.color = '';
-        uploadBtn.style.pointerEvents = '';
-        document.getElementById('fileInput').value = '';
-        document.getElementById('fileName').textContent = '';
-        document.getElementById('docName').value = '';
-        var dm = document.getElementById('drop-message');
-        if (dm) dm.style.display = '';
-        var pw = document.querySelector('.pdf-wrapper');
-        if (pw) pw.remove();
-      }, 3000);
-    }, 1500);
-  });
-}
 </script>
 </body>
 </html>

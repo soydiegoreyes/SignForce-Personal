@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     user.value = '';
     team.value = '';
     // Redirigir a document_viewer.html
-    window.location.href = 'document_viewer.html';
+    window.location.href = '/documentFlow/document_viewer.html';
 });
 
 // Función para convertir archivo a base64
