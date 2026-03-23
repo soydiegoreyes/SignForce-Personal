@@ -3,202 +3,123 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Subir Documento - SignForce</title>
+    <title>Configurar Documento - SignForce</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com" rel="preconnect"/>
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Michroma&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/documentFlow/add_signers.css">
-    <style>
-        /* Estilos adicionales para las sugerencias */
-        .suggestions-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 50;
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(30, 41, 59, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
-            margin-top: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .suggestion-item {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #e2e8f0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
-        .suggestion-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .suggestion-item strong {
-            color: #fff;
-        }
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
     
-    /* ═══ SignForce Design Override ═══ */
-    body { background: #060a14 !important; font-family: 'DM Sans', sans-serif !important; color: #fff; margin: 0; min-height: 100vh; }
-    body::before { content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0); background-size: 48px 48px; }
-    h1,h2,h3,h4,h5 { font-family: 'DM Sans', sans-serif !important; color: #fff !important; }
-    p { color: rgba(255,255,255,.6) !important; }
-    .glass-header { position:fixed !important; top:3px !important; left:0 !important; right:0 !important;
-      width:100% !important; transform:none !important; border-radius:0 !important; height:60px !important;
-      background:rgba(10,15,30,.85) !important; backdrop-filter:blur(24px) !important;
-      border:none !important; border-bottom:1px solid rgba(255,255,255,.06) !important;
-      box-shadow:none !important; padding:0 1.5rem !important; }
-    .glass-header::before { display:none !important; }
-    .liquid-bubble { position:absolute; height:32px; background:rgba(181,196,19,.08); border-radius:8px;
-      transition:all .4s cubic-bezier(.68,-.55,.265,1.55); z-index:-1; border:1px solid rgba(181,196,19,.12); box-shadow:none; }
-    .glass-panel { background:rgba(15,21,36,.45) !important; backdrop-filter:blur(16px) !important;
-      border:1px solid rgba(255,255,255,.06) !important; border-radius:20px !important; box-shadow:0 4px 20px rgba(0,0,0,.3) !important; }
-    .glass-card { background:rgba(255,255,255,.03) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:14px !important; transition:all .3s ease; }
-    .glass-card:hover { background:rgba(181,196,19,.04) !important; border-color:rgba(181,196,19,.15) !important; transform:translateY(-2px); }
-    .sidebar, aside { background:rgba(10,15,30,.5) !important; }
-    .sidebar nav a[class*="bg-gradient"], aside nav a[class*="bg-gradient"] {
-      background:rgba(181,196,19,.08) !important; color:#B5C413 !important; border:1px solid rgba(181,196,19,.12) !important; }
-    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700; border-radius:10px !important; border:none; }
-    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; }
-    .btn-secondary { background:rgba(255,255,255,.06) !important; color:#fff !important;
-      border:1px solid rgba(255,255,255,.1) !important; border-radius:10px !important; }
-    .btn-secondary:hover { background:rgba(255,255,255,.1) !important; border-color:rgba(181,196,19,.2) !important; }
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="theme-color" content="#060a14">
+    <style>
+    /* Suggestions dropdown */
+    .suggestions-list {
+        position:absolute; top:100%; left:0; right:0; z-index:50;
+        max-height:200px; overflow-y:auto;
+        background:rgba(10,15,30,.95); backdrop-filter:blur(16px);
+        border:1px solid rgba(255,255,255,.08); border-radius:14px;
+        margin-top:.5rem; box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    .suggestion-item {
+        padding:.75rem 1rem; cursor:pointer; transition:all .2s;
+        color:rgba(255,255,255,.7); border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .suggestion-item:last-child { border-bottom:none; }
+    .suggestion-item:hover { background:rgba(181,196,19,.06); color:#fff; }
+    .suggestion-item strong { color:#B5C413; }
+    .checkbox-wrapper { display:flex; align-items:center; gap:.5rem; cursor:pointer; }
+
+    /* ═══ Glass Form Overrides ═══ */
     .input-field, input[type="text"], input[type="email"], input[type="password"], input[type="tel"],
     input[type="date"], input[type="file"], textarea, select {
-      background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.08) !important;
-      color:#fff !important; border-radius:10px !important; font-family:'DM Sans',sans-serif; }
+        background:rgba(255,255,255,.04) !important; border:1px solid rgba(255,255,255,.06) !important;
+        color:#fff !important; border-radius:12px !important; font-family:'DM Sans',sans-serif;
+    }
     input:focus, textarea:focus, select:focus, .input-field:focus {
-      outline:none !important; border-color:#B5C413 !important; box-shadow:0 0 0 3px rgba(181,196,19,.1) !important; }
+        outline:none !important; border-color:rgba(181,196,19,.3) !important;
+        box-shadow:0 0 0 3px rgba(181,196,19,.08) !important;
+    }
     input::placeholder, textarea::placeholder { color:rgba(255,255,255,.2) !important; }
     select option { background:#0f1524; color:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th { background:rgba(255,255,255,.03) !important; font-size:.7rem; font-weight:600; color:rgba(255,255,255,.4);
-      text-transform:uppercase; letter-spacing:.08em; padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.06); }
-    td { padding:.65rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
-    tr:hover td { background:rgba(255,255,255,.02); }
-    .badge { padding:4px 10px; border-radius:20px; font-size:.68rem; font-weight:600; }
-    .action-card { background:rgba(15,21,36,.4) !important; border:1px solid rgba(255,255,255,.06) !important;
-      border-radius:20px !important; cursor:pointer; transition:all .3s ease; }
-    .action-card:hover { border-color:rgba(181,196,19,.15) !important; transform:translateY(-3px); }
-    .modal { display:none; position:fixed; inset:0; z-index:2000; background:rgba(0,0,0,.7); backdrop-filter:blur(5px); }
-    .modal-content { background:rgba(10,15,30,.96) !important; border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:20px !important; }
-    .close-modal { color:rgba(255,255,255,.4); cursor:pointer; transition:.2s; }
-    .close-modal:hover { color:#fff; }
-    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
-      width:30px; height:30px; animation:spin .7s linear infinite; }
-    @keyframes spin { to { transform:rotate(360deg); } }
-    .bg { background:none !important; }
-    .main-container, .content, main { position:relative; z-index:1; }
-    .hover-glow:hover { box-shadow:0 0 15px rgba(181,196,19,.12) !important; }
-    .text-primary { color:#fff !important; }
-    .text-secondary { color:rgba(255,255,255,.55) !important; }
-    .drag-drop-area { border:2px dashed rgba(181,196,19,.2) !important; background:rgba(181,196,19,.03) !important; border-radius:16px; }
-    .drag-drop-area:hover { border-color:rgba(181,196,19,.35) !important; }
-    .footer, footer { background:rgba(10,15,30,.4) !important; border:1px solid rgba(255,255,255,.04) !important; border-radius:14px; }
-    /* end override */
 
+    /* Table */
+    table { width:100%; border-collapse:collapse; }
+    th { background:transparent !important; font-size:.68rem; font-weight:700; color:rgba(255,255,255,.3);
+        text-transform:uppercase; letter-spacing:.1em; padding:.6rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); }
+    td { padding:.6rem 1rem; border-bottom:1px solid rgba(255,255,255,.04); color:rgba(255,255,255,.6); font-size:.85rem; }
+    tr:hover td { background:rgba(255,255,255,.02); }
+
+    /* Glass cards */
+    .glass-card { background:rgba(255,255,255,.02) !important; border:1px solid rgba(255,255,255,.05) !important;
+        border-radius:16px !important; }
+    .glass-panel { background:rgba(255,255,255,.02) !important; border:1px solid rgba(255,255,255,.04) !important;
+        border-radius:20px !important; backdrop-filter:blur(20px) !important; }
+
+    /* Buttons */
+    .btn-primary, .btn { background:#B5C413 !important; color:#0a0f1e !important; font-weight:700;
+        border-radius:12px !important; border:none; transition:all .25s; }
+    .btn-primary:hover, .btn:hover { background:#c5d41a !important; box-shadow:0 0 24px rgba(181,196,19,.2) !important; transform:translateY(-1px); }
+    .btn-secondary { background:rgba(255,255,255,.04) !important; color:rgba(255,255,255,.7) !important;
+        border:1px solid rgba(255,255,255,.08) !important; border-radius:12px !important; transition:all .25s; }
+    .btn-secondary:hover { background:rgba(255,255,255,.08) !important; border-color:rgba(181,196,19,.15) !important; }
+
+    /* Spinner */
+    .spinner { border:3px solid rgba(255,255,255,.08); border-top-color:#B5C413; border-radius:50%;
+        width:30px; height:30px; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Labels */
+    .text-primary { color:rgba(255,255,255,.88) !important; }
+    .text-secondary { color:rgba(255,255,255,.4) !important; }
+    p.text-primary { color:rgba(255,255,255,.7) !important; font-size:.88rem !important; }
+
+    html,body { background:#060a14 !important; }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../signforce-global.css">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
-  <meta name="theme-color" content="#060a14">
-  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
-  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
-  <meta property="og:type" content="website">
+    <link rel="stylesheet" href="/signforce-sidebar.css"/>
 </head>
 <body class="">
   <div class="sf-bg-orb sf-bg-orb-1"></div><div class="sf-bg-orb sf-bg-orb-2"></div><div class="sf-bg-orb sf-bg-orb-3"></div>
 
-    <div class="top-accent"></div>
-  <!-- SignForce Orbs -->
-  <div class="sf-orb sf-orb-1"></div>
-  <div class="sf-orb sf-orb-2"></div>
-  <div class="sf-orb sf-orb-3"></div>
-
-    <!-- Barra superior -->
-    <header class="glass-header" id="mainHeader">
-        <div class="flex items-center gap-8 relative">
-            <div class="liquid-bubble" id="liquidBubble"></div>
-            
-            <div class="flex items-center gap-4 text-primary">
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:#B5C413;color:#0a0f1e;font-weight:900;font-size:.85rem;border-radius:6px;box-shadow:0 0 16px rgba(181,196,19,.2);">S</span>
-                <span style="font-weight:800;font-size:1rem;letter-spacing:.05em;color:#fff;">IGNFORCE</span>
-                <!-- <h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em]">SignForce</h2> -->
-            </div>
-            
+  <header class="sf-unified-header" id="mainHeader">
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <a href="/users" style="display:flex;align-items:center;"><img src="/images/signforce-logo-new.png" alt="SignForce" style="height:84px;width:auto;"></a>
+    </div>
+    <div style="display:flex;align-items:center;gap:.75rem;">
+      <span id="sf-header-user" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
+      <button id="logoutBtn" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+        <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
+      </button>
+    </div>
+  </header>
+  <div class="sf-page-layout">
+    <aside class="sf-sidebar" id="sf-shared-sidebar">
+      <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">person</span></div>
+          <div><div style="font-size:.95rem;font-weight:700;">Mi Panel</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">SignForce</div></div>
         </div>
-        <div class="flex flex-1 justify-end gap-8">
-            <label class="flex flex-col min-w-40 !h-8 max-w-64">
-                <div class="flex w-full flex-1 items-stretch rounded-xl h-full">
-                    <div class="text-secondary flex border-none items-center justify-center pl-4" style="background:rgba(255,255,255,.06) rounded-l-xl border-r-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path>
-                        </svg>
-                    </div>
-                    <input
-                        placeholder="Buscar"
-                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none focus:border-none" style="background:rgba(255,255,255,.06) h-full placeholder:text-secondary px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
-                        value=""
-                    />
-                </div>
-            </label>
+      </div>
+      <nav class="sf-sidebar-card" style="flex:1;">
+        <div class="sf-sidebar-title">Navegación</div>
+        <a class="sf-nav-link" href="/users" data-nav="dashboard"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+        <a class="sf-nav-link active" href="/mydocs" data-nav="mydocs"><span class="material-symbols-outlined">description</span> Mis Documentos</a>
+        <a class="sf-nav-link" href="/settings" data-nav="settings"><span class="material-symbols-outlined">settings</span> Configuración</a>
+        <a class="sf-nav-link" href="/reports" data-nav="reports"><span class="material-symbols-outlined">assessment</span> Reportes</a>
+        <a class="sf-nav-link" href="/upload" data-nav="upload"><span class="material-symbols-outlined">upload_file</span> Subir Documento</a>
+        <a class="sf-nav-link" href="/folders" data-nav="folders"><span class="material-symbols-outlined">folder</span> Mis Folders</a>
+        <a class="sf-nav-link" href="/templates" data-nav="templates"><span class="material-symbols-outlined">article</span> Plantillas</a>
+        <a class="sf-nav-link" href="/keys" data-nav="keys"><span class="material-symbols-outlined">key</span> Mis Llaves</a>
+        <div style="flex:1;"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.75rem;margin-top:.75rem;">
+          <div style="display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.4);"></span><span style="font-size:.7rem;color:rgba(255,255,255,.3);">v2.1.0</span></div>
         </div>
-    </header>
+      </nav>
+    </aside>
+    <main class="sf-page-content">
 
-    <!-- Contenido principal -->
-    <div class="bg flex min-h-screen pt-24 pb-8 px-8" style="gap:1.25rem;">
-        <!-- Panel izquierdo -->
-                  <aside class="sf-sidebar" style="width:250px;flex-shrink:0;display:flex;flex-direction:column;gap:.75rem;">
-            <div style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:1.1rem 1.25rem;">
-              <div style="display:flex;align-items:center;gap:.6rem;">
-                <div style="width:32px;height:32px;background:rgba(181,196,19,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                  <span class="material-symbols-outlined" style="font-size:1.1rem;color:#B5C413;">description</span>
-                </div>
-                <div><div style="font-size:.95rem;font-weight:700;">Documentos</div><div style="font-size:.68rem;color:rgba(255,255,255,.35);">Flujo de firma</div></div>
-              </div>
-            </div>
-            <nav style="background:rgba(15,21,36,.4);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:.75rem;flex:1;display:flex;flex-direction:column;">
-              <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);padding:.4rem .6rem;font-weight:600;margin-bottom:.25rem;">Navegación</div>
-              <a href="/" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;transition:all .25s ease;">
-                <span class="material-symbols-outlined" style="font-size:1.15rem;">home</span> Home</a>
-              <a href="/mydocs" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:#B5C413;background:rgba(181,196,19,.08);border:1px solid rgba(181,196,19,.12);text-decoration:none;margin-bottom:2px;">
-                <span class="material-symbols-outlined" style="font-size:1.15rem;">description</span> Documentos</a>
-              <a href="/myfolders" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;transition:all .25s ease;">
-                <span class="material-symbols-outlined" style="font-size:1.15rem;">folder</span> Folders</a>
-              <a href="/mytemplates" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;transition:all .25s ease;">
-                <span class="material-symbols-outlined" style="font-size:1.15rem;">note</span> Plantillas</a>
-              <a href="/mykeys" style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;font-size:.85rem;font-weight:500;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:2px;transition:all .25s ease;">
-                <span class="material-symbols-outlined" style="font-size:1.15rem;">key</span> Mis Llaves</a>
-              <div style="flex:1;"></div>
-              <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:.75rem;margin-top:.75rem;">
-                <div style="display:flex;align-items:center;gap:5px;">
-                  <span style="width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,.4);"></span>
-                  <span style="font-size:.7rem;color:rgba(255,255,255,.3);">Sistema activo</span>
-                </div>
-              </div>
-            </nav>
-          </aside>
-
-        <!-- Panel principal -->
-        <main class="flex-1" style="display:flex;flex-direction:column;gap:1.25rem;">
             <!-- Hero gradient -->
             <div style="background:rgba(15,21,36,.45);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:1.75rem;margin-bottom:1.25rem;position:relative;overflow:hidden;">
                 <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(181,196,19,.06) 0%,rgba(52,211,153,.04) 40%,transparent 70%);pointer-events:none;"></div>
@@ -396,55 +317,28 @@
                 </button>
                 </div>
 
-    <script src="/documentFlow/add_signers.js"></script>
-    <script>
-        // Efecto liquid glass para la burbuja del menú
-        const liquidBubble = document.getElementById('liquidBubble');
-        const navItems = document.querySelectorAll('.nav-item');
-        
-        const itemPositions = {};
-        
-        function calculatePositions() {
-            navItems.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const headerRect = document.getElementById('mainHeader').getBoundingClientRect();
-                
-                itemPositions[item.dataset.item] = {
-                    left: rect.left - headerRect.left,
-                    width: rect.width
-                };
-            });
-            
-            moveBubble('documents');
-        }
-        
-        function moveBubble(itemName) {
-            const item = itemPositions[itemName];
-            if (item) {
-                liquidBubble.style.left = `${item.left - 10}px`;
-                liquidBubble.style.width = `${item.width + 20}px`;
-            }
-        }
-        
-        navItems.forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                moveBubble(item.dataset.item);
-            });
-            
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                moveBubble(item.dataset.item);
-            });
-        });
-        
-        window.addEventListener('load', calculatePositions);
-        window.addEventListener('resize', calculatePositions);
-    </script>
+    
+    </main>
+  </div>
 
-  <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
-<link rel="stylesheet" href="/signforce-global.css"><script src="/sf-demo-data.js"></script>
+<script src="/documentFlow/add_signers.js"></script>
+
+
+  <script src="/sf-demo-data.js"></script>
 <script src="/sf-demo-render.js"></script>
 <script src="/sf-modal.js"></script>
 <script src="/shared-particles.js"></script>
+
+<script src="/shared-nav.js"></script>
+<script>
+try { document.getElementById("logoutBtn").addEventListener("click", async function() {
+    var ok = await sfConfirm({title:"Cerrar sesión",message:"¿Deseas salir de SignForce?",type:"warn",confirmText:"Salir"});
+    if(ok){try{await fetch("/logoutUser",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"}});} catch(e){} window.location.href="/login";}
+}); } catch(e) {}
+var u = localStorage.getItem("sf_userName") || "";
+var l = localStorage.getItem("sf_lastName") || "";
+var el = document.getElementById("sf-header-user");
+if(el && (u||l)) el.textContent = u + " " + l;
+</script>
 </body>
 </html>

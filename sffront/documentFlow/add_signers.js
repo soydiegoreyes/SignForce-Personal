@@ -127,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const response = await fetch('/findUser', {
         method: 'POST',
+                credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
@@ -486,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const docs = {idDocs: [currentDocId], type: "uploaded"}
       const response = await fetch('/downloadDoc', {
         method: 'POST',
+                credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(docs)
       });
