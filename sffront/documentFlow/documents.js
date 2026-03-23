@@ -255,7 +255,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`Error HTTP: ${response.status}`);
             }
 
-            const responseData = await response.json();
+            const responseText = await response.text();
+            let responseData;
+            try {
+                responseData = JSON.parse(responseText);
+            } catch(parseErr) {
+                // API returned non-JSON (e.g. 'No autorizado')
+                if (responseText.toLowerCase().includes('no autorizado') || responseText.toLowerCase().includes('not authorized')) {
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error('Respuesta no válida del servidor');
+            }
             currentData = responseData.data || {};
             currentPage = responseData.page || page;
             pageSize = responseData.page_size || pageSize;
@@ -285,13 +296,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Error en la búsqueda:', error);
-            const messageContainer = document.getElementById('messageContainer');
-            if (messageContainer) {
-                messageContainer.innerHTML = `
-                    <div class="bg-red-500 text-white px-4 py-2 rounded-lg">
-                        Error en la búsqueda. Intente nuevamente.
+            const tableBody = document.getElementById('documentsTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:3rem;color:rgba(255,255,255,.4);">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+                        <span class="material-symbols-outlined" style="font-size:48px;color:rgba(255,255,255,.15);">cloud_upload</span>
+                        <p style="font-size:.95rem;">No hay documentos aún</p>
+                        <a href="/upload" style="padding:.5rem 1.25rem;border-radius:10px;background:rgba(181,196,19,.15);border:1px solid rgba(181,196,19,.25);color:#B5C413;font-size:.85rem;font-weight:600;text-decoration:none;">Subir documento</a>
                     </div>
-                `;
+                </td></tr>`;
             }
         }
     }
