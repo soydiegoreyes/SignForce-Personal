@@ -209,6 +209,9 @@ async function subirArchivos() {
             document.getElementById('btnSubmit').innerHTML = '<i class="fas fa-upload"></i> Subir documentos';
             document.getElementById('documentType').value = '';
             
+            // Redirigir a Mis Documentos después de 1.5s
+            setTimeout(() => { window.location.href = '/mydocs'; }, 1500);
+            
         } else {
             throw new Error(result.message || 'Error al subir archivos');
         }
