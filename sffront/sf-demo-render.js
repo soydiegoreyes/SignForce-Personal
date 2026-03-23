@@ -16,10 +16,10 @@
     if (path === '/users' || path === '/dashboard') {
       renderDashboard();
     }
-    // ═══ DOCUMENTS ═══
-    if (path === '/mydocs' || path === '/documents') {
-      setTimeout(renderDocuments, 1500); // wait for real API attempt
-    }
+    // ═══ DOCUMENTS ═══ (disabled — uses real API)
+    // if (path === '/mydocs' || path === '/documents') {
+    //   setTimeout(renderDocuments, 1500);
+    // }
     // ═══ FOLDERS ═══
     if (path === '/folders') {
       setTimeout(renderFolders, 800);
