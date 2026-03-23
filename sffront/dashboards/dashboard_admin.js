@@ -999,7 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Usuario ${userId} eliminado`, 'success');
                 loadUsersList(); // Recargar lista
             }, 1000);
-        }
+        }});
     };
 
     // ==============================
@@ -1010,10 +1010,10 @@ document.addEventListener('DOMContentLoaded', () => {
         loadDashboardData();
         
         // Configurar logout
-        document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
             var ok = await sfConfirm({title:'Cerrar sesión',message:'¿Seguro que deseas cerrar tu sesión actual?',type:'warn',confirmText:'Cerrar sesión',confirmClass:'sf-modal-btn-danger'}); if(ok){
                 window.location.href = '/logout';
-            }})
+            }
         });
         
         // Configurar tema oscuro/claro si es necesario
