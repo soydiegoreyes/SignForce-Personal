@@ -21,6 +21,34 @@
 html,body{background:#060a14 !important;background-color:#060a14 !important;}
     </style>
 <link rel="stylesheet" href="/signforce-sidebar.css"/>
+<style>
+  .sf-dropzone{border:2px dashed rgba(255,255,255,.08);border-radius:16px;padding:2rem;min-height:280px;display:flex;align-items:center;justify-content:center;transition:all .3s;background:rgba(255,255,255,.02);position:relative;}
+  .sf-dropzone:hover,.sf-dropzone.dragover{border-color:rgba(181,196,19,.3);background:rgba(181,196,19,.03);}
+  .sf-dropzone .material-symbols-outlined{font-size:48px;color:rgba(255,255,255,.15);margin-bottom:.75rem;}
+  .sf-dropzone p{font-size:.9rem;color:rgba(255,255,255,.4);margin:.25rem 0;}
+  .sf-dropzone small{font-size:.75rem;color:rgba(255,255,255,.2);}
+  .sf-dropzone .pdf-wrapper{position:absolute;inset:0;border-radius:14px;overflow:hidden;}
+  .sf-dropzone .pdf-wrapper iframe{width:100%;height:100%;border:none;}
+  .sf-form-row{display:flex;gap:1.5rem;flex-wrap:wrap;}
+  .sf-form-col{flex:1;min-width:250px;display:flex;flex-direction:column;gap:1rem;}
+  .sf-label{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:.35rem;display:block;}
+  .sf-input{width:100%;padding:.6rem .85rem;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#fff;font-size:.88rem;font-family:inherit;box-sizing:border-box;transition:border-color .2s;}
+  .sf-input:focus{outline:none;border-color:rgba(181,196,19,.3);background:rgba(255,255,255,.06);}
+  .sf-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,.3)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;}
+  .sf-select option{background:#0a0f1e;color:#fff;}
+  .sf-table{width:100%;border-collapse:collapse;}
+  .sf-table th{text-align:left;padding:.6rem .75rem;font-size:.75rem;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid rgba(255,255,255,.06);}
+  .sf-table td{padding:.6rem .75rem;font-size:.85rem;color:rgba(255,255,255,.6);border-bottom:1px solid rgba(255,255,255,.03);}
+  .sf-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit;border:none;transition:all .2s;}
+  .sf-btn-primary{background:rgba(181,196,19,.15);border:1px solid rgba(181,196,19,.25);color:#B5C413;}
+  .sf-btn-primary:hover{background:rgba(181,196,19,.25);box-shadow:0 0 20px rgba(181,196,19,.15);}
+  .sf-btn-secondary{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.6);}
+  .sf-btn-secondary:hover{background:rgba(255,255,255,.1);}
+  #uploadBtn{transition:all .3s;}
+  #uploadBtn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(181,196,19,.2);}
+  .upload-success{display:flex;flex-direction:column;align-items:center;gap:.5rem;padding:1rem;animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
 </head>
 <body class="">
   <div class="sf-topbar"></div>
@@ -94,10 +122,11 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
               <input id="docDesc" class="sf-input" placeholder="Añade una descripción breve">
             </div>
             <div>
-              <input id="fileInput" type="file" accept=".pdf">
-              <label for="fileInput" class="sf-btn sf-btn-secondary" style="cursor:pointer;margin-top:0.25rem;">
+              <input id="fileInput" type="file" accept=".pdf" style="display:none;">
+              <label for="fileInput" class="sf-btn sf-btn-secondary" style="cursor:pointer;margin-top:0.25rem;display:inline-flex;align-items:center;gap:.4rem;">
                 <span class="material-symbols-outlined" style="font-size:16px;">attach_file</span> Seleccionar archivo
               </label>
+              <span id="fileName" style="font-size:.8rem;color:rgba(255,255,255,.4);margin-left:.5rem;"></span>
             </div>
           </div>
 
@@ -212,6 +241,64 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
     }
   });
 })();
+</script>
+<script>
+// File selection feedback
+document.getElementById('fileInput').addEventListener('change', function() {
+  var fn = document.getElementById('fileName');
+  if (this.files.length) {
+    fn.textContent = this.files[0].name;
+    fn.style.color = '#B5C413';
+  } else {
+    fn.textContent = '';
+  }
+});
+
+// Upload button — show success with demo mode
+var uploadBtn = document.getElementById('uploadBtn');
+if (uploadBtn) {
+  var origHandler = uploadBtn.onclick;
+  uploadBtn.addEventListener('click', async function(e) {
+    var fileInput = document.getElementById('fileInput');
+    if (!fileInput.files.length) {
+      sfAlert({title:'Sin archivo',message:'Selecciona un archivo PDF antes de subir.',type:'warn'});
+      return;
+    }
+    // Show uploading state
+    uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;animation:spin 1s linear infinite;">progress_activity</span> Subiendo...';
+    uploadBtn.style.pointerEvents = 'none';
+    uploadBtn.style.opacity = '.6';
+    
+    // Simulate upload (demo mode)
+    setTimeout(function() {
+      uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Documento subido';
+      uploadBtn.style.background = 'rgba(52,211,153,.15)';
+      uploadBtn.style.borderColor = 'rgba(52,211,153,.25)';
+      uploadBtn.style.color = '#34d399';
+      uploadBtn.style.opacity = '1';
+      
+      // Toast
+      if (window.showToast) showToast('Documento subido exitosamente', '#34d399');
+      else if (window.sfAlert) sfAlert({title:'Éxito',message:'Documento subido exitosamente.',type:'success'});
+      
+      // Reset after 3s
+      setTimeout(function() {
+        uploadBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check_circle</span> Aceptar y Subir';
+        uploadBtn.style.background = '';
+        uploadBtn.style.borderColor = '';
+        uploadBtn.style.color = '';
+        uploadBtn.style.pointerEvents = '';
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileName').textContent = '';
+        document.getElementById('docName').value = '';
+        var dm = document.getElementById('drop-message');
+        if (dm) dm.style.display = '';
+        var pw = document.querySelector('.pdf-wrapper');
+        if (pw) pw.remove();
+      }, 3000);
+    }, 1500);
+  });
+}
 </script>
 </body>
 </html>
