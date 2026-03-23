@@ -1,47 +1,63 @@
+/* SignForce — Floating Particles Background v2
+   63 particles (80% more), varied sizes, glow effects, multi-layer */
 (function() {
-  function spawnParticles(count) {
-    count = count || 35;
-    var container = document.createElement('div');
-    container.className = 'sf-particles-container';
+  if (document.querySelector('.sf-particles-container')) return;
 
-    var colors = [
-      'rgba(181,196,19,.3)',   // verde signforce
-      'rgba(181,196,19,.15)',  // verde suave
-      'rgba(96,165,250,.2)',   // azul
-      'rgba(52,211,153,.2)',   // esmeralda
-      'rgba(255,255,255,.08)'  // blanco tenue
-    ];
+  var container = document.createElement('div');
+  container.className = 'sf-particles-container';
 
-    for (var i = 0; i < count; i++) {
-      var dot = document.createElement('div');
-      dot.className = 'sf-particle';
-      var size = (Math.random() * 4 + 1.5).toFixed(1);
-      var left = (Math.random() * 100).toFixed(1);
-      var duration = (Math.random() * 16 + 8).toFixed(1);
-      var delay = (Math.random() * 15).toFixed(1);
-      var drift = (Math.random() * 40 - 20).toFixed(0);
-      var driftEnd = (Math.random() * 60 - 30).toFixed(0);
-      var peakOpacity = (Math.random() * 0.4 + 0.15).toFixed(2);
-      var color = colors[Math.floor(Math.random() * colors.length)];
+  var colors = [
+    'rgba(181,196,19,.35)',   // verde signforce bright
+    'rgba(181,196,19,.20)',   // verde signforce medium
+    'rgba(181,196,19,.10)',   // verde signforce soft
+    'rgba(96,165,250,.25)',   // azul
+    'rgba(96,165,250,.12)',   // azul soft
+    'rgba(52,211,153,.22)',   // esmeralda
+    'rgba(167,139,250,.18)', // púrpura
+    'rgba(255,255,255,.12)', // blanco tenue
+    'rgba(255,255,255,.06)', // blanco casi invisible
+  ];
 
-      dot.style.cssText =
-        '--size:' + size + 'px;' +
-        '--duration:' + duration + 's;' +
-        '--delay:' + delay + 's;' +
-        '--drift:' + drift + 'px;' +
-        '--drift-end:' + driftEnd + 'px;' +
-        '--peak-opacity:' + peakOpacity + ';' +
-        '--color:' + color + ';' +
-        'left:' + left + '%;';
-      container.appendChild(dot);
-    }
-    document.body.appendChild(container);
+  var COUNT = 63;
+
+  for (var i = 0; i < COUNT; i++) {
+    var dot = document.createElement('div');
+    dot.className = 'sf-particle';
+
+    // More size variety: small dots (1-2px), medium (2-4px), large accents (4-7px)
+    var sizeRoll = Math.random();
+    var size;
+    if (sizeRoll < 0.5) size = Math.random() * 1.5 + 1;       // 50% small: 1-2.5px
+    else if (sizeRoll < 0.85) size = Math.random() * 2 + 2.5;  // 35% medium: 2.5-4.5px
+    else size = Math.random() * 3 + 4;                          // 15% large: 4-7px
+
+    var left = (Math.random() * 100).toFixed(1);
+    var duration = (Math.random() * 20 + 10).toFixed(1);  // 10-30s (slower, more relaxed)
+    var delay = (Math.random() * 20).toFixed(1);           // stagger up to 20s
+    var drift = (Math.random() * 60 - 30).toFixed(0);      // wider horizontal drift
+    var driftEnd = (Math.random() * 80 - 40).toFixed(0);
+    var peakOpacity = size > 4 ? (Math.random() * 0.3 + 0.1).toFixed(2)   // large = softer
+                    : size > 2.5 ? (Math.random() * 0.4 + 0.2).toFixed(2) // medium
+                    : (Math.random() * 0.5 + 0.2).toFixed(2);             // small = brighter
+    var color = colors[Math.floor(Math.random() * colors.length)];
+
+    // Some particles pulse/twinkle
+    var twinkle = Math.random() < 0.2;
+
+    dot.style.cssText =
+      '--size:' + size.toFixed(1) + 'px;' +
+      '--duration:' + duration + 's;' +
+      '--delay:' + delay + 's;' +
+      '--drift:' + drift + 'px;' +
+      '--drift-end:' + driftEnd + 'px;' +
+      '--peak-opacity:' + peakOpacity + ';' +
+      '--color:' + color + ';' +
+      'left:' + left + '%;';
+
+    if (twinkle) dot.classList.add('sf-particle-twinkle');
+
+    container.appendChild(dot);
   }
 
-  // Auto-init
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { spawnParticles(); });
-  } else {
-    spawnParticles();
-  }
+  document.body.appendChild(container);
 })();
