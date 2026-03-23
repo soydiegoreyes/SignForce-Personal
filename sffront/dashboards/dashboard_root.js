@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-function logout() {
+async function logout() {
     sessionStorage.removeItem('currentUser');
     window.location.href = './../registro/login.html';
 }
