@@ -258,9 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const responseText = await response.text();
+            console.log('statusDocs raw response:', responseText.substring(0, 500));
             let responseData;
             try {
                 responseData = JSON.parse(responseText);
+                console.log('statusDocs parsed:', JSON.stringify(responseData).substring(0, 500));
             } catch(parseErr) {
                 // API returned non-JSON (e.g. 'No autorizado')
                 if (responseText.toLowerCase().includes('no autorizado') || responseText.toLowerCase().includes('not authorized')) {
@@ -274,6 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
             pageSize = responseData.page_size || pageSize;
             totalDocs = responseData.total ?? Object.keys(currentData).length;
 
+            console.log('Documents loaded:', Object.keys(currentData).length, 'items');
+            // Temporarily show count in page title
+            var titleEl = document.getElementById('sectionTitle');
+            if (titleEl && Object.keys(currentData).length > 0) {
+                titleEl.textContent = 'Documentos en Proceso de Firma (' + Object.keys(currentData).length + ')';
+            }
             populateTable(currentData, currentTab);
             renderPagination();
 
