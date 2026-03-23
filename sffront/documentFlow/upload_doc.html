@@ -1,130 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SignForce — Subir Documento</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  <link rel="stylesheet" href="../signforce-global.css">
-  <style>
-    body { background: #060a14; font-family: 'DM Sans', sans-serif; color: #fff; margin: 0; min-height: 100vh; }
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0);
-      background-size: 48px 48px;
-    }
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>SignForce — Subir Documento</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/signforce-global.css">
+    <link rel="stylesheet" href="/signforce-sidebar.css"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="theme-color" content="#060a14">
 
-    /* Header */
-    .sf-header {
-      position: fixed; top: 3px; left: 0; right: 0; z-index: 1000;
-      height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem;
-      background: rgba(10,15,30,0.85); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .sf-header a { text-decoration: none; color: rgba(255,255,255,0.55); font-size: 0.85rem; font-weight: 500;
-      padding: 0.4rem 0.8rem; border-radius: 8px; transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; }
-    .sf-header a:hover { color: #fff; background: rgba(255,255,255,0.05); }
-    .sf-logo-s { width: 30px; height: 30px; background: #B5C413; color: #0a0f1e; font-weight: 900; font-size: 0.9rem;
-      border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(181,196,19,0.2); }
-    .sf-logo-text { font-weight: 800; font-size: 1.1rem; letter-spacing: 0.05em; color: #fff; margin-left: 6px; }
-    .sf-btn-ghost { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: #fff;
-      padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
-      transition: all 0.25s ease; display: inline-flex; align-items: center; gap: 6px; }
-    .sf-btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(181,196,19,0.2); }
-
-    /* Layout — same as dashboard_admin */
-    .sf-layout { display: flex; min-height: 100vh; padding: 80px 1.5rem 2rem; gap: 1.25rem; position: relative; z-index: 1; }
-
-    /* Sidebar */
-    .sf-sidebar { width: 250px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem; }
-    .sf-sidebar-card {
-      background: rgba(15,21,36,0.4); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1rem;
-    }
-    .sf-sidebar-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.3); padding: 0.4rem 0.6rem; font-weight: 600; margin-bottom: 0.25rem; }
-    .sf-nav-link .material-symbols-outlined { font-size: 1.15rem; }
-
-    /* Content */
-    .sf-content { flex: 1; display: flex; flex-direction: column; gap: 1.25rem; }
-    .sf-card {
-      background: rgba(15,21,36,0.45); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 1.75rem;
-    }
-    .sf-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
-    .sf-card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .sf-card-title { font-size: 1.05rem; font-weight: 700; }
-
-    /* Form fields */
-    .sf-form-row { display: flex; gap: 1.25rem; flex-wrap: wrap; }
-    .sf-form-col { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 1rem; }
-    .sf-label { font-size: 0.78rem; font-weight: 500; color: rgba(255,255,255,0.5); margin-bottom: 0.35rem; display: block; }
-    .sf-input {
-      width: 100%; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.85rem;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); color: #fff;
-      font-family: 'DM Sans', sans-serif; transition: all 0.25s ease;
-    }
-    .sf-input:focus { outline: none; border-color: #B5C413; box-shadow: 0 0 0 3px rgba(181,196,19,0.1); }
-    .sf-input::placeholder { color: rgba(255,255,255,0.2); }
-    .sf-select option { background: #0f1524; color: #fff; }
-
-    /* Drop zone */
-    .sf-dropzone {
-      border: 2px dashed rgba(181,196,19,0.2); border-radius: 16px; background: rgba(181,196,19,0.02);
-      display: flex; align-items: center; justify-content: center; flex-direction: column;
-      min-height: 320px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
-    }
-    .sf-dropzone:hover { border-color: rgba(181,196,19,0.35); background: rgba(181,196,19,0.05); }
-    .sf-dropzone .material-symbols-outlined { font-size: 3rem; color: rgba(181,196,19,0.3); margin-bottom: 0.75rem; }
-    .sf-dropzone p { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
-    .sf-dropzone small { color: rgba(255,255,255,0.2); font-size: 0.75rem; margin-top: 0.25rem; }
-
-    /* Buttons */
-    .sf-btn {
-      padding: 0.6rem 1.4rem; border-radius: 10px; font-size: 0.85rem; font-weight: 700;
-      cursor: pointer; transition: all 0.25s ease; border: none; display: inline-flex; align-items: center; gap: 8px;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .sf-btn-primary { background: #B5C413; color: #0a0f1e; }
-    .sf-btn-primary:hover { background: #c5d41a; box-shadow: 0 0 24px rgba(181,196,19,0.2); transform: translateY(-1px); }
-    .sf-btn-secondary { background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
-    .sf-btn-secondary:hover { background: rgba(181,196,19,0.08); border-color: rgba(181,196,19,0.2); }
-
-    /* Table */
-    .sf-table { width: 100%; border-collapse: collapse; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.04); }
-    .sf-table thead tr { background: rgba(255,255,255,0.03); }
-    .sf-table th { padding: 0.65rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600;
-      color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em;
-      border-bottom: 1px solid rgba(255,255,255,0.06); }
-    .sf-table td { padding: 0.65rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-      color: rgba(255,255,255,0.6); font-size: 0.85rem; }
-    .sf-table tr:hover td { background: rgba(255,255,255,0.02); }
-
-    /* Add signer section */
-    .sf-add-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: flex-end; }
-    .sf-add-row > div { flex: 1; min-width: 160px; }
-
-    input[type="file"] { display: none; }
-
-    @media (max-width: 900px) {
-      .sf-layout { flex-direction: column; padding: 75px 1rem 2rem; }
-      .sf-sidebar { width: 100%; flex-direction: row; overflow-x: auto; }
-      .sf-sidebar-card { flex-shrink: 0; }
-      .sf-form-row { flex-direction: column; }
-    }
-  </style>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <meta name="description" content="SignForce — Plataforma de firma electrónica avanzada con validez legal en México. Cumple NOM-151-SCFI-2016.">
-  <meta name="theme-color" content="#060a14">
-  <meta property="og:title" content="SignForce — Firma Electrónica Avanzada">
-  <meta property="og:description" content="Firma, gestiona y protege documentos electrónicos con validez legal conforme a la NOM-151.">
-  <meta property="og:type" content="website">
-<style>    .sf-content{flex:1;min-width:0}
-    @media(max-width:900px){}</style>
-<link rel="stylesheet" href="/signforce-sidebar.css"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+@media(max-width:900px){}
+html,body{background:#060a14 !important;background-color:#060a14 !important;}
+    </style>
 </head>
-<body>
+<body class="">
   <div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#B5C413,#d4e157,#B5C413);z-index:9999;"></div>
   <div class="sf-orb sf-orb-1"></div><div class="sf-orb sf-orb-2"></div><div class="sf-orb sf-orb-3"></div>
   <header class="sf-unified-header" id="mainHeader">
@@ -132,16 +30,14 @@
       <a href="/users" style="display:flex;align-items:center;"><img src="/images/signforce-logo.png" alt="SignForce" style="height:28px;width:auto;"></a>
     </div>
     <div style="display:flex;align-items:center;gap:.75rem;">
-      <span class="sf-user-name" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
-      <button class="sf-btn-logout" onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
+      <span id="sf-header-user" style="font-size:.85rem;color:rgba(255,255,255,.5);"></span>
+      <button onclick="window.location.href='/logoutUser'" style="display:flex;align-items:center;gap:4px;padding:.4rem .8rem;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.5);font-size:.8rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .25s;">
         <span class="material-symbols-outlined" style="font-size:16px;">logout</span> Salir
       </button>
     </div>
   </header>
-
   <div class="sf-page-layout">
-    <!-- Sidebar -->
-        <aside class="sf-sidebar" id="sf-shared-sidebar">
+    <aside class="sf-sidebar" id="sf-shared-sidebar">
       <div class="sf-sidebar-card" style="padding:1.1rem 1.25rem;">
         <div style="display:flex;align-items:center;gap:.6rem;">
           <div class="sf-card-icon" style="background:rgba(96,165,250,.1);"><span class="material-symbols-outlined" style="font-size:1.1rem;color:#60a5fa;">person</span></div>
@@ -164,9 +60,8 @@
         </div>
       </nav>
     </aside>
-
-    <!-- Main content -->
     <main class="sf-page-content">
+
       <!-- Document info + preview -->
       <div class="sf-card">
         <div class="sf-card-header">
