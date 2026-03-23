@@ -34,6 +34,17 @@ const searchParams = {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+// Safety: if still loading after 8s, show empty state
+setTimeout(function() {
+    var tb = document.getElementById('documentsTableBody');
+    if (!tb) return;
+    var html = tb.innerHTML;
+    if (html.indexOf('spinner') !== -1 || html.indexOf('Cargando') !== -1 || html.indexOf('loading') !== -1) {
+        console.error('Loading timeout - forcing empty state');
+        tb.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;color:rgba(255,255,255,.4);"><div style="display:flex;flex-direction:column;align-items:center;gap:1rem;"><span class="material-symbols-outlined" style="font-size:48px;color:rgba(255,255,255,.15);">error_outline</span><p>Tiempo de espera agotado</p><a href="/upload" style="padding:.5rem 1.25rem;border-radius:10px;background:rgba(181,196,19,.15);border:1px solid rgba(181,196,19,.25);color:#B5C413;font-size:.85rem;font-weight:600;text-decoration:none;">Subir documento</a><button onclick="window.location.reload()" style="padding:.5rem 1.25rem;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:.85rem;cursor:pointer;font-family:inherit;">Reintentar</button></div></td></tr>';
+    }
+}, 8000);
+
     // Variables globales locales al scope
     try { document.getElementById("logoutBtn").addEventListener("click", logout); } catch(e) {}
     
