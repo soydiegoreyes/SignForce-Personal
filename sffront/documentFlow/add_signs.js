@@ -29,7 +29,7 @@ let currentDocRev = inviteRequest[currentDocId];
 
 document.addEventListener('DOMContentLoaded', async function() {
     if (!currentDocRev) {
-        alert("No hay más documentos por firmar.");
+        sfAlert('No hay más documentos por firmar.');
         sessionStorage.removeItem("signIndex");
         return;
     }
@@ -89,7 +89,7 @@ async function loadPDFfromServer(docId) {
 
     } catch (err) {
         console.error("Error al cargar PDF:", err);
-        alert("No se pudo cargar el documento.");
+        sfAlert('No se pudo cargar el documento.');
     }
 }
 
@@ -361,17 +361,17 @@ async function saveAndNextDoc() {
             });
             
             if (response.ok) {
-                alert("Proceso completado. Todos los documentos tienen posiciones de firma.");
+                sfAlert('Proceso completado. Todos los documentos tienen posiciones de firma.');
                 window.location.href = "/myfolders";
             } else {
                 if (response.status === 401) {  
                     window.location.href = '/login';
                 }
-                alert("Error al enviar las invitaciones.");
+                sfAlert('Error al enviar las invitaciones.');
             }
         } catch (err) {
             console.error("Error al enviar invitaciones:", err);
-            alert("Error al enviar las invitaciones.");
+            sfAlert('Error al enviar las invitaciones.');
         }
     }
 }

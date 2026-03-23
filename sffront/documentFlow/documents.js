@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const startBtn = document.getElementById('createFolderSignSidebar');
             startBtn.addEventListener('click', async () => {
                 if (Object.keys(selectedDocuments).length === 0) {
-                    alert('Selecciona al menos un documento antes de iniciar el proceso.');
+                    sfAlert('Selecciona al menos un documento antes de iniciar el proceso.');
                     return;
                 }
                 createSignFolder();
@@ -732,7 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } catch (error) {
             console.error('Error al descargar el documento:', error);
-            alert('Error al descargar el documento. Intente nuevamente.');
+            sfAlert('Error al descargar el documento. Intente nuevamente.');
         }
     }
 
@@ -784,14 +784,14 @@ async function createSignFolder() {
         }
     } catch (err) {
         console.error('Error creando el proceso:', err);
-        alert('No se pudo crear el proceso de firma.');
+        sfAlert('No se pudo crear el proceso de firma.');
     }
 }
 
 async function signDocument(docId) {
     // mostrarMensaje es local en DOMContentLoaded, aquí usaremos alert o una global si es necesario
     // Para simplificar, asumiremos que existe o usamos alert
-    alert('Firmando documento...');
+    sfAlert('Firmando documento...');
     try {
         const resp = await fetch('/signDoc', {
             method: 'POST',
@@ -804,18 +804,18 @@ async function signDocument(docId) {
             }
             throw new Error('Error al firmar');
         }
-        alert('Documento firmado correctamente');
+        sfAlert('Documento firmado correctamente');
         // Necesitaríamos recargar, pero loadDocumentsData está dentro del scope. 
         // Idealmente refactorizar para que loadDocumentsData sea global, o recargar página.
         window.location.reload(); 
     } catch (err) {
         console.error(err);
-        alert('Error al firmar el documento');
+        sfAlert('Error al firmar el documento');
     }
 }
 
 async function cancelProcess(docId) {
-    if (!confirm('¿Estás seguro que deseas cancelar el proceso de firma?')) return;
+    var _ok2 = await sfConfirm({title:'Cancelar firma',message:'¿Estás seguro que deseas cancelar el proceso de firma?',type:'danger',confirmText:'Cancelar proceso',confirmClass:'sf-modal-btn-danger'});if(!_ok2) return;
     try {
         const resp = await fetch('/cancelProcess', {
             method: 'POST',
@@ -828,11 +828,11 @@ async function cancelProcess(docId) {
             }
             throw new Error('Error al cancelar');
         }
-        alert('Proceso cancelado');
+        sfAlert('Proceso cancelado');
         window.location.reload();
     } catch (err) {
         console.error(err);
-        alert('No se pudo cancelar el proceso');
+        sfAlert('No se pudo cancelar el proceso');
     }
 }
 
@@ -849,16 +849,16 @@ async function acceptShared(docId) {
             }
             throw new Error('Error al aceptar');
         }
-        alert('Documento aceptado para firma');
+        sfAlert('Documento aceptado para firma');
         window.location.reload();
     } catch (err) {
         console.error(err);
-        alert('No se pudo aceptar el documento');
+        sfAlert('No se pudo aceptar el documento');
     }
 }
 
 function viewHistory(docId) {
-    alert('Abriendo historial...');
+    sfAlert('Abriendo historial...');
 }
 
 function formatBytes(bytes) {
@@ -964,11 +964,11 @@ function renderChatMessages() {
     container.scrollTop = container.scrollHeight;
 }
 async function logout() {
-    if (confirm('¿Cerrar sesión como administrador?')) {
+    sfConfirm({title:'Cerrar sesión',message:'¿Seguro que deseas cerrar tu sesión actual?',type:'warn',confirmText:'Cerrar sesión',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
         try {
             const response = await fetch('/logoutUser', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' }}),
                 credentials: 'include'
             });
             if (!response.ok) {

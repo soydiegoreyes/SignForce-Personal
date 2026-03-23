@@ -36,7 +36,7 @@ async function loadFaceModel() {
         console.log('✅ Modelo facial cargado');
     } catch (err) {
         console.error(err);
-        alert('Error cargando el modelo facial');
+        sfAlert('Error cargando el modelo facial');
     }
 }
 
@@ -115,7 +115,7 @@ async function startCamera() {
 
         video.srcObject = videoStream;
     } catch (err) {
-        alert('No se pudo acceder a la cámara');
+        sfAlert('No se pudo acceder a la cámara');
         stopCamera();
     }
 }
@@ -166,7 +166,7 @@ async function capturePhoto() {
         stopCamera();
     } catch (err) {
         console.error(err);
-        alert('Error procesando el rostro');
+        sfAlert('Error procesando el rostro');
     } finally {
         isProcessing = false;
     }
@@ -608,7 +608,7 @@ async function handleAuthSubmit(e) {
 }
 
 async function acceptInvite() {
-    if(!confirm("¿Confirmar visto bueno?")) return;
+    var _ok3 = await sfConfirm({title:'Visto bueno',message:'¿Confirmar visto bueno en este documento?',type:'success',confirmText:'Confirmar',confirmClass:'sf-modal-btn-confirm'});if(!_ok3) return;
     try {
         const res = await fetch('/acceptDocument', { 
             method: 'POST', 
@@ -761,7 +761,7 @@ function showKeyUploadForm() {
         const keyPassword = document.getElementById('keyPassword').value;
 
         if (!keyFile || !certFile || !keyPassword) {
-        alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
+        sfAlert('Por favor, sube la llave, el certificado y escribe la contraseña.');
         return;
         }
 

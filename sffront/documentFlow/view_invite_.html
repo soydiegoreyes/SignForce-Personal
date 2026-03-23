@@ -1092,7 +1092,7 @@
                 const keyPassword = document.getElementById('keyPassword').value;
 
                 if (!keyFile || !certFile || !keyPassword) {
-                alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
+                sfAlert('Por favor, sube la llave, el certificado y escribe la contraseña.');
                 return;
                 }
 
@@ -1190,7 +1190,7 @@
             }
             
             if (currentInvite.aliveProof) {
-                if (!confirm('Esta invitación requiere prueba de vida. ¿Deseas continuar?')) return;
+                var _ok4 = await sfConfirm({title:'Prueba de vida',message:'Esta invitación requiere prueba de vida. ¿Deseas continuar?',type:'info',confirmText:'Continuar'});if(!_ok4) return;
             }
             
             const signDocs = [];
@@ -1236,7 +1236,7 @@
 
         // Aceptar documento
         async function acceptDocument(inviteId, folderId) {
-            if (!confirm('¿Estás seguro de dar visto bueno?')) return;
+            var _ok3 = await sfConfirm({title:'Visto bueno',message:'¿Confirmar visto bueno en este documento?',type:'success',confirmText:'Confirmar',confirmClass:'sf-modal-btn-confirm'});if(!_ok3) return;
             
             mostrarMensaje('Aceptando documento...', 'info');
             
@@ -1284,6 +1284,7 @@
     </script>
 
   <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
-<link rel="stylesheet" href="/signforce-global.css"><script src="/shared-particles.js"></script>
+<link rel="stylesheet" href="/signforce-global.css"><script src="/sf-modal.js"></script>
+<script src="/shared-particles.js"></script>
 </body>
 </html>

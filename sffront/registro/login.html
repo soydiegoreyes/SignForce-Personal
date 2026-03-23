@@ -464,7 +464,7 @@
       const EmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
       if (!EmailRegex.test(email) || password.length < 8) {
-        alert('Email inválido o password muy corto (mínimo 8 caracteres).');
+        sfAlert('Email inválido o password muy corto (mínimo 8 caracteres).');
         return;
       }
       try {
@@ -617,6 +617,7 @@
     #sf-loading { display: none; }
     #sf-success { display: none; }
   </style>
-<link rel="stylesheet" href="/signforce-global.css"><script src="/shared-particles.js"></script>
+<link rel="stylesheet" href="/signforce-global.css"><script src="/sf-modal.js"></script>
+<script src="/shared-particles.js"></script>
 </body>
 </html>

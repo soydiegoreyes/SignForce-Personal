@@ -961,7 +961,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función global para reenviar invitación
     window.resendInvitation = async function(email) {
-        if (!confirm(`¿Reenviar invitación a ${email}?`)) return;
+        var _ok = await sfConfirm({title:'Reenviar invitación',message:'¿Reenviar invitación a ' + email + '?',type:'info',confirmText:'Reenviar'});if(!_ok) return;
         
         try {
             showToast(`Reenviando invitación a ${email}...`, 'info');
@@ -992,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Función para eliminar usuario (placeholder)
     window.deleteUser = function(userId) {
-        if (confirm(`¿Estás seguro de eliminar al usuario ${userId}? Esta acción no se puede deshacer.`)) {
+        sfConfirm({title:'Eliminar usuario',message:'¿Estás seguro de eliminar al usuario ' + userId + '? Esta acción no se puede deshacer.',type:'danger',confirmText:'Eliminar',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
             showToast(`Eliminando usuario ${userId}...`, 'warning');
             // Implementar lógica de eliminación
             setTimeout(() => {
@@ -1011,9 +1011,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Configurar logout
         document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm('¿Cerrar sesión como administrador?')) {
+            sfConfirm({title:'Cerrar sesión',message:'¿Seguro que deseas cerrar tu sesión actual?',type:'warn',confirmText:'Cerrar sesión',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
                 window.location.href = '/logout';
-            }
+            }})
         });
         
         // Configurar tema oscuro/claro si es necesario

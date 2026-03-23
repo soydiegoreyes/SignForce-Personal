@@ -204,13 +204,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await response.json();
 
                     if (data.error) {
-                        alert(`Error: ${data.error}`);
+                        sfAlert('Error: ${data.error}');
                         return;
                     }
 
                     // Si login exitoso, hacer redirect usando JavaScript
                     if (data.redirectTo) {
-                        alert(`Redirecting to: ${data.redirectTo}`);
+                        sfAlert('Redirecting to: ${data.redirectTo}');
                         // Redirect usando window.location
                         window.location.href = `${data.redirectTo}`;
                         // O si prefieres usar el dominio actual:
@@ -218,15 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     const errorData = await response.json();
-                    alert(`Error: ${errorData.error || 'Error desconocido'}`);
+                    sfAlert('Error: ${errorData.error || 'Error desconocido'}');
                 }
 
             } catch (error) {
                 console.error("Error en login:", error);
-                alert(`Error al intentar iniciar sesión: ${error.message}`);
+                sfAlert('Error al intentar iniciar sesión: ${error.message}');
             }
         } else {
-            alert("Email inválido o password muy corto (mínimo 8 caracteres).");
+            sfAlert('Email inválido o password muy corto (mínimo 8 caracteres).');
         }
 
     });

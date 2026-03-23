@@ -214,7 +214,7 @@
         const keyPassword = document.getElementById('keyPassword').value;
 
         if (!keyFile || !certFile || !keyPassword) {
-          alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
+          sfAlert('Por favor, sube la llave, el certificado y escribe la contraseña.');
           return;
         }
 

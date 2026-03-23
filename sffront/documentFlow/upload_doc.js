@@ -254,7 +254,7 @@ document.getElementById('addReviewerBtn').addEventListener('click', () => {
   const comment = document.getElementById('userComment');
   const today = new Date().toISOString().split('T')[0];
 
-  if (!user || !team) return alert("Select both user and team.");
+  if (!user || !team) return sfAlert('Select both user and team.');
 
   reviewers.push({
     user: user.value,

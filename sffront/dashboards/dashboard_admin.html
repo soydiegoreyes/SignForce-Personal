@@ -1631,7 +1631,7 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
 
         // Función global para reenviar invitación
         window.resendInvitation = async function(email) {
-            if (!confirm(`¿Reenviar invitación a ${email}?`)) return;
+            var _ok = await sfConfirm({title:'Reenviar invitación',message:'¿Reenviar invitación a ' + email + '?',type:'info',confirmText:'Reenviar'});if(!_ok) return;
             
             try {
                 showToast(`Reenviando invitación a ${email}...`, 'info');
@@ -1662,11 +1662,11 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
         };
 
         async function logout() {
-            if (confirm('¿Cerrar sesión como administrador?')) {
+            sfConfirm({title:'Cerrar sesión',message:'¿Seguro que deseas cerrar tu sesión actual?',type:'warn',confirmText:'Cerrar sesión',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
                 try {
                     const response = await fetch('/logoutUser', {
                         method: 'GET',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 'Content-Type': 'application/json' }}),
                         credentials: 'include'
                     });
 
@@ -1690,7 +1690,7 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
 
         // Función para eliminar usuario (placeholder)
         window.deleteUser = function(userId) {
-            if (confirm(`¿Estás seguro de eliminar al usuario ${userId}? Esta acción no se puede deshacer.`)) {
+            sfConfirm({title:'Eliminar usuario',message:'¿Estás seguro de eliminar al usuario ' + userId + '? Esta acción no se puede deshacer.',type:'danger',confirmText:'Eliminar',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
                 showToast(`Eliminando usuario ${userId}...`, 'warning');
                 // Implementar lógica de eliminación
                 setTimeout(() => {
@@ -1715,6 +1715,7 @@ html,body{background:#060a14 !important;background-color:#060a14 !important;}
     </script>
 
   <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+<script src="/sf-modal.js"></script>
 <script src="/shared-particles.js"></script>
 <script src="/shared-nav.js"></script>
 <script>injectSidebar("dashboard");</script>

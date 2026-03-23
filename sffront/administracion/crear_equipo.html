@@ -130,11 +130,11 @@
     function crearEquipo(){
       const nombre = document.getElementById('nombreEquipo').value.trim();
       const email = document.getElementById('emailAdmin').value.trim();
-      if(!nombre||!email){alert('Nombre y email son requeridos');return}
+      if(!nombre||!email){sfAlert('Nombre y email son requeridos');return}
       const nuevo = {id:'eq_'+Date.now(), instId:currentUser.instId, nombre, usuarioMaestroEmail:email, miembros:[{usuarioId:currentUser.id,rol:'admin',fechaUnion:new Date().toISOString()}]};
       equipos.push(nuevo); sessionStorage.setItem('equipos',JSON.stringify(equipos));
       document.getElementById('nombreEquipo').value=''; document.getElementById('emailAdmin').value=''; document.getElementById('descEquipo').value='';
-      alert('Equipo creado exitosamente'); cargarEquipos();
+      sfAlert('Equipo creado exitosamente'); cargarEquipos();
     }
     function cargarEquipos(){
       const container = document.getElementById('listaEquipos');
@@ -153,6 +153,7 @@
   </script>
 
   <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+<script src="/sf-modal.js"></script>
 <script src="/shared-particles.js"></script>
 <script src="/shared-nav.js"></script>
 <script>injectSidebar("settings");</script>

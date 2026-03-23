@@ -1054,11 +1054,11 @@ function showMessage(message, type = 'info') {
 }
 
 async function logout() {
-    if (confirm('¿Cerrar sesión como administrador?')) {
+    sfConfirm({title:'Cerrar sesión',message:'¿Seguro que deseas cerrar tu sesión actual?',type:'warn',confirmText:'Cerrar sesión',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){
         try {
             const response = await fetch('/logoutUser', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' }}),
                 credentials: 'include'
             });
 

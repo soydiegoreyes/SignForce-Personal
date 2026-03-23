@@ -853,10 +853,10 @@
       const cvv = document.getElementById('pay-card-cvv').value;
       const name = document.getElementById('pay-card-name').value;
 
-      if (num.length !== 16) { alert('Número de tarjeta inválido'); return; }
-      if (!/^\d{2}\/\d{2}$/.test(exp)) { alert('Fecha inválida (MM/AA)'); return; }
-      if (cvv.length < 3) { alert('CVV inválido'); return; }
-      if (!name.trim()) { alert('Ingresa el nombre de la tarjeta'); return; }
+      if (num.length !== 16) { sfAlert('Número de tarjeta inválido'); return; }
+      if (!/^\d{2}\/\d{2}$/.test(exp)) { sfAlert('Fecha inválida (MM/AA)'); return; }
+      if (cvv.length < 3) { sfAlert('CVV inválido'); return; }
+      if (!name.trim()) { sfAlert('Ingresa el nombre de la tarjeta'); return; }
 
       document.getElementById('payStep2').style.display = 'none';
       showProcessing();
@@ -878,13 +878,13 @@
         } else {
           document.getElementById('payStepProcessing').style.display = 'none';
           document.getElementById('payStep2').style.display = 'block';
-          alert('Error en el pago. Intenta de nuevo.');
+          sfAlert('Error en el pago. Intenta de nuevo.');
         }
       })
       .catch(() => {
         document.getElementById('payStepProcessing').style.display = 'none';
         document.getElementById('payStep2').style.display = 'block';
-        alert('Error de conexión. Intenta de nuevo.');
+        sfAlert('Error de conexión. Intenta de nuevo.');
       });
     });
 
@@ -924,7 +924,7 @@
       .catch(() => {
         document.getElementById('payStepProcessing').style.display = 'none';
         document.getElementById('payStep1').style.display = 'block';
-        alert('Error de conexión.');
+        sfAlert('Error de conexión.');
       });
     }
 
@@ -966,6 +966,7 @@
     }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   </script>
-<link rel="stylesheet" href="/signforce-global.css"><script src="/shared-particles.js"></script>
+<link rel="stylesheet" href="/signforce-global.css"><script src="/sf-modal.js"></script>
+<script src="/shared-particles.js"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentDoc = folderData[currentDocId];
 
   if (!currentDoc) {
-    alert("No hay documentos para procesar.");
+    sfAlert('No hay documentos para procesar.');
     window.location.href = "/documents";
     return;
   }
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
         if (!guestEmail || !emailRegex.test(guestEmail)) {
-            alert("Por favor, introduce un correo electrónico válido para el invitado.");
+            sfAlert('Por favor, introduce un correo electrónico válido para el invitado.');
             return;
         }
 
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         // --- CASO INTERNO ---
         if (!selectedUserObj) {
-            alert("Por favor, busca y selecciona un usuario de la lista.");
+            sfAlert('Por favor, busca y selecciona un usuario de la lista.');
             return;
         }
 
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Evitar duplicados (por user/id)
     const exists = reviewers.some(r => r.user === newReviewer.user);
     if (exists) {
-        alert("Este usuario ya ha sido añadido a la lista.");
+        sfAlert('Este usuario ya ha sido añadido a la lista.');
         return;
     }
 
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================
   document.getElementById('uploadBtn').addEventListener('click', async () => {
     if (reviewers.length === 0) {
-        if(!confirm("No has añadido ningún firmante. ¿Deseas continuar de todas formas?")) return;
+        var _ok5 = await sfConfirm({title:'Sin firmantes',message:'No has añadido ningún firmante. ¿Deseas continuar de todas formas?',type:'warn',confirmText:'Continuar'});if(!_ok5) return;
     }
 
     currentDoc.reviewers = reviewers;

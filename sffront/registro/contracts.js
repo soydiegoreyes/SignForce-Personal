@@ -162,7 +162,7 @@ credentialsForm.addEventListener('submit', async (e) => {
   const keyPassword = document.getElementById('keyPassword').value;
 
   if (!keyFile || !certFile || !keyPassword) {
-    alert('Por favor, sube la llave, el certificado y escribe la contraseña.');
+    sfAlert('Por favor, sube la llave, el certificado y escribe la contraseña.');
     return;
   }
 
@@ -196,7 +196,7 @@ credentialsForm.addEventListener('submit', async (e) => {
       };
       setOnboardingDone(meta);
       //showDashboard();
-      alert('Credenciales validadas y guardadas exitosamente.');
+      sfAlert('Credenciales validadas y guardadas exitosamente.');
     } else {
       alert('Error: ' + result.message);
     }
@@ -220,7 +220,7 @@ credentialsForm.addEventListener('submit', async (e) => {
     };
     saveProfile(profile);
     renderDocs(); // refrescar vistas con datos nuevos
-    alert('Datos guardados.');
+    sfAlert('Datos guardados.');
   });
 
   // Modal preview
@@ -296,7 +296,7 @@ function renderDocs() {
       // Validación mínima: que exista meta de credenciales
       const metaCreds = localStorage.getItem(LS_KEYS.CREDS_META);
       if (!metaCreds) {
-        alert('Primero sube tu llave, certificado y contraseña.');
+        sfAlert('Primero sube tu llave, certificado y contraseña.');
         return;
       }
       // Simular tiempo de firmado

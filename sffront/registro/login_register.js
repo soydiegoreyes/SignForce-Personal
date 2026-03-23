@@ -70,7 +70,7 @@ loginForm.addEventListener('submit', (e) => {
     // Simula tabla usuarios en DB ______________ borrar cuando se implemente base de datos**
     let usuarios = JSON.parse(sessionStorage.getItem('usuarios')) || [];
     if (usuarios==[]) {
-        alert('No hay usuarios registrados');
+        sfAlert('No hay usuarios registrados');
         return;
     }
     if (validateEmail(email) && password.length >= 8) {
@@ -81,7 +81,7 @@ loginForm.addEventListener('submit', (e) => {
             sessionStorage.setItem('currentUser', JSON.stringify(usuario));
             
             // Redirigir según tipo de usuario
-            alert('Inicio de sesión exitoso. Redirigiendo...');
+            sfAlert('Inicio de sesión exitoso. Redirigiendo...');
 
             if (usuario.tipo === 'root') {
                 window.location.href = './../dashboards/dashboard_root.html';
@@ -90,10 +90,10 @@ loginForm.addEventListener('submit', (e) => {
             } else if (usuario.tipo === 'miembro_equipo') {
                 window.location.href = './../dashboards/dashboard_user.html';
             } else {
-                alert('Tipo de usuario no reconocido');
+                sfAlert('Tipo de usuario no reconocido');
             }
         } else {
-            alert('Credenciales incorrectas');
+            sfAlert('Credenciales incorrectas');
         }
     }
     //_____________________________________________________________________________________
@@ -116,44 +116,44 @@ registerForm.addEventListener('submit', async (e) => {
     
     // Validaciones
     if (!firstName || !lastName) {
-        alert('Por favor, añade un nombre del responsable del sistema');
+        sfAlert('Por favor, añade un nombre del responsable del sistema');
         return;
     }
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,20}$/;
     if (!passwordRegex.test(password)) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>La contraseña debe tener 8-20 caracteres, contener letras y números, sin espacios o caracteres especiales.</strong></p>';
         return;
     }
     if (password !== confirm) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>El password no coincide con la confirmación</strong></p>';
         return;
     }
     if (!businessName) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>El nombre de la empresa es requerido</strong></p>';
         return;
     }
     const RFCRegex = /^[A-Z\d]{13,20}$/;
     if (!RFCRegex.test(businessRFC)) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>Tu RFC debe contener solo letras y números, sin espacios o caracteres especiales.</strong></p>';
         return;
     }
     if (!validateEmail(email)) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>Asegurate que tu email no tiene espacios y sea correcto</strong></p>';
         return;
     }
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phone)) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>Tu telefono a 10 digitos sin espacios ni caracteres especiales</strong></p>';
         return;
     }
     if (!terms) {
-        alert('Alguno de tus datos no es correcto.');
+        sfAlert('Alguno de tus datos no es correcto.');
         document.getElementById('notice-box').innerHTML = '<p><strong>Lee y acepta el Acuerdo de Términos y Condiciones</strong></p>';
         return;
     }
@@ -187,11 +187,11 @@ registerForm.addEventListener('submit', async (e) => {
 
         // Redirigir a la pantalla de validación
         window.location.href = 'validacion.html?empresaId=' + nuevaEmpresa.id;
-        alert('Registro exitoso. ¡Bienvenido a SignForce!');
+        sfAlert('Registro exitoso. ¡Bienvenido a SignForce!');
         
     } catch (error) {
         console.error('Error:', error);
-        alert(`Error al registrar: ${error.message}`);
+        sfAlert('Error al registrar: ${error.message}');
     }
 });
 

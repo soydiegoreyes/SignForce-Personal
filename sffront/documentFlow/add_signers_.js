@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentDoc = folderData[currentDocId];
 
   if (!currentDoc) {
-    alert("No hay documentos para procesar.");
+    sfAlert('No hay documentos para procesar.');
     window.location.href = "/documents";
     return;
   }
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const comment = document.getElementById('userComment');
     const today = new Date().toISOString().split('T')[0];
 
-    if (!user.value || !team.value) return alert("Selecciona usuario y equipo.");
+    if (!user.value || !team.value) return sfAlert('Selecciona usuario y equipo.');
 
     reviewers.push({
       user: user.value,

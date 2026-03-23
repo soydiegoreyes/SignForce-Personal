@@ -196,12 +196,12 @@
     document.getElementById('formAgregarUsuario').addEventListener('submit',e=>{
       e.preventDefault();
       const nombre=document.getElementById('nombreNuevoUsuario').value,email=document.getElementById('emailNuevoUsuario').value,rol=document.getElementById('rolNuevoUsuario').value;
-      if(usuarios.some(u=>u.email===email)){alert('Email ya registrado');return}
+      if(usuarios.some(u=>u.email===email)){sfAlert('Email ya registrado');return}
       const nu={id:`usr_${Date.now()}`,nombre,email,password:'temp'+Math.random().toString(36).substr(2,8),tipo:'miembro_equipo',empresaId:currentUser.empresaId,equipoId:currentUser.equipoId};
       usuarios.push(nu);sessionStorage.setItem('usuarios',JSON.stringify(usuarios));
       const eq=equipos.find(e=>e.id===currentUser.equipoId);eq.miembros.push({usuarioId:nu.id,rol,fechaUnion:new Date().toISOString()});
       sessionStorage.setItem('equipos',JSON.stringify(equipos));
-      alert(`Usuario agregado!\nEmail: ${nu.email}\nPass: ${nu.password}`);cerrarModalAgregar();cargarUsuarios();
+      sfAlert('Usuario agregado!\nEmail: ${nu.email}\nPass: ${nu.password}');cerrarModalAgregar();cargarUsuarios();
     });
 
     document.getElementById('formEditarUsuario').addEventListener('submit',e=>{
@@ -210,7 +210,7 @@
       if(u){u.nombre=document.getElementById('nombreEditarUsuario').value;u.email=document.getElementById('emailEditarUsuario').value;
         const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id);
         if(m)m.rol=document.getElementById('rolEditarUsuario').value;
-        sessionStorage.setItem('equipos',JSON.stringify(equipos));alert('Actualizado');cerrarModalEditar();cargarUsuarios();}
+        sessionStorage.setItem('equipos',JSON.stringify(equipos));sfAlert('Actualizado');cerrarModalEditar();cargarUsuarios();}
     });
 
     function editarUsuario(id){
@@ -218,12 +218,13 @@
       if(u){document.getElementById('usuarioIdEditar').value=u.id;document.getElementById('nombreEditarUsuario').value=u.nombre;
         document.getElementById('emailEditarUsuario').value=u.email;document.getElementById('rolEditarUsuario').value=m.rol;modalEditar.style.display='block';}
     }
-    function eliminarUsuario(id){if(confirm('¿Eliminar usuario del equipo?')){const eq=equipos.find(e=>e.id===currentUser.equipoId);eq.miembros=eq.miembros.filter(m=>m.usuarioId!==id);sessionStorage.setItem('equipos',JSON.stringify(equipos));cargarUsuarios()}}
-    function promoverAAdmin(id){if(confirm('¿Promover a admin?')){const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id),u=usuarios.find(x=>x.id===id);if(m){m.rol='admin';u.tipo='admin_equipo';sessionStorage.setItem('equipos',JSON.stringify(equipos));sessionStorage.setItem('usuarios',JSON.stringify(usuarios));cargarUsuarios()}}}
+    function eliminarUsuario(id){sfConfirm({title:'Eliminar usuario',message:'¿Eliminar este usuario del equipo? Esta acción no se puede deshacer.',type:'danger',confirmText:'Eliminar',confirmClass:'sf-modal-btn-danger'}).then(function(ok){if(ok){const eq=equipos.find(e=>e.id===currentUser.equipoId);eq.miembros=eq.miembros.filter(m=>m.usuarioId!==id);sessionStorage.setItem('equipos',JSON.stringify(equipos));cargarUsuarios()}}
+    function promoverAAdmin(id){sfConfirm({title:'Promover usuario',message:'¿Promover este usuario a administrador?',type:'info',confirmText:'Promover',confirmClass:'sf-modal-btn-confirm'}).then(function(ok){if(ok){const eq=equipos.find(e=>e.id===currentUser.equipoId),m=eq.miembros.find(x=>x.usuarioId===id),u=usuarios.find(x=>x.id===id);if(m){m.rol='admin';u.tipo='admin_equipo';sessionStorage.setItem('equipos',JSON.stringify(equipos));sessionStorage.setItem('usuarios',JSON.stringify(usuarios));cargarUsuarios()}}}
     function logout(){sessionStorage.removeItem('currentUser');window.location.href='/login'}
   </script>
 
   <style>html,body{background:#060a14 !important;background-color:#060a14 !important;}</style>
+<script src="/sf-modal.js"></script>
 <script src="/shared-particles.js"></script>
 <script src="/shared-nav.js"></script>
 <script>injectSidebar("settings");</script>
