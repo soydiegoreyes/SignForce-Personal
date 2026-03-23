@@ -60,6 +60,7 @@ async function loadPDFfromServer(docId) {
         const docs = {idDocs: [docId], type: "uploaded"}
         const response = await fetch('/downloadDoc', {
             method: 'POST',
+                credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(docs)
         });
@@ -356,6 +357,7 @@ async function saveAndNextDoc() {
         try {
             const response = await fetch('/closeInvite', {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(inviteRequest)
             });
