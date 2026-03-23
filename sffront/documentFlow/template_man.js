@@ -1058,7 +1058,7 @@ async function logout() {
         try {
             const response = await fetch('/logoutUser', {
                 method: 'GET',
-                headers: { 'Content-Type': 'application/json' }}),
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
             });
 
