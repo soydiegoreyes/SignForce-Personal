@@ -210,6 +210,9 @@ setTimeout(function() {
         });
     });
 
+    // === CARGA INICIAL ===
+    loadDocumentsData('uploaded', 1);
+
     // Función para realizar búsqueda
     async function performSearch(searchText = "", page = 1) {
         currentSearchText = (searchText || "").trim();
