@@ -52,7 +52,7 @@ Elimina la cookie `auth-token`.
 | `mauricio` | atencion | ✅ | Dock: Devoluciones, Gastos, Proveedores, Blancos |
 | `marcelo` | limpieza_merida | ❌ | Solo Blancos Diarios (Mérida) |
 | `luz` | limpieza_merida | ❌ | Solo Blancos Diarios (Mérida) |
-| `isela` | limpieza_merida | ❌ | Solo Blancos Diarios (Mérida) |
+| `cindy` | limpieza_merida | ❌ | Solo Blancos Diarios (Mérida) |
 | `yael` | limpieza_granada | ❌ | Solo Blancos Diarios (Granada) |
 | `javier` | limpieza_granada | ❌ | Solo Blancos Diarios (Granada) |
 | `fabiola` | lavanderia | ❌ | Blancos Diarios (Mérida + Granada) |

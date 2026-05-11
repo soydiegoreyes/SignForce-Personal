@@ -12,7 +12,7 @@
 | `mauricio` | Mauricio Azcorra | `atencion` | ✅ | `USER_MAURICIO_PASS` | Dock reducido |
 | `marcelo` | Marcelo | `limpieza_merida` | ❌ | `USER_MARCELO_PASS` | Solo Blancos Mérida |
 | `luz` | Luz | `limpieza_merida` | ❌ | `USER_LUZ_PASS` | Solo Blancos Mérida |
-| `isela` | Isela | `limpieza_merida` | ❌ | `USER_ISELA_PASS` | Solo Blancos Mérida |
+| `cindy` | Cindy | `limpieza_merida` | ❌ | `USER_CINDY_PASS` | Solo Blancos Mérida |
 | `yael` | Yael | `limpieza_granada` | ❌ | `USER_YAEL_PASS` | Solo Blancos Granada |
 | `javier` | Javier Chavez | `limpieza_granada` | ❌ | `USER_JAVIER_PASS` | Solo Blancos Granada |
 | `fabiola` | Fabiola Roque | `lavanderia` | ❌ | `USER_FABIOLA_PASS` | Blancos Mérida + Granada |
@@ -40,7 +40,7 @@
 - Sin botón "+"
 - canEdit: true (pueden crear/editar/eliminar en sus módulos)
 
-### `limpieza_merida` (Marcelo, Luz, Isela)
+### `limpieza_merida` (Marcelo, Luz, Cindy)
 - Solo ven: Blancos Diarios — tabs Mérida HOY + Mérida MAÑANA
 - No ven Granada HOY
 - canEdit: false

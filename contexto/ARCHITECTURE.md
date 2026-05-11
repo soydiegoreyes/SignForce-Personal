@@ -200,7 +200,7 @@ USER_MAURICIO_PASS=<pass>    ← usado por: mauricio
 # Limpieza Mérida
 USER_MARCELO_PASS=Marcelo123
 USER_LUZ_PASS=Luz123
-USER_ISELA_PASS=Isela123
+USER_CINDY_PASS=Cindy123
 
 # Limpieza Granada
 USER_YAEL_PASS=Yael123
