@@ -21,8 +21,8 @@ body {
 
 .bg {
   background: 
-    radial-gradient(circle, rgba(117, 211, 255, 0.26), transparent) 5% 20% no-repeat,
-    radial-gradient(circle, rgba(76, 0, 255, 0.1), transparent) 10% 50% no-repeat,
+    radial-gradient(circle, rgba(197, 212, 47, 0.26), transparent) 5% 20% no-repeat,
+    radial-gradient(circle, rgba(181, 196, 19, 0.1), transparent) 10% 50% no-repeat,
     radial-gradient(circle, rgba(255, 104, 174, 0.1), transparent) 0% 80% no-repeat;
 }
 
@@ -92,7 +92,7 @@ h1, h2, h3, h4 {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 204, 255, 0.3);
+    box-shadow: 0 10px 20px rgba(181, 196, 19, 0.3);
 }
 
 .btn-secondary {
@@ -125,7 +125,7 @@ h1, h2, h3, h4 {
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
     0 8px 32px 0 rgba(255, 255, 255, 0.1),
-    0 0 10px 1px rgba(200, 90, 255, 0.4);
+    0 0 10px 1px rgba(181, 196, 19, 0.4);
     z-index: 1000;
     display: flex;
     justify-content: space-between;
@@ -145,7 +145,7 @@ h1, h2, h3, h4 {
     -webkit-backdrop-filter: blur(0px);
     transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     z-index: -1;
-    box-shadow: 0 0px 5px rgb(200, 90, 255, 0.5);
+    box-shadow: 0 0px 5px rgb(181, 196, 19, 0.5);
 }
 
 .nav-item {
@@ -295,7 +295,7 @@ h1, h2, h3, h4 {
 .text-box {
     position: absolute;
     padding: 8px 12px;
-    background: rgba(200, 90, 255, 0.1);
+    background: rgba(181, 196, 19, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.5);
     color: white;
     cursor: move;
@@ -315,13 +315,13 @@ h1, h2, h3, h4 {
 }
 
 .text-box:hover {
-    background: rgba(200, 90, 255, 0.5);
+    background: rgba(181, 196, 19, 0.5);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .text-box:focus {
     outline: 2px dashed rgba(255, 255, 255, 0.7);
-    background: rgba(200, 90, 255, 0.1);
+    background: rgba(181, 196, 19, 0.1);
 }
 
 /* Limitador de tamaño para el contenedor de texto */

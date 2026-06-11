@@ -30,8 +30,8 @@
                         box-shadow 0.3s ease;
         }
         .input-tech:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59,130,246,.2);
+            border-color: #B5C413;
+            box-shadow: 0 0 0 2px rgba(181, 196, 19,.2);
             outline: none;
             background-color: #2563eb66;
         }
@@ -41,14 +41,14 @@
         }
 
         .btn-cyber {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #B5C413, #8a9410);
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
         }
         
         .btn-cyber:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            box-shadow: 0 0 20px rgba(138, 148, 16, 0.5);
             filter: brightness(1.1);
         }
 
@@ -76,7 +76,7 @@
             max-height: 640px;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 40px rgba(181, 196, 19, 0.3);
         }
 
         #videoElement {
@@ -93,11 +93,11 @@
             transform: translate(-50%, -50%);
             width: 400px;
             height: 450px;
-            border: 3px solid rgba(59, 130, 246, 0.8);
+            border: 3px solid rgba(181, 196, 19, 0.8);
             border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
             box-shadow: 
                 0 0 0 2000px rgba(0, 0, 0, 0.5),
-                inset 0 0 20px rgba(59, 130, 246, 0.3);
+                inset 0 0 20px rgba(181, 196, 19, 0.3);
             pointer-events: none;
             z-index: 10;
         }
@@ -117,18 +117,18 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background: #3b82f6;
+            background: #B5C413;
             border: 3px solid white;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 20px rgba(181, 196, 19, 0.5);
             transition: all 0.3s ease;
         }
 
         .capture-btn:hover {
-            background: #2563eb;
+            background: #B5C413;
             transform: scale(1.05);
         }
 
@@ -159,7 +159,7 @@
             height: 150px;
             border-radius: 8px;
             overflow: hidden;
-            border: 2px solid #3b82f6;
+            border: 2px solid #B5C413;
             margin-top: 10px;
         }
 
@@ -206,6 +206,8 @@
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         .animate-pulse { animation: pulse 2s infinite; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/home/signforce-global.css">
 </head>
 <body class="font-sans bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
 
@@ -713,5 +715,6 @@
         });
 
     </script>
+    <style>html,body{background:#060a14 !important;}</style>
 </body>
 </html>

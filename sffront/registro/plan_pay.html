@@ -28,7 +28,7 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            background: rgba(59, 130, 246, 0.7);
+            background: rgba(181, 196, 19, 0.7);
         }
 
         /* Tarjetas Estilo "Invitación" */
@@ -48,20 +48,20 @@
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+            background: linear-gradient(90deg, transparent, rgba(197, 212, 47, 0.5), transparent);
             opacity: 0.5;
         }
 
         .tech-card:hover {
             transform: translateY(-4px);
             background: rgba(255, 255, 255, 0.06);
-            border-color: rgba(56, 189, 248, 0.3);
+            border-color: rgba(197, 212, 47, 0.3);
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
         /* Botones */
         .btn-cyber {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #B5C413, #8a9410);
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.2);
@@ -69,7 +69,7 @@
         }
         
         .btn-cyber:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            box-shadow: 0 0 20px rgba(138, 148, 16, 0.5);
             filter: brightness(1.1);
             transform: translateY(-2px);
         }
@@ -82,7 +82,7 @@
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(59, 130, 246, 0.3);
+            border-color: rgba(181, 196, 19, 0.3);
         }
 
         /* Header Panel simplificado */
@@ -138,8 +138,8 @@
 
         .plan-card.featured {
             transform: scale(1.05);
-            border: 2px solid rgba(59, 130, 246, 0.5);
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+            border: 2px solid rgba(181, 196, 19, 0.5);
+            box-shadow: 0 0 25px rgba(181, 196, 19, 0.3);
         }
 
         .plan-card:hover {
@@ -162,7 +162,7 @@
             font-size: 2.5rem;
             font-weight: bold;
             margin: 1.5rem 0;
-            color: #60a5fa;
+            color: #c5d42f;
         }
 
         .plan-price span {
@@ -200,7 +200,7 @@
         .plan-button {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #B5C413, #8a9410);
             color: white;
             border: none;
             border-radius: 8px;
@@ -211,7 +211,7 @@
         }
 
         .plan-button:hover {
-            box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+            box-shadow: 0 0 20px rgba(138, 148, 16, 0.5);
             filter: brightness(1.1);
             transform: translateY(-2px);
         }
@@ -290,14 +290,14 @@
             background: rgba(255, 255, 255, 0.05);
             font-size: 1rem;
             color: #bbbbbb;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(181, 196, 19, 0.3);
             transition: all 0.3s ease;
         }
 
         .form-control:focus {
-            border-color: #3b82f6;
+            border-color: #B5C413;
             background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 0 3px rgba(181, 196, 19, 0.3);
             border-radius: 10px;
         }
 
@@ -320,14 +320,14 @@
 
         .payment-summary h4 {
             margin-bottom: 0.5rem;
-            color: #60a5fa;
+            color: #c5d42f;
         }
 
         .payment-loader {
             display: none;
             text-align: center;
             margin: 1rem 0;
-            color: #60a5fa;
+            color: #c5d42f;
         }
 
         .payment-success {
@@ -391,6 +391,8 @@
             }
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/home/signforce-global.css">
 </head>
 <body class="font-display bg-[#0f172a] text-gray-200 min-h-screen flex flex-col">
 
@@ -721,5 +723,6 @@
             }, 5000);
         }
     </script>
+    <style>html,body{background:#060a14 !important;}</style>
 </body>
 </html>

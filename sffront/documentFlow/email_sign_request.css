@@ -150,7 +150,7 @@ body {
 
 /* Efecto de brillo al pasar el mouse */
 .hover-glow:hover {
-  box-shadow: 0 0 15px rgba(155, 81, 224, 0.5);
+  box-shadow: 0 0 15px rgba(181, 196, 19, 0.5);
 }
 
 /* Tabla con estilo de vidrio */
@@ -187,9 +187,9 @@ body {
 }
 
 .approve-button {
-  background: rgba(229, 117, 25, 0.6);
+  background: rgba(181, 196, 19, 0.75);
 }
 
 .approve-button:hover {
-  background: rgba(229, 117, 25, 0.7);
+  background: rgba(181, 196, 19, 0.9);
 }

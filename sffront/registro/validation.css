@@ -493,7 +493,7 @@ header {
 /* Estilos para scrollbars en contenedores */
 .scroll-container {
     scrollbar-width: thin;
-    scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+    scrollbar-color: rgba(181, 196, 19, 0.3) transparent;
 }
 
 .scroll-container::-webkit-scrollbar {
@@ -505,10 +505,10 @@ header {
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-    background-color: rgba(59, 130, 246, 0.3);
+    background-color: rgba(181, 196, 19, 0.3);
     border-radius: 3px;
 }
 
 .scroll-container::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(59, 130, 246, 0.5);
+    background-color: rgba(181, 196, 19, 0.5);
 }

@@ -200,5 +200,5 @@ body {
 
 /* Efecto de brillo al pasar el mouse */
 .hover-glow:hover {
-  box-shadow: 0 0 15px rgba(155, 81, 224, 0.5);
+  box-shadow: 0 0 15px rgba(181, 196, 19, 0.5);
 }
