@@ -718,3 +718,5 @@ background-color: rgba(100, 100, 100, 0.5);
         padding: 1.5rem;
     }
 }
+/* Tabs lado a lado (el contenedor no tenia regla y los divs se apilaban) */
+.form-tabs { display: flex; }
